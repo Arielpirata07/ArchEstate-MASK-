@@ -1,0 +1,9 @@
+/* ESTILOS ESPECÍFICOS: LANDING PAGE */
+.hero-overlay {
+    background: rgba(0, 4, 16, 0.4);
+}
+
+.hero-text-box {
+    backdrop-filter: blur(4px);
+    background: rgba(0, 4, 16, 0.2);
+}

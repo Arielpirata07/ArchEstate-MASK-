@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Administración | ArchEstate{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <div class="flex justify-between items-end border-b border-midnight/10 pb-6">
+        <div>
+            <h2 class="text-4xl font-serif">Control de <span class="serif-italic">Plataforma</span></h2>
+            <p class="text-midnight/50 mt-2">Validación de profesionales y seguridad del sistema.</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Tabla de Profesionales (2/3 del ancho) -->
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+                <div class="p-4 bg-paper-dark border-b border-midnight/5">
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Directorio de Profesionales</h3>
+                </div>
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-midnight/5">
+                            <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Nombre Profesional</th>
+                            <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Matrícula / Licencia</th>
+                            <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Estado</th>
+                            <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40 text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for pro in professionals %}
+                        <tr class="border-b border-midnight/5 hover:bg-paper transition-colors">
+                            <td class="p-4">
+                                <div class="font-medium text-midnight">{{ pro.name }}</div>
+                                <div class="text-[10px] text-midnight/40 italic">{{ pro.specialty }}</div>
+                            </td>
+                            <td class="p-4 font-mono text-xs text-midnight/60">{{ pro.license }}</td>
+                            <td class="p-4">
+                                {% if pro.status == 'approved' %}
+                                <span class="px-2 py-1 bg-emerald-50 text-emerald-700 text-[9px] font-bold uppercase tracking-widest rounded">Aprobado</span>
+                                {% elif pro.status == 'rejected' %}
+                                <span class="px-2 py-1 bg-rose-50 text-rose-700 text-[9px] font-bold uppercase tracking-widest rounded">Rechazado</span>
+                                {% else %}
+                                <span class="px-2 py-1 bg-amber-50 text-amber-700 text-[9px] font-bold uppercase tracking-widest rounded">Pendiente</span>
+                                {% endif %}
+                            </td>
+                            <td class="p-4 text-right">
+                                {% if pro.status == 'pending' %}
+                                <div class="flex justify-end gap-2">
+                                    <button onclick="updateProStatus({{ pro.id }}, 'approved', this)" class="p-2 text-emerald-600 hover:bg-emerald-50 rounded transition-colors" title="Aprobar">
+                                        <i data-lucide="check" class="w-4 h-4"></i>
+                                    </button>
+                                    <button onclick="updateProStatus({{ pro.id }}, 'rejected', this)" class="p-2 text-rose-600 hover:bg-rose-50 rounded transition-colors" title="Rechazar">
+                                        <i data-lucide="x" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                                {% else %}
+                                <span class="text-[10px] text-midnight/20 font-bold uppercase tracking-widest">Sin acciones</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Módulo de Auditoría (1/3 del ancho) -->
+        <div class="space-y-6">
+            <div class="bg-white rounded-lg shadow-xl overflow-hidden flex flex-col h-full max-h-[600px]">
+                <div class="p-4 bg-midnight text-white border-b border-gold/20 flex items-center justify-between">
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-gold-light">Log de Auditoría</h3>
+                    <i data-lucide="shield" class="w-4 h-4 text-gold/50"></i>
+                </div>
+                <div class="flex-grow overflow-y-auto p-4 space-y-4 bg-paper-dark/30">
+                    {% for entry in audit_log %}
+                    <div class="p-3 bg-white border border-midnight/5 rounded shadow-sm space-y-2 audit-entry">
+                        <div class="flex justify-between items-start">
+                            <span class="text-[9px] font-bold uppercase tracking-tighter {% if entry.action == 'Aprobación' %}text-emerald-600{% else %}text-rose-600{% endif %}">
+                                {{ entry.action }}
+                            </span>
+                            <span class="text-[8px] text-midnight/30 font-mono">{{ entry.timestamp }}</span>
+                        </div>
+                        <div class="text-xs font-medium text-midnight">
+                            {{ entry.target }}
+                        </div>
+                        <div class="text-[9px] text-midnight/40 flex items-center gap-1">
+                            <i data-lucide="user" class="w-2 h-2"></i>
+                            {{ entry.admin }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="p-3 bg-paper-dark border-t border-midnight/5 text-center">
+                    <p class="text-[8px] text-midnight/30 uppercase tracking-widest font-bold">Fin del registro reciente</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

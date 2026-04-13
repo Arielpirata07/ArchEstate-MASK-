@@ -1,0 +1,37 @@
+/* --- ESTILOS PERSONALIZADOS ARCHESTATE --- */
+
+/* Tipografía base y colores de fondo */
+body { 
+    font-family: 'Manrope', sans-serif; 
+    background-color: #FAF9F7; 
+    color: #000410; 
+}
+
+/* Clases para la fuente Serif (Newsreader) */
+.serif { 
+    font-family: 'Newsreader', serif; 
+}
+
+.serif-italic { 
+    font-family: 'Newsreader', serif; 
+    font-style: italic; 
+}
+
+/* Utilidades de visibilidad para la SPA (si se usa) */
+.view-section { 
+    display: none; 
+}
+
+.view-section.active { 
+    display: block; 
+}
+
+/* Ajustes finos para inputs y transiciones */
+input:focus, select:focus {
+    outline: none;
+}
+
+/* Efectos de hover para las tarjetas de perfil */
+.group:hover .group-hover\:translate-x-1 {
+    transform: translateX(0.25rem);
+}

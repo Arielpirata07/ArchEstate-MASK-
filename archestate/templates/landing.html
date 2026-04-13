@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio | ArchEstate{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col items-center justify-center min-h-[60vh] text-center">
+    <!-- Imagen Hero con efecto editorial -->
+    <div class="relative w-full max-w-5xl h-[300px] mb-12 rounded-xl overflow-hidden shadow-2xl">
+        <img src="https://picsum.photos/seed/architecture/1200/600" alt="Arquitectura" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700">
+        <div class="absolute inset-0 bg-midnight/40 flex items-center justify-center">
+            <div class="text-white border border-white/20 p-8 backdrop-blur-sm bg-midnight/20">
+                <span class="text-[10px] tracking-[0.3em] uppercase font-bold text-gold-light">Establecido en 2026</span>
+                <h2 class="text-3xl font-serif italic">The Private Ledger</h2>
+            </div>
+        </div>
+    </div>
+
+    <h1 class="text-5xl md:text-6xl font-serif mb-6 text-midnight">
+        Bienvenido a <span class="serif-italic">ArchEstate</span>
+    </h1>
+    <p class="text-midnight/60 max-w-2xl mb-12 text-lg">
+        La plataforma exclusiva que conecta la demanda arquitectónica con los profesionales más capacitados del sector.
+    </p>
+
+    <!-- Selectores de Perfil (Login Simulado) -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
+        <!-- Botón Usuario -->
+        <a href="{{ url_for('user_view') }}" class="bg-white p-8 rounded-lg shadow-lg border border-midnight/5 hover:border-gold transition-all text-left group">
+            <i data-lucide="users" class="text-gold mb-4 w-8 h-8"></i>
+            <h3 class="text-xl font-serif mb-2 group-hover:text-gold transition-colors">Entrar como Usuario</h3>
+            <p class="text-sm text-midnight/50">Busco comprar o construir mi próxima propiedad.</p>
+        </a>
+
+        <!-- Botón Profesional -->
+        <a href="{{ url_for('professional_view') }}" class="bg-white p-8 rounded-lg shadow-lg border border-midnight/5 hover:border-gold transition-all text-left group">
+            <i data-lucide="building-2" class="text-gold mb-4 w-8 h-8"></i>
+            <h3 class="text-xl font-serif mb-2 group-hover:text-gold transition-colors">Entrar como Profesional</h3>
+            <p class="text-sm text-midnight/50">Soy arquitecto o agente inmobiliario buscando leads.</p>
+        </a>
+
+        <!-- Botón Administrador -->
+        <a href="{{ url_for('admin_view') }}" class="bg-white p-8 rounded-lg shadow-lg border border-midnight/5 hover:border-gold transition-all text-left group">
+            <i data-lucide="shield-check" class="text-gold mb-4 w-8 h-8"></i>
+            <h3 class="text-xl font-serif mb-2 group-hover:text-gold transition-colors">Entrar como Administrador</h3>
+            <p class="text-sm text-midnight/50">Gestión de plataforma y validación de profesionales.</p>
+        </a>
+    </div>
+</div>
+{% endblock %}
