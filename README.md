@@ -27,3 +27,18 @@ Sigue estos pasos para levantar el entorno de desarrollo local:
 ```bash
 git clone [https://github.com/TU-USUARIO/archestate.git](https://github.com/TU-USUARIO/archestate.git)
 cd archestate
+
+# Crear entorno
+python -m venv venv
+
+# Activar en Windows:
+venv\Scripts\activate
+
+# Activar en Mac/Linux:
+source venv/bin/activate
+
+# Instalar las dependencias:
+pip install -r requirements.txt
+
+# Iniciar en el servidor:
+python app.py
