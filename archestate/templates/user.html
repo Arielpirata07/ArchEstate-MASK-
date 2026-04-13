@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+
+{% block title %}Solicitud | ArchEstate{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/user.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto w-full">
+    <div class="bg-white p-10 rounded-lg shadow-2xl border-t-4 border-gold">
+        <h2 class="text-3xl font-serif mb-8 text-center">Solicitud de <span class="serif-italic">Propiedad</span></h2>
+        
+        <!-- Formulario de Captura de Leads -->
+        <form id="userForm" class="space-y-6">
+            <div>
+                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Tipo de Operación</label>
+                <select name="type" class="w-full bg-paper-dark border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 transition-all">
+                    <option>Comprar Propiedad</option>
+                    <option>Construir desde Cero</option>
+                    <option>Remodelación Integral</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Presupuesto Estimado</label>
+                <div class="relative">
+                    <i data-lucide="wallet" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5"></i>
+                    <input name="budget" type="text" placeholder="e.g. $500,000 - $1,000,000" class="w-full bg-transparent border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Zona de Interés</label>
+                <div class="relative">
+                    <i data-lucide="map-pin" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5"></i>
+                    <input name="zone" type="text" placeholder="e.g. Madrid, Barrio de Salamanca" class="w-full bg-transparent border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Número de Teléfono</label>
+                <div class="relative">
+                    <i data-lucide="phone" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5"></i>
+                    <input name="phone" required type="tel" placeholder="+34 600 000 000" class="w-full bg-transparent border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Email</label>
+                <div class="relative">
+                    <i data-lucide="mail" id="mail-icon" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5 transition-colors"></i>
+                    <input name="email" required type="email" id="email-input" placeholder="usuario@ejemplo.com" class="w-full bg-transparent border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all">
+                </div>
+                <p id="email-error" class="hidden text-[10px] text-rose-500 mt-1 font-medium">Por favor, introduce un formato de email válido.</p>
+            </div>
+
+            <button type="submit" class="w-full bg-gold text-white py-4 rounded font-bold uppercase tracking-widest text-xs hover:bg-midnight transition-all mt-8 flex items-center justify-center gap-2 group">
+                Enviar Solicitud
+                <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- La lógica de validación y envío ahora reside en static/js/main.js -->
+{% endblock %}

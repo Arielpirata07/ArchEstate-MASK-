@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArchEstate | Private Ledger</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Manrope:wght@200..800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Estilos y Configuración Externos -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/spa.css') }}">
+    <script src="{{ url_for('static', filename='js/tailwind-config.js') }}"></script>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-[#101E33] border-b border-[#735A3A]/20 h-16 flex items-center justify-between px-8 shadow-lg">
+        <div class="text-xl font-serif italic text-white cursor-pointer" onclick="showView('landing')">
+            ArchEstate
+        </div>
+        <div id="nav-logout" class="hidden">
+            <button onclick="showView('landing')" class="flex items-center gap-2 text-[#A68A64] hover:text-white transition-colors text-sm font-medium">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
+                Salir
+            </button>
+        </div>
+    </nav>
+
+    <main class="flex-grow pt-24 pb-12 px-6 max-w-7xl mx-auto w-full">
+        
+        <!-- LANDING VIEW -->
+        <section id="view-landing" class="view-section active">
+            <div class="flex flex-col items-center justify-center min-h-[60vh] text-center">
+                <div class="relative w-full max-w-5xl h-[300px] mb-12 rounded-xl overflow-hidden shadow-2xl">
+                    <img src="https://picsum.photos/seed/architecture/1200/600" alt="Architecture" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700">
+                    <div class="absolute inset-0 bg-midnight/40 flex items-center justify-center">
+                        <div class="text-white border border-white/20 p-8 backdrop-blur-sm bg-midnight/20">
+                            <span class="text-[10px] tracking-[0.3em] uppercase font-bold text-gold-light">Establecido en 2026</span>
+                            <h2 class="text-3xl font-serif italic">The Private Ledger</h2>
+                        </div>
+                    </div>
+                </div>
+                <h1 class="text-5xl md:text-6xl font-serif mb-6 text-midnight">
+                    Bienvenido a <span class="serif-italic">ArchEstate</span>
+                </h1>
+                <p class="text-midnight/60 max-w-2xl mb-12 text-lg">
+                    La plataforma exclusiva que conecta la demanda arquitectónica con los profesionales más capacitados del sector.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
+                    <div onclick="showView('user')" class="bg-white p-8 rounded-lg shadow-lg border border-midnight/5 hover:border-gold transition-all text-left cursor-pointer group">
+                        <i data-lucide="users" class="text-gold mb-4 w-8 h-8"></i>
+                        <h3 class="text-xl font-serif mb-2 group-hover:text-gold transition-colors">Entrar como Usuario</h3>
+                        <p class="text-sm text-midnight/50">Busco comprar o construir mi próxima propiedad.</p>
+                    </div>
+                    <div onclick="showView('professional')" class="bg-white p-8 rounded-lg shadow-lg border border-midnight/5 hover:border-gold transition-all text-left cursor-pointer group">
+                        <i data-lucide="building-2" class="text-gold mb-4 w-8 h-8"></i>
+                        <h3 class="text-xl font-serif mb-2 group-hover:text-gold transition-colors">Entrar como Profesional</h3>
+                        <p class="text-sm text-midnight/50">Soy arquitecto o agente inmobiliario buscando leads.</p>
+                    </div>
+                    <div onclick="showView('admin')" class="bg-white p-8 rounded-lg shadow-lg border border-midnight/5 hover:border-gold transition-all text-left cursor-pointer group">
+                        <i data-lucide="shield-check" class="text-gold mb-4 w-8 h-8"></i>
+                        <h3 class="text-xl font-serif mb-2 group-hover:text-gold transition-colors">Entrar como Administrador</h3>
+                        <p class="text-sm text-midnight/50">Gestión de plataforma y validación de profesionales.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- USER VIEW -->
+        <section id="view-user" class="view-section">
+            <div class="max-w-xl mx-auto w-full">
+                <div class="bg-white p-10 rounded-lg shadow-2xl border-t-4 border-gold">
+                    <h2 class="text-3xl font-serif mb-8 text-center">Solicitud de <span class="serif-italic">Propiedad</span></h2>
+                    <form onsubmit="handleUserSubmit(event)" class="space-y-6">
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Tipo de Operación</label>
+                            <select class="w-full bg-paper-dark border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 transition-all">
+                                <option>Comprar Propiedad</option>
+                                <option>Construir desde Cero</option>
+                                <option>Remodelación Integral</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Presupuesto Estimado</label>
+                            <div class="relative">
+                                <i data-lucide="wallet" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5"></i>
+                                <input type="text" placeholder="e.g. $500,000 - $1,000,000" class="w-full bg-transparent border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Zona de Interés</label>
+                            <div class="relative">
+                                <i data-lucide="map-pin" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5"></i>
+                                <input type="text" placeholder="e.g. Madrid, Barrio de Salamanca" class="w-full bg-transparent border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Número de Teléfono (Obligatorio)</label>
+                            <div class="relative">
+                                <i data-lucide="phone" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5"></i>
+                                <input required type="tel" placeholder="+34 600 000 000" class="w-full bg-transparent border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Email (Requerido)</label>
+                            <div class="relative">
+                                <i data-lucide="mail" id="mail-icon" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5 transition-colors"></i>
+                                <input required type="email" id="email-input" oninput="validateEmail(this.value)" placeholder="usuario@ejemplo.com" class="w-full bg-transparent border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all">
+                            </div>
+                            <p id="email-error" class="hidden text-[10px] text-rose-500 mt-1 font-medium">Por favor, introduce un formato de email válido.</p>
+                        </div>
+                        <button type="submit" class="w-full bg-gold text-white py-4 rounded font-bold uppercase tracking-widest text-xs hover:bg-midnight transition-all mt-8 flex items-center justify-center gap-2 group">
+                            Enviar Solicitud
+                            <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- PROFESSIONAL VIEW -->
+        <section id="view-professional" class="view-section">
+            <div class="space-y-8">
+                <div class="flex justify-between items-end border-b border-midnight/10 pb-6">
+                    <div>
+                        <h2 class="text-4xl font-serif">Panel de <span className="serif-italic">Leads</span></h2>
+                        <p class="text-midnight/50 mt-2">Gestiona tus oportunidades de negocio exclusivas.</p>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-paper-dark border-b border-midnight/5">
+                                <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">ID Pedido</th>
+                                <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Tipo Operación</th>
+                                <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Zona</th>
+                                <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Presupuesto</th>
+                                <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold text-right">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leads-table-body">
+                            <!-- Leads will be injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- ADMIN VIEW -->
+        <section id="view-admin" class="view-section">
+            <div class="space-y-8">
+                <div class="flex justify-between items-end border-b border-midnight/10 pb-6">
+                    <div>
+                        <h2 class="text-4xl font-serif">Control de <span className="serif-italic">Plataforma</span></h2>
+                        <p class="text-midnight/50 mt-2">Validación de profesionales y seguridad del sistema.</p>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+                    <div class="p-4 bg-paper-dark border-b border-midnight/5">
+                        <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Directorio de Profesionales Activos</h3>
+                    </div>
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-midnight/5">
+                                <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Nombre Profesional</th>
+                                <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Matrícula</th>
+                            </tr>
+                        </thead>
+                        <tbody id="professionals-table-body">
+                            <!-- Professionals will be injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-midnight text-white/40 py-8 px-8 border-t border-gold/20">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] uppercase tracking-widest font-bold">
+            <div>© 2026 ArchEstate Private Ledger.</div>
+            <div class="flex gap-8">
+                <a href="#" class="hover:text-gold transition-colors">Términos</a>
+                <a href="#" className="hover:text-gold transition-colors">Privacidad</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts Globales -->
+    <script src="{{ url_for('static', filename='js/spa.js') }}"></script>
+</body>
+</html>

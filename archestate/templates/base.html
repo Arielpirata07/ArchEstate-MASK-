@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ArchEstate | Private Ledger{% endblock %}</title>
+    
+    <!-- Tailwind CSS (Vía CDN para prototipado rápido) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Manrope:wght@200..800&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Estilos y Configuración Externos -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
+    <script src="{{ url_for('static', filename='js/tailwind-config.js') }}"></script>
+    
+    {% block head %}{% endblock %}
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- BARRA DE NAVEGACIÓN COMPARTIDA -->
+    <nav class="fixed top-0 w-full z-50 bg-midnight-light border-b border-gold/20 h-16 flex items-center justify-between px-8 shadow-lg">
+        <div class="flex items-center gap-8">
+            <a href="{{ url_for('index') }}" class="text-xl font-serif italic text-white">
+                ArchEstate
+            </a>
+            
+            <div class="hidden md:flex items-center gap-6">
+                <a href="{{ url_for('user_view') }}" class="text-[10px] uppercase tracking-widest font-bold text-white/60 hover:text-gold transition-colors">Solicitar</a>
+                <a href="{{ url_for('professional_view') }}" class="text-[10px] uppercase tracking-widest font-bold text-white/60 hover:text-gold transition-colors">Profesionales</a>
+                <a href="{{ url_for('admin_view') }}" class="text-[10px] uppercase tracking-widest font-bold text-white/60 hover:text-gold transition-colors">Admin</a>
+            </div>
+        </div>
+        
+        <!-- Botón de salida que solo aparece si no estamos en la landing -->
+        {% if request.path != '/' %}
+        <div>
+            <a href="{{ url_for('index') }}" class="flex items-center gap-2 text-gold-light hover:text-white transition-colors text-sm font-medium">
+                <i data-lucide="log-out" class="w-4 h-4"></i>
+                Salir
+            </a>
+        </div>
+        {% endif %}
+    </nav>
+
+    <!-- CONTENIDO DINÁMICO (Aquí se inyectan las vistas) -->
+    <main class="flex-grow pt-24 pb-12 px-6 max-w-7xl mx-auto w-full">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- PIE DE PÁGINA COMPARTIDO -->
+    <footer class="bg-midnight text-white/40 py-8 px-8 border-t border-gold/20">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] uppercase tracking-widest font-bold">
+            <div>© 2026 ArchEstate Private Ledger. Todos los derechos reservados.</div>
+            <div class="flex gap-8">
+                <a href="#" class="hover:text-gold transition-colors">Términos</a>
+                <a href="#" class="hover:text-gold transition-colors">Privacidad</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts Globales -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,32 @@
+/* ESTILOS ESPECÍFICOS: PANEL ADMINISTRACIÓN */
+.admin-table th {
+    color: rgba(0, 4, 16, 0.4);
+}
+
+/* Personalización del scrollbar del log de auditoría */
+.overflow-y-auto::-webkit-scrollbar {
+    width: 4px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb {
+    background: rgba(115, 90, 58, 0.2);
+    border-radius: 10px;
+}
+
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: rgba(115, 90, 58, 0.4);
+}
+
+/* Animación sutil para nuevas entradas */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.audit-entry {
+    animation: fadeIn 0.3s ease-out forwards;
+}

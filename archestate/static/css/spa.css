@@ -1,0 +1,24 @@
+/* ESTILOS SPA - ARCHESTATE */
+
+body { 
+    font-family: 'Manrope', sans-serif; 
+    background-color: #FAF9F7; 
+    color: #000410; 
+}
+
+.serif { 
+    font-family: 'Newsreader', serif; 
+}
+
+.serif-italic { 
+    font-family: 'Newsreader', serif; 
+    font-style: italic; 
+}
+
+.view-section { 
+    display: none; 
+}
+
+.view-section.active { 
+    display: block; 
+}
