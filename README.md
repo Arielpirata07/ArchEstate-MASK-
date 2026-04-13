@@ -25,7 +25,7 @@ Sigue estos pasos para levantar el entorno de desarrollo local:
 
 ### 1. Clonar el repositorio
 ```bash
-git clone [https://github.com/TU-USUARIO/archestate.git](https://github.com/TU-USUARIO/archestate.git)
+git clone [https://github.com/Arielpirata07/ArchEstate-MASK-.git](https://github.com/Arielpirata07/ArchEstate-MASK-.git)
 cd archestate
 
 # Crear entorno
