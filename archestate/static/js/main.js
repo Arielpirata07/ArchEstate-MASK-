@@ -282,3 +282,136 @@ async function updateProStatus(proId, status, btn) {
         showToast("Error al conectar con el servidor", 'error');
     }
 }
+
+/**
+ * ============================================================
+ * MODAL DE DETALLE DEL PEDIDO
+ * Sprint 1 - Historia de Usuario:
+ * "Como profesional, quiero ingresar a un pedido para obtener
+ *  información de contacto del usuario."
+ * ============================================================
+ */
+
+let currentLeadId = null;
+
+/**
+ * Abre el modal de detalle del pedido con la información del lead
+ */
+function openLeadModal(leadId) {
+    currentLeadId = leadId;
+    const lead = window.leadsData ? window.leadsData[leadId] : null;
+    if (!lead) return;
+
+    // Poblar el modal con la información del lead
+    document.getElementById('modal-lead-id').textContent = leadId;
+    document.getElementById('modal-lead-type').textContent = lead.type;
+    document.getElementById('modal-lead-zone').textContent = lead.zone;
+    document.getElementById('modal-lead-budget').textContent = lead.budget;
+
+    // Resetear la sección de contacto al estado bloqueado
+    document.getElementById('modal-contact-locked').classList.remove('hidden');
+    document.getElementById('modal-contact-revealed').classList.add('hidden');
+    
+    const revealBtn = document.getElementById('modal-reveal-btn');
+    revealBtn.disabled = false;
+    revealBtn.classList.remove('opacity-70');
+    revealBtn.innerHTML = '<i data-lucide="unlock" class="w-4 h-4"></i> Solicitar Datos de Contacto';
+
+    // Mostrar el modal con animación
+    const overlay = document.getElementById('lead-modal-overlay');
+    overlay.classList.remove('hidden');
+    overlay.classList.add('flex');
+    
+    requestAnimationFrame(() => {
+        overlay.classList.remove('opacity-0');
+        document.getElementById('lead-modal').classList.remove('scale-95');
+        document.getElementById('lead-modal').classList.add('scale-100');
+    });
+
+    if (window.lucide) lucide.createIcons();
+}
+
+/**
+ * Cierra el modal de detalle del pedido
+ * Si se llama desde el overlay, solo cierra al hacer clic en el fondo
+ */
+function closeLeadModal(event) {
+    if (event && event.target !== document.getElementById('lead-modal-overlay')) return;
+    
+    const overlay = document.getElementById('lead-modal-overlay');
+    if (!overlay) return;
+
+    overlay.classList.add('opacity-0');
+    document.getElementById('lead-modal').classList.remove('scale-100');
+    document.getElementById('lead-modal').classList.add('scale-95');
+    
+    setTimeout(() => {
+        overlay.classList.remove('flex');
+        overlay.classList.add('hidden');
+    }, 300);
+    
+    currentLeadId = null;
+}
+
+/**
+ * Solicita y revela los datos de contacto (teléfono y email) del lead actual.
+ * Consume el endpoint /api/lead/<id>/contact que audita la consulta.
+ */
+async function revealContact() {
+    if (!currentLeadId) return;
+    
+    const btn = document.getElementById('modal-reveal-btn');
+    const originalContent = btn.innerHTML;
+    btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Solicitando...';
+    btn.disabled = true;
+    btn.classList.add('opacity-70');
+    if (window.lucide) lucide.createIcons();
+
+    try {
+        const response = await fetch(`/api/lead/${currentLeadId}/contact`);
+        const data = await response.json();
+
+        if (response.ok) {
+            // Poblar los campos de contacto
+            document.getElementById('modal-phone').textContent = data.phone;
+            document.getElementById('modal-email').textContent = data.email;
+            
+            // Transición animada: bloqueado → revelado
+            document.getElementById('modal-contact-locked').classList.add('hidden');
+            document.getElementById('modal-contact-revealed').classList.remove('hidden');
+            
+            if (window.lucide) lucide.createIcons();
+            showToast("Datos de contacto revelados correctamente");
+        } else {
+            btn.innerHTML = originalContent;
+            btn.disabled = false;
+            btn.classList.remove('opacity-70');
+            if (window.lucide) lucide.createIcons();
+            showToast(data.error || "Error al obtener datos de contacto", 'error');
+        }
+    } catch (error) {
+        btn.innerHTML = originalContent;
+        btn.disabled = false;
+        btn.classList.remove('opacity-70');
+        if (window.lucide) lucide.createIcons();
+        console.error("Error al revelar contacto:", error);
+        showToast("Error de conexión con el servidor", 'error');
+    }
+}
+
+/**
+ * Copia el contenido de un elemento al portapapeles
+ */
+function copyToClipboard(elementId) {
+    const text = document.getElementById(elementId).textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        showToast("Copiado al portapapeles");
+    }).catch(() => {
+        showToast("No se pudo copiar al portapapeles", 'error');
+    });
+}
+
+// Cerrar modal con la tecla Escape
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeLeadModal();
+});

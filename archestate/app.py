@@ -234,6 +234,28 @@ def get_lead_phone(lead_id):
     conn.close()
     return jsonify({"error": "Lead no encontrado"}), 404
 
+@app.route('/api/lead/<int:lead_id>/contact')
+@login_required
+def get_lead_contact(lead_id):
+    """
+    Entrega la información de contacto completa (teléfono y email) de un lead
+    específico y registra la consulta en el log de auditoría.
+    Sprint 1 - Historia: Ingresar a un pedido para obtener datos de contacto.
+    """
+    conn = get_db_connection()
+    lead = conn.execute('SELECT phone, email, type FROM leads WHERE id = ?', (lead_id,)).fetchone()
+    
+    if lead:
+        log_action("Solicitud de Contacto", f"Lead ID: {lead_id} ({lead['type']})")
+        conn.close()
+        return jsonify({
+            "phone": lead['phone'],
+            "email": lead['email']
+        })
+    
+    conn.close()
+    return jsonify({"error": "Lead no encontrado"}), 404
+
 @app.route('/api/admin/professional/<int:pro_id>/status', methods=['POST'])
 @login_required
 def update_pro_status(pro_id):

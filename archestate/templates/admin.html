@@ -25,10 +25,13 @@
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="border-b border-midnight/5">
-                            <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Nombre Profesional</th>
-                            <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Matrícula / Licencia</th>
+                            <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Nombre
+                                Profesional</th>
+                            <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Matrícula /
+                                Licencia</th>
                             <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Estado</th>
-                            <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40 text-right">Acciones</th>
+                            <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40 text-right">
+                                Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -41,25 +44,33 @@
                             <td class="p-4 font-mono text-xs text-midnight/60">{{ pro.license }}</td>
                             <td class="p-4">
                                 {% if pro.status == 'approved' %}
-                                <span class="px-2 py-1 bg-emerald-50 text-emerald-700 text-[9px] font-bold uppercase tracking-widest rounded">Aprobado</span>
+                                <span
+                                    class="px-2 py-1 bg-emerald-50 text-emerald-700 text-[9px] font-bold uppercase tracking-widest rounded">Aprobado</span>
                                 {% elif pro.status == 'rejected' %}
-                                <span class="px-2 py-1 bg-rose-50 text-rose-700 text-[9px] font-bold uppercase tracking-widest rounded">Rechazado</span>
+                                <span
+                                    class="px-2 py-1 bg-rose-50 text-rose-700 text-[9px] font-bold uppercase tracking-widest rounded">Rechazado</span>
                                 {% else %}
-                                <span class="px-2 py-1 bg-amber-50 text-amber-700 text-[9px] font-bold uppercase tracking-widest rounded">Pendiente</span>
+                                <span
+                                    class="px-2 py-1 bg-amber-50 text-amber-700 text-[9px] font-bold uppercase tracking-widest rounded">Pendiente</span>
                                 {% endif %}
                             </td>
                             <td class="p-4 text-right">
                                 {% if pro.status == 'pending' %}
                                 <div class="flex justify-end gap-2">
-                                    <button onclick="updateProStatus({{ pro.id }}, 'approved', this)" class="p-2 text-emerald-600 hover:bg-emerald-50 rounded transition-colors" title="Aprobar">
+                                    <button onclick="updateProStatus({{ pro.id }}, 'approved', this)"
+                                        class="p-2 text-emerald-600 hover:bg-emerald-50 rounded transition-colors"
+                                        title="Aprobar">
                                         <i data-lucide="check" class="w-4 h-4"></i>
                                     </button>
-                                    <button onclick="updateProStatus({{ pro.id }}, 'rejected', this)" class="p-2 text-rose-600 hover:bg-rose-50 rounded transition-colors" title="Rechazar">
+                                    <button onclick="updateProStatus({{ pro.id }}, 'rejected', this)"
+                                        class="p-2 text-rose-600 hover:bg-rose-50 rounded transition-colors"
+                                        title="Rechazar">
                                         <i data-lucide="x" class="w-4 h-4"></i>
                                     </button>
                                 </div>
                                 {% else %}
-                                <span class="text-[10px] text-midnight/20 font-bold uppercase tracking-widest">Sin acciones</span>
+                                <span class="text-[10px] text-midnight/20 font-bold uppercase tracking-widest">Sin
+                                    acciones</span>
                                 {% endif %}
                             </td>
                         </tr>
@@ -80,7 +91,8 @@
                     {% for entry in audit_log %}
                     <div class="p-3 bg-white border border-midnight/5 rounded shadow-sm space-y-2 audit-entry">
                         <div class="flex justify-between items-start">
-                            <span class="text-[9px] font-bold uppercase tracking-tighter {% if entry.action == 'Aprobación' %}text-emerald-600{% else %}text-rose-600{% endif %}">
+                            <span
+                                class="text-[9px] font-bold uppercase tracking-tighter {% if entry.action == 'Aprobación' %}text-emerald-600{% else %}text-rose-600{% endif %}">
                                 {{ entry.action }}
                             </span>
                             <span class="text-[8px] text-midnight/30 font-mono">{{ entry.timestamp }}</span>
@@ -96,7 +108,8 @@
                     {% endfor %}
                 </div>
                 <div class="p-3 bg-paper-dark border-t border-midnight/5 text-center">
-                    <p class="text-[8px] text-midnight/30 uppercase tracking-widest font-bold">Fin del registro reciente</p>
+                    <p class="text-[8px] text-midnight/30 uppercase tracking-widest font-bold">Fin del registro reciente
+                    </p>
                 </div>
             </div>
         </div>
