@@ -112,6 +112,10 @@
                         <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Ascensor</p>
                         <p class="text-sm text-midnight">{{ lead.elevator or 'No especificado' }}</p>
                     </div>
+                    <div>
+                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Piscina Comunitaria</p>
+                        <p class="text-sm text-midnight">{{ lead.community_pool or 'No especificado' }}</p>
+                    </div>
                 </div>
             </div>
             {% elif lead.property_type == 'casa' %}

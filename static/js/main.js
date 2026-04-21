@@ -110,6 +110,7 @@ function initUserForm() {
 
     selectPropertyType('departamento');
     initZoneAutocomplete();
+    initArchitecturalStyleAutocomplete();
     initBudgetPopup();
 
     if (form) {
@@ -212,6 +213,49 @@ function selectPropertyType(propertyType) {
         houseBtn.classList.toggle('bg-paper-dark', propertyType !== 'casa');
         houseBtn.classList.toggle('text-midnight', propertyType !== 'casa');
     }
+
+    // Control de Piscina Infinity (solo para casas)
+    const poolCheckbox = document.getElementById('pool-checkbox');
+    const infinityPoolLabel = document.getElementById('infinity-pool-label');
+    const infinityPoolCheckbox = document.getElementById('infinity-pool-checkbox');
+
+    if (propertyType === 'casa' && poolCheckbox && infinityPoolLabel && infinityPoolCheckbox) {
+        // Agregar event listener al checkbox de piscina
+        poolCheckbox.removeEventListener('change', toggleInfinityPool); // Remover listeners previos
+        poolCheckbox.addEventListener('change', toggleInfinityPool);
+    } else if (infinityPoolLabel && infinityPoolCheckbox) {
+        // Ocultar piscina infinity si no es casa
+        infinityPoolLabel.classList.add('hidden');
+        infinityPoolCheckbox.disabled = true;
+        infinityPoolCheckbox.checked = false;
+    }
+}
+
+/**
+ * Controla la visibilidad y habilitación de la opción Piscina Infinity
+ * Solo se muestra si está seleccionada la opción "¿Tiene piscina?"
+ */
+function toggleInfinityPool() {
+    const poolCheckbox = document.getElementById('pool-checkbox');
+    const infinityPoolLabel = document.getElementById('infinity-pool-label');
+    const infinityPoolCheckbox = document.getElementById('infinity-pool-checkbox');
+
+    if (!poolCheckbox || !infinityPoolLabel || !infinityPoolCheckbox) return;
+
+    if (poolCheckbox.checked) {
+        // Mostrar y habilitar Piscina Infinity
+        infinityPoolLabel.classList.remove('hidden');
+        infinityPoolLabel.classList.remove('opacity-50');
+        infinityPoolLabel.classList.remove('cursor-not-allowed');
+        infinityPoolCheckbox.disabled = false;
+    } else {
+        // Ocultar y deshabilitar Piscina Infinity
+        infinityPoolLabel.classList.add('hidden');
+        infinityPoolLabel.classList.add('opacity-50');
+        infinityPoolLabel.classList.add('cursor-not-allowed');
+        infinityPoolCheckbox.disabled = true;
+        infinityPoolCheckbox.checked = false;
+    }
 }
 
 const CITY_SUGGESTIONS = [
@@ -227,6 +271,29 @@ const CITY_SUGGESTIONS = [
     { city: 'Lisboa', country: 'Portugal' },
     { city: 'Santiago', country: 'Chile' },
     { city: 'Punta del Este', country: 'Uruguay' }
+];
+
+const ARCHITECTURAL_STYLES = [
+    'Moderno',
+    'Clásico',
+    'Minimalista',
+    'Industrial',
+    'Rústico',
+    'Contemporáneo',
+    'Vanguardista',
+    'Tradicional',
+    'Mediterráneo',
+    'Nórdico',
+    'Colonial',
+    'Art Decó',
+    'Bauhaus',
+    'Orgánico',
+    'High-Tech',
+    'Neoclásico',
+    'Gótico',
+    'Barroco',
+    'Renacentista',
+    'Otro'
 ];
 
 function initZoneAutocomplete() {
@@ -271,6 +338,52 @@ function initZoneAutocomplete() {
         const target = event.target.closest('li[data-value]');
         if (!target) return;
         zoneInput.value = target.getAttribute('data-value');
+        suggestions.classList.add('hidden');
+    });
+}
+
+function initArchitecturalStyleAutocomplete() {
+    const styleInput = document.getElementById('architectural-style-input');
+    const suggestions = document.getElementById('architectural-style-suggestions');
+
+    if (!styleInput || !suggestions) return;
+
+    const renderSuggestions = (items) => {
+        if (!items.length) {
+            suggestions.innerHTML = '<li class="px-4 py-3 text-sm text-midnight/60">Sin coincidencias</li>';
+            suggestions.classList.remove('hidden');
+            return;
+        }
+
+        suggestions.innerHTML = items.map(item => {
+            return `<li class="cursor-pointer px-4 py-3 border-b border-slate-100 hover:bg-slate-50" data-value="${item}">
+                        <strong class="text-midnight">${item}</strong>
+                    </li>`;
+        }).join('');
+        suggestions.classList.remove('hidden');
+    };
+
+    const update = () => {
+        const query = styleInput.value.trim().toLowerCase();
+        const items = query.length === 0
+            ? ARCHITECTURAL_STYLES.slice(0, 5)
+            : ARCHITECTURAL_STYLES.filter(item => item.toLowerCase().includes(query));
+        renderSuggestions(items);
+    };
+
+    styleInput.addEventListener('input', update);
+    styleInput.addEventListener('focus', update);
+
+    document.addEventListener('click', (event) => {
+        if (!suggestions.contains(event.target) && event.target !== styleInput) {
+            suggestions.classList.add('hidden');
+        }
+    });
+
+    suggestions.addEventListener('click', (event) => {
+        const target = event.target.closest('li[data-value]');
+        if (!target) return;
+        styleInput.value = target.getAttribute('data-value');
         suggestions.classList.add('hidden');
     });
 }
