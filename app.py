@@ -44,11 +44,18 @@ def init_db():
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT NOT NULL UNIQUE,
+                email TEXT NOT NULL DEFAULT '',
                 hash TEXT NOT NULL,
                 role TEXT NOT NULL DEFAULT 'client'
             )
         ''')
         
+        # Actualizar esquemas antiguos sin la columna email
+        cursor.execute('PRAGMA table_info(users)')
+        user_columns = [row[1] for row in cursor.fetchall()]
+        if 'email' not in user_columns:
+            cursor.execute("ALTER TABLE users ADD COLUMN email TEXT NOT NULL DEFAULT ''")
+
         # Tabla de Leads
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS leads (
@@ -80,7 +87,12 @@ def init_db():
             ('elevator', "TEXT DEFAULT ''"),
             ('land_area', "INTEGER DEFAULT 0"),
             ('built_area', "INTEGER DEFAULT 0"),
-            ('pool', "TEXT DEFAULT ''")
+            ('pool', "TEXT DEFAULT ''"),
+            ('architectural_style', "TEXT DEFAULT ''"),
+            ('bedrooms', "INTEGER DEFAULT 0"),
+            ('bathrooms', "INTEGER DEFAULT 0"),
+            ('total_area', "INTEGER DEFAULT 0"),
+            ('amenities', "TEXT DEFAULT ''")
         ]
         for column, column_type in schema_updates:
             if column not in existing_columns:
@@ -109,6 +121,7 @@ def init_db():
         ''')
         
         # Insertar datos de prueba si las tablas están vacías
+        """
         cursor.execute('SELECT COUNT(*) FROM leads')
         if cursor.fetchone()[0] == 0:
             sample_leads = [
@@ -126,12 +139,12 @@ def init_db():
                 ("Estudio Loft Design", "COAM-5521", "Interiorismo", "pending")
             ]
             cursor.executemany('INSERT INTO professionals (name, license, specialty, status) VALUES (?, ?, ?, ?)', sample_pros)
-          
+        """
         # CREAMOS EL ADMIN POR DEFECTO (Ahora con su rol)
         cursor.execute('SELECT COUNT(*) FROM users')
         if cursor.fetchone()[0] == 0:
-            cursor.execute('INSERT INTO users (username, hash, role) VALUES (?, ?, ?)', 
-                          ('admin', generate_password_hash('admin123'), 'admin'))
+            cursor.execute('INSERT INTO users (username, email, hash, role) VALUES (?, ?, ?, ?)', 
+                          ('admin', 'admin@archestate.local', generate_password_hash('admin123'), 'admin'))
         conn.commit()
         conn.close()
 
@@ -165,7 +178,7 @@ def admin_required(f):
         conn.close()
         
         if not user or user['role'] != 'admin':
-            flash('Acceso restringido: solo administradores pueden ingresar al panel de administración.')
+            flash('Acceso restringido: solo administradores pueden ingresar al panel de administración.', 'error')
             return redirect(url_for('index'))
         
         return f(*args, **kwargs)
@@ -187,7 +200,7 @@ def professional_required(f):
         conn.close()
         
         if not user or user['role'] != 'professional':
-            flash('Acceso denegado. Esta sección es solo para profesionales.')
+            flash('Acceso denegado. Esta sección es solo para profesionales.', 'error')
             return redirect(url_for('index'))
         
         return f(*args, **kwargs)
@@ -368,6 +381,7 @@ def admin_view():
 def register():
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
+        email = request.form.get('email', '').strip()
         password = request.form.get('password', '').strip()
         raw_role = request.form.get('role', 'client')
         license_number = request.form.get('license', '').strip()
@@ -375,6 +389,14 @@ def register():
         # ✅ VALIDACIÓN DE CAMPOS OBLIGATORIOS
         if not username:
             flash('El nombre de usuario es requerido.')
+            return redirect(url_for('register'))
+
+        if not email:
+            flash('El email es requerido.')
+            return redirect(url_for('register'))
+
+        if not is_valid_email(email):
+            flash('El email no tiene un formato válido.')
             return redirect(url_for('register'))
         
         if not password or len(password) < 6:
@@ -401,9 +423,9 @@ def register():
 
         conn = get_db_connection()
         try:
-            # 1. Crear usuario (ahora usando el 'role' validado y seguro)
-            cursor = conn.execute('INSERT INTO users (username, hash, role) VALUES (?, ?, ?)', 
-                                 (username, generate_password_hash(password), role))
+            # 1. Crear usuario con email separado y rol validado
+            cursor = conn.execute('INSERT INTO users (username, email, hash, role) VALUES (?, ?, ?, ?)', 
+                                 (username, email, generate_password_hash(password), role))
             
             # 2. Si es profesional, usar su matrícula real
             if role == 'professional':
@@ -443,6 +465,7 @@ def login():
             session.clear()
             session['user_id'] = user['id']
             session['username'] = user['username']
+            session['email'] = user['email']
             session['role'] = user['role']  # Guardar el rol en la sesión
             
             # Redirigir según el rol del usuario
@@ -489,16 +512,36 @@ def submit_lead():
     if not user:
         conn.close()
         return jsonify({"status": "error", "message": "Sesión no válida"}), 401
-    
+
+    # Usamos el email en sesión o el email enviado por el formulario.
+    email = session.get('email') or data.get('email', '')
+    if not email or not is_valid_email(email):
+        conn.close()
+        return jsonify({"status": "error", "message": "Email inválido o no proporcionado."}), 400
+
+    # Validación de área: no permitir más metros construidos que de terreno para casas
+    property_type = data.get('property_type', 'departamento')
+    try:
+        land_area = int(data.get('land_area') or 0)
+        built_area = int(data.get('built_area') or 0)
+    except (ValueError, TypeError):
+        land_area = 0
+        built_area = 0
+
+    if property_type == 'casa' and built_area > land_area:
+        conn.close()
+        return jsonify({"status": "error", "message": "Los metros construidos no pueden ser mayores que los metros de terreno."}), 400
+
     # --- GUARDADO EN BASE DE DATOS ---
     try:
         conn.execute('''
             INSERT INTO leads (
                 type, property_type, zone, budget, currency, 
                 phone, email, floor_block, usable_m2, elevator, 
-                land_area, built_area, pool
+                land_area, built_area, pool, architectural_style,
+                bedrooms, bathrooms, total_area, amenities
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             data.get('type'),
             data.get('property_type', 'departamento'),
@@ -506,13 +549,18 @@ def submit_lead():
             data.get('budget'),
             data.get('currency', 'ARG'),
             data.get('phone'),
-            data.get('email'),
+            email,
             data.get('floor_block', ''),
             data.get('usable_m2', 0),
             data.get('elevator', ''),
             data.get('land_area', 0),
             data.get('built_area', 0),
-            data.get('pool', '')
+            data.get('pool', ''),
+            data.get('architectural_style', ''),
+            data.get('bedrooms', 0),
+            data.get('bathrooms', 0),
+            data.get('total_area', 0),
+            data.get('amenities', '')
         ))
         conn.commit()
         conn.close()
@@ -573,6 +621,15 @@ def export_leads_csv():
             yield data.getvalue()
             data.seek(0)
             data.truncate(0)
+
+    filename = f"leads_archestate_{datetime.now().strftime('%Y%m%d_%H%M')}.csv"
+    return Response(
+        generate(),
+        mimetype='text/csv',
+        headers={
+            'Content-Disposition': f'attachment; filename="{filename}"'
+        }
+    )
 
 @app.route('/api/leads/export/xlsx')
 @professional_required
@@ -683,62 +740,150 @@ def download_lead_pdf(lead_id):
         return jsonify({"error": "Lead no encontrado"}), 404
 
     def safe_text(value):
+        """Convert values to text and remove unsupported Unicode characters"""
         if value is None:
             return ''
-        return str(value).replace('€', 'EUR').replace('—', '-').replace('–', '-')
+        text = str(value)
+        # Replace special characters not supported by FPDF
+        replacements = {
+            '€': 'EUR',
+            '£': 'GBP',
+            '¥': 'JPY',
+            '—': '-',
+            '–': '-',
+            '•': '-',
+            '√': 'sqrt',
+            '×': 'x',
+            '÷': '/',
+            '™': 'TM',
+            '©': '(c)',
+            '®': '(R)',
+            '…': '...',
+            'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u',
+            'à': 'a', 'è': 'e', 'ì': 'i', 'ò': 'o', 'ù': 'u',
+            'ä': 'a', 'ë': 'e', 'ï': 'i', 'ö': 'o', 'ü': 'u',
+            'ã': 'a', 'õ': 'o', 'ñ': 'n',
+            'Á': 'A', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U',
+            'À': 'A', 'È': 'E', 'Ì': 'I', 'Ò': 'O', 'Ù': 'U',
+            'Ä': 'A', 'Ë': 'E', 'Ï': 'I', 'Ö': 'O', 'Ü': 'U',
+            'Ã': 'A', 'Õ': 'O', 'Ñ': 'N',
+            'ç': 'c', 'Ç': 'C',
+            'ß': 'ss',
+            '°': 'deg',
+            '²': '2', '³': '3',
+        }
+        for old, new in replacements.items():
+            text = text.replace(old, new)
+        # Remove any remaining non-ASCII characters
+        text = ''.join(char if ord(char) < 128 else '?' for char in text)
+        return text
 
     pdf = FPDF()
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
 
-    # Título
-    pdf.set_font('Helvetica', 'B', 16)
-    pdf.cell(0, 10, 'Detalle de Lead ArchEstate', ln=True, align='C')
-    pdf.ln(6)
+    # Definir colores (midnight: #000410, gold: #735A3A)
+    midnight = (0, 4, 16)  # RGB aproximado
+    gold = (115, 90, 58)
 
-    # Contenido (Cambiamos multi_cell por cell)
-    pdf.set_font('Helvetica', '', 12)
-    
-    # El parámetro ln=True hace que baje a la siguiente línea automáticamente
-    pdf.cell(0, 8, f"ID Pedido: {safe_text(lead['id'])}", ln=True)
-    pdf.cell(0, 8, f"Tipo de Operación: {safe_text(lead['type'])}", ln=True)
-    pdf.cell(0, 8, f"Tipo de Propiedad: {safe_text(lead['property_type']).capitalize()}", ln=True)
-    pdf.cell(0, 8, f"Zona: {safe_text(lead['zone'])}", ln=True)
-    pdf.cell(0, 8, f"Presupuesto: {safe_text(lead['budget'])} ({safe_text(lead['currency'])})", ln=True)
-    pdf.cell(0, 8, f"Teléfono: {safe_text(lead['phone'])}", ln=True)
-    pdf.cell(0, 8, f"Email: {safe_text(lead['email'])}", ln=True)
+    # Título principal
+    pdf.set_font('Times', 'BI', 20)  # Serif italic bold
+    pdf.set_text_color(*midnight)
+    pdf.cell(0, 15, 'ArchEstate - Detalle de Lead', ln=True, align='C')
+    pdf.ln(5)
 
-    if safe_text(lead['property_type']).lower() == 'departamento':
-        pdf.cell(0, 8, f"Piso / Bloque: {safe_text(lead['floor_block'])}", ln=True)
-        pdf.cell(0, 8, f"Metros útiles: {safe_text(lead['usable_m2'])}", ln=True)
-        pdf.cell(0, 8, f"Ascensor: {safe_text(lead['elevator'])}", ln=True)
+    # Subtítulo
+    pdf.set_font('Helvetica', '', 10)
+    pdf.set_text_color(100, 100, 100)  # Gris
+    pdf.cell(0, 8, f'Lead #{lead["id"]} - Información completa enviada por el cliente', ln=True, align='C')
+    pdf.ln(10)
+
+    # Función para sección con fondo
+    def section_header(title):
+        pdf.set_fill_color(*gold)
+        pdf.set_text_color(255, 255, 255)
+        pdf.set_font('Helvetica', 'B', 12)
+        pdf.cell(0, 8, title.upper(), ln=True, fill=True)
+        pdf.set_text_color(*midnight)
+        pdf.set_font('Helvetica', '', 10)
+        pdf.ln(2)
+
+    # Sección: Información Principal
+    section_header('Tipo de Operación')
+    pdf.cell(0, 6, safe_text(lead['type']), ln=True)
+
+    section_header('Zona Geográfica')
+    pdf.cell(0, 6, safe_text(lead['zone']), ln=True)
+
+    section_header('Presupuesto')
+    budget_symbol = 'US$' if lead['currency'] == 'USD' else '€' if lead['currency'] == 'EUR' else '$'
+    pdf.cell(0, 6, f"{budget_symbol}{safe_text(lead['budget'])}", ln=True)
+
+    section_header('Estilo Arquitectónico')
+    pdf.cell(0, 6, safe_text(lead['architectural_style']) or 'No especificado', ln=True)
+
+    # Contacto
+    section_header('Contacto Directo')
+    pdf.cell(0, 6, f"Email: {safe_text(lead['email'])}", ln=True)
+    pdf.cell(0, 6, f"Telefono: {safe_text(lead['phone'])}", ln=True)
+
+    section_header('Registrado')
+    pdf.cell(0, 6, safe_text(convert_to_argentina_time(lead['timestamp'])), ln=True)
+    pdf.ln(5)
+
+    # Sección: Especificaciones Técnicas
+    section_header('Especificaciones Técnicas')
+
+    # Grid-like for bedrooms, bathrooms, etc.
+    pdf.set_font('Helvetica', 'B', 10)
+    pdf.cell(60, 8, 'Habitaciones:', border=1)
+    pdf.cell(0, 8, safe_text(lead['bedrooms']) if lead['bedrooms'] else '-', ln=True, border=1)
+
+    pdf.cell(60, 8, 'Baños:', border=1)
+    pdf.cell(0, 8, safe_text(lead['bathrooms']) if lead['bathrooms'] else '-', ln=True, border=1)
+
+    if safe_text(lead['property_type']).lower() == 'casa':
+        pdf.cell(60, 8, 'Metros de Terreno:', border=1)
+        pdf.cell(0, 8, f"{safe_text(lead['land_area'])} m²" if lead['land_area'] else '-', ln=True, border=1)
     else:
-        pdf.cell(0, 8, f"Superficie de terreno: {safe_text(lead['land_area'])} m²", ln=True)
-        pdf.cell(0, 8, f"Superficie construida: {safe_text(lead['built_area'])} m²", ln=True)
-        pdf.cell(0, 8, f"Piscina: {safe_text(lead['pool'])}", ln=True)
+        pdf.cell(60, 8, 'Metros Útiles:', border=1)
+        pdf.cell(0, 8, f"{safe_text(lead['usable_m2'])} m²" if lead['usable_m2'] else '-', ln=True, border=1)
 
-    pdf.cell(0, 8, f"Fecha registro: {safe_text(convert_to_argentina_time(lead['timestamp']))}", ln=True)
+    pdf.ln(5)
+
+    # Extras y Comodidades
+    section_header('Extras y Comodidades')
+    if lead['amenities']:
+        for amenity in safe_text(lead['amenities']).split(','):
+            pdf.cell(0, 6, f"- {amenity.strip()}", ln=True)
+    else:
+        pdf.cell(0, 6, 'No especificadas', ln=True)
+
+    # Detalles específicos por tipo
+    if safe_text(lead['property_type']).lower() == 'departamento':
+        section_header('Detalles del Departamento')
+        pdf.cell(0, 6, f"Piso / Bloque: {safe_text(lead['floor_block']) or 'No especificado'}", ln=True)
+        pdf.cell(0, 6, f"Metros Útiles: {safe_text(lead['usable_m2']) if lead['usable_m2'] else 'No especificado'} m²", ln=True)
+        pdf.cell(0, 6, f"Ascensor: {safe_text(lead['elevator']) or 'No especificado'}", ln=True)
+    else:
+        section_header('Detalles de la Propiedad')
+        pdf.cell(0, 6, f"Superficie de Terreno: {safe_text(lead['land_area']) if lead['land_area'] else 'No especificado'} m²", ln=True)
+        pdf.cell(0, 6, f"Superficie Construida: {safe_text(lead['built_area']) if lead['built_area'] else 'No especificado'} m²", ln=True)
+        pdf.cell(0, 6, f"Piscina: {safe_text(lead['pool']) or 'No especificado'}", ln=True)
 
     # Generar el PDF
     pdf_output = pdf.output(dest='S')
     
-    # 1. Asegurarnos de que sea sí o sí formato 'bytes' puro
-    if isinstance(pdf_output, str):
-        pdf_bytes = pdf_output.encode('latin-1')
-    else:
-        pdf_bytes = bytes(pdf_output) # Convertir bytearray a bytes puros
-
-    # 2. Crear un archivo virtual en la memoria (Buffer)
-    buffer = io.BytesIO(pdf_bytes)
-    buffer.seek(0) # Volver el puntero al inicio del archivo virtual
+    # Crear buffer con los bytes del PDF
+    buffer = io.BytesIO(pdf_output)
+    buffer.seek(0)
     
     filename = f"lead_{lead['id']}.pdf"
-
-    # 3. Usar send_file de Flask, que calcula el Content-Length automáticamente y sin errores
+    
     return send_file(
         buffer,
         as_attachment=True,
-        download_name=filename, # Si usan una versión vieja de Flask, cambien download_name por attachment_filename
+        download_name=filename,
         mimetype='application/pdf'
     )
 
