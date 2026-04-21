@@ -28,7 +28,9 @@
             <a href="{{ url_for('index') }}" class="text-xl font-serif italic text-white hover:text-gold transition-colors">ArchEstate</a>
             
             <div class="hidden md:flex gap-6">
+                {% if session.get('role') != 'professional' %}
                 <a href="{{ url_for('user_view') }}" class="text-[10px] uppercase tracking-widest font-bold text-white/60 hover:text-gold transition-colors">Solicitud</a>
+                {% endif %}
                 <a href="{{ url_for('professional_view') }}" class="text-[10px] uppercase tracking-widest font-bold text-white/60 hover:text-gold transition-colors">Profesional</a>
                 
                 {% if session.get('role') == 'admin' %}
@@ -66,13 +68,23 @@
         </div>
     </nav>
 
-    {% with messages = get_flashed_messages() %}
+    {% with messages = get_flashed_messages(with_categories=True) %}
     {% if messages %}
     <div class="pt-24 px-6 max-w-7xl mx-auto w-full">
-        {% for message in messages %}
+        {% for category, message in messages %}
+            {% if category == 'success' %}
+        <div class="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 shadow-sm">
+            {{ message }}
+        </div>
+            {% elif category == 'error' %}
         <div class="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 shadow-sm">
             {{ message }}
         </div>
+            {% else %}
+        <div class="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700 shadow-sm">
+            {{ message }}
+        </div>
+            {% endif %}
         {% endfor %}
     </div>
     {% endif %}

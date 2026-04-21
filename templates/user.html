@@ -91,7 +91,10 @@
                         <!-- Estilo Arquitectónico -->
                         <div>
                             <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Estilo Arquitectónico</label>
-                            <input name="architectural_style" type="text" placeholder="Cualquier Estilo" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                            <div class="relative">
+                                <input id="architectural-style-input" name="architectural_style" type="text" placeholder="Ej. Moderno, Clásico, Minimalista..." class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                <ul id="architectural-style-suggestions" class="hidden absolute top-full left-0 right-0 bg-white border border-slate-200 rounded shadow-md z-10"></ul>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -135,6 +138,10 @@
                                         <input type="checkbox" name="elevator" value="sí" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
                                         <span class="text-sm text-midnight">¿Tiene ascensor?</span>
                                     </label>
+                                    <label class="flex items-center gap-3 cursor-pointer">
+                                        <input type="checkbox" name="community_pool" value="sí" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
+                                        <span class="text-sm text-midnight">¿Tiene piscina comunitaria?</span>
+                                    </label>
                                 </div>
                             </div>
                         </div>
@@ -155,7 +162,7 @@
                                 </div>
                                 <div class="grid grid-cols-1 gap-6 mt-6">
                                     <label class="flex items-center gap-3 cursor-pointer">
-                                        <input type="checkbox" name="pool" value="sí" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
+                                        <input id="pool-checkbox" type="checkbox" name="pool" value="sí" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
                                         <span class="text-sm text-midnight">¿Tiene piscina?</span>
                                     </label>
                                 </div>
@@ -166,8 +173,8 @@
                         <div>
                             <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">Extras y Comodidades</label>
                             <div class="grid grid-cols-2 gap-4">
-                                <label class="flex items-center gap-3">
-                                    <input type="checkbox" name="amenities_values" value="Piscina Infinity" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
+                                <label id="infinity-pool-label" class="flex items-center gap-3 pool-dependent hidden opacity-50 cursor-not-allowed">
+                                    <input id="infinity-pool-checkbox" type="checkbox" name="amenities_values" value="Piscina Infinity" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0" disabled>
                                     <span class="text-sm text-midnight">Piscina Infinity</span>
                                 </label>
                                 <label class="flex items-center gap-3">
@@ -192,7 +199,12 @@
                                 </label>
                             </div>
                         </div>
-                    </div>
+
+                        <!-- Características Adicionales -->
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">Características Adicionales</label>
+                            <textarea name="additional_features" placeholder="Describe cualquier característica específica que estés buscando (ej: orientación sur, vistas al mar, antigüedad de la construcción, estilo arquitectónico particular, etc.)" rows="4" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm resize-none"></textarea>
+                        </div>
                 </section>
 
                 <!-- 03. IDENTIDAD & CONTACTO -->

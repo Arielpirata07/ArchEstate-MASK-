@@ -120,26 +120,6 @@ def init_db():
             )
         ''')
         
-        # Insertar datos de prueba si las tablas están vacías
-        """
-        cursor.execute('SELECT COUNT(*) FROM leads')
-        if cursor.fetchone()[0] == 0:
-            sample_leads = [
-                ("Construcción Villa", "casa", "Marbella, Málaga", "1.2M - 1.5M", "EUR", "+34 612 345 678", "cliente1@ejemplo.com", "", 0, "", 1400, 800, "sí"),
-                ("Compra Penthouse", "departamento", "Barcelona, Eixample", "850k - 1M", "EUR", "+34 699 887 766", "cliente2@ejemplo.com", "5º A", 120, "sí", 0, 0, ""),
-                ("Remodelación Mansión", "casa", "Madrid, La Moraleja", "500k+", "EUR", "+34 655 443 322", "cliente3@ejemplo.com", "", 0, "", 2300, 1100, "no")
-            ]
-            cursor.executemany('INSERT INTO leads (type, property_type, zone, budget, currency, phone, email, floor_block, usable_m2, elevator, land_area, built_area, pool) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', sample_leads)
-
-        cursor.execute('SELECT COUNT(*) FROM professionals')
-        if cursor.fetchone()[0] == 0:
-            sample_pros = [
-                ("Arq. Carlos Méndez", "COAM-12948", "Arquitectura Residencial", "approved"),
-                ("Inmobiliaria Prime S.L.", "API-4402", "Lujo & Off-market", "approved"),
-                ("Estudio Loft Design", "COAM-5521", "Interiorismo", "pending")
-            ]
-            cursor.executemany('INSERT INTO professionals (name, license, specialty, status) VALUES (?, ?, ?, ?)', sample_pros)
-        """
         # CREAMOS EL ADMIN POR DEFECTO (Ahora con su rol)
         cursor.execute('SELECT COUNT(*) FROM users')
         if cursor.fetchone()[0] == 0:
@@ -290,7 +270,7 @@ def user_view():
     conn.close()
     
     if user and user['role'] == 'professional':
-        flash('Acceso denegado. Los profesionales no pueden acceder a esta sección.')
+        flash('Acceso denegado. Los profesionales no pueden acceder a esta sección.', 'error')
         return redirect(url_for('index'))
     
     return render_template('user.html')
@@ -388,26 +368,26 @@ def register():
 
         # ✅ VALIDACIÓN DE CAMPOS OBLIGATORIOS
         if not username:
-            flash('El nombre de usuario es requerido.')
+            flash('El nombre de usuario es requerido.', 'error')
             return redirect(url_for('register'))
 
         if not email:
-            flash('El email es requerido.')
+            flash('El email es requerido.', 'error')
             return redirect(url_for('register'))
 
         if not is_valid_email(email):
-            flash('El email no tiene un formato válido.')
+            flash('El email no tiene un formato válido.', 'error')
             return redirect(url_for('register'))
         
         if not password or len(password) < 6:
-            flash('La contraseña debe tener al menos 6 caracteres.')
+            flash('La contraseña debe tener al menos 6 caracteres.', 'error')
             return redirect(url_for('register'))
         
         # 🛡️ VALIDACIÓN DE SEGURIDAD CRÍTICA (Backend)
         # Detectar intentos de inyectar 'admin' o roles no autorizados
         if raw_role == 'admin':
             print(f"⚠️ ALERTA DE SEGURIDAD: Intento de registro ilegal como admin por {username}")
-            flash('Acceso denegado. Solo administradores pueden asignarse ese rol.')
+            flash('Acceso denegado. Solo administradores pueden asignarse ese rol.', 'error')
             return redirect(url_for('register'))
         
         # Solo permitimos roles explícitamente definidos
@@ -418,7 +398,7 @@ def register():
         
         # ✅ VALIDACIÓN: Profesional requiere matrícula
         if role == 'professional' and not license_number:
-            flash('El número de matrícula es requerido para profesionales.')
+            flash('El número de matrícula es requerido para profesionales.', 'error')
             return redirect(url_for('register'))
 
         conn = get_db_connection()
@@ -433,15 +413,15 @@ def register():
                              (username, license_number, 'General', 'pending'))
             
             conn.commit()
-            flash('Registro exitoso. Por favor, inicia sesión.')
+            flash('Registro exitoso. Por favor, inicia sesión.', 'success')
             return redirect(url_for('login'))
 
         except sqlite3.IntegrityError as e:
-            flash('El nombre de usuario ya está en uso. Por favor, elige otro.')
+            flash('El nombre de usuario ya está en uso. Por favor, elige otro.', 'error')
             return redirect(url_for('register'))
         except Exception as e:
             print(f"Error al registrar usuario: {e}")
-            flash('Error al registrar. Por favor, intenta de nuevo.')
+            flash('Error al registrar. Por favor, intenta de nuevo.', 'error')
             return redirect(url_for('register'))
         finally:
             conn.close()
@@ -477,7 +457,7 @@ def login():
                 return redirect(url_for('user_view'))
         
         # Si falla el login
-        flash('Credenciales inválidas. Intente de nuevo.')
+        flash('Credenciales inválidas. Intente de nuevo.', 'error')
         return redirect(url_for('login'))
 
     return render_template('login.html')
