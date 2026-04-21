@@ -118,6 +118,18 @@ function initUserForm() {
             const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
 
+            // Recolectar amenities seleccionadas
+            const amenitiesCheckboxes = document.querySelectorAll('input[name="amenities_values"]:checked');
+            data.amenities = Array.from(amenitiesCheckboxes).map(cb => cb.value).join(', ');
+
+            // Validación de área para casas
+            const landArea = parseInt(data.land_area || '0', 10);
+            const builtArea = parseInt(data.built_area || '0', 10);
+            if (data.property_type === 'casa' && builtArea > landArea) {
+                showToast('Los metros construidos no pueden ser mayores que los metros de terreno.', 'error');
+                return;
+            }
+
             // Validación rápida en cliente
             if (!validateEmail(data.email)) return;
 

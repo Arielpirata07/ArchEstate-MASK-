@@ -7,251 +7,231 @@
 {% endblock %}
 
 {% block content %}
-<div class="max-w-xl mx-auto w-full">
-    <div class="bg-white p-10 rounded-lg shadow-2xl border-t-4 border-gold">
-        <h2 class="text-3xl font-serif mb-8 text-center">Solicitud de <span class="serif-italic">Propiedad</span></h2>
-        
-        {# 🔔 NOTIFICACIÓN DE ESTADO - USUARIO LOGUEADO #}
-        <div class="mb-6 p-4 rounded bg-emerald-50 border border-emerald-200 text-xs text-emerald-700 font-bold uppercase tracking-widest flex items-center gap-3">
-            <i data-lucide="check-circle" class="w-5 h-5"></i>
-            <span>Conectado como: <strong>{{ session.get('username') }}</strong></span>
+<div class="grid grid-cols-1 lg:grid-cols-2 min-h-[85vh] gap-0">
+    <!-- LADO IZQUIERDO - Oscuro/Midnight -->
+    <div class="bg-gradient-to-br from-midnight via-midnight-light to-midnight text-white p-12 lg:p-16 flex flex-col justify-between">
+        <div class="space-y-6">
+            <div>
+                <h1 class="text-5xl lg:text-6xl font-serif italic mb-4">Define<br/><span class="font-serif italic">Tu Legado</span></h1>
+                <p class="text-lg text-white/70 leading-relaxed">
+                    Iniciamos la búsqueda de su próxima adquisición. Complete los detalles técnicos para que nuestra oficina privada pueda filtrar los activos más exclusivos.
+                </p>
+            </div>
         </div>
         
-        <!-- Formulario de Captura de Leads -->
-        <form id="userForm" class="space-y-6">
-            <div>
-                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Tipo de Propiedad</label>
-                <div class="grid grid-cols-2 gap-3">
-                    <button type="button" id="btn-department" class="property-type-btn inline-flex items-center justify-center rounded border border-midnight/10 bg-white py-3 text-sm font-bold uppercase tracking-widest text-midnight transition-all hover:border-gold hover:text-gold">
-                        Departamento
-                    </button>
-                    <button type="button" id="btn-house" class="property-type-btn inline-flex items-center justify-center rounded border border-midnight/10 bg-paper-dark py-3 text-sm font-bold uppercase tracking-widest text-midnight transition-all hover:border-gold hover:text-gold">
-                        Casa
-                    </button>
-                </div>
-                <input type="hidden" name="property_type" id="property-type-input" value="departamento">
-            </div>
+        <div class="space-y-2">
+            <p class="text-[10px] uppercase tracking-[0.3em] text-gold font-bold">CURATED ASSETS</p>
+            <p class="text-2xl font-serif italic text-white">The Private Ledger</p>
+        </div>
+    </div>
 
-            <div>
-                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Tipo de Operación</label>
-                <select id="operation-select" name="type" class="w-full bg-paper-dark border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 transition-all">
-                    <option>Comprar Propiedad</option>
-                    <option>Construir desde Cero</option>
-                    <option>Remodelación Integral</option>
-                </select>
-            </div>
+    <!-- LADO DERECHO - Blanco/Formulario -->
+    <div class="bg-white p-12 lg:p-16 overflow-y-auto max-h-[85vh]">
+        <div class="max-w-2xl">
+            <!-- Encabezado del formulario -->
+            <h2 class="text-3xl font-serif mb-2">Solicitud de Propiedad</h2>
+            <p class="text-midnight/60 mb-8">Defina los parámetros de su próxima inversión con nuestra oficina privada.</p>
 
-            <div id="department-details" class="space-y-6">
-                <div>
-                    <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Piso / Bloque</label>
-                    <input name="floor_block" type="text" placeholder="Ej. 5º A" class="w-full bg-transparent border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 transition-all">
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Metros útiles</label>
-                        <input name="usable_m2" type="number" min="20" step="1" placeholder="m²" class="w-full bg-transparent border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 transition-all">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">¿Ascensor?</label>
-                        <select name="elevator" class="w-full bg-paper-dark border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 transition-all">
-                            <option value="sí">Sí</option>
-                            <option value="no">No</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+            <form id="userForm" class="space-y-10">
 
-            <div id="house-details" class="hidden space-y-6">
-                <div>
-                    <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Superficie de terreno</label>
-                    <input name="land_area" type="number" min="20" step="1" placeholder="m²" class="w-full bg-transparent border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 transition-all">
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Superficie construida</label>
-                        <input name="built_area" type="number" min="20" step="1" placeholder="m²" class="w-full bg-transparent border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 transition-all">
+                <!-- 01. PARÁMETROS PRINCIPALES -->
+                <section>
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="text-[14px] font-serif italic text-gold">01.</span>
+                        <h3 class="text-lg font-serif italic text-midnight">Parámetros Principales</h3>
                     </div>
-                    <div>
-                        <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Piscina</label>
-                        <select name="pool" class="w-full bg-paper-dark border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 transition-all">
-                            <option value="sí">Sí</option>
-                            <option value="no">No</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
 
-                        {# 🔐 CAMPOS PARA USUARIO LOGUEADO (Solo usuarios autenticados) #}
+                    <!-- Tipo de Propiedad: Departamento vs Casa -->
+                    <div class="mb-8">
+                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">Tipo de Propiedad</label>
+                        <div class="flex gap-3">
+                            <button type="button" id="btn-department" class="flex-1 py-3 px-4 rounded border-2 border-midnight/20 bg-white text-midnight font-semibold transition-all hover:border-gold">
+                                <i data-lucide="building-2" class="w-4 h-4 inline mr-2"></i> Departamento
+                            </button>
+                            <button type="button" id="btn-house" class="flex-1 py-3 px-4 rounded border-2 border-midnight/20 bg-paper-dark text-midnight font-semibold transition-all hover:border-gold">
+                                <i data-lucide="home" class="w-4 h-4 inline mr-2"></i> Casa
+                            </button>
+                        </div>
+                        <input type="hidden" id="property-type-input" name="property_type" value="departamento">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6">
+                        <!-- Tipo de Operación -->
                         <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Nombre de Usuario</label>
-                            <div class="relative">
-                                <i data-lucide="user" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5"></i>
-                                <input name="username" required type="text" 
-                                    value="{{ session.get('username') }}" readonly 
-                                    class="w-full bg-paper-dark/50 border-0 border-b border-midnight/10 py-3 pl-8 text-midnight/50 cursor-not-allowed">
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Tipo de Operación</label>
+                            <select id="operation-select" name="type" required class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                <option value="">Seleccionar</option>
+                                <option>Comprar Propiedad</option>
+                                <option>Remodelación Integral</option>
+                            </select>
+                        </div>
+
+                        <!-- Presupuesto Estimado -->
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Presupuesto Estimado</label>
+                            <div class="flex gap-2">
+                                <select id="budget-currency-select" name="currency" id="currency-hidden" class="w-16 bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 text-sm">
+                                    <option value="ARG">$</option>
+                                    <option value="USD">US$</option>
+                                    <option value="EUR">€</option>
+                                </select>
+                                <input id="budget-hidden" name="budget" type="text" placeholder="1.000.000 +" class="flex-1 bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                             </div>
                         </div>
 
+                        <!-- Zona Geográfica -->
                         <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Email de contacto</label>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Zona Geográfica</label>
                             <div class="relative">
-                                <i data-lucide="mail" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5"></i>
-                                <input name="email" required type="email" 
-                                    value="{{ session.get('email') }}" readonly 
-                                    class="w-full bg-paper-dark/50 border-0 border-b border-midnight/10 py-3 pl-8 text-midnight/50 cursor-not-allowed">
+                                <input id="zone-input" name="zone" type="text" placeholder="Ej. Costa Brava, Madrid Centro..." class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm" required>
+                                <ul id="zone-suggestions" class="hidden absolute top-full left-0 right-0 bg-white border border-slate-200 rounded shadow-md z-10"></ul>
                             </div>
                         </div>
-                        {# Campo oculto para que el backend use realmente los datos de sesión #}
-                        <input type="hidden" name="username" value="{{ session.get('username') }}">
-            
-            <div>
-                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Presupuesto Estimado</label>
-                <button type="button" id="budget-popup-trigger" class="w-full text-center bg-paper-dark border border-midnight/10 rounded py-3 px-4 text-sm font-bold uppercase tracking-widest text-midnight transition-all hover:border-gold hover:text-gold">
-                    Seleccionar presupuesto
-                </button>
-                <input type="hidden" name="budget" id="budget-hidden" value="">
-                <input type="hidden" name="currency" id="currency-hidden" value="ARG">
 
-                <div id="budget-popup" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-                    <div class="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl border border-slate-200">
-                        <div class="flex items-start justify-between mb-5 gap-4">
+                        <!-- Estilo Arquitectónico -->
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Estilo Arquitectónico</label>
+                            <input name="architectural_style" type="text" placeholder="Cualquier Estilo" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 02. ESPECIFICACIONES TÉCNICAS -->
+                <section>
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="text-[14px] font-serif italic text-gold">02.</span>
+                        <h3 class="text-lg font-serif italic text-midnight">Especificaciones Técnicas</h3>
+                    </div>
+
+                    <div class="space-y-6">
+                        <!-- Habitaciones, Baños, Superficie -->
+                        <div class="grid grid-cols-2 gap-6">
                             <div>
-                                <p class="text-xs uppercase tracking-[0.35em] text-midnight/60">Presupuesto estimado</p>
-                                <h3 class="mt-2 text-2xl font-semibold text-midnight" id="budget-popup-title">Ajusta tu rango</h3>
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Habitaciones</label>
+                                <input name="bedrooms" type="number" min="0" placeholder="3" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                             </div>
-                            <button type="button" id="budget-popup-close" class="inline-flex items-center justify-center rounded-full bg-slate-100 p-3 text-midnight transition-all hover:bg-slate-200">
-                                <i data-lucide="x" class="w-4 h-4"></i>
-                            </button>
-                        </div>
-
-                        <div class="space-y-5">
-                            <div class="space-y-3 text-center">
-                                <div class="text-sm text-midnight/70">Rango seleccionado</div>
-                                <div class="text-xl font-semibold text-midnight" id="budget-selected-range">$0 — $150.000.000</div>
-                            </div>
-
-                            <div class="relative py-6">
-                                <div class="budget-slider-track absolute inset-x-0 top-1/2 h-2 -translate-y-1/2 rounded-full bg-slate-200"></div>
-                                <div id="budget-slider-fill" class="absolute top-1/2 h-2 -translate-y-1/2 rounded-full bg-gold"></div>
-                                <input id="budget-min-slider" type="range" min="0" max="150000000" step="10000" value="0" class="budget-range-slider absolute inset-x-0 top-1/2 h-2 appearance-none bg-transparent pointer-events-auto">
-                                <input id="budget-max-slider" type="range" min="0" max="150000000" step="100" value="150000000" class="budget-range-slider absolute inset-x-0 top-1/2 h-2 appearance-none bg-transparent pointer-events-auto">
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-                                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold">
-                                    Mínimo
-                                    <input id="budget-min-input" type="number" min="0" max="150000000" step="100" class="mt-2 w-full rounded-xl border border-slate-200 bg-paper-dark px-3 py-3 text-sm text-midnight focus:border-gold focus:outline-none focus:ring-0" />
-                                </label>
-                                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold">
-                                    Máximo
-                                    <input id="budget-max-input" type="number" min="0" max="150000000" step="100" class="mt-2 w-full rounded-xl border border-slate-200 bg-paper-dark px-3 py-3 text-sm text-midnight focus:border-gold focus:outline-none focus:ring-0" />
-                                </label>
-                                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold">
-                                    Moneda
-                                    <select id="budget-currency-select" class="mt-2 w-full rounded-xl bg-paper-dark border border-slate-200 py-3 px-3 text-sm text-midnight focus:border-gold focus:outline-none focus:ring-0">
-                                        <option value="ARG">Pesos</option>
-                                        <option value="USD">Dólares</option>
-                                        <option value="EUR">Euros</option>
-                                    </select>
-                                </label>
-                            </div>
-
-                            <div class="flex items-center gap-3">
-                                <input type="checkbox" id="budget-unlimited" class="w-4 h-4 text-gold bg-paper-dark border-slate-200 rounded focus:ring-gold focus:ring-2">
-                                <label for="budget-unlimited" class="text-sm text-midnight/70">Presupuesto mayor a 150M</label>
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Baños</label>
+                                <input name="bathrooms" type="number" min="0" placeholder="2" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                             </div>
                         </div>
 
-                        <div class="mt-6 flex items-center justify-between gap-3">
-                            <button type="button" id="budget-reset" class="inline-flex items-center justify-center rounded border border-midnight/10 bg-white px-5 py-3 text-sm font-bold uppercase tracking-widest text-midnight transition-all hover:border-gold hover:text-gold">
-                                Reiniciar
-                            </button>
-                            <button type="button" id="budget-accept" class="inline-flex items-center justify-center rounded bg-gold px-5 py-3 text-sm font-bold uppercase tracking-widest text-white transition-all hover:bg-midnight">
-                                Aceptar
-                            </button>
+                        <!-- DETALLES DE DEPARTAMENTO -->
+                        <div id="department-details" class="space-y-6 hidden">
+                            <div class="border-t border-midnight/10 pt-6">
+                                <h4 class="text-sm font-semibold text-midnight mb-4">Detalles del Departamento</h4>
+                                <div class="grid grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Piso/Bloque</label>
+                                        <input name="floor_block" type="text" placeholder="5º A" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Metros Útiles</label>
+                                        <input name="usable_m2" type="number" min="0" placeholder="120 m²" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 gap-6 mt-6">
+                                    <label class="flex items-center gap-3 cursor-pointer">
+                                        <input type="checkbox" name="elevator" value="sí" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
+                                        <span class="text-sm text-midnight">¿Tiene ascensor?</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- DETALLES DE CASA -->
+                        <div id="house-details" class="space-y-6 hidden">
+                            <div class="border-t border-midnight/10 pt-6">
+                                <h4 class="text-sm font-semibold text-midnight mb-4">Detalles de la Casa</h4>
+                                <div class="grid grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Superficie de Terreno (m²)</label>
+                                        <input name="land_area" type="number" min="0" placeholder="1400 m²" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Superficie Construida (m²)</label>
+                                        <input name="built_area" type="number" min="0" placeholder="800 m²" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 gap-6 mt-6">
+                                    <label class="flex items-center gap-3 cursor-pointer">
+                                        <input type="checkbox" name="pool" value="sí" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
+                                        <span class="text-sm text-midnight">¿Tiene piscina?</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Extras y Comodidades -->
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">Extras y Comodidades</label>
+                            <div class="grid grid-cols-2 gap-4">
+                                <label class="flex items-center gap-3">
+                                    <input type="checkbox" name="amenities_values" value="Piscina Infinity" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
+                                    <span class="text-sm text-midnight">Piscina Infinity</span>
+                                </label>
+                                <label class="flex items-center gap-3">
+                                    <input type="checkbox" name="amenities_values" value="Seguridad 24h" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
+                                    <span class="text-sm text-midnight">Seguridad 24h</span>
+                                </label>
+                                <label class="flex items-center gap-3">
+                                    <input type="checkbox" name="amenities_values" value="Bodega" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
+                                    <span class="text-sm text-midnight">Bodega</span>
+                                </label>
+                                <label class="flex items-center gap-3">
+                                    <input type="checkbox" name="amenities_values" value="Gimnasio Privado" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
+                                    <span class="text-sm text-midnight">Gimnasio Privado</span>
+                                </label>
+                                <label class="flex items-center gap-3">
+                                    <input type="checkbox" name="amenities_values" value="Domotica Avanzada" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
+                                    <span class="text-sm text-midnight">Domótica Avanzada</span>
+                                </label>
+                                <label class="flex items-center gap-3">
+                                    <input type="checkbox" name="amenities_values" value="Helipad" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
+                                    <span class="text-sm text-midnight">Helipad</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
+                </section>
 
-            <div>
-                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Zona de Interés</label>
-                <div class="relative">
-                    <i data-lucide="map-pin" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5"></i>
-                    <input name="zone" type="text" placeholder="e.g. Madrid, Barrio de Salamanca" class="w-full bg-transparent border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all">
-                </div>
-            </div>
+                <!-- 03. IDENTIDAD & CONTACTO -->
+                <section>
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="text-[14px] font-serif italic text-gold">03.</span>
+                        <h3 class="text-lg font-serif italic text-midnight">Identidad & Contacto</h3>
+                    </div>
 
-            <div>
-                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Número de Teléfono</label>
-                <div class="relative">
-                    <i data-lucide="phone" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5"></i>
-                    <input name="phone" required type="tel" placeholder="+34 600 000 000" class="w-full bg-transparent border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all">
-                </div>
-            </div>
+                    <div class="grid grid-cols-2 gap-6">
+                        <!-- Email Profesional -->
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Email Profesional</label>
+                            <input id="email-input" type="email" name="email" value="{{ session.get('email', '') }}" readonly class="w-full bg-white border-0 border-b-2 border-midnight/20 py-2 text-midnight/50 text-sm cursor-not-allowed">
+                        </div>
 
-            <button type="submit" class="w-full bg-gold text-white py-4 rounded font-bold uppercase tracking-widest text-xs hover:bg-midnight transition-all mt-8 flex items-center justify-center gap-2 group">
-                Enviar Solicitud
-                <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
-            </button>
-        </form>
+                        <!-- Teléfono -->
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Teléfono</label>
+                            <input name="phone" type="tel" required placeholder="+34 --- --" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Botón Enviar -->
+                <div class="pt-6">
+                    <button type="submit" class="w-full bg-gold hover:bg-gold/90 text-white py-4 rounded font-bold uppercase tracking-widest text-[11px] transition-all flex items-center justify-center gap-3 group shadow-lg">
+                        Enviar Solicitud
+                        <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                    </button>
+                </div>
+
+                <!-- Nota de privacidad -->
+                <p class="text-[9px] text-midnight/50 text-center border-t border-midnight/10 pt-6">
+                    Al enviar esta solicitud, acepta nuestra política de privacidad para el manejo exclusivo y confidencial de sus datos en <strong>ArchEstate Private Ledger</strong>. Un asesor se contactará en menos de 24 horas.
+                </p>
+            </form>
+        </div>
     </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
-<script>
-/**
- * Manejo de envío de solicitud para usuarios autenticados
- */
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.getElementById('userForm');
-    
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        // Recolectar datos del formulario
-        const formData = new FormData(form);
-        const data = Object.fromEntries(formData);
-        
-        // Estado de carga
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const originalBtnContent = submitBtn.innerHTML;
-        submitBtn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Procesando...`;
-        submitBtn.disabled = true;
-        submitBtn.classList.add('opacity-70');
-        
-        try {
-            const response = await fetch('/api/submit', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data)
-            });
-            
-            const result = await response.json();
-            
-            if (result.status === 'success') {
-                showToast(result.message, 'success');
-                form.reset();
-                setTimeout(() => {
-                    window.location.href = "{{ url_for('index') }}";
-                }, 2000);
-            } else {
-                showToast(result.message, 'error');
-                submitBtn.innerHTML = originalBtnContent;
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('opacity-70');
-            }
-        } catch (error) {
-            showToast('Error al enviar solicitud', 'error');
-            console.error(error);
-            submitBtn.innerHTML = originalBtnContent;
-            submitBtn.disabled = false;
-            submitBtn.classList.remove('opacity-70');
-        }
-    });
-});
-</script>
 {% endblock %}
