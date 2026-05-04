@@ -31,7 +31,9 @@
                 {% if session.get('role') != 'professional' %}
                 <a href="{{ url_for('user_view') }}" class="text-[10px] uppercase tracking-widest font-bold text-white/60 hover:text-gold transition-colors">Solicitud</a>
                 {% endif %}
+                {% if not session.get('user_id') %}
                 <a href="{{ url_for('professional_view') }}" class="text-[10px] uppercase tracking-widest font-bold text-white/60 hover:text-gold transition-colors">Profesional</a>
+                {% endif %}
                 
                 {% if session.get('role') == 'admin' %}
                 <a href="{{ url_for('admin_view') }}" class="text-[10px] uppercase tracking-widest font-bold text-gold hover:text-white transition-colors flex items-center gap-1">

@@ -104,66 +104,93 @@
 
             <!-- Tabla de Profesionales -->
             <div class="lg:col-span-2 space-y-6">
-                <div class="bg-white rounded-lg shadow-xl overflow-hidden">
-                    <div class="p-4 bg-paper-dark border-b border-midnight/5">
-                        <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Directorio de Profesionales</h3>
+                <!-- Controles de filtro -->
+                <div class="bg-white p-6 rounded-lg shadow-lg border border-midnight/5">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <!-- Búsqueda general -->
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Buscar</label>
+                            <input type="text" id="proSearchInput" placeholder="Nombre, matrícula, especialidad..." 
+                                   class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
+                        </div>
+                        
+                        <!-- Filtro por estado -->
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Estado</label>
+                            <select id="statusFilter" class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
+                                <option value="">Todos los estados</option>
+                                <option value="pending">Pendiente</option>
+                                <option value="approved">Aprobado</option>
+                                <option value="rejected">Rechazado</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Filtro por especialidad -->
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Especialidad</label>
+                            <input type="text" id="specialtyFilter" placeholder="Arquitecto, Agente..." 
+                                   class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
+                        </div>
                     </div>
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="border-b border-midnight/5">
-                                <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Nombre Profesional</th>
-                                <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Matrícula / Licencia</th>
-                                <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Estado</th>
-                                <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40 text-right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for pro in professionals %}
-                            <tr class="border-b border-midnight/5 hover:bg-paper transition-colors">
-                                <td class="p-4">
-                                    <div class="font-medium text-midnight">{{ pro.name }}</div>
-                                    <div class="text-[10px] text-midnight/40 italic">{{ pro.specialty }}</div>
-                                </td>
-                                <td class="p-4 font-mono text-xs text-midnight/60">{{ pro.license }}</td>
-                                <td class="p-4">
-                                    {% if pro.status == 'approved' %}
-                                    <span class="px-2 py-1 bg-emerald-50 text-emerald-700 text-[9px] font-bold uppercase tracking-widest rounded">Aprobado</span>
-                                    {% elif pro.status == 'rejected' %}
-                                    <span class="px-2 py-1 bg-rose-50 text-rose-700 text-[9px] font-bold uppercase tracking-widest rounded">Rechazado</span>
-                                    {% else %}
-                                    <span class="px-2 py-1 bg-amber-50 text-amber-700 text-[9px] font-bold uppercase tracking-widest rounded">Pendiente</span>
-                                    {% endif %}
-                                </td>
-                                <td class="p-4 text-right">
-                                    {% if pro.status == 'pending' %}
-                                    <div class="flex justify-end gap-2">
-                                        <button onclick="updateProStatus('{{ pro.id }}', 'approved', this)"
-                                            class="inline-flex items-center gap-2 px-2 py-1 bg-emerald-50 text-emerald-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-100 transition-colors" title="Aprobar">
-                                            <i data-lucide="check" class="w-4 h-4"></i> Aprobar
-                                        </button>
-                                        <button onclick="updateProStatus('{{ pro.id }}', 'rejected', this)"
-                                            class="inline-flex items-center gap-2 px-2 py-1 bg-rose-50 text-rose-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-rose-100 transition-colors" title="Rechazar">
-                                            <i data-lucide="x" class="w-4 h-4"></i> Rechazar
-                                        </button>
-                                    </div>
-                                    {% elif pro.status == 'approved' %}
-                                    <button onclick="updateProStatus('{{ pro.id }}', 'rejected', this)"
-                                        class="inline-flex items-center gap-2 px-2 py-1 bg-rose-50 text-rose-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-rose-100 transition-colors" title="Desaprobar profesional">
-                                        <i data-lucide="x" class="w-4 h-4"></i> Desaprobar
-                                    </button>
-                                    {% elif pro.status == 'rejected' %}
-                                    <button onclick="updateProStatus('{{ pro.id }}', 'approved', this)"
-                                        class="inline-flex items-center gap-2 px-2 py-1 bg-emerald-50 text-emerald-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-100 transition-colors" title="Aprobar profesional">
-                                        <i data-lucide="check" class="w-4 h-4"></i> Aprobar
-                                    </button>
-                                    {% else %}
-                                    <span class="text-[10px] text-midnight/20 font-bold uppercase tracking-widest">Sin acciones</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+                    
+                    <div class="flex justify-between items-center">
+                        <div class="flex gap-2">
+                            <button id="applyProFilters" class="px-4 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
+                                Aplicar Filtros
+                            </button>
+                            <button id="clearProFilters" class="px-4 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-all">
+                                Limpiar
+                            </button>
+                        </div>
+                        <div class="text-sm text-midnight/60">
+                            <span id="prosCount">0</span> profesionales encontrados
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabla de Profesionales (cargada dinámicamente) -->
+                <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+                    <div class="p-4 bg-paper-dark border-b border-midnight/5 flex justify-between items-center">
+                        <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Directorio de Profesionales</h3>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] text-midnight/60 uppercase tracking-widest">Ordenar por:</span>
+                            <select id="proSortSelect" class="text-[10px] px-2 py-1 border border-midnight/20 rounded focus:border-gold focus:outline-none">
+                                <option value="id">ID</option>
+                                <option value="name">Nombre</option>
+                                <option value="license">Matrícula</option>
+                                <option value="specialty">Especialidad</option>
+                                <option value="status">Estado</option>
+                            </select>
+                            <button id="proSortOrder" class="p-1 text-midnight/40 hover:text-gold" title="Cambiar orden">
+                                <i data-lucide="arrow-down" class="w-3 h-3"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="professionalsTableContainer">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b border-midnight/5">
+                                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Nombre Profesional</th>
+                                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Matrícula / Licencia</th>
+                                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Estado</th>
+                                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Documento</th>
+                                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40 text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="professionalsTableBody">
+                                <!-- Los profesionales se cargarán dinámicamente aquí -->
+                                <tr>
+                                    <td colspan="5" class="p-8 text-center text-midnight/60">
+                                        <div class="flex justify-center items-center gap-2">
+                                            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gold"></div>
+                                            Cargando profesionales...
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -207,6 +234,7 @@
     </div>
 
 </div>
+
 {% endblock %}
 
 {% block scripts %}
@@ -336,5 +364,232 @@ function showTab(tab) {
         console.error('Error cargando estadísticas:', err);
     }
 })();
+
+// ---- Profesionales dinámicos ----
+let currentProFilters = {
+    search: '',
+    status: '',
+    specialty: '',
+    sort: 'id',
+    order: 'desc'
+};
+
+// Cargar profesionales al cambiar a la pestaña de gestión
+document.getElementById('tab-management').addEventListener('click', function() {
+    loadProfessionals();
+});
+
+// Configurar event listeners para filtros de profesionales
+document.addEventListener('DOMContentLoaded', function() {
+    const applyBtn = document.getElementById('applyProFilters');
+    const clearBtn = document.getElementById('clearProFilters');
+    const sortSelect = document.getElementById('proSortSelect');
+    const sortOrderBtn = document.getElementById('proSortOrder');
+    
+    if (applyBtn) applyBtn.addEventListener('click', applyProFilters);
+    if (clearBtn) clearBtn.addEventListener('click', clearProFilters);
+    if (sortSelect) sortSelect.addEventListener('change', updateProSort);
+    if (sortOrderBtn) sortOrderBtn.addEventListener('click', toggleProSortOrder);
+    
+    // Búsqueda en tiempo real
+    let searchTimeout;
+    const searchInput = document.getElementById('proSearchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(applyProFilters, 500);
+        });
+    }
+});
+
+// Cargar profesionales desde la API
+async function loadProfessionals() {
+    try {
+        const params = new URLSearchParams(currentProFilters);
+        const response = await fetch(`/api/professionals?${params}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            renderProfessionals(data.professionals);
+            updateProsCount(data.total);
+        } else {
+            showProError(data.error || 'Error al cargar profesionales');
+        }
+    } catch (error) {
+        console.error('Error loading professionals:', error);
+        showProError('Error de conexión');
+    }
+}
+
+// Renderizar profesionales en la tabla
+function renderProfessionals(pros) {
+    const tbody = document.getElementById('professionalsTableBody');
+    
+    if (pros.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="p-8 text-center text-midnight/60">
+                    <i data-lucide="search" class="w-8 h-8 mx-auto mb-2 text-midnight/30"></i>
+                    <p>No se encontraron profesionales con los filtros aplicados.</p>
+                </td>
+            </tr>
+        `;
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+        return;
+    }
+    
+    tbody.innerHTML = pros.map(pro => {
+        let statusBadge = '';
+        if (pro.status === 'approved') {
+            statusBadge = '<span class="px-2 py-1 bg-emerald-50 text-emerald-700 text-[9px] font-bold uppercase tracking-widest rounded">Aprobado</span>';
+        } else if (pro.status === 'rejected') {
+            statusBadge = '<span class="px-2 py-1 bg-rose-50 text-rose-700 text-[9px] font-bold uppercase tracking-widest rounded">Rechazado</span>';
+        } else {
+            statusBadge = '<span class="px-2 py-1 bg-amber-50 text-amber-700 text-[9px] font-bold uppercase tracking-widest rounded">Pendiente</span>';
+        }
+        
+        let actions = '';
+        if (pro.status === 'pending') {
+            actions = `
+                <div class="flex justify-end gap-2">
+                    <button onclick="updateProStatus('${pro.id}', 'approved', this)"
+                        class="inline-flex items-center gap-2 px-2 py-1 bg-emerald-50 text-emerald-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-100 transition-colors" title="Aprobar">
+                        <i data-lucide="check" class="w-4 h-4"></i> Aprobar
+                    </button>
+                    <button onclick="updateProStatus('${pro.id}', 'rejected', this)"
+                        class="inline-flex items-center gap-2 px-2 py-1 bg-rose-50 text-rose-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-rose-100 transition-colors" title="Rechazar">
+                        <i data-lucide="x" class="w-4 h-4"></i> Rechazar
+                    </button>
+                </div>
+            `;
+        } else if (pro.status === 'approved') {
+            actions = `
+                <button onclick="updateProStatus('${pro.id}', 'rejected', this)"
+                    class="inline-flex items-center gap-2 px-2 py-1 bg-rose-50 text-rose-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-rose-100 transition-colors" title="Desaprobar profesional">
+                    <i data-lucide="x" class="w-4 h-4"></i> Desaprobar
+                </button>
+            `;
+        } else if (pro.status === 'rejected') {
+            actions = `
+                <button onclick="updateProStatus('${pro.id}', 'approved', this)"
+                    class="inline-flex items-center gap-2 px-2 py-1 bg-emerald-50 text-emerald-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-100 transition-colors" title="Aprobar profesional">
+                    <i data-lucide="check" class="w-4 h-4"></i> Aprobar
+                </button>
+            `;
+        } else {
+            actions = '<span class="text-[10px] text-midnight/20 font-bold uppercase tracking-widest">Sin acciones</span>';
+        }
+        
+        const docCell = pro.doc_path ? 
+            `<a href="/admin/download_doc/${pro.user_id}" class="inline-flex items-center gap-2 px-2 py-1 bg-gold text-white rounded font-bold uppercase tracking-widest text-[9px] hover:bg-midnight transition-colors">
+                <i data-lucide="download" class="w-3 h-3"></i> Descargar
+            </a>` : 
+            '<span class="text-midnight/30 text-[10px] uppercase italic">Sin documento</span>';
+        
+        return `
+            <tr class="border-b border-midnight/5 hover:bg-paper transition-colors">
+                <td class="p-4">
+                    <div class="font-medium text-midnight">${pro.name}</div>
+                    <div class="text-[10px] text-midnight/40 italic">${pro.specialty}</div>
+                </td>
+                <td class="p-4 font-mono text-xs text-midnight/60">${pro.license}</td>
+                <td class="p-4">${statusBadge}</td>
+                <td class="p-4">${docCell}</td>
+                <td class="p-4 text-right">${actions}</td>
+            </tr>
+        `;
+    }).join('');
+    
+    // Re-inicializar iconos de Lucide
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+}
+
+// Aplicar filtros de profesionales
+function applyProFilters() {
+    const searchInput = document.getElementById('proSearchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    const specialtyFilter = document.getElementById('specialtyFilter');
+    
+    currentProFilters.search = searchInput ? searchInput.value.trim() : '';
+    currentProFilters.status = statusFilter ? statusFilter.value : '';
+    currentProFilters.specialty = specialtyFilter ? specialtyFilter.value.trim() : '';
+    
+    loadProfessionals();
+}
+
+// Limpiar filtros de profesionales
+function clearProFilters() {
+    const searchInput = document.getElementById('proSearchInput');
+    const statusFilter = document.getElementById('statusFilter');
+    const specialtyFilter = document.getElementById('specialtyFilter');
+    
+    if (searchInput) searchInput.value = '';
+    if (statusFilter) statusFilter.value = '';
+    if (specialtyFilter) specialtyFilter.value = '';
+    
+    currentProFilters = {
+        search: '',
+        status: '',
+        specialty: '',
+        sort: 'id',
+        order: 'desc'
+    };
+    
+    loadProfessionals();
+}
+
+// Actualizar ordenamiento de profesionales
+function updateProSort() {
+    const sortSelect = document.getElementById('proSortSelect');
+    currentProFilters.sort = sortSelect ? sortSelect.value : 'id';
+    loadProfessionals();
+}
+
+// Cambiar dirección del ordenamiento de profesionales
+function toggleProSortOrder() {
+    const icon = document.querySelector('#proSortOrder i');
+    currentProFilters.order = currentProFilters.order === 'desc' ? 'asc' : 'desc';
+    
+    if (currentProFilters.order === 'desc') {
+        if (icon) icon.setAttribute('data-lucide', 'arrow-down');
+    } else {
+        if (icon) icon.setAttribute('data-lucide', 'arrow-up');
+    }
+    
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+    
+    loadProfessionals();
+}
+
+// Actualizar contador de profesionales
+function updateProsCount(count) {
+    const countEl = document.getElementById('prosCount');
+    if (countEl) countEl.textContent = count;
+}
+
+// Mostrar errores de profesionales
+function showProError(message) {
+    const tbody = document.getElementById('professionalsTableBody');
+    if (tbody) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="p-8 text-center text-rose-600">
+                    <i data-lucide="alert-circle" class="w-8 h-8 mx-auto mb-2"></i>
+                <p>${message}</p>
+            </td>
+        </tr>
+        `;
+        
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    }
+}
 </script>
 {% endblock %}

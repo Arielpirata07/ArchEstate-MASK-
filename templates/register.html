@@ -20,7 +20,7 @@
           {% endif %}
         {% endwith %}
 
-        <form action="{{ url_for('register') }}" method="POST" class="space-y-6">
+        <form action="{{ url_for('register') }}" method="POST" class="space-y-6" enctype="multipart/form-data">
             <div>
                 <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Tipo de Cuenta</label>
                 <select name="role" required class="w-full bg-paper-dark border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 transition-all text-sm">

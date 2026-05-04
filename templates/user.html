@@ -224,7 +224,28 @@
                         <!-- Teléfono -->
                         <div>
                             <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Teléfono</label>
-                            <input name="phone" type="tel" required placeholder="+34 --- --" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                            <input
+                                id="phone-input"
+                                name="phone"
+                                type="tel"
+                                required
+                                placeholder="+34 --- --"
+                                value="{{ session.get('phone', '') }}"
+                                class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm"
+                            >
+                            <!-- Acción de guardado de perfil -->
+                            <div class="mt-2 flex items-center justify-between">
+                                <p id="phone-error-msg" class="hidden text-[10px] text-rose-500 font-medium"></p>
+                                <button
+                                    type="button"
+                                    id="save-phone-btn"
+                                    onclick="savePhoneToProfile()"
+                                    class="ml-auto text-[9px] uppercase tracking-widest font-bold text-midnight/30 hover:text-gold transition-colors flex items-center gap-1"
+                                >
+                                    <i data-lucide="save" class="w-3 h-3"></i>
+                                    Guardar como predeterminado
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -246,4 +267,65 @@
     </div>
 </div>
 
+{% endblock %}
+
+{% block scripts %}
+<script>
+/**
+ * Guarda el teléfono ingresado como número predeterminado en el perfil del usuario.
+ * Llama a /api/user/update-phone y muestra feedback visual.
+ */
+async function savePhoneToProfile() {
+    const phoneInput = document.getElementById('phone-input');
+    const errorMsg   = document.getElementById('phone-error-msg');
+    const saveBtn    = document.getElementById('save-phone-btn');
+    const phone      = phoneInput.value.trim();
+
+    errorMsg.classList.add('hidden');
+
+    if (!phone) {
+        errorMsg.textContent = 'Ingresá un número antes de guardar.';
+        errorMsg.classList.remove('hidden');
+        return;
+    }
+
+    const originalContent = saveBtn.innerHTML;
+    saveBtn.innerHTML = 'Guardando...';
+    saveBtn.disabled = true;
+
+    try {
+        const res  = await fetch('/api/user/update-phone', {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ phone })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+            saveBtn.textContent = '✓ Guardado';
+            saveBtn.classList.add('text-emerald-600');
+            if (typeof showToast === 'function') showToast('Teléfono guardado en tu perfil.');
+
+            setTimeout(() => {
+                saveBtn.innerHTML = originalContent;
+                saveBtn.classList.remove('text-emerald-600');
+                saveBtn.disabled = false;
+                if (window.lucide) lucide.createIcons();
+            }, 3000);
+        } else {
+            errorMsg.textContent = data.error || 'Error al guardar el teléfono.';
+            errorMsg.classList.remove('hidden');
+            saveBtn.innerHTML = originalContent;
+            saveBtn.disabled = false;
+            if (window.lucide) lucide.createIcons();
+        }
+    } catch (err) {
+        errorMsg.textContent = 'Error de conexión. Intentá de nuevo.';
+        errorMsg.classList.remove('hidden');
+        saveBtn.innerHTML = originalContent;
+        saveBtn.disabled = false;
+        if (window.lucide) lucide.createIcons();
+    }
+}
+</script>
 {% endblock %}
