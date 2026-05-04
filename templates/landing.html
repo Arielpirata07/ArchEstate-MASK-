@@ -7,47 +7,180 @@
 {% endblock %}
 
 {% block content %}
-<div class="flex flex-col items-center justify-center min-h-[60vh] text-center">
-    <!-- Imagen Hero con efecto editorial -->
-    <div class="relative w-full max-w-5xl h-[300px] mb-12 rounded-xl overflow-hidden shadow-2xl">
+<!-- Elementos flotantes de fondo -->
+<div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+    <div class="absolute top-20 left-10 w-20 h-20 bg-gold/10 rounded-full float-animation delay-1"></div>
+    <div class="absolute top-40 right-20 w-16 h-16 bg-midnight/10 rounded-full float-animation delay-2"></div>
+    <div class="absolute bottom-40 left-20 w-24 h-24 bg-paper-dark/10 rounded-full float-animation delay-3"></div>
+    <div class="absolute bottom-20 right-10 w-18 h-18 bg-gold/5 rounded-full float-animation delay-4"></div>
+</div>
+
+<div class="flex flex-col items-center justify-center min-h-[60vh] text-center relative z-10">
+    <!-- Imagen Hero con efecto editorial y parallax -->
+    <div class="relative w-full max-w-5xl h-[300px] mb-12 rounded-xl overflow-hidden shadow-2xl parallax fade-in" data-scroll>
         <img src="https://picsum.photos/seed/architecture/1200/600" alt="Arquitectura" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700">
         <div class="absolute inset-0 bg-midnight/40 flex items-center justify-center">
-            <div class="text-white border border-white/20 p-8 backdrop-blur-sm bg-midnight/20">
+            <div class="text-white border border-white/20 p-8 backdrop-blur-sm bg-midnight/20 fade-in-up delay-1" data-scroll>
                 <span class="text-[10px] tracking-[0.3em] uppercase font-bold text-gold-light">Establecido en 2026</span>
                 <h2 class="text-3xl font-serif italic">The Private Ledger</h2>
             </div>
         </div>
     </div>
 
-    <h1 class="text-5xl md:text-6xl font-serif mb-6 text-midnight">
-        Bienvenido a <span class="serif-italic">ArchEstate</span>
+    <h1 class="text-5xl md:text-6xl font-serif mb-6 text-midnight fade-in-up delay-2" data-scroll>
+        Bienvenido a <span class="serif-italic typing-effect">ArchEstate</span>
     </h1>
-    <p class="text-midnight/60 max-w-2xl mb-12 text-lg">
+    <p class="text-midnight/60 max-w-2xl mb-12 text-lg fade-in-up delay-3" data-scroll>
         La plataforma exclusiva que conecta la demanda arquitectónica con los profesionales más capacitados del sector.
     </p>
 
     <!-- Selectores de Perfil (Login Simulado) -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl fade-in-up delay-4" data-scroll>
         <!-- Botón Usuario -->
-        <a href="{{ url_for('user_view') }}" class="bg-white p-8 rounded-lg shadow-lg border border-midnight/5 hover:border-gold transition-all text-left group">
-            <i data-lucide="users" class="text-gold mb-4 w-8 h-8"></i>
+        <a href="{{ url_for('user_view') }}" class="bg-white p-8 rounded-lg shadow-lg border border-midnight/5 card-hover text-left group slide-in-left delay-1" data-scroll>
+            <i data-lucide="users" class="text-gold mb-4 w-8 h-8 card-icon transition-transform duration-300"></i>
             <h3 class="text-xl font-serif mb-2 group-hover:text-gold transition-colors">Entrar como Usuario</h3>
             <p class="text-sm text-midnight/50">Busco comprar o construir mi próxima propiedad.</p>
         </a>
 
         <!-- Botón Profesional -->
-        <a href="{{ url_for('professional_view') }}" class="bg-midnight text-white p-8 rounded-lg shadow-lg border border-transparent hover:border-gold transition-all text-left group">
-            <i data-lucide="building-2" class="text-gold mb-4 w-8 h-8"></i>
+        <a href="{{ url_for('professional_view') }}" class="bg-midnight text-white p-8 rounded-lg shadow-lg border border-transparent card-hover text-left group fade-in-up delay-2 pulse-glow" data-scroll>
+            <i data-lucide="building-2" class="text-gold mb-4 w-8 h-8 card-icon transition-transform duration-300"></i>
             <h3 class="text-xl font-serif mb-2 group-hover:text-gold transition-colors">Entrar como Profesional</h3>
             <p class="text-sm text-white/70">Soy arquitecto o agente inmobiliario buscando leads.</p>
         </a>
 
         <!-- Botón Administrador -->
-        <a href="{{ url_for('admin_view') }}" class="bg-paper-dark text-midnight p-8 rounded-lg shadow-lg border border-midnight/10 hover:border-gold transition-all text-left group">
-            <i data-lucide="shield-check" class="text-midnight mb-4 w-8 h-8"></i>
+        <a href="{{ url_for('admin_view') }}" class="bg-paper-dark text-midnight p-8 rounded-lg shadow-lg border border-midnight/10 card-hover text-left group slide-in-right delay-3" data-scroll>
+            <i data-lucide="shield-check" class="text-midnight mb-4 w-8 h-8 card-icon transition-transform duration-300"></i>
             <h3 class="text-xl font-serif mb-2 group-hover:text-gold transition-colors">Entrar como Administrador</h3>
             <p class="text-sm text-midnight/50">Gestión de plataforma y validación de profesionales.</p>
         </a>
     </div>
 </div>
+
+<!-- Estadísticas animadas -->
+<div class="mt-20 w-full max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center fade-in-up delay-5" data-scroll>
+    <div class="p-6">
+        <div class="text-3xl font-serif text-gold mb-2 counter" data-target="1500">0</div>
+        <div class="text-sm text-midnight/60 uppercase tracking-widest">Leads Generados</div>
+    </div>
+    <div class="p-6">
+        <div class="text-3xl font-serif text-gold mb-2 counter" data-target="250">0</div>
+        <div class="text-sm text-midnight/60 uppercase tracking-widest">Profesionales</div>
+    </div>
+    <div class="p-6">
+        <div class="text-3xl font-serif text-gold mb-2 counter" data-target="98">0</div>
+        <div class="text-sm text-midnight/60 uppercase tracking-widest">Satisfacción</div>
+    </div>
+    <div class="p-6">
+        <div class="text-3xl font-serif text-gold mb-2 counter" data-target="24">0</div>
+        <div class="text-sm text-midnight/60 uppercase tracking-widest">Horas de Servicio</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar animaciones de scroll
+    initScrollAnimations();
+    
+    // Inicializar contadores animados
+    initAnimatedCounters();
+    
+    // Efecto parallax para la imagen hero
+    initParallax();
+});
+
+function initScrollAnimations() {
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate');
+            }
+        });
+    }, observerOptions);
+
+    // Observar elementos con data-scroll
+    document.querySelectorAll('[data-scroll]').forEach(el => {
+        observer.observe(el);
+    });
+}
+
+function initAnimatedCounters() {
+    const counters = document.querySelectorAll('.counter');
+    const speed = 200; // Velocidad de animación
+
+    const animateCounter = (counter) => {
+        const target = +counter.getAttribute('data-target');
+        const count = +counter.innerText;
+        const increment = target / speed;
+
+        if (count < target) {
+            counter.innerText = Math.ceil(count + increment);
+            setTimeout(() => animateCounter(counter), 1);
+        } else {
+            counter.innerText = target;
+        }
+    };
+
+    // Animar cuando el elemento sea visible
+    const counterObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                animateCounter(entry.target);
+                counterObserver.unobserve(entry.target);
+            }
+        });
+    });
+
+    counters.forEach(counter => {
+        counterObserver.observe(counter);
+    });
+}
+
+function initParallax() {
+    const parallaxElements = document.querySelectorAll('.parallax');
+    
+    window.addEventListener('scroll', () => {
+        const scrolled = window.pageYOffset;
+        const rate = scrolled * -0.5;
+
+        parallaxElements.forEach(el => {
+            el.style.transform = `translateY(${rate}px)`;
+        });
+    });
+}
+
+// Efecto de typing mejorado
+const typingElement = document.querySelector('.typing-effect');
+if (typingElement) {
+    const text = typingElement.textContent;
+    typingElement.textContent = '';
+    typingElement.style.width = '0';
+    
+    let i = 0;
+    const typeWriter = () => {
+        if (i < text.length) {
+            typingElement.textContent += text.charAt(i);
+            i++;
+            setTimeout(typeWriter, 100);
+        } else {
+            // Remover el cursor después de completar
+            setTimeout(() => {
+                typingElement.style.borderRight = 'none';
+            }, 500);
+        }
+    };
+    
+    // Iniciar typing después de un delay
+    setTimeout(typeWriter, 1000);
+}
+</script>
 {% endblock %}

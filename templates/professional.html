@@ -38,52 +38,326 @@
         </p>
     </div>
     {% else %}
-    <!-- Tabla de Leads inyectada desde Flask -->
+    <!-- Controles de filtro y búsqueda -->
+    <div class="bg-white p-6 rounded-lg shadow-lg border border-midnight/5 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            <!-- Búsqueda general -->
+            <div>
+                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Buscar</label>
+                <input type="text" id="searchInput" placeholder="Zona, email, tipo..." 
+                       class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
+            </div>
+            
+            <!-- Filtro por tipo -->
+            <div>
+                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Tipo</label>
+                <select id="typeFilter" class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
+                    <option value="">Todos los tipos</option>
+                    <option value="venta">Venta</option>
+                    <option value="alquiler">Alquiler</option>
+                    <option value="alquiler temporario">Alquiler Temporario</option>
+                </select>
+            </div>
+            
+            <!-- Filtro por zona -->
+            <div>
+                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Zona</label>
+                <input type="text" id="zoneFilter" placeholder="Ej: Palermo, Recoleta..." 
+                       class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
+            </div>
+            
+            <!-- Filtro por presupuesto -->
+            <div>
+                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Presupuesto</label>
+                <div class="flex gap-2">
+                    <input type="number" id="minBudget" placeholder="Mín" 
+                           class="w-1/2 px-2 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
+                    <input type="number" id="maxBudget" placeholder="Máx" 
+                           class="w-1/2 px-2 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex justify-between items-center">
+            <div class="flex gap-2">
+                <button id="applyFilters" class="px-4 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
+                    Aplicar Filtros
+                </button>
+                <button id="clearFilters" class="px-4 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-all">
+                    Limpiar
+                </button>
+            </div>
+            <div class="text-sm text-midnight/60">
+                <span id="leadsCount">0</span> leads encontrados
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Leads (cargada dinámicamente) -->
     <div class="bg-white rounded-lg shadow-xl overflow-hidden">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="bg-paper-dark border-b border-midnight/5">
-                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">ID Pedido</th>
-                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Tipo Operación</th>
-                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Zona</th>
-                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Presupuesto</th>
-                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Fecha</th>
-                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Mail</th>
-                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold text-right">Acción</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for lead in leads %}
-                <tr class="border-b border-midnight/5 hover:bg-paper transition-colors group">
-                    <td class="p-4 font-mono text-xs text-midnight/60">{{ lead.id }}</td>
-                    <td class="p-4 font-medium">{{ lead.type }}</td>
-                    <td class="p-4 text-sm text-midnight/70">{{ lead.zone }}</td>
-                    <td class="p-4 font-serif italic text-gold">
-                        {% set budget_symbol = 'US$' if lead.currency == 'USD' else '€' if lead.currency == 'EUR' else '$' %}
-                        {{ budget_symbol }}{{ lead.budget }}
-                    </td>
-                    <td class="p-4 text-sm text-midnight/70">{{ lead.timestamp }}</td>
-                    <td class="p-4 text-sm text-midnight/70">{{ lead.email }}</td>
-                    <td class="p-4 text-right space-y-2 sm:space-y-0 sm:flex sm:justify-end sm:items-center sm:gap-2">
-                        <button onclick="togglePhone(this, '{{ lead.id }}')" class="inline-flex items-center gap-2 px-4 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">
-                            <i data-lucide="eye" class="w-3 h-3"></i> Ver Teléfono
-                        </button>
-                        <a href="{{ url_for('lead_detail', lead_id=lead.id) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
-                            <i data-lucide="eye" class="w-3 h-3"></i> Ver más
-                        </a>
-                        <a href="{{ url_for('download_lead_pdf', lead_id=lead.id) }}" class="inline-flex items-center gap-2 px-4 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-all">
-                            <i data-lucide="download" class="w-3 h-3"></i> Descargar PDF
-                        </a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+        <div class="p-4 bg-paper-dark border-b border-midnight/5 flex justify-between items-center">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Leads Disponibles</h3>
+            <div class="flex items-center gap-2">
+                <span class="text-[10px] text-midnight/60 uppercase tracking-widest">Ordenar por:</span>
+                <select id="sortSelect" class="text-[10px] px-2 py-1 border border-midnight/20 rounded focus:border-gold focus:outline-none">
+                    <option value="timestamp">Fecha</option>
+                    <option value="budget">Presupuesto</option>
+                    <option value="zone">Zona</option>
+                    <option value="type">Tipo</option>
+                </select>
+                <button id="sortOrder" class="p-1 text-midnight/40 hover:text-gold" title="Cambiar orden">
+                    <i data-lucide="arrow-down" class="w-3 h-3"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div id="leadsTableContainer">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-paper-dark border-b border-midnight/5">
+                        <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">ID Pedido</th>
+                        <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Tipo Operación</th>
+                        <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Zona</th>
+                        <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Presupuesto</th>
+                        <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Fecha</th>
+                        <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Mail</th>
+                        <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold text-right">Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="leadsTableBody">
+                    <!-- Los leads se cargarán dinámicamente aquí -->
+                    <tr>
+                        <td colspan="7" class="p-8 text-center text-midnight/60">
+                            <div class="flex justify-center items-center gap-2">
+                                <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gold"></div>
+                                Cargando leads...
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
     {% endif %}
 </div>
+
+<div class="bg-white p-6 rounded-lg shadow-sm border border-midnight/5">
+    <h3 class="text-gold font-bold uppercase tracking-widest text-[12px] mb-4">Validación de Identidad</h3>
+    <form id="uploadDocForm" class="flex flex-col gap-4">
+        <input type="file" name="document" id="docInput" class="text-sm text-midnight/50 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-gold file:text-white hover:file:bg-midnight transition-all">
+        <button type="submit" class="w-full bg-midnight text-white py-2 rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">
+            Subir Documentación
+        </button>
+    </form>
+    {% if doc_path %}
+    <div class="mt-4 pt-4 border-t border-midnight/10">
+        <a href="{{ url_for('download_own_doc') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all rounded text-[10px] font-bold uppercase tracking-widest">
+            <i data-lucide="download" class="w-3 h-3"></i> Descargar Mi Documento
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+document.getElementById('uploadDocForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append('document', document.getElementById('docInput').files[0]);
+
+    const response = await fetch('/api/professional/upload', {
+        method: 'POST',
+        body: formData
+    });
+    
+    const result = await response.json();
+    alert(result.message);
+});
+</script>
 {% endblock %}
 
 {% block scripts %}
-<!-- La función togglePhone ahora reside en static/js/main.js -->
+<script>
+// Variables globales para filtros
+let currentFilters = {
+    search: '',
+    type: '',
+    zone: '',
+    min_budget: '',
+    max_budget: '',
+    currency: '',
+    sort: 'timestamp',
+    order: 'desc'
+};
+
+// Cargar leads al inicializar la página
+document.addEventListener('DOMContentLoaded', function() {
+    loadLeads();
+    
+    // Configurar event listeners
+    setupEventListeners();
+});
+
+// Configurar event listeners para filtros
+function setupEventListeners() {
+    document.getElementById('applyFilters').addEventListener('click', applyFilters);
+    document.getElementById('clearFilters').addEventListener('click', clearFilters);
+    document.getElementById('sortSelect').addEventListener('change', updateSort);
+    document.getElementById('sortOrder').addEventListener('click', toggleSortOrder);
+    
+    // Búsqueda en tiempo real (con debounce)
+    let searchTimeout;
+    document.getElementById('searchInput').addEventListener('input', function() {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(applyFilters, 500);
+    });
+}
+
+// Cargar leads desde la API
+async function loadLeads() {
+    try {
+        const params = new URLSearchParams(currentFilters);
+        const response = await fetch(`/api/leads?${params}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            renderLeads(data.leads);
+            updateLeadsCount(data.total);
+        } else {
+            showError(data.error || 'Error al cargar leads');
+        }
+    } catch (error) {
+        console.error('Error loading leads:', error);
+        showError('Error de conexión');
+    }
+}
+
+// Renderizar leads en la tabla
+function renderLeads(leads) {
+    const tbody = document.getElementById('leadsTableBody');
+    
+    if (leads.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="p-8 text-center text-midnight/60">
+                    <i data-lucide="search" class="w-8 h-8 mx-auto mb-2 text-midnight/30"></i>
+                    <p>No se encontraron leads con los filtros aplicados.</p>
+                </td>
+            </tr>
+        `;
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+        return;
+    }
+    
+    tbody.innerHTML = leads.map(lead => {
+        const budgetSymbol = lead.currency === 'USD' ? 'US$' : lead.currency === 'EUR' ? '€' : '$';
+        return `
+            <tr class="border-b border-midnight/5 hover:bg-paper transition-colors group">
+                <td class="p-4 font-mono text-xs text-midnight/60">${lead.id}</td>
+                <td class="p-4 font-medium">${lead.type}</td>
+                <td class="p-4 text-sm text-midnight/70">${lead.zone}</td>
+                <td class="p-4 font-serif italic text-gold">${budgetSymbol}${lead.budget}</td>
+                <td class="p-4 text-sm text-midnight/70">${lead.timestamp}</td>
+                <td class="p-4 text-sm text-midnight/70">${lead.email}</td>
+                <td class="p-4 text-right space-y-2 sm:space-y-0 sm:flex sm:justify-end sm:items-center sm:gap-2">
+                    <button onclick="togglePhone(this, '${lead.id}')" class="inline-flex items-center gap-2 px-4 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">
+                        <i data-lucide="eye" class="w-3 h-3"></i> Ver Teléfono
+                    </button>
+                    <a href="/profesional/lead/${lead.id}" class="inline-flex items-center gap-2 px-4 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
+                        <i data-lucide="eye" class="w-3 h-3"></i> Ver más
+                    </a>
+                    <a href="/api/lead/${lead.id}/download" class="inline-flex items-center gap-2 px-4 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-all">
+                        <i data-lucide="download" class="w-3 h-3"></i> Descargar PDF
+                    </a>
+                </td>
+            </tr>
+        `;
+    }).join('');
+    
+    // Re-inicializar iconos de Lucide
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+}
+
+// Aplicar filtros
+function applyFilters() {
+    currentFilters.search = document.getElementById('searchInput').value.trim();
+    currentFilters.type = document.getElementById('typeFilter').value;
+    currentFilters.zone = document.getElementById('zoneFilter').value.trim();
+    currentFilters.min_budget = document.getElementById('minBudget').value;
+    currentFilters.max_budget = document.getElementById('maxBudget').value;
+    
+    loadLeads();
+}
+
+// Limpiar filtros
+function clearFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('typeFilter').value = '';
+    document.getElementById('zoneFilter').value = '';
+    document.getElementById('minBudget').value = '';
+    document.getElementById('maxBudget').value = '';
+    
+    currentFilters = {
+        search: '',
+        type: '',
+        zone: '',
+        min_budget: '',
+        max_budget: '',
+        currency: '',
+        sort: 'timestamp',
+        order: 'desc'
+    };
+    
+    loadLeads();
+}
+
+// Actualizar ordenamiento
+function updateSort() {
+    currentFilters.sort = document.getElementById('sortSelect').value;
+    loadLeads();
+}
+
+// Cambiar dirección del ordenamiento
+function toggleSortOrder() {
+    const icon = document.querySelector('#sortOrder i');
+    currentFilters.order = currentFilters.order === 'desc' ? 'asc' : 'desc';
+    
+    if (currentFilters.order === 'desc') {
+        icon.setAttribute('data-lucide', 'arrow-down');
+    } else {
+        icon.setAttribute('data-lucide', 'arrow-up');
+    }
+    
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+    
+    loadLeads();
+}
+
+// Actualizar contador de leads
+function updateLeadsCount(count) {
+    document.getElementById('leadsCount').textContent = count;
+}
+
+// Mostrar errores
+function showError(message) {
+    const tbody = document.getElementById('leadsTableBody');
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="7" class="p-8 text-center text-rose-600">
+                <i data-lucide="alert-circle" class="w-8 h-8 mx-auto mb-2"></i>
+                <p>${message}</p>
+            </td>
+        </tr>
+    `;
+    
+    if (window.lucide) {
+        lucide.createIcons();
+    }
+}
+</script>
 {% endblock %}

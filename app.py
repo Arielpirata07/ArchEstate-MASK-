@@ -18,11 +18,23 @@ import pytz
 from flask import Flask, render_template, jsonify, request, session, redirect, url_for, Response, send_file, flash
 from fpdf import FPDF
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename # Para limpiar nombres de archivos
+from flask import send_from_directory
+
 
 # --- CONFIGURACIÓN Y SETUP ---
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev_secret_key_123')  # Clave secreta para sesiones
 DATABASE = os.path.join(os.path.dirname(__file__), 'database.db')
+
+# Configuración de carpetas (Actualizado a tu nueva ruta)
+UPLOAD_FOLDER = os.path.join('static', 'uploads', 'docs')
+ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg'}
+
+# Cerca de donde defines app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'uploads', 'docs')
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 # --- FUNCIONES DE BASE DE DATOS ---
@@ -45,16 +57,20 @@ def init_db():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT NOT NULL UNIQUE,
                 email TEXT NOT NULL DEFAULT '',
+                phone TEXT NOT NULL DEFAULT '',
                 hash TEXT NOT NULL,
-                role TEXT NOT NULL DEFAULT 'client'
+                role TEXT NOT NULL DEFAULT 'client',
+                doc_path TEXT DEFAULT ''
             )
         ''')
         
-        # Actualizar esquemas antiguos sin la columna email
+        # Actualizar esquemas antiguos sin columnas nuevas
         cursor.execute('PRAGMA table_info(users)')
         user_columns = [row[1] for row in cursor.fetchall()]
         if 'email' not in user_columns:
             cursor.execute("ALTER TABLE users ADD COLUMN email TEXT NOT NULL DEFAULT ''")
+        if 'phone' not in user_columns:
+            cursor.execute("ALTER TABLE users ADD COLUMN phone TEXT NOT NULL DEFAULT ''")
 
         # Tabla de Leads
         cursor.execute('''
@@ -279,11 +295,11 @@ def user_view():
 @app.route('/profesional')
 @professional_required
 def professional_view():
-    """Muestra los leads disponibles desde la base de datos"""
+    """Muestra el panel de leads (datos se cargan dinámicamente)"""
     conn = get_db_connection()
     
     # Obtener el usuario actual
-    user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+    user = conn.execute('SELECT username, doc_path FROM users WHERE id = ?', (session['user_id'],)).fetchone()
     if not user:
         conn.close()
         return redirect(url_for('index'))
@@ -292,19 +308,10 @@ def professional_view():
     professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
     if not professional or professional['status'] != 'approved':
         conn.close()
-        return render_template('professional.html', leads=[], pending=True)
+        return render_template('professional.html', pending=True, doc_path=user['doc_path'])
     
-    # Si está aprobado, mostrar leads
-    leads = conn.execute('SELECT * FROM leads ORDER BY timestamp, id DESC').fetchall()
     conn.close()
-    
-    # Convertir timestamps al huso horario de Argentina y a lista de diccionarios para Jinja2
-    leads_list = []
-    for lead in leads:
-        lead_dict = dict(lead)
-        lead_dict['timestamp'] = convert_to_argentina_time(lead_dict['timestamp'])
-        leads_list.append(lead_dict)
-    return render_template('professional.html', leads=leads_list, pending=False)
+    return render_template('professional.html', pending=False, doc_path=user['doc_path'])
 
 
 @app.route('/profesional/lead/<int:lead_id>')
@@ -335,9 +342,8 @@ def lead_detail(lead_id):
 @app.route('/admin')
 @admin_required
 def admin_view():
-    """Muestra profesionales y logs desde la base de datos"""
+    """Muestra logs de auditoría (profesionales se cargan dinámicamente)"""
     conn = get_db_connection()
-    professionals = conn.execute('SELECT * FROM professionals').fetchall()
     audit_logs = conn.execute('SELECT * FROM audit_log ORDER BY timestamp DESC').fetchall()
     conn.close()
     
@@ -349,7 +355,6 @@ def admin_view():
         audit_log_converted.append(log_dict)
     
     return render_template('admin.html', 
-                           professionals=[dict(p) for p in professionals], 
                            audit_log=audit_log_converted)
 
 
@@ -446,6 +451,7 @@ def login():
             session['user_id'] = user['id']
             session['username'] = user['username']
             session['email'] = user['email']
+            session['phone'] = user['phone'] if user['phone'] else ''
             session['role'] = user['role']  # Guardar el rol en la sesión
             
             # Redirigir según el rol del usuario
@@ -868,6 +874,170 @@ def download_lead_pdf(lead_id):
     )
 
 
+# --- NUEVA API: OBTENER LEADS DINÁMICAMENTE ---
+@app.route('/api/leads')
+@professional_required
+def get_leads_api():
+    """API para obtener leads dinámicamente con filtros opcionales"""
+    try:
+        conn = get_db_connection()
+        
+        # Verificar permisos del profesional
+        user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+        if not user:
+            conn.close()
+            return jsonify({"error": "Acceso denegado"}), 403
+        
+        professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
+        if not professional or professional['status'] != 'approved':
+            conn.close()
+            return jsonify({"error": "Cuenta pendiente de aprobación"}), 403
+        
+        # Obtener parámetros de filtro
+        search = request.args.get('search', '').strip()
+        type_filter = request.args.get('type', '').strip()
+        zone_filter = request.args.get('zone', '').strip()
+        min_budget = request.args.get('min_budget', '').strip()
+        max_budget = request.args.get('max_budget', '').strip()
+        currency_filter = request.args.get('currency', '').strip()
+        sort_by = request.args.get('sort', 'timestamp')
+        sort_order = request.args.get('order', 'desc')
+        
+        # Construir consulta base
+        query = 'SELECT * FROM leads WHERE 1=1'
+        params = []
+        
+        # Aplicar filtros
+        if search:
+            query += ' AND (zone LIKE ? OR email LIKE ? OR type LIKE ?)'
+            search_param = f'%{search}%'
+            params.extend([search_param, search_param, search_param])
+        
+        if type_filter:
+            query += ' AND type = ?'
+            params.append(type_filter)
+        
+        if zone_filter:
+            query += ' AND zone LIKE ?'
+            params.append(f'%{zone_filter}%')
+        
+        if min_budget:
+            try:
+                min_budget_val = float(min_budget)
+                query += ' AND CAST(budget AS DECIMAL) >= ?'
+                params.append(min_budget_val)
+            except ValueError:
+                pass
+        
+        if max_budget:
+            try:
+                max_budget_val = float(max_budget)
+                query += ' AND CAST(budget AS DECIMAL) <= ?'
+                params.append(max_budget_val)
+            except ValueError:
+                pass
+        
+        if currency_filter:
+            query += ' AND currency = ?'
+            params.append(currency_filter)
+        
+        # Ordenamiento
+        valid_sort_fields = ['id', 'type', 'zone', 'budget', 'timestamp', 'email']
+        if sort_by not in valid_sort_fields:
+            sort_by = 'timestamp'
+        
+        order = 'DESC' if sort_order.lower() == 'desc' else 'ASC'
+        query += f' ORDER BY {sort_by} {order}, id DESC'
+        
+        # Ejecutar consulta
+        leads = conn.execute(query, params).fetchall()
+        conn.close()
+        
+        # Convertir a lista de diccionarios
+        leads_list = []
+        for lead in leads:
+            lead_dict = dict(lead)
+            lead_dict['timestamp'] = convert_to_argentina_time(lead_dict['timestamp'])
+            leads_list.append(lead_dict)
+        
+        return jsonify({
+            "success": True,
+            "leads": leads_list,
+            "total": len(leads_list)
+        })
+        
+    except Exception as e:
+        print(f"Error en get_leads_api: {e}")
+        return jsonify({"error": "Error interno del servidor"}), 500
+
+
+# --- NUEVA API: OBTENER PROFESIONALES DINÁMICAMENTE ---
+@app.route('/api/professionals')
+@admin_required
+def get_professionals_api():
+    """API para obtener profesionales dinámicamente con filtros"""
+    try:
+        conn = get_db_connection()
+        
+        # Obtener parámetros de filtro
+        search = request.args.get('search', '').strip()
+        status_filter = request.args.get('status', '').strip()
+        specialty_filter = request.args.get('specialty', '').strip()
+        sort_by = request.args.get('sort', 'id')
+        sort_order = request.args.get('order', 'desc')
+        
+        # Construir consulta con JOIN para incluir doc_path
+        query = '''
+            SELECT p.*, u.doc_path, u.id as user_id
+            FROM professionals p 
+            LEFT JOIN users u ON p.name = u.username
+            WHERE 1=1
+        '''
+        params = []
+        
+        # Aplicar filtros
+        if search:
+            query += ' AND (p.name LIKE ? OR p.license LIKE ? OR p.specialty LIKE ?)'
+            search_param = f'%{search}%'
+            params.extend([search_param, search_param, search_param])
+        
+        if status_filter:
+            query += ' AND p.status = ?'
+            params.append(status_filter)
+        
+        if specialty_filter:
+            query += ' AND p.specialty LIKE ?'
+            params.append(f'%{specialty_filter}%')
+        
+        # Ordenamiento
+        valid_sort_fields = ['id', 'name', 'license', 'specialty', 'status']
+        if sort_by not in valid_sort_fields:
+            sort_by = 'id'
+        
+        order = 'DESC' if sort_order.lower() == 'desc' else 'ASC'
+        query += f' ORDER BY p.{sort_by} {order}'
+        
+        # Ejecutar consulta
+        professionals = conn.execute(query, params).fetchall()
+        conn.close()
+        
+        # Convertir a lista de diccionarios
+        pros_list = []
+        for pro in professionals:
+            pro_dict = dict(pro)
+            pros_list.append(pro_dict)
+        
+        return jsonify({
+            "success": True,
+            "professionals": pros_list,
+            "total": len(pros_list)
+        })
+        
+    except Exception as e:
+        print(f"Error en get_professionals_api: {e}")
+        return jsonify({"error": "Error interno del servidor"}), 500
+
+
 @app.route('/api/admin/professional/<int:pro_id>/status', methods=['POST'])
 @admin_required
 def update_pro_status(pro_id):
@@ -955,7 +1125,136 @@ def admin_stats():
         'audit_actions': [{'label': r['action'], 'value': r['count']} for r in audit_actions],
     })
 
+# --- RUTA PARA QUE EL PROFESIONAL SUBA SU DOC ---
+@app.route('/api/professional/upload', methods=['POST'])
+@login_required # Asumiendo que usas un decorador de login
+def upload_professional_doc():
+    if 'document' not in request.files:
+        return jsonify({"error": "No hay archivo"}), 400
+    
+    file = request.files['document']
+    if file.filename == '':
+        return jsonify({"error": "No se seleccionó archivo"}), 400
 
+    if file and allowed_file(file.filename):
+        filename = secure_filename(f"user_{session['user_id']}_{file.filename}")
+        
+        # 1. Armamos la nueva ruta completa
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        
+        # 2. Nos aseguramos de que static/uploads/docs exista
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True) 
+        
+        # 3. Guardamos
+        file.save(file_path)
+        
+
+        # Guardar la ruta en la BD
+        conn = get_db_connection()
+        conn.execute('UPDATE users SET doc_path = ? WHERE id = ?', (filename, session['user_id']))
+        conn.commit()
+        conn.close()
+
+        return jsonify({"status": "success", "message": "Documento subido correctamente"})
+
+# --- RUTA PARA QUE EL ADMIN DESCARGUE EL DOC ---
+@app.route('/admin/download_doc/<int:user_id>')
+@admin_required 
+def download_professional_doc(user_id):
+    try:
+        conn = get_db_connection()
+        user = conn.execute('SELECT doc_path FROM users WHERE id = ?', (user_id,)).fetchone()
+        conn.close()
+
+        if not user or not user['doc_path']:
+            return "El profesional no ha subido ningún documento aún.", 404
+
+        # Usamos la ruta configurada arriba
+        directory = app.config['UPLOAD_FOLDER']
+        filename = user['doc_path']
+
+        # Verificamos si el archivo físico realmente existe en el disco
+        if not os.path.exists(os.path.join(directory, filename)):
+            return f"Error: El archivo {filename} no existe en el servidor.", 404
+
+        # as_attachment=True fuerza la descarga en lugar de abrirlo en el navegador
+        return send_from_directory(directory, filename, as_attachment=True)
+
+    except Exception as e:
+        return f"Error interno: {str(e)}", 500
+
+
+# --- API: VER Y ACTUALIZAR TELÉFONO DEL USUARIO ---
+
+@app.route('/api/user/profile', methods=['GET'])
+@login_required
+def get_user_profile():
+    """Retorna los datos de perfil del usuario autenticado."""
+    conn = get_db_connection()
+    user = conn.execute('SELECT username, email, phone FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+    conn.close()
+
+    if not user:
+        return jsonify({"error": "Usuario no encontrado"}), 404
+
+    return jsonify({
+        "username": user['username'],
+        "email": user['email'],
+        "phone": user['phone'] or ''
+    })
+
+
+@app.route('/api/user/update-phone', methods=['POST'])
+@login_required
+def update_user_phone():
+    """Actualiza el teléfono de contacto del usuario autenticado."""
+    data = request.json
+    new_phone = (data.get('phone') or '').strip()
+
+    if not new_phone:
+        return jsonify({"error": "El teléfono no puede estar vacío"}), 400
+
+    if not re.match(r'^[\d\s\+\-\(\)]{7,20}$', new_phone):
+        return jsonify({"error": "Formato de teléfono inválido. Use solo dígitos, +, -, espacios o paréntesis."}), 400
+
+    conn = get_db_connection()
+    conn.execute('UPDATE users SET phone = ? WHERE id = ?', (new_phone, session['user_id']))
+    conn.commit()
+    conn.close()
+
+    session['phone'] = new_phone
+
+    return jsonify({"status": "success", "message": "Teléfono actualizado correctamente", "phone": new_phone})
+
+
+# --- RUTA PARA QUE EL PROFESIONAL DESCARGUE SU PROPIO DOC ---
+@app.route('/profesional/download_doc')
+@professional_required
+def download_own_doc():
+    try:
+        conn = get_db_connection()
+        user = conn.execute('SELECT doc_path FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+        conn.close()
+
+        if not user or not user['doc_path']:
+            flash('No has subido ningún documento aún.', 'error')
+            return redirect(url_for('professional_view'))
+
+        # Usamos la ruta configurada arriba
+        directory = app.config['UPLOAD_FOLDER']
+        filename = user['doc_path']
+
+        # Verificamos si el archivo físico realmente existe en el disco
+        if not os.path.exists(os.path.join(directory, filename)):
+            flash(f'Error: El archivo {filename} no existe en el servidor.', 'error')
+            return redirect(url_for('professional_view'))
+
+        # as_attachment=True fuerza la descarga en lugar de abrirlo en el navegador
+        return send_from_directory(directory, filename, as_attachment=True)
+
+    except Exception as e:
+        flash(f'Error interno: {str(e)}', 'error')
+        return redirect(url_for('professional_view'))
 
 # Inicializar la base de datos al arrancar
 init_db()
