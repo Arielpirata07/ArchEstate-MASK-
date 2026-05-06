@@ -57,20 +57,17 @@ def init_db():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT NOT NULL UNIQUE,
                 email TEXT NOT NULL DEFAULT '',
-                phone TEXT NOT NULL DEFAULT '',
                 hash TEXT NOT NULL,
                 role TEXT NOT NULL DEFAULT 'client',
                 doc_path TEXT DEFAULT ''
             )
         ''')
         
-        # Actualizar esquemas antiguos sin columnas nuevas
+        # Actualizar esquemas antiguos sin la columna email
         cursor.execute('PRAGMA table_info(users)')
         user_columns = [row[1] for row in cursor.fetchall()]
         if 'email' not in user_columns:
             cursor.execute("ALTER TABLE users ADD COLUMN email TEXT NOT NULL DEFAULT ''")
-        if 'phone' not in user_columns:
-            cursor.execute("ALTER TABLE users ADD COLUMN phone TEXT NOT NULL DEFAULT ''")
 
         # Tabla de Leads
         cursor.execute('''
@@ -451,7 +448,6 @@ def login():
             session['user_id'] = user['id']
             session['username'] = user['username']
             session['email'] = user['email']
-            session['phone'] = user['phone'] if user['phone'] else ''
             session['role'] = user['role']  # Guardar el rol en la sesión
             
             # Redirigir según el rol del usuario
@@ -1125,37 +1121,91 @@ def admin_stats():
         'audit_actions': [{'label': r['action'], 'value': r['count']} for r in audit_actions],
     })
 
+# --- ESTADO DEL DOCUMENTO DEL PROFESIONAL ---
+@app.route('/api/professional/doc-status', methods=['GET'])
+@login_required
+def get_doc_status():
+    """Retorna el estado del documento del profesional autenticado."""
+    conn = get_db_connection()
+    user = conn.execute('SELECT doc_path FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+    conn.close()
+
+    if not user:
+        return jsonify({"error": "Usuario no encontrado"}), 404
+
+    doc_path = user['doc_path']
+    has_doc  = bool(doc_path)
+
+    # Verificar que el archivo físico exista
+    if has_doc:
+        full_path = os.path.join(app.config['UPLOAD_FOLDER'], doc_path)
+        has_doc   = os.path.exists(full_path)
+
+    return jsonify({
+        "has_doc":   has_doc,
+        "filename":  doc_path if has_doc else None,
+        # Nombre legible: eliminar el prefijo "user_ID_"
+        "display_name": re.sub(r'^user_\d+_', '', doc_path) if has_doc and doc_path else None,
+    })
+
+
 # --- RUTA PARA QUE EL PROFESIONAL SUBA SU DOC ---
+MAX_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 MB
+
 @app.route('/api/professional/upload', methods=['POST'])
-@login_required # Asumiendo que usas un decorador de login
+@professional_required
 def upload_professional_doc():
     if 'document' not in request.files:
-        return jsonify({"error": "No hay archivo"}), 400
-    
+        return jsonify({"error": "No se incluyó ningún archivo en la solicitud."}), 400
+
     file = request.files['document']
-    if file.filename == '':
-        return jsonify({"error": "No se seleccionó archivo"}), 400
+    if not file or file.filename == '':
+        return jsonify({"error": "No se seleccionó ningún archivo."}), 400
 
-    if file and allowed_file(file.filename):
-        filename = secure_filename(f"user_{session['user_id']}_{file.filename}")
-        
-        # 1. Armamos la nueva ruta completa
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        
-        # 2. Nos aseguramos de que static/uploads/docs exista
-        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True) 
-        
-        # 3. Guardamos
-        file.save(file_path)
-        
+    if not allowed_file(file.filename):
+        return jsonify({
+            "error": "Tipo de archivo no permitido. Usá PDF, JPG o PNG."
+        }), 415
 
-        # Guardar la ruta en la BD
-        conn = get_db_connection()
-        conn.execute('UPDATE users SET doc_path = ? WHERE id = ?', (filename, session['user_id']))
-        conn.commit()
-        conn.close()
+    # Validar tamaño (leer en memoria para chequear)
+    file.seek(0, 2)          # ir al final
+    size = file.tell()
+    file.seek(0)             # volver al inicio
+    if size > MAX_UPLOAD_BYTES:
+        return jsonify({"error": "El archivo supera el límite de 10 MB."}), 413
 
-        return jsonify({"status": "success", "message": "Documento subido correctamente"})
+    # Nombre seguro con prefijo de usuario
+    original_name = secure_filename(file.filename)
+    filename      = f"user_{session['user_id']}_{original_name}"
+    upload_dir    = app.config['UPLOAD_FOLDER']
+
+    os.makedirs(upload_dir, exist_ok=True)
+
+    # Eliminar documento anterior si existe
+    conn         = get_db_connection()
+    prev_user    = conn.execute('SELECT doc_path FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+    if prev_user and prev_user['doc_path']:
+        prev_path = os.path.join(upload_dir, prev_user['doc_path'])
+        if os.path.exists(prev_path):
+            try:
+                os.remove(prev_path)
+            except Exception:
+                pass  # No bloquear el flujo si falla el borrado
+
+    file.save(os.path.join(upload_dir, filename))
+
+    conn.execute('UPDATE users SET doc_path = ? WHERE id = ?', (filename, session['user_id']))
+    conn.commit()
+    conn.close()
+
+    log_action("Subida de Documento", f"Usuario ID: {session['user_id']}")
+
+    return jsonify({
+        "status":       "success",
+        "message":      "Documento subido correctamente.",
+        "filename":     filename,
+        "display_name": original_name,
+    })
 
 # --- RUTA PARA QUE EL ADMIN DESCARGUE EL DOC ---
 @app.route('/admin/download_doc/<int:user_id>')
@@ -1182,49 +1232,6 @@ def download_professional_doc(user_id):
 
     except Exception as e:
         return f"Error interno: {str(e)}", 500
-
-
-# --- API: VER Y ACTUALIZAR TELÉFONO DEL USUARIO ---
-
-@app.route('/api/user/profile', methods=['GET'])
-@login_required
-def get_user_profile():
-    """Retorna los datos de perfil del usuario autenticado."""
-    conn = get_db_connection()
-    user = conn.execute('SELECT username, email, phone FROM users WHERE id = ?', (session['user_id'],)).fetchone()
-    conn.close()
-
-    if not user:
-        return jsonify({"error": "Usuario no encontrado"}), 404
-
-    return jsonify({
-        "username": user['username'],
-        "email": user['email'],
-        "phone": user['phone'] or ''
-    })
-
-
-@app.route('/api/user/update-phone', methods=['POST'])
-@login_required
-def update_user_phone():
-    """Actualiza el teléfono de contacto del usuario autenticado."""
-    data = request.json
-    new_phone = (data.get('phone') or '').strip()
-
-    if not new_phone:
-        return jsonify({"error": "El teléfono no puede estar vacío"}), 400
-
-    if not re.match(r'^[\d\s\+\-\(\)]{7,20}$', new_phone):
-        return jsonify({"error": "Formato de teléfono inválido. Use solo dígitos, +, -, espacios o paréntesis."}), 400
-
-    conn = get_db_connection()
-    conn.execute('UPDATE users SET phone = ? WHERE id = ?', (new_phone, session['user_id']))
-    conn.commit()
-    conn.close()
-
-    session['phone'] = new_phone
-
-    return jsonify({"status": "success", "message": "Teléfono actualizado correctamente", "phone": new_phone})
 
 
 # --- RUTA PARA QUE EL PROFESIONAL DESCARGUE SU PROPIO DOC ---
@@ -1256,6 +1263,78 @@ def download_own_doc():
         flash(f'Error interno: {str(e)}', 'error')
         return redirect(url_for('professional_view'))
 
+# --- GESTIÓN DE USUARIOS (ADMIN) ---
+
+@app.route('/admin/usuarios')
+@admin_required
+def user_management_view():
+    """Vista de gestión de usuarios para el administrador."""
+    return render_template('user_management.html')
+
+
+@app.route('/api/admin/users', methods=['GET'])
+@admin_required
+def get_all_users():
+    """Retorna todos los usuarios registrados (sin exponer el hash)."""
+    search = request.args.get('search', '').strip()
+    role_filter = request.args.get('role', '').strip()
+
+    conn = get_db_connection()
+    query = 'SELECT id, username, email, phone, role FROM users WHERE 1=1'
+    params = []
+
+    if search:
+        query += ' AND (username LIKE ? OR email LIKE ?)'
+        params += [f'%{search}%', f'%{search}%']
+
+    if role_filter:
+        query += ' AND role = ?'
+        params.append(role_filter)
+
+    query += ' ORDER BY id ASC'
+    users = conn.execute(query, params).fetchall()
+    conn.close()
+
+    return jsonify({
+        'success': True,
+        'users': [dict(u) for u in users],
+        'total': len(users)
+    })
+
+
+@app.route('/api/admin/user/<int:user_id>/reset-password', methods=['POST'])
+@admin_required
+def admin_reset_password(user_id):
+    """Resetea la contraseña de un usuario. Solo accesible por administradores."""
+    data = request.json
+    new_password = (data.get('password') or '').strip()
+
+    if not new_password or len(new_password) < 6:
+        return jsonify({"error": "La contraseña debe tener al menos 6 caracteres."}), 400
+
+    conn = get_db_connection()
+    user = conn.execute('SELECT username, role FROM users WHERE id = ?', (user_id,)).fetchone()
+
+    if not user:
+        conn.close()
+        return jsonify({"error": "Usuario no encontrado."}), 404
+
+    # Seguridad: no permitir resetear la contraseña de otro admin
+    if user['role'] == 'admin' and user_id != session.get('user_id'):
+        conn.close()
+        return jsonify({"error": "No se puede resetear la contraseña de otro administrador."}), 403
+
+    conn.execute('UPDATE users SET hash = ? WHERE id = ?',
+                 (generate_password_hash(new_password), user_id))
+    conn.commit()
+    conn.close()
+
+    log_action("Reset de Contraseña", f"Usuario: {user['username']} (ID: {user_id})")
+
+    return jsonify({
+        "status": "success",
+        "message": f"Contraseña de '{user['username']}' actualizada correctamente."
+    })
 # Inicializar la base de datos al arrancar
 init_db()
 

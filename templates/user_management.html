@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión de Usuarios | ArchEstate{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+
+    <!-- Header -->
+    <div class="flex justify-between items-end border-b border-midnight/10 pb-6">
+        <div>
+            <div class="flex items-center gap-3 mb-1">
+                <a href="{{ url_for('admin_view') }}"
+                   class="text-[10px] uppercase tracking-widest font-bold text-midnight/40 hover:text-gold transition-colors flex items-center gap-1">
+                    <i data-lucide="arrow-left" class="w-3 h-3"></i> Panel Admin
+                </a>
+            </div>
+            <h2 class="text-4xl font-serif">Gestión de <span class="serif-italic">Usuarios</span></h2>
+            <p class="text-midnight/50 mt-2">Configuración de cuentas y reseteo de contraseñas.</p>
+        </div>
+
+        <!-- Buscador y filtro de rol -->
+        <div class="flex items-end gap-3">
+            <div>
+                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/40 mb-2">Buscar</label>
+                <input id="userSearchInput" type="text" placeholder="Nombre o email..."
+                       class="px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none w-48">
+            </div>
+            <div>
+                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/40 mb-2">Rol</label>
+                <select id="roleFilter" class="px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
+                    <option value="">Todos</option>
+                    <option value="client">Cliente</option>
+                    <option value="professional">Profesional</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de usuarios -->
+    <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+        <div class="p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Directorio de Usuarios</h3>
+            <span class="text-[10px] text-midnight/40 font-bold uppercase tracking-widest">
+                <span id="usersCount">0</span> usuarios
+            </span>
+        </div>
+
+        <table class="w-full text-left border-collapse">
+            <thead>
+                <tr class="border-b border-midnight/5 bg-paper-dark/50">
+                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40">ID</th>
+                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Usuario</th>
+                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Email</th>
+                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Teléfono</th>
+                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Rol</th>
+                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/40 text-right">Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="usersTableBody">
+                <tr>
+                    <td colspan="6" class="p-8 text-center text-midnight/40">
+                        <div class="flex justify-center items-center gap-2">
+                            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gold"></div>
+                            Cargando usuarios...
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- ===== MODAL DE RESET DE CONTRASEÑA ===== -->
+<div id="resetModal" class="fixed inset-0 z-50 hidden">
+    <!-- Overlay -->
+    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeModal()"></div>
+
+    <!-- Panel -->
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
+        <div class="bg-white rounded-lg shadow-2xl border-t-4 border-gold overflow-hidden">
+
+            <!-- Header del modal -->
+            <div class="px-8 pt-8 pb-4">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p class="text-[10px] uppercase tracking-widest font-bold text-gold mb-1">Acción administrativa</p>
+                        <h3 class="text-2xl font-serif">Reset de <span class="serif-italic">Contraseña</span></h3>
+                        <p class="text-sm text-midnight/50 mt-1">
+                            Usuario: <strong id="modal-username" class="text-midnight font-bold"></strong>
+                        </p>
+                    </div>
+                    <button onclick="closeModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Aviso de seguridad -->
+            <div class="mx-8 mb-6 p-3 bg-amber-50 border border-amber-100 rounded flex items-start gap-3">
+                <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5"></i>
+                <p class="text-[10px] text-amber-700 font-bold uppercase tracking-wider leading-relaxed">
+                    Esta acción quedará registrada en el log de auditoría. Asegurate de comunicarle la nueva contraseña al usuario de forma segura.
+                </p>
+            </div>
+
+            <!-- Formulario -->
+            <div class="px-8 pb-8 space-y-5">
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Nueva Contraseña</label>
+                    <div class="relative">
+                        <i data-lucide="lock" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5"></i>
+                        <input
+                            id="newPasswordInput"
+                            type="password"
+                            placeholder="Mínimo 6 caracteres"
+                            class="w-full bg-transparent border-0 border-b border-midnight/20 focus:border-gold focus:ring-0 py-3 pl-8 transition-all outline-none text-sm"
+                            onkeyup="validatePasswordModal()"
+                        >
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Confirmar Contraseña</label>
+                    <div class="relative">
+                        <i data-lucide="lock-keyhole" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5"></i>
+                        <input
+                            id="confirmPasswordInput"
+                            type="password"
+                            placeholder="Repetir contraseña"
+                            class="w-full bg-transparent border-0 border-b border-midnight/20 focus:border-gold focus:ring-0 py-3 pl-8 transition-all outline-none text-sm"
+                            onkeyup="validatePasswordModal()"
+                        >
+                    </div>
+                    <p id="passwordMatchError" class="hidden text-[10px] text-rose-500 font-medium mt-1"></p>
+                </div>
+
+                <!-- Indicador de fortaleza -->
+                <div id="strengthBar" class="space-y-1 hidden">
+                    <div class="flex gap-1">
+                        <div id="s1" class="h-1 flex-1 rounded bg-midnight/10 transition-colors"></div>
+                        <div id="s2" class="h-1 flex-1 rounded bg-midnight/10 transition-colors"></div>
+                        <div id="s3" class="h-1 flex-1 rounded bg-midnight/10 transition-colors"></div>
+                        <div id="s4" class="h-1 flex-1 rounded bg-midnight/10 transition-colors"></div>
+                    </div>
+                    <p id="strengthLabel" class="text-[9px] text-midnight/40 font-bold uppercase tracking-widest"></p>
+                </div>
+
+                <!-- Acciones -->
+                <div class="flex gap-3 pt-2">
+                    <button onclick="closeModal()"
+                        class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-all">
+                        Cancelar
+                    </button>
+                    <button id="confirmResetBtn" onclick="confirmReset()"
+                        class="flex-1 py-3 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="key-round" class="w-3 h-3"></i>
+                        Resetear
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ---- Estado ----
+let targetUserId   = null;
+let targetUsername = null;
+let searchTimeout  = null;
+
+// ---- Carga y render de usuarios ----
+
+async function loadUsers() {
+    const search = document.getElementById('userSearchInput').value.trim();
+    const role   = document.getElementById('roleFilter').value;
+
+    const params = new URLSearchParams();
+    if (search) params.set('search', search);
+    if (role)   params.set('role', role);
+
+    const tbody = document.getElementById('usersTableBody');
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="6" class="p-8 text-center text-midnight/40">
+                <div class="flex justify-center items-center gap-2">
+                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gold"></div>
+                    Cargando...
+                </div>
+            </td>
+        </tr>`;
+
+    try {
+        const res  = await fetch(`/api/admin/users?${params}`);
+        const data = await res.json();
+
+        if (data.success) {
+            renderUsers(data.users);
+            document.getElementById('usersCount').textContent = data.total;
+        } else {
+            showTableError(data.error || 'Error al cargar usuarios.');
+        }
+    } catch (err) {
+        showTableError('Error de conexión.');
+    }
+}
+
+const ROLE_LABELS = {
+    admin:        { text: 'Admin',        cls: 'bg-midnight text-white' },
+    professional: { text: 'Profesional',  cls: 'bg-gold/20 text-gold' },
+    client:       { text: 'Cliente',      cls: 'bg-paper-dark text-midnight/60' },
+};
+
+function renderUsers(users) {
+    const tbody = document.getElementById('usersTableBody');
+
+    if (!users.length) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="p-8 text-center text-midnight/40">
+                    <i data-lucide="search" class="w-8 h-8 mx-auto mb-2 opacity-30"></i>
+                    <p>No se encontraron usuarios.</p>
+                </td>
+            </tr>`;
+        if (window.lucide) lucide.createIcons();
+        return;
+    }
+
+    tbody.innerHTML = users.map(u => {
+        const badge = ROLE_LABELS[u.role] || { text: u.role, cls: 'bg-paper-dark text-midnight' };
+        const phone = u.phone || '<span class="text-midnight/25 italic">Sin teléfono</span>';
+
+        // El admin no puede resetear su propia cuenta desde aquí
+        // ni resetear a otros admins (protegido también en el backend)
+        const isAdmin = u.role === 'admin';
+        const resetBtn = isAdmin
+            ? `<span class="text-[10px] text-midnight/20 font-bold uppercase tracking-widest">Protegida</span>`
+            : `<button
+                onclick="openResetModal(${u.id}, '${escapeHtml(u.username)}')"
+                class="inline-flex items-center gap-2 px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">
+                    <i data-lucide="key-round" class="w-3 h-3"></i> Reset Pass
+               </button>`;
+
+        return `
+            <tr class="border-b border-midnight/5 hover:bg-paper transition-colors">
+                <td class="p-4 font-mono text-xs text-midnight/40">#${u.id}</td>
+                <td class="p-4">
+                    <div class="font-medium text-midnight">${escapeHtml(u.username)}</div>
+                </td>
+                <td class="p-4 text-sm text-midnight/60">${escapeHtml(u.email) || '<span class="text-midnight/25 italic">Sin email</span>'}</td>
+                <td class="p-4 text-sm text-midnight/60">${phone}</td>
+                <td class="p-4">
+                    <span class="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest ${badge.cls}">
+                        ${badge.text}
+                    </span>
+                </td>
+                <td class="p-4 text-right">${resetBtn}</td>
+            </tr>`;
+    }).join('');
+
+    if (window.lucide) lucide.createIcons();
+}
+
+function showTableError(msg) {
+    const tbody = document.getElementById('usersTableBody');
+    tbody.innerHTML = `
+        <tr>
+            <td colspan="6" class="p-8 text-center text-rose-500">
+                <i data-lucide="alert-circle" class="w-6 h-6 mx-auto mb-2"></i>
+                <p class="text-sm">${msg}</p>
+            </td>
+        </tr>`;
+    if (window.lucide) lucide.createIcons();
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ---- Modal ----
+
+function openResetModal(userId, username) {
+    targetUserId   = userId;
+    targetUsername = username;
+
+    document.getElementById('modal-username').textContent = username;
+    document.getElementById('newPasswordInput').value     = '';
+    document.getElementById('confirmPasswordInput').value = '';
+    document.getElementById('passwordMatchError').classList.add('hidden');
+    document.getElementById('strengthBar').classList.add('hidden');
+
+    document.getElementById('resetModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    setTimeout(() => document.getElementById('newPasswordInput').focus(), 100);
+}
+
+function closeModal() {
+    document.getElementById('resetModal').classList.add('hidden');
+    document.body.style.overflow = '';
+    targetUserId   = null;
+    targetUsername = null;
+}
+
+// Cerrar con Escape
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ---- Validación en tiempo real ----
+
+function validatePasswordModal() {
+    const pwd     = document.getElementById('newPasswordInput').value;
+    const confirm = document.getElementById('confirmPasswordInput').value;
+    const errEl   = document.getElementById('passwordMatchError');
+    const bar     = document.getElementById('strengthBar');
+
+    // Mostrar barra de fortaleza
+    if (pwd.length > 0) {
+        bar.classList.remove('hidden');
+        updateStrengthBar(pwd);
+    } else {
+        bar.classList.add('hidden');
+    }
+
+    // Validar coincidencia solo si el campo de confirmación tiene algo
+    if (confirm.length > 0) {
+        if (pwd !== confirm) {
+            errEl.textContent = 'Las contraseñas no coinciden.';
+            errEl.classList.remove('hidden');
+        } else {
+            errEl.classList.add('hidden');
+        }
+    } else {
+        errEl.classList.add('hidden');
+    }
+}
+
+function updateStrengthBar(pwd) {
+    let strength = 0;
+    if (pwd.length >= 6)  strength++;
+    if (pwd.length >= 10) strength++;
+    if (/[A-Z]/.test(pwd) && /[0-9]/.test(pwd)) strength++;
+    if (/[^A-Za-z0-9]/.test(pwd)) strength++;
+
+    const colors  = ['bg-rose-400', 'bg-amber-400', 'bg-yellow-400', 'bg-emerald-500'];
+    const labels  = ['Muy débil', 'Débil', 'Aceptable', 'Fuerte'];
+    const filled  = colors[strength - 1] || 'bg-midnight/10';
+
+    for (let i = 1; i <= 4; i++) {
+        const bar = document.getElementById(`s${i}`);
+        bar.className = `h-1 flex-1 rounded transition-colors ${i <= strength ? filled : 'bg-midnight/10'}`;
+    }
+    document.getElementById('strengthLabel').textContent = strength > 0 ? labels[strength - 1] : '';
+}
+
+// ---- Confirmación del reset ----
+
+async function confirmReset() {
+    const pwd     = document.getElementById('newPasswordInput').value.trim();
+    const confirm = document.getElementById('confirmPasswordInput').value.trim();
+    const errEl   = document.getElementById('passwordMatchError');
+    const btn     = document.getElementById('confirmResetBtn');
+
+    errEl.classList.add('hidden');
+
+    if (!pwd || pwd.length < 6) {
+        errEl.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+        errEl.classList.remove('hidden');
+        return;
+    }
+
+    if (pwd !== confirm) {
+        errEl.textContent = 'Las contraseñas no coinciden.';
+        errEl.classList.remove('hidden');
+        return;
+    }
+
+    // Estado de carga
+    const original = btn.innerHTML;
+    btn.innerHTML  = '<div class="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div> Procesando...';
+    btn.disabled   = true;
+
+    try {
+        const res  = await fetch(`/api/admin/user/${targetUserId}/reset-password`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ password: pwd })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+            closeModal();
+            if (typeof showToast === 'function') showToast(data.message);
+        } else {
+            errEl.textContent = data.error || 'Error al resetear la contraseña.';
+            errEl.classList.remove('hidden');
+            btn.innerHTML  = original;
+            btn.disabled   = false;
+        }
+    } catch (err) {
+        errEl.textContent = 'Error de conexión. Intentá de nuevo.';
+        errEl.classList.remove('hidden');
+        btn.innerHTML  = original;
+        btn.disabled   = false;
+    }
+}
+
+// ---- Init ----
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadUsers();
+
+    // Búsqueda en tiempo real
+    document.getElementById('userSearchInput').addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(loadUsers, 400);
+    });
+
+    // Filtro por rol
+    document.getElementById('roleFilter').addEventListener('change', loadUsers);
+});
+</script>
+{% endblock %}

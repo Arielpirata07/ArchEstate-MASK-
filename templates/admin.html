@@ -23,8 +23,12 @@
             </button>
             <button onclick="showTab('management')" id="tab-management"
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white">
-                <span class="flex items-center gap-2"><i data-lucide="users" class="w-3 h-3"></i> Gestión</span>
+                <span class="flex items-center gap-2"><i data-lucide="building-2" class="w-3 h-3"></i> Profesionales</span>
             </button>
+            <a href="{{ url_for('user_management_view') }}"
+                class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white">
+                <span class="flex items-center gap-2"><i data-lucide="users" class="w-3 h-3"></i> Usuarios</span>
+            </a>
         </div>
     </div>
 

@@ -8,6 +8,8 @@
 
 {% block content %}
 <div class="space-y-8">
+
+    <!-- ===== HEADER ===== -->
     <div class="flex justify-between items-end border-b border-midnight/10 pb-6">
         <div>
             <h2 class="text-4xl font-serif">Panel de <span class="serif-italic">Leads</span></h2>
@@ -25,30 +27,86 @@
         {% endif %}
     </div>
 
+
     {% if pending %}
-    <div class="bg-white p-12 rounded-lg shadow-xl border-t-4 border-gold text-center">
-        <i data-lucide="clock" class="text-gold mb-6 w-16 h-16 mx-auto"></i>
-        <h3 class="text-2xl font-serif mb-4">Validación en Proceso</h3>
-        <p class="text-midnight/70 max-w-md mx-auto">
-            Tu cuenta de profesional está siendo revisada por nuestro equipo de administración. 
-            Una vez aprobada, tendrás acceso completo a los leads disponibles.
-        </p>
-        <p class="text-sm text-midnight/50 mt-4">
-            Recibirás una notificación por email cuando tu cuenta sea activada.
-        </p>
+    <!-- ===== ESTADO PENDIENTE ===== -->
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+
+        <!-- Panel de pasos (izquierda) -->
+        <div class="lg:col-span-2 bg-midnight rounded-lg p-8 flex flex-col justify-between">
+            <div>
+                <div class="w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center mb-6">
+                    <i data-lucide="clock" class="w-6 h-6 text-gold"></i>
+                </div>
+                <h3 class="text-2xl font-serif text-white mb-3">Validación en <span class="font-serif italic">Proceso</span></h3>
+                <p class="text-white/60 text-sm leading-relaxed mb-8">
+                    Tu cuenta está siendo revisada. Subí tu documentación para agilizar la aprobación.
+                </p>
+
+                <div class="space-y-5">
+                    <!-- Paso 1 -->
+                    <div class="flex items-start gap-3">
+                        <div class="w-6 h-6 rounded-full bg-gold flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <i data-lucide="check" class="w-3 h-3 text-white"></i>
+                        </div>
+                        <div>
+                            <p class="text-white text-xs font-bold uppercase tracking-widest">Registro completado</p>
+                            <p class="text-white/40 text-[10px] mt-0.5">Cuenta creada correctamente</p>
+                        </div>
+                    </div>
+                    <!-- Paso 2 -->
+                    <div class="flex items-start gap-3">
+                        <div id="step2-icon" class="w-6 h-6 rounded-full bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <span class="text-white/60 text-[10px] font-bold">2</span>
+                        </div>
+                        <div>
+                            <p id="step2-label" class="text-white/60 text-xs font-bold uppercase tracking-widest">Documentación pendiente</p>
+                            <p id="step2-sub" class="text-white/30 text-[10px] mt-0.5">Subí tu matrícula o habilitación</p>
+                        </div>
+                    </div>
+                    <!-- Paso 3 -->
+                    <div class="flex items-start gap-3">
+                        <div class="w-6 h-6 rounded-full bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                            <span class="text-white/60 text-[10px] font-bold">3</span>
+                        </div>
+                        <div>
+                            <p class="text-white/60 text-xs font-bold uppercase tracking-widest">Revisión del equipo</p>
+                            <p class="text-white/30 text-[10px] mt-0.5">Aprobación en menos de 24 hs</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-white/20 text-[10px] uppercase tracking-widest font-bold mt-8 border-t border-white/10 pt-6">
+                ArchEstate · The Private Ledger
+            </p>
+        </div>
+
+        <!-- Widget de carga (derecha) -->
+        <div class="lg:col-span-3">
+            <div class="bg-white rounded-lg shadow-xl overflow-hidden h-full flex flex-col">
+                <div class="p-6 border-b border-midnight/5">
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-gold mb-1">Documentación Profesional</h3>
+                    <p class="text-sm text-midnight/50">Subí tu matrícula, habilitación o certificado profesional. Solo el equipo de administración tendrá acceso.</p>
+                </div>
+                <div class="p-6 flex-grow">
+                    <div id="uploadWidgetPending"></div>
+                </div>
+            </div>
+        </div>
     </div>
+
     {% else %}
+    <!-- ===== LEADS (aprobado) ===== -->
+
     <!-- Controles de filtro y búsqueda -->
-    <div class="bg-white p-6 rounded-lg shadow-lg border border-midnight/5 mb-6">
+    <div class="bg-white p-6 rounded-lg shadow-lg border border-midnight/5">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            <!-- Búsqueda general -->
             <div>
                 <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Buscar</label>
-                <input type="text" id="searchInput" placeholder="Zona, email, tipo..." 
+                <input type="text" id="searchInput" placeholder="Zona, email, tipo..."
                        class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
             </div>
-            
-            <!-- Filtro por tipo -->
             <div>
                 <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Tipo</label>
                 <select id="typeFilter" class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
@@ -58,26 +116,21 @@
                     <option value="alquiler temporario">Alquiler Temporario</option>
                 </select>
             </div>
-            
-            <!-- Filtro por zona -->
             <div>
                 <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Zona</label>
-                <input type="text" id="zoneFilter" placeholder="Ej: Palermo, Recoleta..." 
+                <input type="text" id="zoneFilter" placeholder="Ej: Palermo, Recoleta..."
                        class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
             </div>
-            
-            <!-- Filtro por presupuesto -->
             <div>
                 <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Presupuesto</label>
                 <div class="flex gap-2">
-                    <input type="number" id="minBudget" placeholder="Mín" 
+                    <input type="number" id="minBudget" placeholder="Mín"
                            class="w-1/2 px-2 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
-                    <input type="number" id="maxBudget" placeholder="Máx" 
+                    <input type="number" id="maxBudget" placeholder="Máx"
                            class="w-1/2 px-2 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
                 </div>
             </div>
         </div>
-        
         <div class="flex justify-between items-center">
             <div class="flex gap-2">
                 <button id="applyFilters" class="px-4 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
@@ -87,13 +140,11 @@
                     Limpiar
                 </button>
             </div>
-            <div class="text-sm text-midnight/60">
-                <span id="leadsCount">0</span> leads encontrados
-            </div>
+            <span class="text-sm text-midnight/60"><span id="leadsCount">0</span> leads encontrados</span>
         </div>
     </div>
 
-    <!-- Tabla de Leads (cargada dinámicamente) -->
+    <!-- Tabla de Leads -->
     <div class="bg-white rounded-lg shadow-xl overflow-hidden">
         <div class="p-4 bg-paper-dark border-b border-midnight/5 flex justify-between items-center">
             <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Leads Disponibles</h3>
@@ -110,7 +161,6 @@
                 </button>
             </div>
         </div>
-        
         <div id="leadsTableContainer">
             <table class="w-full text-left border-collapse">
                 <thead>
@@ -125,7 +175,6 @@
                     </tr>
                 </thead>
                 <tbody id="leadsTableBody">
-                    <!-- Los leads se cargarán dinámicamente aquí -->
                     <tr>
                         <td colspan="7" class="p-8 text-center text-midnight/60">
                             <div class="flex justify-center items-center gap-2">
@@ -138,73 +187,331 @@
             </table>
         </div>
     </div>
-    {% endif %}
-</div>
 
-<div class="bg-white p-6 rounded-lg shadow-sm border border-midnight/5">
-    <h3 class="text-gold font-bold uppercase tracking-widest text-[12px] mb-4">Validación de Identidad</h3>
-    <form id="uploadDocForm" class="flex flex-col gap-4">
-        <input type="file" name="document" id="docInput" class="text-sm text-midnight/50 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-gold file:text-white hover:file:bg-midnight transition-all">
-        <button type="submit" class="w-full bg-midnight text-white py-2 rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">
-            Subir Documentación
+    <!-- Documentación: panel colapsable para profesional aprobado -->
+    <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+        <button id="toggleDocSection"
+            class="w-full p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between hover:bg-paper transition-colors"
+            onclick="toggleDocPanel()">
+            <div class="flex items-center gap-3">
+                <i data-lucide="file-check" class="w-4 h-4 text-gold"></i>
+                <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Mi Documentación Profesional</h3>
+            </div>
+            <i data-lucide="chevron-down" id="docChevron" class="w-4 h-4 text-midnight/30 transition-transform duration-200"></i>
         </button>
-    </form>
-    {% if doc_path %}
-    <div class="mt-4 pt-4 border-t border-midnight/10">
-        <a href="{{ url_for('download_own_doc') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all rounded text-[10px] font-bold uppercase tracking-widest">
-            <i data-lucide="download" class="w-3 h-3"></i> Descargar Mi Documento
-        </a>
+        <div id="docPanel" class="hidden p-6">
+            <p class="text-sm text-midnight/50 mb-6">Podés actualizar tu matrícula o documentación en cualquier momento. El nuevo archivo reemplazará al anterior.</p>
+            <div id="docApproved"></div>
+        </div>
     </div>
     {% endif %}
+
 </div>
-
-<script>
-document.getElementById('uploadDocForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append('document', document.getElementById('docInput').files[0]);
-
-    const response = await fetch('/api/professional/upload', {
-        method: 'POST',
-        body: formData
-    });
-    
-    const result = await response.json();
-    alert(result.message);
-});
-</script>
 {% endblock %}
+
 
 {% block scripts %}
 <script>
-// Variables globales para filtros
-let currentFilters = {
-    search: '',
-    type: '',
-    zone: '',
-    min_budget: '',
-    max_budget: '',
-    currency: '',
-    sort: 'timestamp',
-    order: 'desc'
-};
+// ================================================================
+// UPLOAD WIDGET
+// ================================================================
+const ALLOWED_EXT = ['.pdf', '.jpg', '.jpeg', '.png'];
+const MAX_MB      = 10;
+let   selectedFiles = {};
 
-// Cargar leads al inicializar la página
-document.addEventListener('DOMContentLoaded', function() {
+function renderUploadWidget(cid) {
+    const container = document.getElementById(cid);
+    if (!container) return;
+
+    container.innerHTML = `
+        <div class="space-y-4">
+
+            <!-- Zona drag & drop -->
+            <div id="dropzone-${cid}"
+                 class="relative border-2 border-dashed border-midnight/20 rounded-lg p-8 text-center transition-all duration-200 cursor-pointer hover:border-gold hover:bg-paper group"
+                 onclick="document.getElementById('fileInput-${cid}').click()"
+                 ondragover="handleDragOver(event,'${cid}')"
+                 ondragleave="handleDragLeave(event,'${cid}')"
+                 ondrop="handleDrop(event,'${cid}')">
+
+                <input type="file" id="fileInput-${cid}" accept=".pdf,.jpg,.jpeg,.png"
+                       class="hidden" onchange="handleFileSelect(event,'${cid}')">
+
+                <div class="w-14 h-14 mx-auto rounded-full bg-paper-dark group-hover:bg-gold/10 flex items-center justify-center mb-4 transition-colors">
+                    <i data-lucide="upload-cloud" class="w-7 h-7 text-midnight/30 group-hover:text-gold transition-colors"></i>
+                </div>
+                <p class="text-sm font-semibold text-midnight/70 group-hover:text-midnight transition-colors">Arrastrá tu archivo aquí</p>
+                <p class="text-[10px] text-midnight/40 mt-1 uppercase tracking-widest font-bold">o hacé clic para seleccionar</p>
+                <p class="text-[9px] text-midnight/30 mt-3 uppercase tracking-widest">PDF · JPG · PNG &nbsp;·&nbsp; Máx. ${MAX_MB} MB</p>
+            </div>
+
+            <!-- Preview del archivo seleccionado -->
+            <div id="filePreview-${cid}" class="hidden">
+                <div class="flex items-center gap-4 p-4 bg-paper-dark rounded-lg border border-midnight/10">
+                    <div id="fileIcon-${cid}" class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-gold/10">
+                        <i data-lucide="file" class="w-5 h-5 text-gold"></i>
+                    </div>
+                    <div class="flex-grow min-w-0">
+                        <p id="fileName-${cid}" class="text-sm font-semibold text-midnight truncate"></p>
+                        <p id="fileSize-${cid}" class="text-[10px] text-midnight/40 mt-0.5 uppercase tracking-widest font-bold"></p>
+                    </div>
+                    <button onclick="clearFile('${cid}')" class="p-2 text-midnight/30 hover:text-rose-500 transition-colors flex-shrink-0" title="Quitar archivo">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Barra de progreso -->
+            <div id="progressWrapper-${cid}" class="hidden space-y-2">
+                <div class="flex justify-between items-center">
+                    <p class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Subiendo documento...</p>
+                    <span id="progressPct-${cid}" class="text-[10px] font-bold text-gold">0%</span>
+                </div>
+                <div class="h-1.5 bg-midnight/10 rounded-full overflow-hidden">
+                    <div id="progressBar-${cid}" class="h-full bg-gold rounded-full transition-all duration-300" style="width:0%"></div>
+                </div>
+            </div>
+
+            <!-- Estado: documento ya cargado -->
+            <div id="docStatus-${cid}" class="hidden space-y-2">
+                <div class="flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-100 rounded-lg">
+                    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i>
+                    <div class="flex-grow min-w-0">
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-700">Documento cargado</p>
+                        <p id="docStatusName-${cid}" class="text-xs text-emerald-600 mt-0.5 truncate font-medium"></p>
+                    </div>
+                    <a href="{{ url_for('download_own_doc') }}"
+                       class="flex-shrink-0 flex items-center gap-1 px-2 py-1 bg-emerald-100 text-emerald-700 rounded text-[9px] font-bold uppercase tracking-widest hover:bg-emerald-200 transition-colors">
+                        <i data-lucide="download" class="w-3 h-3"></i> Descargar
+                    </a>
+                </div>
+                <button onclick="replaceDoc('${cid}')"
+                    class="w-full text-[10px] text-midnight/40 hover:text-gold transition-colors font-bold uppercase tracking-widest py-1 flex items-center justify-center gap-1">
+                    <i data-lucide="refresh-cw" class="w-3 h-3"></i> Reemplazar documento
+                </button>
+            </div>
+
+            <!-- Botón de envío -->
+            <div id="submitWrapper-${cid}" class="hidden">
+                <button id="uploadBtn-${cid}" onclick="uploadFile('${cid}')"
+                    class="w-full py-3 bg-midnight text-white rounded font-bold uppercase tracking-widest text-[10px] hover:bg-gold transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="upload" class="w-4 h-4"></i>
+                    Subir Documentación
+                </button>
+            </div>
+
+        </div>
+    `;
+
+    if (window.lucide) lucide.createIcons();
+    loadDocStatus(cid);
+}
+
+// ---- Carga estado existente desde la API ----
+async function loadDocStatus(cid) {
+    try {
+        const res  = await fetch('/api/professional/doc-status');
+        const data = await res.json();
+        if (data.has_doc) markDocLoaded(cid, data.display_name);
+    } catch (e) { /* silencioso */ }
+}
+
+function markDocLoaded(cid, name) {
+    document.getElementById(`dropzone-${cid}`)?.classList.add('hidden');
+    document.getElementById(`submitWrapper-${cid}`)?.classList.add('hidden');
+    document.getElementById(`docStatus-${cid}`)?.classList.remove('hidden');
+    const nameEl = document.getElementById(`docStatusName-${cid}`);
+    if (nameEl) nameEl.textContent = name || 'Documento cargado';
+
+    // Actualizar paso 2 en el sidebar (solo estado pendiente)
+    const icon  = document.getElementById('step2-icon');
+    const label = document.getElementById('step2-label');
+    const sub   = document.getElementById('step2-sub');
+    if (icon) {
+        icon.className = 'w-6 h-6 rounded-full bg-gold flex items-center justify-center flex-shrink-0 mt-0.5';
+        icon.innerHTML = '<i data-lucide="check" class="w-3 h-3 text-white"></i>';
+        label.className   = 'text-white text-xs font-bold uppercase tracking-widest';
+        label.textContent = 'Documentación enviada';
+        sub.textContent   = name || '';
+        if (window.lucide) lucide.createIcons();
+    }
+}
+
+// ---- Drag & drop ----
+function handleDragOver(e, cid) {
+    e.preventDefault();
+    document.getElementById(`dropzone-${cid}`).classList.add('border-gold', 'bg-paper');
+}
+function handleDragLeave(e, cid) {
+    document.getElementById(`dropzone-${cid}`).classList.remove('border-gold', 'bg-paper');
+}
+function handleDrop(e, cid) {
+    e.preventDefault();
+    handleDragLeave(e, cid);
+    if (e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0], cid);
+}
+function handleFileSelect(e, cid) {
+    if (e.target.files[0]) processFile(e.target.files[0], cid);
+}
+
+// ---- Procesar archivo ----
+function processFile(file, cid) {
+    const ext = '.' + file.name.split('.').pop().toLowerCase();
+    if (!ALLOWED_EXT.includes(ext)) {
+        if (typeof showToast === 'function') showToast(`Tipo no permitido. Usá: PDF, JPG o PNG.`, 'error');
+        return;
+    }
+    if (file.size > MAX_MB * 1024 * 1024) {
+        if (typeof showToast === 'function') showToast(`El archivo supera los ${MAX_MB} MB.`, 'error');
+        return;
+    }
+
+    selectedFiles[cid] = file;
+
+    // Ícono por tipo MIME
+    const iconEl = document.getElementById(`fileIcon-${cid}`);
+    if (file.type === 'application/pdf') {
+        iconEl.className = 'w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-rose-50';
+        iconEl.innerHTML = '<i data-lucide="file-text" class="w-5 h-5 text-rose-500"></i>';
+    } else {
+        iconEl.className = 'w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 bg-blue-50';
+        iconEl.innerHTML = '<i data-lucide="image" class="w-5 h-5 text-blue-500"></i>';
+    }
+
+    document.getElementById(`fileName-${cid}`).textContent = file.name;
+    document.getElementById(`fileSize-${cid}`).textContent = formatBytes(file.size);
+
+    document.getElementById(`dropzone-${cid}`).classList.add('hidden');
+    document.getElementById(`docStatus-${cid}`).classList.add('hidden');
+    document.getElementById(`filePreview-${cid}`).classList.remove('hidden');
+    document.getElementById(`submitWrapper-${cid}`).classList.remove('hidden');
+
+    if (window.lucide) lucide.createIcons();
+}
+
+function clearFile(cid) {
+    selectedFiles[cid] = null;
+    const input = document.getElementById(`fileInput-${cid}`);
+    if (input) input.value = '';
+    document.getElementById(`filePreview-${cid}`).classList.add('hidden');
+    document.getElementById(`submitWrapper-${cid}`).classList.add('hidden');
+    document.getElementById(`dropzone-${cid}`).classList.remove('hidden');
+}
+
+function replaceDoc(cid) {
+    document.getElementById(`docStatus-${cid}`).classList.add('hidden');
+    document.getElementById(`dropzone-${cid}`).classList.remove('hidden');
+}
+
+// ---- Subida con barra de progreso ----
+async function uploadFile(cid) {
+    const file = selectedFiles[cid];
+    if (!file) return;
+
+    const btn = document.getElementById(`uploadBtn-${cid}`);
+    btn.disabled = true;
+
+    document.getElementById(`filePreview-${cid}`).classList.add('hidden');
+    document.getElementById(`submitWrapper-${cid}`).classList.add('hidden');
+    document.getElementById(`progressWrapper-${cid}`).classList.remove('hidden');
+
+    // Progreso animado (simulado, ya que fetch no expone upload progress)
+    let pct = 0;
+    const bar   = document.getElementById(`progressBar-${cid}`);
+    const pctEl = document.getElementById(`progressPct-${cid}`);
+    const tick  = setInterval(() => {
+        pct = Math.min(pct + Math.random() * 18, 88);
+        bar.style.width   = pct + '%';
+        pctEl.textContent = Math.round(pct) + '%';
+    }, 180);
+
+    const formData = new FormData();
+    formData.append('document', file);
+
+    try {
+        const res  = await fetch('/api/professional/upload', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        clearInterval(tick);
+        bar.style.width   = '100%';
+        pctEl.textContent = '100%';
+
+        // Pequeña pausa para que se vea el 100%
+        await new Promise(r => setTimeout(r, 350));
+        document.getElementById(`progressWrapper-${cid}`).classList.add('hidden');
+
+        if (res.ok) {
+            markDocLoaded(cid, data.display_name);
+            if (typeof showToast === 'function') showToast(data.message);
+        } else {
+            document.getElementById(`dropzone-${cid}`).classList.remove('hidden');
+            if (typeof showToast === 'function') showToast(data.error || 'Error al subir el archivo.', 'error');
+        }
+    } catch (err) {
+        clearInterval(tick);
+        document.getElementById(`progressWrapper-${cid}`).classList.add('hidden');
+        document.getElementById(`dropzone-${cid}`).classList.remove('hidden');
+        if (typeof showToast === 'function') showToast('Error de conexión al subir el archivo.', 'error');
+    }
+
+    btn.disabled       = false;
+    selectedFiles[cid] = null;
+}
+
+// ---- Toggle panel doc (aprobado) ----
+let docPanelInitialized = false;
+function toggleDocPanel() {
+    const panel   = document.getElementById('docPanel');
+    const chevron = document.getElementById('docChevron');
+    const isHidden = panel.classList.contains('hidden');
+
+    panel.classList.toggle('hidden', !isHidden);
+    chevron.style.transform = isHidden ? 'rotate(180deg)' : '';
+
+    // Inicializar widget solo la primera vez que se abre
+    if (isHidden && !docPanelInitialized) {
+        docPanelInitialized = true;
+        renderUploadWidget('docApproved');
+    }
+}
+
+// ---- Helpers ----
+function formatBytes(bytes) {
+    if (bytes < 1024)         return bytes + ' B';
+    if (bytes < 1024 * 1024)  return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+// ================================================================
+// INIT
+// ================================================================
+document.addEventListener('DOMContentLoaded', () => {
+    // Widget en estado pendiente
+    if (document.getElementById('uploadWidgetPending')) {
+        renderUploadWidget('uploadWidgetPending');
+    }
+
+    {% if not pending %}
     loadLeads();
-    
-    // Configurar event listeners
-    setupEventListeners();
+    setupLeadEventListeners();
+    {% endif %}
 });
 
-// Configurar event listeners para filtros
-function setupEventListeners() {
+// ================================================================
+// LEADS (solo si está aprobado)
+// ================================================================
+{% if not pending %}
+let currentFilters = {
+    search: '', type: '', zone: '', min_budget: '', max_budget: '',
+    currency: '', sort: 'timestamp', order: 'desc'
+};
+
+function setupLeadEventListeners() {
     document.getElementById('applyFilters').addEventListener('click', applyFilters);
     document.getElementById('clearFilters').addEventListener('click', clearFilters);
     document.getElementById('sortSelect').addEventListener('change', updateSort);
     document.getElementById('sortOrder').addEventListener('click', toggleSortOrder);
-    
-    // Búsqueda en tiempo real (con debounce)
+
     let searchTimeout;
     document.getElementById('searchInput').addEventListener('input', function() {
         clearTimeout(searchTimeout);
@@ -212,152 +519,100 @@ function setupEventListeners() {
     });
 }
 
-// Cargar leads desde la API
 async function loadLeads() {
     try {
-        const params = new URLSearchParams(currentFilters);
-        const response = await fetch(`/api/leads?${params}`);
-        const data = await response.json();
-        
+        const res  = await fetch(`/api/leads?${new URLSearchParams(currentFilters)}`);
+        const data = await res.json();
         if (data.success) {
             renderLeads(data.leads);
-            updateLeadsCount(data.total);
+            document.getElementById('leadsCount').textContent = data.total;
         } else {
-            showError(data.error || 'Error al cargar leads');
+            showLeadError(data.error || 'Error al cargar leads');
         }
-    } catch (error) {
-        console.error('Error loading leads:', error);
-        showError('Error de conexión');
+    } catch (err) {
+        showLeadError('Error de conexión');
     }
 }
 
-// Renderizar leads en la tabla
 function renderLeads(leads) {
     const tbody = document.getElementById('leadsTableBody');
-    
-    if (leads.length === 0) {
+    if (!leads.length) {
         tbody.innerHTML = `
-            <tr>
-                <td colspan="7" class="p-8 text-center text-midnight/60">
-                    <i data-lucide="search" class="w-8 h-8 mx-auto mb-2 text-midnight/30"></i>
-                    <p>No se encontraron leads con los filtros aplicados.</p>
-                </td>
-            </tr>
-        `;
-        if (window.lucide) {
-            lucide.createIcons();
-        }
+            <tr><td colspan="7" class="p-8 text-center text-midnight/60">
+                <i data-lucide="search" class="w-8 h-8 mx-auto mb-2 text-midnight/30"></i>
+                <p>No se encontraron leads con los filtros aplicados.</p>
+            </td></tr>`;
+        if (window.lucide) lucide.createIcons();
         return;
     }
-    
     tbody.innerHTML = leads.map(lead => {
-        const budgetSymbol = lead.currency === 'USD' ? 'US$' : lead.currency === 'EUR' ? '€' : '$';
+        const sym = lead.currency === 'USD' ? 'US$' : lead.currency === 'EUR' ? '€' : '$';
         return `
             <tr class="border-b border-midnight/5 hover:bg-paper transition-colors group">
                 <td class="p-4 font-mono text-xs text-midnight/60">${lead.id}</td>
                 <td class="p-4 font-medium">${lead.type}</td>
                 <td class="p-4 text-sm text-midnight/70">${lead.zone}</td>
-                <td class="p-4 font-serif italic text-gold">${budgetSymbol}${lead.budget}</td>
+                <td class="p-4 font-serif italic text-gold">${sym}${lead.budget}</td>
                 <td class="p-4 text-sm text-midnight/70">${lead.timestamp}</td>
                 <td class="p-4 text-sm text-midnight/70">${lead.email}</td>
-                <td class="p-4 text-right space-y-2 sm:space-y-0 sm:flex sm:justify-end sm:items-center sm:gap-2">
-                    <button onclick="togglePhone(this, '${lead.id}')" class="inline-flex items-center gap-2 px-4 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">
-                        <i data-lucide="eye" class="w-3 h-3"></i> Ver Teléfono
-                    </button>
-                    <a href="/profesional/lead/${lead.id}" class="inline-flex items-center gap-2 px-4 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
-                        <i data-lucide="eye" class="w-3 h-3"></i> Ver más
-                    </a>
-                    <a href="/api/lead/${lead.id}/download" class="inline-flex items-center gap-2 px-4 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-all">
-                        <i data-lucide="download" class="w-3 h-3"></i> Descargar PDF
-                    </a>
+                <td class="p-4 text-right">
+                    <div class="flex justify-end gap-2 flex-wrap">
+                        <button onclick="togglePhone(this,'${lead.id}')"
+                            class="inline-flex items-center gap-2 px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">
+                            <i data-lucide="eye" class="w-3 h-3"></i> Teléfono
+                        </button>
+                        <a href="/profesional/lead/${lead.id}"
+                            class="inline-flex items-center gap-2 px-3 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
+                            <i data-lucide="arrow-right" class="w-3 h-3"></i> Ver más
+                        </a>
+                        <a href="/api/lead/${lead.id}/download"
+                            class="inline-flex items-center gap-2 px-3 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-all">
+                            <i data-lucide="download" class="w-3 h-3"></i> PDF
+                        </a>
+                    </div>
                 </td>
-            </tr>
-        `;
+            </tr>`;
     }).join('');
-    
-    // Re-inicializar iconos de Lucide
-    if (window.lucide) {
-        lucide.createIcons();
-    }
+    if (window.lucide) lucide.createIcons();
 }
 
-// Aplicar filtros
 function applyFilters() {
-    currentFilters.search = document.getElementById('searchInput').value.trim();
-    currentFilters.type = document.getElementById('typeFilter').value;
-    currentFilters.zone = document.getElementById('zoneFilter').value.trim();
+    currentFilters.search     = document.getElementById('searchInput').value.trim();
+    currentFilters.type       = document.getElementById('typeFilter').value;
+    currentFilters.zone       = document.getElementById('zoneFilter').value.trim();
     currentFilters.min_budget = document.getElementById('minBudget').value;
     currentFilters.max_budget = document.getElementById('maxBudget').value;
-    
     loadLeads();
 }
 
-// Limpiar filtros
 function clearFilters() {
-    document.getElementById('searchInput').value = '';
+    ['searchInput','zoneFilter','minBudget','maxBudget'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('typeFilter').value = '';
-    document.getElementById('zoneFilter').value = '';
-    document.getElementById('minBudget').value = '';
-    document.getElementById('maxBudget').value = '';
-    
-    currentFilters = {
-        search: '',
-        type: '',
-        zone: '',
-        min_budget: '',
-        max_budget: '',
-        currency: '',
-        sort: 'timestamp',
-        order: 'desc'
-    };
-    
+    currentFilters = { search:'', type:'', zone:'', min_budget:'', max_budget:'', currency:'', sort:'timestamp', order:'desc' };
     loadLeads();
 }
 
-// Actualizar ordenamiento
 function updateSort() {
     currentFilters.sort = document.getElementById('sortSelect').value;
     loadLeads();
 }
 
-// Cambiar dirección del ordenamiento
 function toggleSortOrder() {
-    const icon = document.querySelector('#sortOrder i');
     currentFilters.order = currentFilters.order === 'desc' ? 'asc' : 'desc';
-    
-    if (currentFilters.order === 'desc') {
-        icon.setAttribute('data-lucide', 'arrow-down');
-    } else {
-        icon.setAttribute('data-lucide', 'arrow-up');
-    }
-    
-    if (window.lucide) {
-        lucide.createIcons();
-    }
-    
+    const icon = document.querySelector('#sortOrder i');
+    icon.setAttribute('data-lucide', currentFilters.order === 'desc' ? 'arrow-down' : 'arrow-up');
+    if (window.lucide) lucide.createIcons();
     loadLeads();
 }
 
-// Actualizar contador de leads
-function updateLeadsCount(count) {
-    document.getElementById('leadsCount').textContent = count;
+function showLeadError(msg) {
+    document.getElementById('leadsTableBody').innerHTML = `
+        <tr><td colspan="7" class="p-8 text-center text-rose-600">
+            <i data-lucide="alert-circle" class="w-8 h-8 mx-auto mb-2"></i>
+            <p>${msg}</p>
+        </td></tr>`;
+    if (window.lucide) lucide.createIcons();
 }
-
-// Mostrar errores
-function showError(message) {
-    const tbody = document.getElementById('leadsTableBody');
-    tbody.innerHTML = `
-        <tr>
-            <td colspan="7" class="p-8 text-center text-rose-600">
-                <i data-lucide="alert-circle" class="w-8 h-8 mx-auto mb-2"></i>
-                <p>${message}</p>
-            </td>
-        </tr>
-    `;
-    
-    if (window.lucide) {
-        lucide.createIcons();
-    }
-}
+{% endif %}
 </script>
 {% endblock %}
