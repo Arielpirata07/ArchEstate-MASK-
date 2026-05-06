@@ -530,11 +530,17 @@ function clearProFilters() {
     const searchInput = document.getElementById('proSearchInput');
     const statusFilter = document.getElementById('statusFilter');
     const specialtyFilter = document.getElementById('specialtyFilter');
+    const sortSelect = document.getElementById('proSortSelect');
     
     if (searchInput) searchInput.value = '';
     if (statusFilter) statusFilter.value = '';
     if (specialtyFilter) specialtyFilter.value = '';
+    if (sortSelect) sortSelect.value = 'id';
     
+    // Resetear ícono de orden
+    const icon = document.querySelector('#proSortOrder i');
+    if (icon) { icon.setAttribute('data-lucide', 'arrow-down'); if (window.lucide) lucide.createIcons(); }
+
     currentProFilters = {
         search: '',
         status: '',

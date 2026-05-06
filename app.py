@@ -905,9 +905,9 @@ def get_leads_api():
         
         # Aplicar filtros
         if search:
-            query += ' AND (zone LIKE ? OR email LIKE ? OR type LIKE ?)'
+            query += ' AND (zone LIKE ? OR email LIKE ? OR type LIKE ? OR budget LIKE ?)'
             search_param = f'%{search}%'
-            params.extend([search_param, search_param, search_param])
+            params.extend([search_param, search_param, search_param, search_param])
         
         if type_filter:
             query += ' AND type = ?'
@@ -917,19 +917,22 @@ def get_leads_api():
             query += ' AND zone LIKE ?'
             params.append(f'%{zone_filter}%')
         
+        # Filtro de presupuesto: búsqueda de texto ya que budget se almacena como TEXT
         if min_budget:
             try:
-                min_budget_val = float(min_budget)
-                query += ' AND CAST(budget AS DECIMAL) >= ?'
-                params.append(min_budget_val)
+                min_val = float(min_budget)
+                # Intentar comparación numérica; funciona si budget es un número puro
+                # Si no parsea (ej: "€1.2M"), se ignora silenciosamente
+                query += " AND CAST(REPLACE(REPLACE(budget, '.', ''), ',', '') AS REAL) >= ?"
+                params.append(min_val)
             except ValueError:
                 pass
         
         if max_budget:
             try:
-                max_budget_val = float(max_budget)
-                query += ' AND CAST(budget AS DECIMAL) <= ?'
-                params.append(max_budget_val)
+                max_val = float(max_budget)
+                query += " AND CAST(REPLACE(REPLACE(budget, '.', ''), ',', '') AS REAL) <= ?"
+                params.append(max_val)
             except ValueError:
                 pass
         
