@@ -59,15 +59,20 @@ def init_db():
                 email TEXT NOT NULL DEFAULT '',
                 hash TEXT NOT NULL,
                 role TEXT NOT NULL DEFAULT 'client',
-                doc_path TEXT DEFAULT ''
+                doc_path TEXT DEFAULT '',
+                is_active INTEGER NOT NULL DEFAULT 1
             )
         ''')
         
-        # Actualizar esquemas antiguos sin la columna email
+        # Migraciones de columnas faltantes
         cursor.execute('PRAGMA table_info(users)')
         user_columns = [row[1] for row in cursor.fetchall()]
         if 'email' not in user_columns:
             cursor.execute("ALTER TABLE users ADD COLUMN email TEXT NOT NULL DEFAULT ''")
+        if 'phone' not in user_columns:
+            cursor.execute("ALTER TABLE users ADD COLUMN phone TEXT NOT NULL DEFAULT ''")
+        if 'is_active' not in user_columns:
+            cursor.execute("ALTER TABLE users ADD COLUMN is_active INTEGER NOT NULL DEFAULT 1")
 
         # Tabla de Leads
         cursor.execute('''
@@ -115,12 +120,26 @@ def init_db():
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS professionals (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER DEFAULT NULL,
                 name TEXT NOT NULL,
                 license TEXT NOT NULL UNIQUE,
                 specialty TEXT NOT NULL,
-                status TEXT NOT NULL DEFAULT 'pending'
+                status TEXT NOT NULL DEFAULT 'pending',
+                FOREIGN KEY (user_id) REFERENCES users(id)
             )
         ''')
+
+        # Migración: agregar user_id si no existe
+        cursor.execute('PRAGMA table_info(professionals)')
+        pro_columns = [row[1] for row in cursor.fetchall()]
+        if 'user_id' not in pro_columns:
+            cursor.execute('ALTER TABLE professionals ADD COLUMN user_id INTEGER DEFAULT NULL')
+            # Poblar user_id para profesionales cuyo name coincide con username
+            cursor.execute('''
+                UPDATE professionals SET user_id = (
+                    SELECT u.id FROM users u WHERE u.username = professionals.name
+                ) WHERE user_id IS NULL
+            ''')
 
         # Tabla de Auditoría
         cursor.execute('''
@@ -409,10 +428,11 @@ def register():
             cursor = conn.execute('INSERT INTO users (username, email, hash, role) VALUES (?, ?, ?, ?)', 
                                  (username, email, generate_password_hash(password), role))
             
-            # 2. Si es profesional, usar su matrícula real
+            # 2. Si es profesional, vincular con user_id real
             if role == 'professional':
-                conn.execute('INSERT INTO professionals (name, license, specialty, status) VALUES (?, ?, ?, ?)',
-                             (username, license_number, 'General', 'pending'))
+                new_user_id = cursor.lastrowid
+                conn.execute('INSERT INTO professionals (user_id, name, license, specialty, status) VALUES (?, ?, ?, ?, ?)',
+                             (new_user_id, username, license_number, 'General', 'pending'))
             
             conn.commit()
             flash('Registro exitoso. Por favor, inicia sesión.', 'success')
@@ -444,6 +464,11 @@ def login():
 
         # Verificar credenciales
         if user and check_password_hash(user['hash'], password):
+            # Verificar si la cuenta está activa
+            if not user['is_active']:
+                flash('Tu cuenta ha sido dada de baja. Contactá al administrador para más información.', 'error')
+                return redirect(url_for('login'))
+
             session.clear()
             session['user_id'] = user['id']
             session['username'] = user['username']
@@ -985,11 +1010,19 @@ def get_professionals_api():
         sort_by = request.args.get('sort', 'id')
         sort_order = request.args.get('order', 'desc')
         
-        # Construir consulta con JOIN para incluir doc_path
+        # Construir consulta con JOIN usando user_id (FK directo, más confiable)
+        # Fallback: también intenta hacer match por nombre para datos de muestra sin user_id
         query = '''
-            SELECT p.*, u.doc_path, u.id as user_id
-            FROM professionals p 
-            LEFT JOIN users u ON p.name = u.username
+            SELECT p.*,
+                   u.doc_path,
+                   u.id   AS user_id,
+                   u.is_active
+            FROM professionals p
+            LEFT JOIN users u ON (
+                (p.user_id IS NOT NULL AND p.user_id = u.id)
+                OR
+                (p.user_id IS NULL AND p.name = u.username)
+            )
             WHERE 1=1
         '''
         params = []
@@ -1279,11 +1312,12 @@ def user_management_view():
 @admin_required
 def get_all_users():
     """Retorna todos los usuarios registrados (sin exponer el hash)."""
-    search = request.args.get('search', '').strip()
+    search      = request.args.get('search', '').strip()
     role_filter = request.args.get('role', '').strip()
+    active_filter = request.args.get('active', '').strip()  # 'all' | '1' | '0'
 
     conn = get_db_connection()
-    query = 'SELECT id, username, email, phone, role FROM users WHERE 1=1'
+    query = 'SELECT id, username, email, phone, role, is_active FROM users WHERE 1=1'
     params = []
 
     if search:
@@ -1294,7 +1328,11 @@ def get_all_users():
         query += ' AND role = ?'
         params.append(role_filter)
 
-    query += ' ORDER BY id ASC'
+    if active_filter in ('0', '1'):
+        query += ' AND is_active = ?'
+        params.append(int(active_filter))
+
+    query += ' ORDER BY is_active DESC, id ASC'   # activos primero
     users = conn.execute(query, params).fetchall()
     conn.close()
 
@@ -1338,6 +1376,46 @@ def admin_reset_password(user_id):
         "status": "success",
         "message": f"Contraseña de '{user['username']}' actualizada correctamente."
     })
+    
+    
+@app.route('/api/admin/user/<int:user_id>/set-active', methods=['POST'])
+@admin_required
+def admin_set_user_active(user_id):
+    """Da de baja o reactiva una cuenta de usuario. Solo admins. No aplica a otros admins."""
+    data      = request.json
+    new_state = data.get('is_active')  # True → reactivar, False → dar de baja
+
+    if new_state not in (True, False):
+        return jsonify({"error": "Estado inválido."}), 400
+
+    conn = get_db_connection()
+    user = conn.execute('SELECT username, role FROM users WHERE id = ?', (user_id,)).fetchone()
+
+    if not user:
+        conn.close()
+        return jsonify({"error": "Usuario no encontrado."}), 404
+
+    # Protección: no se puede dar de baja a otro administrador
+    if user['role'] == 'admin':
+        conn.close()
+        return jsonify({"error": "No se puede dar de baja a un administrador."}), 403
+
+    # Protección: un admin no se da de baja a sí mismo
+    if user_id == session.get('user_id'):
+        conn.close()
+        return jsonify({"error": "No podés darte de baja a vos mismo."}), 403
+
+    conn.execute('UPDATE users SET is_active = ? WHERE id = ?', (1 if new_state else 0, user_id))
+    conn.commit()
+    conn.close()
+
+    action  = "Reactivación de Cuenta" if new_state else "Baja de Cuenta"
+    message = f"Usuario '{user['username']}' {'reactivado' if new_state else 'dado de baja'} correctamente."
+    log_action(action, f"Usuario: {user['username']} (ID: {user_id})")
+
+    return jsonify({"status": "success", "message": message, "is_active": new_state})
+
+
 # Inicializar la base de datos al arrancar
 init_db()
 
@@ -1347,7 +1425,4 @@ if __name__ == '__main__':
 
 
 
-  # { "workspaceRoot": "file:///vsls:/", "fileUri": "file:///vsls:/app.py" }  
-
-
-
+  # { "workspaceRoot": "file:///vsls:/", "fileUri": "file:///vsls:/app.py" }

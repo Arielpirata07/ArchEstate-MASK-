@@ -36,41 +36,105 @@
     <!-- ===== TAB: DASHBOARD ===== -->
     <div id="panel-dashboard" class="space-y-6">
 
+        <!-- Toolbar: período + refresh -->
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Período:</span>
+                <div class="flex gap-1" id="period-btns">
+                    <button onclick="setPeriod(7)"   data-period="7"   class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-midnight text-white">7d</button>
+                    <button onclick="setPeriod(30)"  data-period="30"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all">30d</button>
+                    <button onclick="setPeriod(90)"  data-period="90"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all">90d</button>
+                    <button onclick="setPeriod(365)" data-period="365" class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all">1a</button>
+                </div>
+            </div>
+            <button id="refresh-btn" onclick="refreshDashboard()"
+                class="flex items-center gap-2 px-4 py-2 bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all rounded text-[10px] font-bold uppercase tracking-widest">
+                <i data-lucide="refresh-cw" id="refresh-icon" class="w-3 h-3"></i> Actualizar
+            </button>
+        </div>
+
         <!-- KPI Cards -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div class="bg-white rounded-lg shadow p-5 border-l-4 border-gold">
+            <div class="bg-white rounded-lg shadow p-5 border-l-4 border-gold group relative cursor-default">
                 <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Total Leads</p>
                 <p id="kpi-leads" class="text-3xl font-serif text-midnight">—</p>
+                <p id="kpi-leads-delta" class="text-[10px] text-midnight/30 mt-1 font-bold"></p>
+                <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i data-lucide="info" class="w-3 h-3 text-midnight/30"></i>
+                </div>
+                <div class="absolute top-8 right-3 hidden group-hover:block z-10 w-32 bg-midnight text-white text-[9px] p-2 rounded shadow-xl">
+                    Total de solicitudes capturadas en el sistema.
+                </div>
             </div>
-            <div class="bg-white rounded-lg shadow p-5 border-l-4 border-emerald-400">
+            <div class="bg-white rounded-lg shadow p-5 border-l-4 border-emerald-400 group relative cursor-default">
                 <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Profesionales Aprobados</p>
                 <p id="kpi-pros-approved" class="text-3xl font-serif text-midnight">—</p>
+                <p id="kpi-pros-approved-pct" class="text-[10px] text-midnight/30 mt-1 font-bold"></p>
+                <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i data-lucide="info" class="w-3 h-3 text-midnight/30"></i>
+                </div>
+                <div class="absolute top-8 right-3 hidden group-hover:block z-10 w-36 bg-midnight text-white text-[9px] p-2 rounded shadow-xl">
+                    Habilitados para contactar clientes.
+                </div>
             </div>
-            <div class="bg-white rounded-lg shadow p-5 border-l-4 border-amber-400">
+            <div class="bg-white rounded-lg shadow p-5 border-l-4 border-amber-400 group relative cursor-default">
                 <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Pendientes</p>
                 <p id="kpi-pros-pending" class="text-3xl font-serif text-midnight">—</p>
+                <p class="text-[10px] text-amber-500 mt-1 font-bold" id="kpi-pending-label"></p>
+                <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i data-lucide="info" class="w-3 h-3 text-midnight/30"></i>
+                </div>
+                <div class="absolute top-8 right-3 hidden group-hover:block z-10 w-36 bg-midnight text-white text-[9px] p-2 rounded shadow-xl">
+                    Profesionales en espera de validación.
+                </div>
             </div>
-            <div class="bg-white rounded-lg shadow p-5 border-l-4 border-midnight">
+            <div class="bg-white rounded-lg shadow p-5 border-l-4 border-midnight group relative cursor-default">
                 <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Acciones Auditadas</p>
                 <p id="kpi-audit" class="text-3xl font-serif text-midnight">—</p>
+                <p id="kpi-audit-sub" class="text-[10px] text-midnight/30 mt-1 font-bold"></p>
+                <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i data-lucide="info" class="w-3 h-3 text-midnight/30"></i>
+                </div>
+                <div class="absolute top-8 right-3 hidden group-hover:block z-10 w-36 bg-midnight text-white text-[9px] p-2 rounded shadow-xl">
+                    Operaciones registradas en el log de auditoría.
+                </div>
             </div>
         </div>
 
         <!-- Charts Row 1 -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+            <!-- Tipo de operación -->
             <div class="bg-white rounded-lg shadow-xl overflow-hidden">
                 <div class="p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between">
                     <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Leads por Tipo de Operación</h3>
-                    <i data-lucide="pie-chart" class="w-4 h-4 text-midnight/20"></i>
+                    <div class="flex items-center gap-2">
+                        <button onclick="toggleChartType()" id="toggle-type-btn"
+                            class="px-2 py-1 text-[9px] font-bold uppercase tracking-widest rounded bg-midnight/5 text-midnight/50 hover:bg-gold hover:text-white transition-all">
+                            Donut / Barra
+                        </button>
+                        <button onclick="exportChart('chart-type', 'leads-tipo')" class="p-1 text-midnight/30 hover:text-gold transition-colors" title="Exportar PNG">
+                            <i data-lucide="download" class="w-3 h-3"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="p-6">
                     <canvas id="chart-type" height="220"></canvas>
                 </div>
             </div>
+
+            <!-- Top zonas con búsqueda -->
             <div class="bg-white rounded-lg shadow-xl overflow-hidden">
                 <div class="p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between">
                     <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Top Zonas</h3>
-                    <i data-lucide="map-pin" class="w-4 h-4 text-midnight/20"></i>
+                    <div class="flex items-center gap-2">
+                        <input id="zone-filter-input" type="text" placeholder="Filtrar zona..."
+                               oninput="filterZoneChart()"
+                               class="px-2 py-1 text-[10px] border border-midnight/20 rounded focus:border-gold focus:outline-none w-28">
+                        <button onclick="exportChart('chart-zone', 'leads-zonas')" class="p-1 text-midnight/30 hover:text-gold transition-colors" title="Exportar PNG">
+                            <i data-lucide="download" class="w-3 h-3"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="p-6">
                     <canvas id="chart-zone" height="220"></canvas>
@@ -80,19 +144,39 @@
 
         <!-- Charts Row 2 -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+            <!-- Actividad mensual con toggle línea/área -->
             <div class="md:col-span-2 bg-white rounded-lg shadow-xl overflow-hidden">
                 <div class="p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between">
-                    <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Actividad de Leads por Mes</h3>
-                    <i data-lucide="trending-up" class="w-4 h-4 text-midnight/20"></i>
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Actividad de Leads</h3>
+                    <div class="flex items-center gap-2">
+                        <div class="flex gap-1" id="chart-month-type-btns">
+                            <button onclick="setMonthChartType('line')" data-mtype="line"
+                                class="month-type-btn px-2 py-1 text-[9px] font-bold uppercase tracking-widest rounded bg-midnight text-white">
+                                Línea
+                            </button>
+                            <button onclick="setMonthChartType('bar')" data-mtype="bar"
+                                class="month-type-btn px-2 py-1 text-[9px] font-bold uppercase tracking-widest rounded bg-midnight/5 text-midnight/50 hover:bg-gold hover:text-white transition-all">
+                                Barras
+                            </button>
+                        </div>
+                        <button onclick="exportChart('chart-month', 'actividad-mensual')" class="p-1 text-midnight/30 hover:text-gold transition-colors" title="Exportar PNG">
+                            <i data-lucide="download" class="w-3 h-3"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="p-6">
                     <canvas id="chart-month" height="160"></canvas>
                 </div>
             </div>
+
+            <!-- Presupuesto -->
             <div class="bg-white rounded-lg shadow-xl overflow-hidden">
                 <div class="p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between">
                     <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Por Presupuesto</h3>
-                    <i data-lucide="wallet" class="w-4 h-4 text-midnight/20"></i>
+                    <button onclick="exportChart('chart-budget', 'leads-presupuesto')" class="p-1 text-midnight/30 hover:text-gold transition-colors" title="Exportar PNG">
+                        <i data-lucide="download" class="w-3 h-3"></i>
+                    </button>
                 </div>
                 <div class="p-6">
                     <canvas id="chart-budget" height="260"></canvas>
@@ -239,6 +323,66 @@
 
 </div>
 
+<!-- ===== MODAL: DAR DE BAJA / REACTIVAR ===== -->
+<div id="deactivateModal" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeDeactivateModal()"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
+        <div class="bg-white rounded-lg shadow-2xl overflow-hidden" id="deactivateModalBox">
+
+            <!-- Header dinámico (baja = border-rose, reactivar = border-emerald) -->
+            <div id="deactivateModalHeader" class="border-t-4 border-rose-500 px-8 pt-8 pb-4">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p id="deactivateModalTag" class="text-[10px] uppercase tracking-widest font-bold text-rose-500 mb-1">Acción administrativa</p>
+                        <h3 id="deactivateModalTitle" class="text-2xl font-serif">Dar de <span class="serif-italic">Baja</span></h3>
+                        <p class="text-sm text-midnight/50 mt-1">
+                            Usuario: <strong id="deactivateModalUsername" class="text-midnight font-bold"></strong>
+                        </p>
+                    </div>
+                    <button onclick="closeDeactivateModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Aviso -->
+            <div id="deactivateModalWarning" class="mx-8 mb-6 p-3 bg-rose-50 border border-rose-100 rounded flex items-start gap-3">
+                <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5"></i>
+                <p id="deactivateModalWarningText" class="text-[10px] text-rose-700 font-bold uppercase tracking-wider leading-relaxed">
+                    El usuario perderá acceso inmediatamente. Esta acción quedará registrada en el log de auditoría y puede revertirse.
+                </p>
+            </div>
+
+            <!-- Campo de motivo -->
+            <div class="px-8 pb-8 space-y-5">
+                <div id="deactivateReasonWrapper">
+                    <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Motivo (opcional)</label>
+                    <div class="relative">
+                        <i data-lucide="message-square" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5"></i>
+                        <input id="deactivateReason" type="text" placeholder="Ej: Datos falsos, spam, conducta inapropiada..."
+                               class="w-full bg-transparent border-0 border-b border-midnight/20 focus:border-gold focus:ring-0 py-3 pl-8 transition-all outline-none text-sm">
+                    </div>
+                </div>
+
+                <p id="deactivateModalError" class="hidden text-[10px] text-rose-500 font-medium"></p>
+
+                <div class="flex gap-3 pt-2">
+                    <button onclick="closeDeactivateModal()"
+                        class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-all">
+                        Cancelar
+                    </button>
+                    <button id="confirmDeactivateBtn" onclick="confirmDeactivate()"
+                        class="flex-1 py-3 bg-rose-600 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="user-x" class="w-3 h-3"></i>
+                        <span id="confirmDeactivateBtnLabel">Dar de Baja</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
@@ -261,113 +405,289 @@ function showTab(tab) {
     active.classList.remove('bg-paper-dark', 'text-midnight');
 }
 
-// ---- Dashboard stats ----
-(async function initDashboard() {
-    const PALETTE = {
-        gold: ['#735A3A', '#A68A64', '#C4A882', '#D4BC9A', '#E8D5B7'],
-        dark: ['#000410', '#101E33', '#1A2E4A', '#243E62', '#2E4E7A'],
-        mixed: ['#735A3A', '#000410', '#A68A64', '#101E33', '#C4A882', '#1A2E4A'],
-    };
+// ================================================================
+// DASHBOARD INTERACTIVO
+// ================================================================
+const PALETTE = {
+    gold:  ['#735A3A', '#A68A64', '#C4A882', '#D4BC9A', '#E8D5B7'],
+    dark:  ['#000410', '#101E33', '#1A2E4A', '#243E62', '#2E4E7A'],
+    mixed: ['#735A3A', '#000410', '#A68A64', '#101E33', '#C4A882', '#1A2E4A'],
+};
 
-    const baseOpts = {
-        responsive: true,
-        plugins: {
-            legend: {
-                labels: { font: { family: 'Manrope', size: 10, weight: 'bold' }, boxWidth: 12 }
+const baseFont = { family: 'Manrope', size: 10, weight: 'bold' };
+
+// Instancias de Chart.js (para poder destruir y recrear)
+const charts = {};
+
+// Estado del dashboard
+let dashState = {
+    period:        7,
+    typeChartMode: 'doughnut',   // 'doughnut' | 'bar'
+    monthChartType: 'line',      // 'line' | 'bar'
+    rawData:       null,
+    allZones:      [],
+};
+
+// ---- Animación de contador ----
+function animateCounter(el, target) {
+    const duration = 700;
+    const start    = performance.now();
+    const from     = 0;
+    const step = (now) => {
+        const t   = Math.min((now - start) / duration, 1);
+        const val = Math.round(from + (target - from) * (1 - Math.pow(1 - t, 3)));
+        el.textContent = val;
+        if (t < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+}
+
+// ---- Helpers ----
+function destroyChart(key) {
+    if (charts[key]) { charts[key].destroy(); delete charts[key]; }
+}
+
+function exportChart(canvasId, filename) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    const link = document.createElement('a');
+    link.download = `${filename}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+}
+
+// ---- Período ----
+function setPeriod(days) {
+    dashState.period = days;
+    document.querySelectorAll('.period-btn').forEach(btn => {
+        const active = parseInt(btn.dataset.period) === days;
+        btn.className = 'period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest transition-all '
+            + (active ? 'bg-midnight text-white' : 'bg-paper-dark text-midnight hover:bg-gold hover:text-white');
+    });
+    renderMonthChart();
+}
+
+// ---- Refresh ----
+async function refreshDashboard() {
+    const icon = document.getElementById('refresh-icon');
+    icon.style.animation = 'spin 0.8s linear infinite';
+    icon.style.display   = 'inline-block';
+    dashState.rawData = null;
+    await initDashboard();
+    setTimeout(() => { icon.style.animation = ''; }, 600);
+}
+
+// ---- Filtro de zonas ----
+function filterZoneChart() {
+    const q = document.getElementById('zone-filter-input').value.toLowerCase().trim();
+    const filtered = q
+        ? dashState.allZones.filter(d => d.label.toLowerCase().includes(q))
+        : dashState.allZones;
+
+    if (!charts['zone']) return;
+    charts['zone'].data.labels   = filtered.map(d => d.label);
+    charts['zone'].data.datasets[0].data            = filtered.map(d => d.value);
+    charts['zone'].data.datasets[0].backgroundColor = PALETTE.dark.slice(0, filtered.length);
+    charts['zone'].update();
+}
+
+// ---- Toggle tipo/operación: Doughnut ↔ Bar ----
+function toggleChartType() {
+    dashState.typeChartMode = dashState.typeChartMode === 'doughnut' ? 'bar' : 'doughnut';
+    renderTypeChart();
+}
+
+function renderTypeChart() {
+    const data = dashState.rawData;
+    if (!data) return;
+    destroyChart('type');
+    const isDoughnut = dashState.typeChartMode === 'doughnut';
+    charts['type'] = new Chart(document.getElementById('chart-type'), {
+        type: isDoughnut ? 'doughnut' : 'bar',
+        data: {
+            labels: data.leads_by_type.map(d => d.label),
+            datasets: [{
+                data: data.leads_by_type.map(d => d.value),
+                backgroundColor: PALETTE.gold,
+                borderWidth: 0,
+                hoverOffset: 6,
+                borderRadius: isDoughnut ? 0 : 4,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            cutout: isDoughnut ? '65%' : undefined,
+            plugins: {
+                legend: { display: isDoughnut, labels: { font: baseFont, boxWidth: 12 } },
+                tooltip: {
+                    callbacks: {
+                        label: ctx => {
+                            const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                            const pct   = total ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
+                            return `  ${ctx.label}: ${ctx.parsed} (${pct}%)`;
+                        }
+                    }
+                }
+            },
+            scales: isDoughnut ? {} : {
+                x: { ticks: { font: { family: 'Manrope', size: 9 } }, grid: { display: false } },
+                y: { ticks: { font: baseFont, stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.04)' }, beginAtZero: true }
             }
         }
-    };
+    });
+}
 
+// ---- Toggle chart mensual: Línea ↔ Barras ----
+function setMonthChartType(type) {
+    dashState.monthChartType = type;
+    document.querySelectorAll('.month-type-btn').forEach(btn => {
+        const active = btn.dataset.mtype === type;
+        btn.className = 'month-type-btn px-2 py-1 text-[9px] font-bold uppercase tracking-widest rounded transition-all '
+            + (active ? 'bg-midnight text-white' : 'bg-midnight/5 text-midnight/50 hover:bg-gold hover:text-white');
+    });
+    renderMonthChart();
+}
+
+function renderMonthChart() {
+    const data = dashState.rawData;
+    if (!data) return;
+
+    // Filtrar por período seleccionado
+    const all     = data.leads_by_month;
+    const months  = dashState.period <= 30  ? 1
+                  : dashState.period <= 90  ? 3
+                  : dashState.period <= 180 ? 6
+                  : all.length;
+
+    const slice   = all.slice(-Math.max(months, 1));
+    const labels  = slice.map(d => {
+        const [y, m] = d.label.split('-');
+        return new Date(y, m - 1).toLocaleString('es', { month: 'short', year: '2-digit' });
+    });
+    const values  = slice.map(d => d.value);
+    const isLine  = dashState.monthChartType === 'line';
+
+    destroyChart('month');
+    charts['month'] = new Chart(document.getElementById('chart-month'), {
+        type: isLine ? 'line' : 'bar',
+        data: {
+            labels: labels.length ? labels : ['Este mes'],
+            datasets: [{
+                label: 'Leads',
+                data:  values.length ? values : [data.total_leads],
+                borderColor: '#735A3A',
+                backgroundColor: isLine ? 'rgba(115,90,58,0.08)' : '#735A3A',
+                fill: isLine, tension: 0.4,
+                pointBackgroundColor: '#735A3A', pointRadius: isLine ? 5 : 0,
+                borderRadius: isLine ? 0 : 4,
+                borderSkipped: false,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: { label: ctx => `  ${ctx.parsed.y} leads` }
+                }
+            },
+            scales: {
+                x: { ticks: { font: baseFont }, grid: { color: 'rgba(0,0,0,0.04)' } },
+                y: { ticks: { font: baseFont, stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.04)' }, beginAtZero: true }
+            },
+            animation: { duration: 400 }
+        }
+    });
+}
+
+// ---- Init principal ----
+async function initDashboard() {
     try {
-        const res = await fetch('/api/admin/stats');
+        const res  = await fetch('/api/admin/stats');
         const data = await res.json();
+        dashState.rawData  = data;
+        dashState.allZones = data.leads_by_zone;
 
-        // KPI Cards
-        document.getElementById('kpi-leads').textContent = data.total_leads;
+        // KPI Cards con contadores animados
+        animateCounter(document.getElementById('kpi-leads'), data.total_leads);
+
         const approved = data.pros_stats.find(s => s.label === 'approved');
         const pending  = data.pros_stats.find(s => s.label === 'pending');
-        document.getElementById('kpi-pros-approved').textContent = approved ? approved.value : 0;
-        document.getElementById('kpi-pros-pending').textContent  = pending  ? pending.value  : 0;
+        const rejected = data.pros_stats.find(s => s.label === 'rejected');
+        const totalPros = (approved?.value || 0) + (pending?.value || 0) + (rejected?.value || 0);
+
+        animateCounter(document.getElementById('kpi-pros-approved'), approved?.value || 0);
+        animateCounter(document.getElementById('kpi-pros-pending'),  pending?.value  || 0);
+
+        const pct = totalPros ? Math.round((approved?.value || 0) / totalPros * 100) : 0;
+        document.getElementById('kpi-pros-approved-pct').textContent = totalPros ? `${pct}% del total` : '';
+        document.getElementById('kpi-pending-label').textContent     = (pending?.value || 0) > 0 ? '⚠ Requieren revisión' : '';
+
         const totalAudit = data.audit_actions.reduce((sum, a) => sum + a.value, 0);
-        document.getElementById('kpi-audit').textContent = totalAudit;
+        animateCounter(document.getElementById('kpi-audit'), totalAudit);
+        const topAction = data.audit_actions[0];
+        document.getElementById('kpi-audit-sub').textContent = topAction ? `${topAction.label}: ${topAction.value}` : '';
 
-        // Chart: Tipo (Doughnut)
-        new Chart(document.getElementById('chart-type'), {
-            type: 'doughnut',
-            data: {
-                labels: data.leads_by_type.map(d => d.label),
-                datasets: [{ data: data.leads_by_type.map(d => d.value), backgroundColor: PALETTE.gold, borderWidth: 0, hoverOffset: 6 }]
-            },
-            options: { ...baseOpts, cutout: '65%' }
-        });
+        // Gráficos
+        renderTypeChart();
 
-        // Chart: Zona (Bar horizontal)
-        new Chart(document.getElementById('chart-zone'), {
+        // Zona
+        destroyChart('zone');
+        charts['zone'] = new Chart(document.getElementById('chart-zone'), {
             type: 'bar',
             data: {
                 labels: data.leads_by_zone.map(d => d.label),
                 datasets: [{ label: 'Leads', data: data.leads_by_zone.map(d => d.value), backgroundColor: PALETTE.dark, borderRadius: 4, borderSkipped: false }]
             },
             options: {
-                ...baseOpts,
+                responsive: true,
                 indexAxis: 'y',
-                plugins: { ...baseOpts.plugins, legend: { display: false } },
+                plugins: { legend: { display: false },
+                    tooltip: { callbacks: { label: ctx => `  ${ctx.parsed.x} leads` } }
+                },
                 scales: {
-                    x: { ticks: { font: { family: 'Manrope', size: 10 }, stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.04)' } },
-                    y: { ticks: { font: { family: 'Manrope', size: 10, weight: 'bold' } }, grid: { display: false } }
+                    x: { ticks: { font: baseFont, stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.04)' } },
+                    y: { ticks: { font: baseFont }, grid: { display: false } }
                 }
             }
         });
 
-        // Chart: Actividad mensual (Line)
-        const monthLabels = data.leads_by_month.map(d => {
-            const [y, m] = d.label.split('-');
-            return new Date(y, m - 1).toLocaleString('es', { month: 'short', year: '2-digit' });
-        });
-        new Chart(document.getElementById('chart-month'), {
-            type: 'line',
-            data: {
-                labels: monthLabels.length ? monthLabels : ['Este mes'],
-                datasets: [{
-                    label: 'Leads',
-                    data: data.leads_by_month.length ? data.leads_by_month.map(d => d.value) : [data.total_leads],
-                    borderColor: '#735A3A',
-                    backgroundColor: 'rgba(115,90,58,0.08)',
-                    fill: true, tension: 0.4,
-                    pointBackgroundColor: '#735A3A', pointRadius: 5
-                }]
-            },
-            options: {
-                ...baseOpts,
-                plugins: { ...baseOpts.plugins, legend: { display: false } },
-                scales: {
-                    x: { ticks: { font: { family: 'Manrope', size: 10 } }, grid: { color: 'rgba(0,0,0,0.04)' } },
-                    y: { ticks: { font: { family: 'Manrope', size: 10 }, stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.04)' }, beginAtZero: true }
-                }
-            }
-        });
+        renderMonthChart();
 
-        // Chart: Presupuesto (Bar vertical)
-        new Chart(document.getElementById('chart-budget'), {
+        // Presupuesto
+        destroyChart('budget');
+        charts['budget'] = new Chart(document.getElementById('chart-budget'), {
             type: 'bar',
             data: {
                 labels: data.leads_by_budget.map(d => d.label),
                 datasets: [{ label: 'Leads', data: data.leads_by_budget.map(d => d.value), backgroundColor: PALETTE.mixed, borderRadius: 4, borderSkipped: false }]
             },
             options: {
-                ...baseOpts,
-                plugins: { ...baseOpts.plugins, legend: { display: false } },
+                responsive: true,
+                plugins: { legend: { display: false },
+                    tooltip: { callbacks: { label: ctx => `  ${ctx.parsed.y} leads` } }
+                },
                 scales: {
                     x: { ticks: { font: { family: 'Manrope', size: 8, weight: 'bold' }, maxRotation: 30 }, grid: { display: false } },
-                    y: { ticks: { font: { family: 'Manrope', size: 10 }, stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.04)' }, beginAtZero: true }
+                    y: { ticks: { font: baseFont, stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.04)' }, beginAtZero: true }
                 }
             }
         });
 
+        if (window.lucide) lucide.createIcons();
+
     } catch (err) {
         console.error('Error cargando estadísticas:', err);
     }
-})();
+}
+
+// Agregar estilo de spin
+const spinStyle = document.createElement('style');
+spinStyle.textContent = '@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }';
+document.head.appendChild(spinStyle);
+
+document.addEventListener('DOMContentLoaded', initDashboard);
 
 // ---- Profesionales dinámicos ----
 let currentProFilters = {
@@ -432,19 +752,18 @@ function renderProfessionals(pros) {
     if (pros.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="5" class="p-8 text-center text-midnight/60">
+                <td colspan="6" class="p-8 text-center text-midnight/60">
                     <i data-lucide="search" class="w-8 h-8 mx-auto mb-2 text-midnight/30"></i>
                     <p>No se encontraron profesionales con los filtros aplicados.</p>
                 </td>
             </tr>
         `;
-        if (window.lucide) {
-            lucide.createIcons();
-        }
+        if (window.lucide) lucide.createIcons();
         return;
     }
     
     tbody.innerHTML = pros.map(pro => {
+        // Badge de estado de habilitación profesional
         let statusBadge = '';
         if (pro.status === 'approved') {
             statusBadge = '<span class="px-2 py-1 bg-emerald-50 text-emerald-700 text-[9px] font-bold uppercase tracking-widest rounded">Aprobado</span>';
@@ -453,63 +772,97 @@ function renderProfessionals(pros) {
         } else {
             statusBadge = '<span class="px-2 py-1 bg-amber-50 text-amber-700 text-[9px] font-bold uppercase tracking-widest rounded">Pendiente</span>';
         }
-        
-        let actions = '';
-        if (pro.status === 'pending') {
-            actions = `
-                <div class="flex justify-end gap-2">
-                    <button onclick="updateProStatus('${pro.id}', 'approved', this)"
-                        class="inline-flex items-center gap-2 px-2 py-1 bg-emerald-50 text-emerald-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-100 transition-colors" title="Aprobar">
-                        <i data-lucide="check" class="w-4 h-4"></i> Aprobar
-                    </button>
-                    <button onclick="updateProStatus('${pro.id}', 'rejected', this)"
-                        class="inline-flex items-center gap-2 px-2 py-1 bg-rose-50 text-rose-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-rose-100 transition-colors" title="Rechazar">
-                        <i data-lucide="x" class="w-4 h-4"></i> Rechazar
-                    </button>
-                </div>
-            `;
-        } else if (pro.status === 'approved') {
-            actions = `
-                <button onclick="updateProStatus('${pro.id}', 'rejected', this)"
-                    class="inline-flex items-center gap-2 px-2 py-1 bg-rose-50 text-rose-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-rose-100 transition-colors" title="Desaprobar profesional">
-                    <i data-lucide="x" class="w-4 h-4"></i> Desaprobar
-                </button>
-            `;
-        } else if (pro.status === 'rejected') {
-            actions = `
+
+        // Badge de estado de cuenta (activa / baja)
+        // is_active: 1=activo, 0=baja, null=campo no devuelto por la API → asumir activo
+        const hasUser  = pro.user_id !== null && pro.user_id !== undefined;
+        const rawActive = pro.is_active;
+        const isActive  = !hasUser ? null
+                        : (rawActive === null || rawActive === undefined) ? true
+                        : rawActive !== 0;
+
+        const accountBadge = isActive === false
+            ? '<span class="ml-1 px-2 py-1 bg-midnight/10 text-midnight/50 text-[9px] font-bold uppercase tracking-widest rounded">Cuenta baja</span>'
+            : '';
+
+        // Botones de aprobación/rechazo (deshabilitados si cuenta dada de baja o sin usuario)
+        let approvalActions = '';
+        if (!hasUser || isActive === false) {
+            approvalActions = '<span class="text-[10px] text-midnight/20 font-bold uppercase tracking-widest">—</span>';
+        } else if (pro.status === 'pending') {
+            approvalActions = `
                 <button onclick="updateProStatus('${pro.id}', 'approved', this)"
-                    class="inline-flex items-center gap-2 px-2 py-1 bg-emerald-50 text-emerald-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-100 transition-colors" title="Aprobar profesional">
-                    <i data-lucide="check" class="w-4 h-4"></i> Aprobar
+                    class="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-100 transition-colors">
+                    <i data-lucide="check" class="w-3 h-3"></i> Aprobar
                 </button>
-            `;
-        } else {
-            actions = '<span class="text-[10px] text-midnight/20 font-bold uppercase tracking-widest">Sin acciones</span>';
+                <button onclick="updateProStatus('${pro.id}', 'rejected', this)"
+                    class="inline-flex items-center gap-1 px-2 py-1 bg-rose-50 text-rose-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-rose-100 transition-colors">
+                    <i data-lucide="x" class="w-3 h-3"></i> Rechazar
+                </button>`;
+        } else if (pro.status === 'approved') {
+            approvalActions = `
+                <button onclick="updateProStatus('${pro.id}', 'rejected', this)"
+                    class="inline-flex items-center gap-1 px-2 py-1 bg-rose-50 text-rose-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-rose-100 transition-colors">
+                    <i data-lucide="x" class="w-3 h-3"></i> Desaprobar
+                </button>`;
+        } else if (pro.status === 'rejected') {
+            approvalActions = `
+                <button onclick="updateProStatus('${pro.id}', 'approved', this)"
+                    class="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-100 transition-colors">
+                    <i data-lucide="check" class="w-3 h-3"></i> Aprobar
+                </button>`;
         }
-        
-        const docCell = pro.doc_path ? 
-            `<a href="/admin/download_doc/${pro.user_id}" class="inline-flex items-center gap-2 px-2 py-1 bg-gold text-white rounded font-bold uppercase tracking-widest text-[9px] hover:bg-midnight transition-colors">
-                <i data-lucide="download" class="w-3 h-3"></i> Descargar
-            </a>` : 
-            '<span class="text-midnight/30 text-[10px] uppercase italic">Sin documento</span>';
-        
+
+        // Botón de baja/reactivación — solo si hay usuario vinculado
+        let accountBtn = '';
+        if (!hasUser) {
+            accountBtn = '<span class="text-[10px] text-midnight/20 italic">Sin cuenta</span>';
+        } else if (isActive !== false) {
+            accountBtn = `<button onclick="openDeactivateModal(${pro.user_id}, '${escapeHtml(pro.name)}', false)"
+                   class="inline-flex items-center gap-1 px-2 py-1 bg-midnight/5 text-midnight/50 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-rose-50 hover:text-rose-600 transition-colors">
+                   <i data-lucide="user-x" class="w-3 h-3"></i> Dar de baja
+               </button>`;
+        } else {
+            accountBtn = `<button onclick="openDeactivateModal(${pro.user_id}, '${escapeHtml(pro.name)}', true)"
+                   class="inline-flex items-center gap-1 px-2 py-1 bg-midnight/5 text-midnight/50 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-50 hover:text-emerald-600 transition-colors">
+                   <i data-lucide="user-check" class="w-3 h-3"></i> Reactivar
+               </button>`;
+        }
+
+        const docCell = pro.doc_path
+            ? `<a href="/admin/download_doc/${pro.user_id}" class="inline-flex items-center gap-2 px-2 py-1 bg-gold text-white rounded font-bold uppercase tracking-widest text-[9px] hover:bg-midnight transition-colors">
+                   <i data-lucide="download" class="w-3 h-3"></i> Descargar
+               </a>`
+            : '<span class="text-midnight/30 text-[10px] uppercase italic">Sin documento</span>';
+
+        const rowOpacity = isActive === false ? 'opacity-60' : '';
+
         return `
-            <tr class="border-b border-midnight/5 hover:bg-paper transition-colors">
+            <tr class="border-b border-midnight/5 hover:bg-paper transition-colors ${rowOpacity}">
                 <td class="p-4">
-                    <div class="font-medium text-midnight">${pro.name}</div>
-                    <div class="text-[10px] text-midnight/40 italic">${pro.specialty}</div>
+                    <div class="font-medium text-midnight">${escapeHtml(pro.name)} ${accountBadge}</div>
+                    <div class="text-[10px] text-midnight/40 italic">${escapeHtml(pro.specialty || '')}</div>
                 </td>
-                <td class="p-4 font-mono text-xs text-midnight/60">${pro.license}</td>
+                <td class="p-4 font-mono text-xs text-midnight/60">${escapeHtml(pro.license)}</td>
                 <td class="p-4">${statusBadge}</td>
                 <td class="p-4">${docCell}</td>
-                <td class="p-4 text-right">${actions}</td>
+                <td class="p-4 text-right">
+                    <div class="flex justify-end items-center gap-2 flex-wrap">
+                        ${approvalActions}
+                        <span class="text-midnight/10 select-none">|</span>
+                        ${accountBtn}
+                    </div>
+                </td>
             </tr>
         `;
     }).join('');
-    
-    // Re-inicializar iconos de Lucide
-    if (window.lucide) {
-        lucide.createIcons();
-    }
+
+    if (window.lucide) lucide.createIcons();
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // Aplicar filtros de profesionales
@@ -599,6 +952,113 @@ function showProError(message) {
         if (window.lucide) {
             lucide.createIcons();
         }
+    }
+}
+// ================================================================
+// MODAL: DAR DE BAJA / REACTIVAR USUARIO
+// ================================================================
+let deactivateTargetId   = null;
+let deactivateTargetName = null;
+let deactivateNewState   = null;   // false = dar de baja, true = reactivar
+
+function openDeactivateModal(userId, username, activate) {
+    deactivateTargetId   = userId;
+    deactivateTargetName = username;
+    deactivateNewState   = activate;
+
+    document.getElementById('deactivateModalUsername').textContent = username;
+    document.getElementById('deactivateModalError').classList.add('hidden');
+    document.getElementById('deactivateReason').value = '';
+
+    const header  = document.getElementById('deactivateModalHeader');
+    const tag     = document.getElementById('deactivateModalTag');
+    const title   = document.getElementById('deactivateModalTitle');
+    const warning = document.getElementById('deactivateModalWarning');
+    const btn     = document.getElementById('confirmDeactivateBtn');
+    const reasonW = document.getElementById('deactivateReasonWrapper');
+
+    if (activate) {
+        header.className = 'border-t-4 border-emerald-500 px-8 pt-8 pb-4';
+        tag.className    = 'text-[10px] uppercase tracking-widest font-bold text-emerald-600 mb-1';
+        tag.textContent  = 'Acción administrativa';
+        title.innerHTML  = 'Reactivar <span class="serif-italic">Cuenta</span>';
+        warning.className = 'mx-8 mb-6 p-3 bg-emerald-50 border border-emerald-100 rounded flex items-start gap-3';
+        warning.innerHTML = `
+            <i data-lucide="info" class="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5"></i>
+            <p id="deactivateModalWarningText" class="text-[10px] text-emerald-700 font-bold uppercase tracking-wider leading-relaxed">
+                El usuario recuperará el acceso a la plataforma inmediatamente. La acción quedará registrada en el log de auditoría.
+            </p>`;
+        btn.className    = 'flex-1 py-3 bg-emerald-600 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all flex items-center justify-center gap-2';
+        btn.innerHTML    = '<i data-lucide="user-check" class="w-3 h-3"></i><span id="confirmDeactivateBtnLabel">Reactivar Cuenta</span>';
+        reasonW.classList.add('hidden');
+    } else {
+        header.className = 'border-t-4 border-rose-500 px-8 pt-8 pb-4';
+        tag.className    = 'text-[10px] uppercase tracking-widest font-bold text-rose-500 mb-1';
+        tag.textContent  = 'Acción administrativa';
+        title.innerHTML  = 'Dar de <span class="serif-italic">Baja</span>';
+        warning.className = 'mx-8 mb-6 p-3 bg-rose-50 border border-rose-100 rounded flex items-start gap-3';
+        warning.innerHTML = `
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5"></i>
+            <p id="deactivateModalWarningText" class="text-[10px] text-rose-700 font-bold uppercase tracking-wider leading-relaxed">
+                El usuario perderá acceso inmediatamente. Esta acción quedará registrada en el log de auditoría y puede revertirse.
+            </p>`;
+        btn.className    = 'flex-1 py-3 bg-rose-600 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all flex items-center justify-center gap-2';
+        btn.innerHTML    = '<i data-lucide="user-x" class="w-3 h-3"></i><span id="confirmDeactivateBtnLabel">Dar de Baja</span>';
+        reasonW.classList.remove('hidden');
+    }
+
+    document.getElementById('deactivateModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    if (window.lucide) lucide.createIcons();
+}
+
+function closeDeactivateModal() {
+    document.getElementById('deactivateModal').classList.add('hidden');
+    document.body.style.overflow = '';
+    deactivateTargetId   = null;
+    deactivateTargetName = null;
+    deactivateNewState   = null;
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDeactivateModal(); });
+
+async function confirmDeactivate() {
+    if (deactivateTargetId === null) return;
+
+    const btn    = document.getElementById('confirmDeactivateBtn');
+    const errEl  = document.getElementById('deactivateModalError');
+    const orig   = btn.innerHTML;
+    errEl.classList.add('hidden');
+
+    btn.innerHTML = '<div class="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div> Procesando...';
+    btn.disabled  = true;
+
+    try {
+        const res  = await fetch(`/api/admin/user/${deactivateTargetId}/set-active`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({
+                is_active: deactivateNewState,
+                reason:    document.getElementById('deactivateReason').value.trim()
+            })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+            closeDeactivateModal();
+            if (typeof showToast === 'function') showToast(data.message);
+            loadProfessionals();   // refrescar tabla
+        } else {
+            errEl.textContent = data.error || 'Error al procesar la solicitud.';
+            errEl.classList.remove('hidden');
+            btn.innerHTML = orig;
+            btn.disabled  = false;
+        }
+    } catch (err) {
+        errEl.textContent = 'Error de conexión. Intentá de nuevo.';
+        errEl.classList.remove('hidden');
+        btn.innerHTML = orig;
+        btn.disabled  = false;
     }
 }
 </script>
