@@ -99,48 +99,127 @@
     {% else %}
     <!-- ===== LEADS (aprobado) ===== -->
 
-    <!-- Controles de filtro y búsqueda -->
-    <div class="bg-white p-6 rounded-lg shadow-lg border border-midnight/5">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            <div>
-                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Buscar</label>
-                <input type="text" id="searchInput" placeholder="Zona, email, tipo..."
-                       class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
+    <!-- Panel de filtros -->
+    <div class="bg-white rounded-lg shadow-lg border border-midnight/5 overflow-hidden">
+
+        <!-- Cabecera del panel -->
+        <div class="px-6 py-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <i data-lucide="sliders-horizontal" class="w-4 h-4 text-gold"></i>
+                <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Filtros</h3>
             </div>
-            <div>
-                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Tipo</label>
-                <select id="typeFilter" class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
-                    <option value="">Todos los tipos</option>
-                    <option value="Comprar Propiedad">Comprar Propiedad</option>
-                    <option value="Remodelación Integral">Remodelación Integral</option>
-                    <option value="Construir desde Cero">Construir desde Cero</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Zona</label>
-                <input type="text" id="zoneFilter" placeholder="Ej: Palermo, Recoleta..."
-                       class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
-            </div>
-            <div>
-                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Presupuesto</label>
-                <div class="flex gap-2">
-                    <input type="number" id="minBudget" placeholder="Mín"
-                           class="w-1/2 px-2 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
-                    <input type="number" id="maxBudget" placeholder="Máx"
-                           class="w-1/2 px-2 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
-                </div>
+            <div class="flex items-center gap-3">
+                <span id="activeFiltersCount" class="hidden text-[9px] font-bold uppercase tracking-widest text-gold bg-gold/10 px-2 py-0.5 rounded-full"></span>
+                <button id="clearFilters" class="text-[10px] font-bold uppercase tracking-widest text-midnight/40 hover:text-rose-500 transition-colors flex items-center gap-1">
+                    <i data-lucide="x" class="w-3 h-3"></i> Limpiar todo
+                </button>
             </div>
         </div>
-        <div class="flex justify-between items-center">
-            <div class="flex gap-2">
-                <button id="applyFilters" class="px-4 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
-                    Aplicar Filtros
-                </button>
-                <button id="clearFilters" class="px-4 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-all">
-                    Limpiar
-                </button>
+
+        <div class="p-6 space-y-5">
+
+            <!-- Fila 1: Búsqueda + Tipo Operación + Zona -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">Búsqueda rápida</label>
+                    <div class="relative">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-midnight/30"></i>
+                        <input type="text" id="searchInput" placeholder="Zona, email, presupuesto..."
+                               class="w-full pl-8 pr-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">Tipo de Operación</label>
+                    <select id="typeFilter" class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
+                        <option value="">Todas las operaciones</option>
+                        <option value="Comprar Propiedad">Comprar Propiedad</option>
+                        <option value="Remodelación Integral">Remodelación Integral</option>
+                        <option value="Construir desde Cero">Construir desde Cero</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">Zona</label>
+                    <div class="relative">
+                        <i data-lucide="map-pin" class="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-midnight/30"></i>
+                        <input type="text" id="zoneFilter" placeholder="Ej: Palermo, CABA..."
+                               class="w-full pl-8 pr-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
+                    </div>
+                </div>
             </div>
-            <span class="text-sm text-midnight/60"><span id="leadsCount">0</span> leads encontrados</span>
+
+            <!-- Fila 2: Tipo de Vivienda (chips) -->
+            <div>
+                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">Tipo de Vivienda</label>
+                <div class="flex flex-wrap gap-2" id="propTypeChips">
+                    <button data-value="" onclick="setPropType('')"
+                        class="prop-chip active px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight bg-midnight text-white">
+                        Todos
+                    </button>
+                    <button data-value="departamento" onclick="setPropType('departamento')"
+                        class="prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
+                        <i data-lucide="building" class="w-3 h-3 inline -mt-0.5 mr-1"></i>Departamento
+                    </button>
+                    <button data-value="casa" onclick="setPropType('casa')"
+                        class="prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
+                        <i data-lucide="home" class="w-3 h-3 inline -mt-0.5 mr-1"></i>Casa
+                    </button>
+                    <button data-value="duplex" onclick="setPropType('duplex')"
+                        class="prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
+                        <i data-lucide="layers" class="w-3 h-3 inline -mt-0.5 mr-1"></i>Dúplex
+                    </button>
+                    <button data-value="penthouse" onclick="setPropType('penthouse')"
+                        class="prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
+                        <i data-lucide="crown" class="w-3 h-3 inline -mt-0.5 mr-1"></i>Penthouse
+                    </button>
+                    <button data-value="local_comercial" onclick="setPropType('local_comercial')"
+                        class="prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
+                        <i data-lucide="store" class="w-3 h-3 inline -mt-0.5 mr-1"></i>Local Comercial
+                    </button>
+                </div>
+            </div>
+
+            <!-- Fila 3: Rango de Inversión (chips) -->
+            <div>
+                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">Rango de Inversión</label>
+                <div class="flex flex-wrap gap-2" id="budgetRangeChips">
+                    <button data-range="" onclick="setBudgetRange('')"
+                        class="budget-chip active px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight bg-midnight text-white">
+                        Cualquier monto
+                    </button>
+                    <button data-range="hasta_200k" onclick="setBudgetRange('hasta_200k')"
+                        class="budget-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
+                        Hasta $200k
+                    </button>
+                    <button data-range="200k_500k" onclick="setBudgetRange('200k_500k')"
+                        class="budget-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
+                        $200k – $500k
+                    </button>
+                    <button data-range="500k_1m" onclick="setBudgetRange('500k_1m')"
+                        class="budget-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
+                        $500k – $1M
+                    </button>
+                    <button data-range="1m_2m" onclick="setBudgetRange('1m_2m')"
+                        class="budget-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
+                        $1M – $2M
+                    </button>
+                    <button data-range="mas_2m" onclick="setBudgetRange('mas_2m')"
+                        class="budget-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
+                        Más de $2M
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filtros activos + resultado -->
+            <div class="flex items-center justify-between pt-2 border-t border-midnight/5">
+                <div id="activeFilterTags" class="flex flex-wrap gap-2"></div>
+                <div class="flex items-center gap-3 flex-shrink-0 ml-4">
+                    <span class="text-sm text-midnight/60"><span id="leadsCount">0</span> leads</span>
+                    <button id="applyFilters" class="px-4 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all flex items-center gap-2">
+                        <i data-lucide="search" class="w-3 h-3"></i> Buscar
+                    </button>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -167,10 +246,10 @@
                     <tr class="bg-paper-dark border-b border-midnight/5">
                         <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">ID Pedido</th>
                         <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Tipo Operación</th>
+                        <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Vivienda</th>
                         <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Zona</th>
                         <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Presupuesto</th>
                         <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Fecha</th>
-                        <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Mail</th>
                         <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold text-right">Acción</th>
                     </tr>
                 </thead>
@@ -502,8 +581,25 @@ document.addEventListener('DOMContentLoaded', () => {
 // ================================================================
 {% if not pending %}
 let currentFilters = {
-    search: '', type: '', zone: '', min_budget: '', max_budget: '',
+    search: '', type: '', property_type: '', zone: '',
+    min_budget: '', max_budget: '', budget_range: '',
     currency: '', sort: 'timestamp', order: 'desc'
+};
+
+// ---- Labels legibles para los filtros activos ----
+const PROP_LABELS = {
+    departamento: 'Departamento', casa: 'Casa', duplex: 'Dúplex',
+    penthouse: 'Penthouse', local_comercial: 'Local Comercial',
+};
+const BUDGET_LABELS = {
+    hasta_200k: 'Hasta $200k', '200k_500k': '$200k–$500k',
+    '500k_1m': '$500k–$1M', '1m_2m': '$1M–$2M', mas_2m: 'Más de $2M',
+};
+
+// ---- Íconos por tipo de propiedad ----
+const PROP_ICONS = {
+    departamento: 'building', casa: 'home', duplex: 'layers',
+    penthouse: 'crown', local_comercial: 'store',
 };
 
 function setupLeadEventListeners() {
@@ -512,20 +608,106 @@ function setupLeadEventListeners() {
     document.getElementById('sortSelect').addEventListener('change', updateSort);
     document.getElementById('sortOrder').addEventListener('click', toggleSortOrder);
 
+    // Búsqueda en tiempo real con debounce
     let searchTimeout;
     document.getElementById('searchInput').addEventListener('input', function() {
         clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(applyFilters, 500);
+        searchTimeout = setTimeout(applyFilters, 400);
+    });
+
+    // Aplicar al presionar Enter en zona
+    document.getElementById('zoneFilter').addEventListener('keydown', e => {
+        if (e.key === 'Enter') applyFilters();
     });
 }
 
+// ---- Chips: Tipo de Vivienda ----
+function setPropType(value) {
+    currentFilters.property_type = value;
+    document.querySelectorAll('.prop-chip').forEach(btn => {
+        const active = btn.dataset.value === value;
+        btn.className = 'prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all '
+            + (active
+                ? 'border-midnight bg-midnight text-white'
+                : 'border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold');
+    });
+    applyFilters();
+}
+
+// ---- Chips: Rango de Inversión ----
+function setBudgetRange(range) {
+    currentFilters.budget_range = range;
+    document.querySelectorAll('.budget-chip').forEach(btn => {
+        const active = btn.dataset.range === range;
+        btn.className = 'budget-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all '
+            + (active
+                ? 'border-midnight bg-midnight text-white'
+                : 'border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold');
+    });
+    applyFilters();
+}
+
+// ---- Barra de filtros activos ----
+function renderActiveTags() {
+    const container = document.getElementById('activeFilterTags');
+    const countEl   = document.getElementById('activeFiltersCount');
+    const tags = [];
+
+    if (currentFilters.search)        tags.push({ key: 'search',       label: `"${currentFilters.search}"` });
+    if (currentFilters.type)          tags.push({ key: 'type',         label: currentFilters.type });
+    if (currentFilters.property_type) tags.push({ key: 'property_type',label: PROP_LABELS[currentFilters.property_type] || currentFilters.property_type });
+    if (currentFilters.zone)          tags.push({ key: 'zone',         label: `Zona: ${currentFilters.zone}` });
+    if (currentFilters.budget_range)  tags.push({ key: 'budget_range', label: BUDGET_LABELS[currentFilters.budget_range] || currentFilters.budget_range });
+
+    if (tags.length === 0) {
+        container.innerHTML = '';
+        countEl.classList.add('hidden');
+        return;
+    }
+
+    countEl.textContent = `${tags.length} activo${tags.length > 1 ? 's' : ''}`;
+    countEl.classList.remove('hidden');
+
+    container.innerHTML = tags.map(t => `
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gold/10 text-gold border border-gold/20 rounded-full text-[9px] font-bold uppercase tracking-widest">
+            ${t.label}
+            <button onclick="removeFilter('${t.key}')" class="hover:text-rose-500 transition-colors">
+                <i data-lucide="x" class="w-2.5 h-2.5"></i>
+            </button>
+        </span>
+    `).join('');
+    if (window.lucide) lucide.createIcons();
+}
+
+function removeFilter(key) {
+    currentFilters[key] = '';
+    if (key === 'property_type') setPropType('');
+    if (key === 'budget_range')  setBudgetRange('');
+    if (key === 'search')  document.getElementById('searchInput').value = '';
+    if (key === 'type')    { document.getElementById('typeFilter').value = ''; }
+    if (key === 'zone')    document.getElementById('zoneFilter').value = '';
+    applyFilters();
+}
+
+// ---- Cargar y renderizar leads ----
 async function loadLeads() {
+    const params = new URLSearchParams();
+    Object.entries(currentFilters).forEach(([k, v]) => { if (v) params.set(k, v); });
+
+    const tbody = document.getElementById('leadsTableBody');
+    tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-midnight/60">
+        <div class="flex justify-center items-center gap-2">
+            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gold"></div>
+            Buscando leads...
+        </div></td></tr>`;
+
     try {
-        const res  = await fetch(`/api/leads?${new URLSearchParams(currentFilters)}`);
+        const res  = await fetch(`/api/leads?${params}`);
         const data = await res.json();
         if (data.success) {
             renderLeads(data.leads);
             document.getElementById('leadsCount').textContent = data.total;
+            renderActiveTags();
         } else {
             showLeadError(data.error || 'Error al cargar leads');
         }
@@ -538,35 +720,46 @@ function renderLeads(leads) {
     const tbody = document.getElementById('leadsTableBody');
     if (!leads.length) {
         tbody.innerHTML = `
-            <tr><td colspan="7" class="p-8 text-center text-midnight/60">
-                <i data-lucide="search" class="w-8 h-8 mx-auto mb-2 text-midnight/30"></i>
-                <p>No se encontraron leads con los filtros aplicados.</p>
+            <tr><td colspan="7" class="p-12 text-center text-midnight/60">
+                <i data-lucide="search-x" class="w-10 h-10 mx-auto mb-3 text-midnight/20"></i>
+                <p class="font-semibold text-midnight/40">Sin resultados para estos filtros</p>
+                <p class="text-xs text-midnight/30 mt-1">Probá ajustando el tipo de vivienda o el rango de inversión</p>
             </td></tr>`;
         if (window.lucide) lucide.createIcons();
         return;
     }
+
     tbody.innerHTML = leads.map(lead => {
-        const sym = lead.currency === 'USD' ? 'US$' : lead.currency === 'EUR' ? '€' : '$';
+        const sym      = lead.currency === 'USD' ? 'US$' : lead.currency === 'EUR' ? '€' : '$';
+        const propType = lead.property_type || '';
+        const propIcon = PROP_ICONS[propType.toLowerCase()] || 'home';
+        const propLabel = PROP_LABELS[propType.toLowerCase()] || propType;
+        const propBadge = propType
+            ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-paper-dark text-midnight/60 rounded text-[9px] font-bold uppercase tracking-widest">
+                   <i data-lucide="${propIcon}" class="w-2.5 h-2.5"></i>${propLabel}
+               </span>`
+            : '<span class="text-midnight/25 text-xs italic">—</span>';
+
         return `
             <tr class="border-b border-midnight/5 hover:bg-paper transition-colors group">
                 <td class="p-4 font-mono text-xs text-midnight/60">${lead.id}</td>
-                <td class="p-4 font-medium">${lead.type}</td>
+                <td class="p-4 font-medium text-sm">${lead.type}</td>
+                <td class="p-4">${propBadge}</td>
                 <td class="p-4 text-sm text-midnight/70">${lead.zone}</td>
-                <td class="p-4 font-serif italic text-gold">${sym}${lead.budget}</td>
-                <td class="p-4 text-sm text-midnight/70">${lead.timestamp}</td>
-                <td class="p-4 text-sm text-midnight/70">${lead.email}</td>
+                <td class="p-4 font-serif italic text-gold">${sym}${Number(lead.budget).toLocaleString('es-AR') || lead.budget}</td>
+                <td class="p-4 text-sm text-midnight/50">${lead.timestamp}</td>
                 <td class="p-4 text-right">
                     <div class="flex justify-end gap-2 flex-wrap">
                         <button onclick="togglePhone(this,'${lead.id}')"
-                            class="inline-flex items-center gap-2 px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">
-                            <i data-lucide="eye" class="w-3 h-3"></i> Teléfono
+                            class="inline-flex items-center gap-1.5 px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">
+                            <i data-lucide="phone" class="w-3 h-3"></i> Teléfono
                         </button>
                         <a href="/profesional/lead/${lead.id}"
-                            class="inline-flex items-center gap-2 px-3 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
+                            class="inline-flex items-center gap-1.5 px-3 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
                             <i data-lucide="arrow-right" class="w-3 h-3"></i> Ver más
                         </a>
                         <a href="/api/lead/${lead.id}/download"
-                            class="inline-flex items-center gap-2 px-3 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-all">
+                            class="inline-flex items-center gap-1.5 px-3 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-all">
                             <i data-lucide="download" class="w-3 h-3"></i> PDF
                         </a>
                     </div>
@@ -577,20 +770,23 @@ function renderLeads(leads) {
 }
 
 function applyFilters() {
-    currentFilters.search     = document.getElementById('searchInput').value.trim();
-    currentFilters.type       = document.getElementById('typeFilter').value;
-    currentFilters.zone       = document.getElementById('zoneFilter').value.trim();
-    currentFilters.min_budget = document.getElementById('minBudget').value;
-    currentFilters.max_budget = document.getElementById('maxBudget').value;
+    currentFilters.search = document.getElementById('searchInput').value.trim();
+    currentFilters.type   = document.getElementById('typeFilter').value;
+    currentFilters.zone   = document.getElementById('zoneFilter').value.trim();
     loadLeads();
 }
 
 function clearFilters() {
-    ['searchInput','zoneFilter','minBudget','maxBudget'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('typeFilter').value = '';
-    document.getElementById('sortSelect').value = 'timestamp';
-    currentFilters = { search:'', type:'', zone:'', min_budget:'', max_budget:'', currency:'', sort:'timestamp', order:'desc' };
-    // Resetear ícono de orden
+    ['searchInput', 'zoneFilter'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('typeFilter').value  = '';
+    document.getElementById('sortSelect').value  = 'timestamp';
+    currentFilters = {
+        search: '', type: '', property_type: '', zone: '',
+        min_budget: '', max_budget: '', budget_range: '',
+        currency: '', sort: 'timestamp', order: 'desc'
+    };
+    setPropType('');
+    setBudgetRange('');
     const icon = document.querySelector('#sortOrder i');
     if (icon) { icon.setAttribute('data-lucide', 'arrow-down'); if (window.lucide) lucide.createIcons(); }
     loadLeads();
