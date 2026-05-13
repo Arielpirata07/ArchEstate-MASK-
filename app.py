@@ -584,7 +584,20 @@ def submit_lead():
 
 
 
-@app.route('/api/budget-stats')
+@app.route('/api/leads/filter-options')
+@professional_required
+def get_leads_filter_options():
+    """Retorna valores distintos para poblar los filtros dinámicamente."""
+    conn = get_db_connection()
+    types      = [r[0] for r in conn.execute('SELECT DISTINCT type FROM leads WHERE type IS NOT NULL ORDER BY type').fetchall()]
+    prop_types = [r[0] for r in conn.execute('SELECT DISTINCT property_type FROM leads WHERE property_type IS NOT NULL ORDER BY property_type').fetchall()]
+    currencies = [r[0] for r in conn.execute('SELECT DISTINCT currency FROM leads WHERE currency IS NOT NULL ORDER BY currency').fetchall()]
+    conn.close()
+    return jsonify({
+        'types':          types,
+        'property_types': prop_types,
+        'currencies':     currencies,
+    })
 def budget_stats():
     """Retorna estadísticas de presupuesto en formato JSON"""
     stats = get_budget_stats_from_db()
@@ -915,14 +928,29 @@ def get_leads_api():
             return jsonify({"error": "Cuenta pendiente de aprobación"}), 403
         
         # Obtener parámetros de filtro
-        search = request.args.get('search', '').strip()
-        type_filter = request.args.get('type', '').strip()
-        zone_filter = request.args.get('zone', '').strip()
-        min_budget = request.args.get('min_budget', '').strip()
-        max_budget = request.args.get('max_budget', '').strip()
+        search         = request.args.get('search', '').strip()
+        type_filter    = request.args.get('type', '').strip()
+        prop_type      = request.args.get('property_type', '').strip()
+        zone_filter    = request.args.get('zone', '').strip()
+        min_budget     = request.args.get('min_budget', '').strip()
+        max_budget     = request.args.get('max_budget', '').strip()
+        budget_range   = request.args.get('budget_range', '').strip()
         currency_filter = request.args.get('currency', '').strip()
-        sort_by = request.args.get('sort', 'timestamp')
-        sort_order = request.args.get('order', 'desc')
+        sort_by        = request.args.get('sort', 'timestamp')
+        sort_order     = request.args.get('order', 'desc')
+
+        # Mapear rangos predefinidos a valores numéricos
+        BUDGET_RANGES = {
+            'hasta_200k':    (0,       200000),
+            '200k_500k':     (200000,  500000),
+            '500k_1m':       (500000,  1000000),
+            '1m_2m':         (1000000, 2000000),
+            'mas_2m':        (2000000, None),
+        }
+        if budget_range and budget_range in BUDGET_RANGES:
+            rng = BUDGET_RANGES[budget_range]
+            min_budget = str(rng[0]) if rng[0] else ''
+            max_budget = str(rng[1]) if rng[1] else ''
         
         # Construir consulta base
         query = 'SELECT * FROM leads WHERE 1=1'
@@ -937,17 +965,19 @@ def get_leads_api():
         if type_filter:
             query += ' AND type = ?'
             params.append(type_filter)
+
+        if prop_type:
+            query += ' AND property_type = ?'
+            params.append(prop_type)
         
         if zone_filter:
             query += ' AND zone LIKE ?'
             params.append(f'%{zone_filter}%')
         
-        # Filtro de presupuesto: búsqueda de texto ya que budget se almacena como TEXT
+        # Filtro de presupuesto numérico
         if min_budget:
             try:
                 min_val = float(min_budget)
-                # Intentar comparación numérica; funciona si budget es un número puro
-                # Si no parsea (ej: "€1.2M"), se ignora silenciosamente
                 query += " AND CAST(REPLACE(REPLACE(budget, '.', ''), ',', '') AS REAL) >= ?"
                 params.append(min_val)
             except ValueError:
