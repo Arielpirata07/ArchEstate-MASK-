@@ -740,13 +740,51 @@ function renderLeads(leads) {
                </span>`
             : '<span class="text-midnight/25 text-xs italic">—</span>';
 
+        // Detalles técnicos compactos
+        const specs = [];
+        if (lead.ambientes)          specs.push(`${lead.ambientes} amb.`);
+        if (lead.bedrooms)           specs.push(`${lead.bedrooms} hab.`);
+        if (lead.bathrooms)          specs.push(`${lead.bathrooms} baños`);
+        if (lead.usable_m2 > 0)      specs.push(`${lead.usable_m2} m²`);
+        if (lead.land_area > 0)      specs.push(`${lead.land_area} m² terreno`);
+
+        const specLine = specs.length
+            ? `<div class="text-[9px] text-midnight/40 font-bold uppercase tracking-widest mt-0.5">${specs.join(' · ')}</div>`
+            : '';
+
+        // Badges extra
+        const parkingLabels = { sin_cochera:'Sin cochera', simple_cubierta:'Coch. simple', doble_cubierta:'Coch. doble', descubierta:'Desc.', garage:'Garage' };
+        const conditionColors = { 'A estrenar':'bg-emerald-50 text-emerald-700', 'Usado':'bg-paper-dark text-midnight/60', 'A reciclar':'bg-amber-50 text-amber-700', 'En construcción':'bg-blue-50 text-blue-700' };
+
+        const extraBadges = [];
+        if (lead.parking && lead.parking !== '' && parkingLabels[lead.parking]) {
+            extraBadges.push(`<span class="px-1.5 py-0.5 bg-paper-dark text-midnight/50 rounded text-[8px] font-bold uppercase tracking-widest">${parkingLabels[lead.parking]}</span>`);
+        }
+        if (lead.orientation && lead.orientation !== '') {
+            extraBadges.push(`<span class="px-1.5 py-0.5 bg-paper-dark text-midnight/50 rounded text-[8px] font-bold uppercase tracking-widest">${lead.orientation}</span>`);
+        }
+        if (lead.property_condition && lead.property_condition !== '') {
+            const cls = conditionColors[lead.property_condition] || 'bg-paper-dark text-midnight/50';
+            extraBadges.push(`<span class="px-1.5 py-0.5 ${cls} rounded text-[8px] font-bold uppercase tracking-widest">${lead.property_condition}</span>`);
+        }
+        if (lead.property_age && lead.property_age !== '') {
+            extraBadges.push(`<span class="px-1.5 py-0.5 bg-paper-dark text-midnight/50 rounded text-[8px] font-bold uppercase tracking-widest">${lead.property_age}</span>`);
+        }
+        const extrasLine = extraBadges.length
+            ? `<div class="flex flex-wrap gap-1 mt-1">${extraBadges.join('')}</div>`
+            : '';
+
         return `
             <tr class="border-b border-midnight/5 hover:bg-paper transition-colors group">
                 <td class="p-4 font-mono text-xs text-midnight/60">${lead.id}</td>
-                <td class="p-4 font-medium text-sm">${lead.type}</td>
+                <td class="p-4 text-sm font-medium">${lead.type}</td>
                 <td class="p-4">${propBadge}</td>
                 <td class="p-4 text-sm text-midnight/70">${lead.zone}</td>
-                <td class="p-4 font-serif italic text-gold">${sym}${Number(lead.budget).toLocaleString('es-AR') || lead.budget}</td>
+                <td class="p-4">
+                    <div class="font-serif italic text-gold">${sym}${Number(lead.budget).toLocaleString('es-AR') || lead.budget}</div>
+                    ${specLine}
+                    ${extrasLine}
+                </td>
                 <td class="p-4 text-sm text-midnight/50">${lead.timestamp}</td>
                 <td class="p-4 text-right">
                     <div class="flex justify-end gap-2 flex-wrap">
