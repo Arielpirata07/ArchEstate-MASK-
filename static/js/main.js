@@ -20,7 +20,7 @@ function showToast(message, type = 'success') {
     if (!container) {
         container = document.createElement('div');
         container.id = 'toast-container';
-        container.className = 'fixed bottom-8 right-8 z-[100] flex flex-col gap-3';
+        container.className = 'fixed bottom-4 right-4 md:bottom-8 md:right-8 z-50 flex flex-col gap-3 w-full md:w-auto';
         document.body.appendChild(container);
     }
 
@@ -81,6 +81,48 @@ function validateEmail(val) {
         errorEl.classList.add('hidden');
         inputEl.classList.remove('border-rose-300');
         iconEl.classList.remove('text-rose-500');
+    }
+    return isValid;
+}
+
+/**
+ * Validación de Teléfono Argentino
+ * Formatos: 11XXXXXXXX, +54XXXXXXXXXX, 0XXXXXXXXX, XXXXXXXXX
+ */
+function validatePhone(val) {
+    if (!val) return false;
+    const phoneDigits = val.replace(/\D/g, '');
+    const isValid = phoneDigits.length >= 8 && phoneDigits.length <= 13;
+    const errorEl = document.getElementById('phone-error');
+    const inputEl = document.getElementById('phone-input');
+    if (!errorEl || !inputEl) return isValid;
+    if (!isValid && val.length > 0) {
+        errorEl.classList.remove('hidden');
+        inputEl.classList.add('border-rose-300');
+    } else {
+        errorEl.classList.add('hidden');
+        inputEl.classList.remove('border-rose-300');
+    }
+    return isValid;
+}
+
+/**
+ * Validación de Presupuesto
+ * Rango: 0 < amount <= 1 billón
+ */
+function validateBudget(val) {
+    if (!val && val !== 0) return false;
+    const num = parseFloat(val);
+    const isValid = !isNaN(num) && num > 0 && num <= 1000000000000;
+    const errorEl = document.getElementById('budget-error');
+    const inputEl = document.getElementById('budget-input');
+    if (!errorEl || !inputEl) return isValid;
+    if (!isValid && val.length > 0) {
+        errorEl.classList.remove('hidden');
+        inputEl.classList.add('border-rose-300');
+    } else {
+        errorEl.classList.add('hidden');
+        inputEl.classList.remove('border-rose-300');
     }
     return isValid;
 }

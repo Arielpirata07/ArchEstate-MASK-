@@ -1,12 +1,12 @@
 # app.py - Aplicación principal de Flask para ArchEstate
-# Esta aplicación maneja leads de propiedades, usuarios, profesionales y panel de administración.
 
-# --- IMPORTS ---
 import csv
 import io
 import os
 import re
 import sqlite3
+import threading
+import time
 
 from datetime import datetime
 from functools import wraps
@@ -15,34 +15,69 @@ from io import StringIO
 import openpyxl
 import pytz
 
-from flask import Flask, render_template, jsonify, request, session, redirect, url_for, Response, send_file, flash
+from flask import Flask, render_template, jsonify, request, session, redirect, url_for, Response, send_file, flash, send_from_directory
 from fpdf import FPDF
 from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.utils import secure_filename # Para limpiar nombres de archivos
-from flask import send_from_directory
+from werkzeug.utils import secure_filename
+
+import config
+import utils
+from utils import allowed_file
+import decorators
+import rate_limit
+import validators
+import models
 
 
-# --- CONFIGURACIÓN Y SETUP ---
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'dev_secret_key_123')  # Clave secreta para sesiones
-DATABASE = os.path.join(os.path.dirname(__file__), 'database.db')
-
-# Configuración de carpetas (Actualizado a tu nueva ruta)
-UPLOAD_FOLDER = os.path.join('static', 'uploads', 'docs')
-ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg'}
-
-# Cerca de donde defines app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'uploads', 'docs')
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+app.secret_key = config.SECRET_KEY
+app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, config.UPLOAD_FOLDER)
 
 
-# --- FUNCIONES DE BASE DE DATOS ---
+class FilterOptionsCache:
+    """Caché simple en memoria para opciones de filtros de leads"""
+    def __init__(self, ttl_seconds=300):
+        self._cache = {}
+        self._timestamps = {}
+        self._ttl = ttl_seconds
+        self._lock = threading.Lock()
+
+    def get(self, key):
+        with self._lock:
+            if key in self._cache:
+                if time.time() - self._timestamps[key] < self._ttl:
+                    return self._cache[key]
+                else:
+                    del self._cache[key]
+                    del self._timestamps[key]
+        return None
+
+    def set(self, key, value):
+        with self._lock:
+            self._cache[key] = value
+            self._timestamps[key] = time.time()
+
+    def invalidate(self):
+        with self._lock:
+            self._cache.clear()
+            self._timestamps.clear()
+
+
+filter_cache = FilterOptionsCache(ttl_seconds=300)
+
+
+@app.after_request
+def security_headers(response):
+    """Agrega headers de seguridad HTTP a todas las respuestas"""
+    if not request.path.startswith('/static/'):
+        response.headers['X-Content-Type-Options'] = 'nosniff'
+        response.headers['X-Frame-Options'] = 'DENY'
+        response.headers['X-XSS-Protection'] = '1; mode=block'
+    return rate_limit.add_rate_limit_headers(response)
+
+
 def get_db_connection():
-    """Establece una conexión a la base de datos SQLite y configura el row factory para acceder por nombre de columna."""
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    return conn
+    return models.get_db_connection()
 
 
 def init_db():
@@ -166,62 +201,10 @@ def init_db():
         conn.close()
 
 
-# --- DECORADORES ---
-def login_required(f):
-    """
-    Decorador para proteger rutas que requieren autenticación.
-    Si el usuario no está en la sesión, redirige al login.
-    """
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            return redirect(url_for('login'))
-        return f(*args, **kwargs)
-    return decorated_function
-
-
-def admin_required(f):
-    """
-    Decorador para rutas que requieren rol de administrador.
-    """
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            return redirect(url_for('login'))
-        
-        # Verificar rol en la base de datos
-        conn = get_db_connection()
-        user = conn.execute('SELECT role FROM users WHERE id = ?', (session['user_id'],)).fetchone()
-        conn.close()
-        
-        if not user or user['role'] != 'admin':
-            flash('Acceso restringido: solo administradores pueden ingresar al panel de administración.', 'error')
-            return redirect(url_for('index'))
-        
-        return f(*args, **kwargs)
-    return decorated_function
-
-
-def professional_required(f):
-    """
-    Decorador para rutas que requieren rol de profesional.
-    """
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'user_id' not in session:
-            return redirect(url_for('login'))
-        
-        # Verificar rol en la base de datos
-        conn = get_db_connection()
-        user = conn.execute('SELECT role FROM users WHERE id = ?', (session['user_id'],)).fetchone()
-        conn.close()
-        
-        if not user or user['role'] != 'professional':
-            flash('Acceso denegado. Esta sección es solo para profesionales.', 'error')
-            return redirect(url_for('index'))
-        
-        return f(*args, **kwargs)
-    return decorated_function
+# --- DECORADORES (from decorators.py) ---
+login_required = decorators.login_required
+admin_required = decorators.admin_required
+professional_required = decorators.professional_required
 
 
 # --- LÓGICA DE NEGOCIO (PYTHON) ---
@@ -235,14 +218,17 @@ def is_valid_email(email):
 
 def log_action(action, target):
     """Registra una acción en la tabla de auditoría de la base de datos"""
+    conn = None
     try:
         conn = get_db_connection()
         conn.execute('INSERT INTO audit_log (action, target, admin) VALUES (?, ?, ?)',
                      (action, target, session.get('username', 'sistema')))
         conn.commit()
-        conn.close()
     except Exception as e:
         print(f"Error al registrar auditoría: {e}")
+    finally:
+        if conn:
+            conn.close()
 
 
 def convert_to_argentina_time(timestamp_str):
@@ -268,28 +254,24 @@ def convert_to_argentina_time(timestamp_str):
 
 def get_budget_stats_from_db():
     """Retorna estadísticas de presupuesto desde la base de datos"""
-    conn = get_db_connection()
-    
-    # Total de leads
-    total_leads = conn.execute('SELECT COUNT(*) FROM leads').fetchone()[0]
-    
-    # Leads por rango de presupuesto
-    leads_by_budget = conn.execute(
-        'SELECT budget, COUNT(*) as count FROM leads GROUP BY budget ORDER BY count DESC'
-    ).fetchall()
-    
-    # Leads por moneda
-    leads_by_currency = conn.execute(
-        'SELECT currency, COUNT(*) as count FROM leads GROUP BY currency'
-    ).fetchall()
-    
-    conn.close()
-    
-    return {
-        'total_leads': total_leads,
-        'by_budget': [{'label': r['budget'], 'value': r['count']} for r in leads_by_budget],
-        'by_currency': [{'label': r['currency'], 'value': r['count']} for r in leads_by_currency],
-    }
+    conn = None
+    try:
+        conn = get_db_connection()
+        total_leads = conn.execute('SELECT COUNT(*) FROM leads').fetchone()[0]
+        leads_by_budget = conn.execute(
+            'SELECT budget, COUNT(*) as count FROM leads GROUP BY budget ORDER BY count DESC'
+        ).fetchall()
+        leads_by_currency = conn.execute(
+            'SELECT currency, COUNT(*) as count FROM leads GROUP BY currency'
+        ).fetchall()
+        return {
+            'total_leads': total_leads,
+            'by_budget': [{'label': r['budget'], 'value': r['count']} for r in leads_by_budget],
+            'by_currency': [{'label': r['currency'], 'value': r['count']} for r in leads_by_currency],
+        }
+    finally:
+        if conn:
+            conn.close()
 
 # --- RUTAS DE NAVEGACIÓN (VISTAS) ---
 
@@ -301,15 +283,18 @@ def index():
 @app.route('/usuario')
 @login_required
 def user_view():
-    # Solo rechazar a profesionales, admins y clientes pueden entrar
-    conn = get_db_connection()
-    user = conn.execute('SELECT role FROM users WHERE id = ?', (session['user_id'],)).fetchone()
-    conn.close()
-    
+    conn = None
+    try:
+        conn = get_db_connection()
+        user = conn.execute('SELECT role FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+    finally:
+        if conn:
+            conn.close()
+
     if user and user['role'] == 'professional':
         flash('Acceso denegado. Los profesionales no pueden acceder a esta sección.', 'error')
         return redirect(url_for('index'))
-    
+
     return render_template('user.html')
 
 
@@ -317,40 +302,41 @@ def user_view():
 @professional_required
 def professional_view():
     """Muestra el panel de leads (datos se cargan dinámicamente)"""
-    conn = get_db_connection()
-    
-    # Obtener el usuario actual
-    user = conn.execute('SELECT username, doc_path FROM users WHERE id = ?', (session['user_id'],)).fetchone()
-    if not user:
-        conn.close()
-        return redirect(url_for('index'))
-    
-    # Verificar si el profesional está aprobado
-    professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
-    if not professional or professional['status'] != 'approved':
-        conn.close()
-        return render_template('professional.html', pending=True, doc_path=user['doc_path'])
-    
-    conn.close()
-    return render_template('professional.html', pending=False, doc_path=user['doc_path'])
+    conn = None
+    try:
+        conn = get_db_connection()
+        user = conn.execute('SELECT username, doc_path FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+        if not user:
+            return redirect(url_for('index'))
+
+        professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
+        if not professional or professional['status'] != 'approved':
+            return render_template('professional.html', pending=True, doc_path=user['doc_path'])
+
+        return render_template('professional.html', pending=False, doc_path=user['doc_path'])
+    finally:
+        if conn:
+            conn.close()
 
 
 @app.route('/profesional/lead/<int:lead_id>')
 @professional_required
 def lead_detail(lead_id):
-    conn = get_db_connection()
-    user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
-    if not user:
-        conn.close()
-        return redirect(url_for('index'))
+    conn = None
+    try:
+        conn = get_db_connection()
+        user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+        if not user:
+            return redirect(url_for('index'))
 
-    professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
-    if not professional or professional['status'] != 'approved':
-        conn.close()
-        return render_template('professional.html', leads=[], pending=True)
+        professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
+        if not professional or professional['status'] != 'approved':
+            return render_template('professional.html', leads=[], pending=True)
 
-    lead = conn.execute('SELECT * FROM leads WHERE id = ?', (lead_id,)).fetchone()
-    conn.close()
+        lead = conn.execute('SELECT * FROM leads WHERE id = ?', (lead_id,)).fetchone()
+    finally:
+        if conn:
+            conn.close()
 
     if not lead:
         return redirect(url_for('professional_view'))
@@ -364,18 +350,21 @@ def lead_detail(lead_id):
 @admin_required
 def admin_view():
     """Muestra logs de auditoría (profesionales se cargan dinámicamente)"""
-    conn = get_db_connection()
-    audit_logs = conn.execute('SELECT * FROM audit_log ORDER BY timestamp DESC').fetchall()
-    conn.close()
-    
-    # Convertir timestamps de audit_log a UTC-3 (Argentina)
+    conn = None
+    try:
+        conn = get_db_connection()
+        audit_logs = conn.execute('SELECT * FROM audit_log ORDER BY timestamp DESC').fetchall()
+    finally:
+        if conn:
+            conn.close()
+
     audit_log_converted = []
     for log in audit_logs:
         log_dict = dict(log)
         log_dict['timestamp'] = convert_to_argentina_time(log_dict['timestamp'])
         audit_log_converted.append(log_dict)
-    
-    return render_template('admin.html', 
+
+    return render_template('admin.html',
                            audit_log=audit_log_converted)
 
 
@@ -462,14 +451,16 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-        
-        conn = get_db_connection()
-        user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
-        conn.close()
 
-        # Verificar credenciales
+        conn = None
+        try:
+            conn = get_db_connection()
+            user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+        finally:
+            if conn:
+                conn.close()
+
         if user and check_password_hash(user['hash'], password):
-            # Verificar si la cuenta está activa
             if not user['is_active']:
                 flash('Tu cuenta ha sido dada de baja. Contactá al administrador para más información.', 'error')
                 return redirect(url_for('login'))
@@ -478,17 +469,15 @@ def login():
             session['user_id'] = user['id']
             session['username'] = user['username']
             session['email'] = user['email']
-            session['role'] = user['role']  # Guardar el rol en la sesión
-            
-            # Redirigir según el rol del usuario
+            session['role'] = user['role']
+
             if user['role'] == 'admin':
                 return redirect(url_for('admin_view'))
             elif user['role'] == 'professional':
                 return redirect(url_for('professional_view'))
-            else:  # client u otros roles
+            else:
                 return redirect(url_for('user_view'))
-        
-        # Si falla el login
+
         flash('Credenciales inválidas. Intente de nuevo.', 'error')
         return redirect(url_for('login'))
 
@@ -502,6 +491,7 @@ def logout():
 
 
 @app.route('/api/submit', methods=['POST'])
+@rate_limit.check_rate_limit(limit=10, window=60)
 def submit_lead():
     """
     Envía una solicitud de propiedad.
@@ -509,47 +499,59 @@ def submit_lead():
     """
     data = request.json
     user_id = session.get('user_id')
-    
-    # --- VALIDACIÓN DE AUTENTICACIÓN ---
+
     if not user_id:
         return jsonify({
-            "status": "error", 
+            "status": "error",
             "message": "Debes estar registrado para enviar solicitudes."
         }), 401
-    
-    # Obtener datos del usuario desde la BD (no desde el formulario)
-    conn = get_db_connection()
-    user = conn.execute('SELECT id, username FROM users WHERE id = ?', (user_id,)).fetchone()
-    
-    if not user:
-        conn.close()
-        return jsonify({"status": "error", "message": "Sesión no válida"}), 401
 
-    # Usamos el email en sesión o el email enviado por el formulario.
-    email = session.get('email') or data.get('email', '')
-    if not email or not is_valid_email(email):
-        conn.close()
-        return jsonify({"status": "error", "message": "Email inválido o no proporcionado."}), 400
-
-    # Validación de área: no permitir más metros construidos que de terreno para casas
-    property_type = data.get('property_type', 'departamento')
+    conn = None
     try:
-        land_area = int(data.get('land_area') or 0)
-        built_area = int(data.get('built_area') or 0)
-    except (ValueError, TypeError):
-        land_area = 0
-        built_area = 0
+        conn = get_db_connection()
+        user = conn.execute('SELECT id, username FROM users WHERE id = ?', (user_id,)).fetchone()
 
-    if property_type == 'casa' and built_area > land_area:
-        conn.close()
-        return jsonify({"status": "error", "message": "Los metros construidos no pueden ser mayores que los metros de terreno."}), 400
+        if not user:
+            return jsonify({"status": "error", "message": "Sesión no válida"}), 401
 
-    # --- GUARDADO EN BASE DE DATOS ---
-    try:
+        email = session.get('email') or data.get('email', '')
+        is_valid, error = validators.validate_email(email)
+        if not is_valid:
+            return jsonify({"status": "error", "message": error}), 400
+
+        phone = data.get('phone', '')
+        if phone:
+            is_valid, error = validators.validate_phone(phone)
+            if not is_valid:
+                return jsonify({"status": "error", "message": error}), 400
+
+        budget = data.get('budget')
+        if budget:
+            is_valid, error = validators.validate_budget(budget)
+            if not is_valid:
+                return jsonify({"status": "error", "message": error}), 400
+
+        zone = data.get('zone')
+        if zone:
+            is_valid, error = validators.validate_zone(zone)
+            if not is_valid:
+                return jsonify({"status": "error", "message": error}), 400
+
+        property_type = data.get('property_type', 'departamento')
+        try:
+            land_area = int(data.get('land_area') or 0)
+            built_area = int(data.get('built_area') or 0)
+        except (ValueError, TypeError):
+            land_area = 0
+            built_area = 0
+
+        if property_type == 'casa' and built_area > land_area:
+            return jsonify({"status": "error", "message": "Los metros construidos no pueden ser mayores que los metros de terreno."}), 400
+
         conn.execute('''
             INSERT INTO leads (
-                type, property_type, zone, budget, currency, 
-                phone, email, floor_block, usable_m2, elevator, 
+                type, property_type, zone, budget, currency,
+                phone, email, floor_block, usable_m2, elevator,
                 land_area, built_area, pool, architectural_style,
                 bedrooms, bathrooms, total_area, amenities,
                 ambientes, parking, orientation, property_condition, property_age
@@ -581,17 +583,18 @@ def submit_lead():
             data.get('property_age', ''),
         ))
         conn.commit()
-        conn.close()
-        
+
         return jsonify({
-            "status": "success", 
+            "status": "success",
             "message": "Solicitud enviada con éxito. Los profesionales se contactarán contigo."
         })
-    
+
     except Exception as e:
-        conn.close()
         print(f"Error en BD: {e}")
         return jsonify({"status": "error", "message": "Error al procesar la solicitud."}), 500
+    finally:
+        if conn:
+            conn.close()
 
 
 
@@ -599,16 +602,37 @@ def submit_lead():
 @professional_required
 def get_leads_filter_options():
     """Retorna valores distintos para poblar los filtros dinámicamente."""
-    conn = get_db_connection()
-    types      = [r[0] for r in conn.execute('SELECT DISTINCT type FROM leads WHERE type IS NOT NULL ORDER BY type').fetchall()]
-    prop_types = [r[0] for r in conn.execute('SELECT DISTINCT property_type FROM leads WHERE property_type IS NOT NULL ORDER BY property_type').fetchall()]
-    currencies = [r[0] for r in conn.execute('SELECT DISTINCT currency FROM leads WHERE currency IS NOT NULL ORDER BY currency').fetchall()]
-    conn.close()
-    return jsonify({
-        'types':          types,
-        'property_types': prop_types,
-        'currencies':     currencies,
-    })
+    cached = filter_cache.get('filter_options')
+    if cached:
+        return jsonify(cached)
+
+    conn = None
+    try:
+        conn = get_db_connection()
+        types      = [r[0] for r in conn.execute('SELECT DISTINCT type FROM leads WHERE type IS NOT NULL ORDER BY type').fetchall()]
+        prop_types = [r[0] for r in conn.execute('SELECT DISTINCT property_type FROM leads WHERE property_type IS NOT NULL ORDER BY property_type').fetchall()]
+        currencies = [r[0] for r in conn.execute('SELECT DISTINCT currency FROM leads WHERE currency IS NOT NULL ORDER BY currency').fetchall()]
+        zones      = [r[0] for r in conn.execute('SELECT DISTINCT zone FROM leads WHERE zone IS NOT NULL ORDER BY zone').fetchall()]
+
+        result = {
+            'types':          types,
+            'property_types': prop_types,
+            'currencies':     currencies,
+            'zones':          zones,
+        }
+        filter_cache.set('filter_options', result)
+        return jsonify(result)
+    finally:
+        if conn:
+            conn.close()
+
+
+@app.route('/api/leads/filter-options/invalidate', methods=['POST'])
+@admin_required
+def invalidate_filter_cache():
+    """Invalida la caché de opciones de filtro."""
+    filter_cache.invalidate()
+    return jsonify({"status": "success", "message": "Caché invalidada"})
 def budget_stats():
     """Retorna estadísticas de presupuesto en formato JSON"""
     stats = get_budget_stats_from_db()
@@ -619,33 +643,32 @@ def budget_stats():
 @professional_required
 def export_leads_csv():
     """Genera y descarga un archivo CSV con todos los leads"""
-    conn = get_db_connection()
-    
-    # Verificar si el profesional está aprobado
-    user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
-    if not user:
-        conn.close()
-        return "Acceso denegado", 403
-    
-    professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
-    if not professional or professional['status'] != 'approved':
-        conn.close()
-        return "Cuenta pendiente de aprobación", 403
-    
-    leads = conn.execute('SELECT id, type, zone, budget, currency, timestamp FROM leads ORDER BY timestamp DESC').fetchall()
-    conn.close()
+    conn = None
+    leads = []
+    try:
+        conn = get_db_connection()
+        user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+        if not user:
+            return "Acceso denegado", 403
+
+        professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
+        if not professional or professional['status'] != 'approved':
+            return "Cuenta pendiente de aprobación", 403
+
+        leads = conn.execute('SELECT id, type, zone, budget, currency, timestamp FROM leads ORDER BY timestamp DESC').fetchall()
+    finally:
+        if conn:
+            conn.close()
 
     def generate():
         data = StringIO()
         writer = csv.writer(data)
-        
-        # Escribir cabecera
+
         writer.writerow(['ID', 'Tipo Operacion', 'Zona', 'Presupuesto', 'Moneda', 'Fecha Registro (Argentina)'])
         yield data.getvalue()
         data.seek(0)
         data.truncate(0)
 
-        # Escribir filas (convertir timestamps a UTC-3 Argentina)
         for lead in leads:
             timestamp_argentina = convert_to_argentina_time(lead['timestamp'])
             writer.writerow([lead['id'], lead['type'], lead['zone'], lead['budget'], lead['currency'], timestamp_argentina])
@@ -666,33 +689,31 @@ def export_leads_csv():
 @professional_required
 def export_leads_xlsx():
     """Genera y descarga un archivo XLSX con todos los leads"""
-    conn = get_db_connection()
-    
-    # Verificar si el profesional está aprobado
-    user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
-    if not user:
-        conn.close()
-        return "Acceso denegado", 403
-    
-    professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
-    if not professional or professional['status'] != 'approved':
-        conn.close()
-        return "Cuenta pendiente de aprobación", 403
-    
-    leads = conn.execute('SELECT id, type, zone, budget, currency, timestamp FROM leads ORDER BY timestamp DESC').fetchall()
-    conn.close()
+    conn = None
+    leads = []
+    try:
+        conn = get_db_connection()
+        user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+        if not user:
+            return "Acceso denegado", 403
 
-    # Crear workbook y hoja
+        professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
+        if not professional or professional['status'] != 'approved':
+            return "Cuenta pendiente de aprobación", 403
+
+        leads = conn.execute('SELECT id, type, zone, budget, currency, timestamp FROM leads ORDER BY timestamp DESC').fetchall()
+    finally:
+        if conn:
+            conn.close()
+
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Leads"
 
-    # Cabeceras
     headers = ['ID', 'Tipo Operacion', 'Zona', 'Presupuesto', 'Moneda', 'Fecha Registro (Argentina)']
     for col_num, header in enumerate(headers, 1):
         ws.cell(row=1, column=col_num, value=header)
 
-    # Datos
     for row_num, lead in enumerate(leads, 2):
         timestamp_argentina = convert_to_argentina_time(lead['timestamp'])
         ws.cell(row=row_num, column=1, value=lead['id'])
@@ -702,7 +723,6 @@ def export_leads_xlsx():
         ws.cell(row=row_num, column=5, value=lead['currency'])
         ws.cell(row=row_num, column=6, value=timestamp_argentina)
 
-    # Guardar en buffer
     buffer = io.BytesIO()
     wb.save(buffer)
     buffer.seek(0)
@@ -717,58 +737,55 @@ def export_leads_xlsx():
 
 
 @app.route('/api/lead/<int:lead_id>/phone')
+@rate_limit.check_rate_limit(limit=20, window=60)
 @professional_required
 def get_lead_phone(lead_id):
-    """
-    Entrega el teléfono de un lead específico y audita la consulta.
-    """
-    conn = get_db_connection()
-    
-    # Verificar si el profesional está aprobado
-    user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
-    if not user:
-        conn.close()
-        return jsonify({"error": "Acceso denegado"}), 403
-    
-    professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
-    if not professional or professional['status'] != 'approved':
-        conn.close()
-        return jsonify({"error": "Cuenta pendiente de aprobación"}), 403
-    
-    lead = conn.execute('SELECT phone, type FROM leads WHERE id = ?', (lead_id,)).fetchone()
-    
-    if lead:
-        # Auditar la consulta
-        log_action("Consulta Teléfono", f"Lead ID: {lead_id} ({lead['type']})")
-        conn.close()
-        return jsonify({"phone": lead['phone']})
-    
-    conn.close()
-    return jsonify({"error": "Lead no encontrado"}), 404
+    """Entrega el teléfono de un lead específico y audita la consulta."""
+    conn = None
+    try:
+        conn = get_db_connection()
+        user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+        if not user:
+            return jsonify({"status": "error", "message": "Acceso denegado"}), 403
+
+        professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
+        if not professional or professional['status'] != 'approved':
+            return jsonify({"status": "error", "message": "Cuenta pendiente de aprobación"}), 403
+
+        lead = conn.execute('SELECT phone, type FROM leads WHERE id = ?', (lead_id,)).fetchone()
+
+        if lead:
+            log_action("Consulta Teléfono", f"Lead ID: {lead_id} ({lead['type']})")
+            return jsonify({"status": "success", "phone": lead['phone']})
+
+        return jsonify({"status": "error", "message": "Lead no encontrado"}), 404
+    finally:
+        if conn:
+            conn.close()
 
 
 @app.route('/api/lead/<int:lead_id>/download')
 @professional_required
 def download_lead_pdf(lead_id):
     """Genera un PDF con los detalles del lead para descarga."""
-    conn = get_db_connection()
-    
-    # Verificar si el profesional está aprobado
-    user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
-    if not user:
-        conn.close()
-        return "Acceso denegado", 403
-    
-    professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
-    if not professional or professional['status'] != 'approved':
-        conn.close()
-        return "Cuenta pendiente de aprobación", 403
-    
-    lead = conn.execute('SELECT * FROM leads WHERE id = ?', (lead_id,)).fetchone()
-    conn.close()
+    conn = None
+    try:
+        conn = get_db_connection()
+        user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+        if not user:
+            return "Acceso denegado", 403
+
+        professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
+        if not professional or professional['status'] != 'approved':
+            return "Cuenta pendiente de aprobación", 403
+
+        lead = conn.execute('SELECT * FROM leads WHERE id = ?', (lead_id,)).fetchone()
+    finally:
+        if conn:
+            conn.close()
 
     if not lead:
-        return jsonify({"error": "Lead no encontrado"}), 404
+        return jsonify({"status": "error", "message": "Lead no encontrado"}), 404
 
     def safe_text(value):
         """Convert values to text and remove unsupported Unicode characters"""
@@ -924,21 +941,18 @@ def download_lead_pdf(lead_id):
 @professional_required
 def get_leads_api():
     """API para obtener leads dinámicamente con filtros opcionales"""
+    conn = None
     try:
         conn = get_db_connection()
-        
-        # Verificar permisos del profesional
+
         user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
         if not user:
-            conn.close()
-            return jsonify({"error": "Acceso denegado"}), 403
-        
+            return jsonify({"status": "error", "message": "Acceso denegado"}), 403
+
         professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
         if not professional or professional['status'] != 'approved':
-            conn.close()
-            return jsonify({"error": "Cuenta pendiente de aprobación"}), 403
-        
-        # Obtener parámetros de filtro
+            return jsonify({"status": "error", "message": "Cuenta pendiente de aprobación"}), 403
+
         search         = request.args.get('search', '').strip()
         type_filter    = request.args.get('type', '').strip()
         prop_type      = request.args.get('property_type', '').strip()
@@ -950,7 +964,6 @@ def get_leads_api():
         sort_by        = request.args.get('sort', 'timestamp')
         sort_order     = request.args.get('order', 'desc')
 
-        # Mapear rangos predefinidos a valores numéricos
         BUDGET_RANGES = {
             'hasta_200k':    (0,       200000),
             '200k_500k':     (200000,  500000),
@@ -962,17 +975,15 @@ def get_leads_api():
             rng = BUDGET_RANGES[budget_range]
             min_budget = str(rng[0]) if rng[0] else ''
             max_budget = str(rng[1]) if rng[1] else ''
-        
-        # Construir consulta base
+
         query = 'SELECT * FROM leads WHERE 1=1'
         params = []
-        
-        # Aplicar filtros
+
         if search:
             query += ' AND (zone LIKE ? OR email LIKE ? OR type LIKE ? OR budget LIKE ?)'
             search_param = f'%{search}%'
             params.extend([search_param, search_param, search_param, search_param])
-        
+
         if type_filter:
             query += ' AND type = ?'
             params.append(type_filter)
@@ -980,12 +991,11 @@ def get_leads_api():
         if prop_type:
             query += ' AND property_type = ?'
             params.append(prop_type)
-        
+
         if zone_filter:
             query += ' AND zone LIKE ?'
             params.append(f'%{zone_filter}%')
-        
-        # Filtro de presupuesto numérico
+
         if min_budget:
             try:
                 min_val = float(min_budget)
@@ -993,7 +1003,7 @@ def get_leads_api():
                 params.append(min_val)
             except ValueError:
                 pass
-        
+
         if max_budget:
             try:
                 max_val = float(max_budget)
@@ -1001,39 +1011,39 @@ def get_leads_api():
                 params.append(max_val)
             except ValueError:
                 pass
-        
+
         if currency_filter:
             query += ' AND currency = ?'
             params.append(currency_filter)
-        
-        # Ordenamiento
+
         valid_sort_fields = ['id', 'type', 'zone', 'budget', 'timestamp', 'email']
         if sort_by not in valid_sort_fields:
             sort_by = 'timestamp'
-        
+
         order = 'DESC' if sort_order.lower() == 'desc' else 'ASC'
+        if order not in ('ASC', 'DESC'):
+            order = 'ASC'
         query += f' ORDER BY {sort_by} {order}, id DESC'
-        
-        # Ejecutar consulta
+
         leads = conn.execute(query, params).fetchall()
-        conn.close()
-        
-        # Convertir a lista de diccionarios
+
         leads_list = []
         for lead in leads:
             lead_dict = dict(lead)
             lead_dict['timestamp'] = convert_to_argentina_time(lead_dict['timestamp'])
             leads_list.append(lead_dict)
-        
+
         return jsonify({
             "success": True,
             "leads": leads_list,
             "total": len(leads_list)
         })
-        
     except Exception as e:
         print(f"Error en get_leads_api: {e}")
-        return jsonify({"error": "Error interno del servidor"}), 500
+        return jsonify({"status": "error", "message": "Error interno del servidor"}), 500
+    finally:
+        if conn:
+            conn.close()
 
 
 # --- NUEVA API: OBTENER PROFESIONALES DINÁMICAMENTE ---
@@ -1041,18 +1051,16 @@ def get_leads_api():
 @admin_required
 def get_professionals_api():
     """API para obtener profesionales dinámicamente con filtros"""
+    conn = None
     try:
         conn = get_db_connection()
-        
-        # Obtener parámetros de filtro
+
         search = request.args.get('search', '').strip()
         status_filter = request.args.get('status', '').strip()
         specialty_filter = request.args.get('specialty', '').strip()
         sort_by = request.args.get('sort', 'id')
         sort_order = request.args.get('order', 'desc')
-        
-        # Construir consulta con JOIN usando user_id (FK directo, más confiable)
-        # Fallback: también intenta hacer match por nombre para datos de muestra sin user_id
+
         query = '''
             SELECT p.*,
                    u.doc_path,
@@ -1067,48 +1075,47 @@ def get_professionals_api():
             WHERE 1=1
         '''
         params = []
-        
-        # Aplicar filtros
+
         if search:
             query += ' AND (p.name LIKE ? OR p.license LIKE ? OR p.specialty LIKE ?)'
             search_param = f'%{search}%'
             params.extend([search_param, search_param, search_param])
-        
+
         if status_filter:
             query += ' AND p.status = ?'
             params.append(status_filter)
-        
+
         if specialty_filter:
             query += ' AND p.specialty LIKE ?'
             params.append(f'%{specialty_filter}%')
-        
-        # Ordenamiento
+
         valid_sort_fields = ['id', 'name', 'license', 'specialty', 'status']
         if sort_by not in valid_sort_fields:
             sort_by = 'id'
-        
+
         order = 'DESC' if sort_order.lower() == 'desc' else 'ASC'
+        if order not in ('ASC', 'DESC'):
+            order = 'ASC'
         query += f' ORDER BY p.{sort_by} {order}'
-        
-        # Ejecutar consulta
+
         professionals = conn.execute(query, params).fetchall()
-        conn.close()
-        
-        # Convertir a lista de diccionarios
+
         pros_list = []
         for pro in professionals:
             pro_dict = dict(pro)
             pros_list.append(pro_dict)
-        
+
         return jsonify({
             "success": True,
             "professionals": pros_list,
             "total": len(pros_list)
         })
-        
     except Exception as e:
         print(f"Error en get_professionals_api: {e}")
-        return jsonify({"error": "Error interno del servidor"}), 500
+        return jsonify({"status": "error", "message": "Error interno del servidor"}), 500
+    finally:
+        if conn:
+            conn.close()
 
 
 @app.route('/api/admin/professional/<int:pro_id>/status', methods=['POST'])
@@ -1117,113 +1124,129 @@ def update_pro_status(pro_id):
     """Actualiza el estado de un profesional en la BD y registra la acción"""
     data = request.json
     new_status = data.get('status')
-    
+
     if new_status not in ['approved', 'rejected']:
-        return jsonify({"error": "Estado no válido"}), 400
-        
-    conn = get_db_connection()
-    pro = conn.execute('SELECT name FROM professionals WHERE id = ?', (pro_id,)).fetchone()
-    
-    if pro:
-        conn.execute('UPDATE professionals SET status = ? WHERE id = ?', (new_status, pro_id))
-        conn.commit()
-        
-        action = "Aprobación" if new_status == 'approved' else "Rechazo"
-        log_action(action, pro['name'])
-        conn.close()
-        return jsonify({"status": "success", "message": f"Profesional {action.lower()} correctamente"})
-        
-    conn.close()
-    return jsonify({"error": "Profesional no encontrado"}), 404
+        return jsonify({"status": "error", "message": "Estado no válido"}), 400
+
+    conn = None
+    try:
+        conn = get_db_connection()
+        pro = conn.execute('SELECT name FROM professionals WHERE id = ?', (pro_id,)).fetchone()
+
+        if pro:
+            conn.execute('UPDATE professionals SET status = ? WHERE id = ?', (new_status, pro_id))
+            conn.commit()
+
+            action = "Aprobación" if new_status == 'approved' else "Rechazo"
+            log_action(action, pro['name'])
+            return jsonify({"status": "success", "message": f"Profesional {action.lower()} correctamente"})
+
+        return jsonify({"error": "Profesional no encontrado"}), 404
+    finally:
+        if conn:
+            conn.close()
 
 
 @app.route('/api/admin/stats')
 @login_required
 def admin_stats():
     """Retorna estadísticas agregadas para el dashboard del admin"""
-    conn = get_db_connection()
+    conn = None
+    try:
+        conn = get_db_connection()
 
-    # Total de leads
-    total_leads = conn.execute('SELECT COUNT(*) FROM leads').fetchone()[0]
+        # Total de leads
+        total_leads = conn.execute('SELECT COUNT(*) FROM leads').fetchone()[0]
 
-    # Leads por tipo de operación
-    leads_by_type = conn.execute(
-        'SELECT type, COUNT(*) as count FROM leads GROUP BY type ORDER BY count DESC'
-    ).fetchall()
+        # Leads por tipo de operación
+        leads_by_type = conn.execute(
+            'SELECT type, COUNT(*) as count FROM leads GROUP BY type ORDER BY count DESC'
+        ).fetchall()
 
-    # Leads por zona (top 5)
-    leads_by_zone = conn.execute(
-        'SELECT zone, COUNT(*) as count FROM leads GROUP BY zone ORDER BY count DESC LIMIT 5'
-    ).fetchall()
+        # Leads por zona (top 5)
+        leads_by_zone = conn.execute(
+            'SELECT zone, COUNT(*) as count FROM leads GROUP BY zone ORDER BY count DESC LIMIT 5'
+        ).fetchall()
 
-    # Leads por presupuesto
-    leads_by_budget = conn.execute(
-        'SELECT budget, COUNT(*) as count FROM leads GROUP BY budget ORDER BY count DESC'
-    ).fetchall()
+        # Leads por presupuesto
+        leads_by_budget = conn.execute(
+            'SELECT budget, COUNT(*) as count FROM leads GROUP BY budget ORDER BY count DESC'
+        ).fetchall()
 
-    # Leads por mes (últimos 6 meses)
-    leads_by_month = conn.execute('''
-        SELECT strftime('%Y-%m', timestamp) as month, COUNT(*) as count
-        FROM leads
-        GROUP BY month
-        ORDER BY month DESC
-        LIMIT 6
-    ''').fetchall()
+        # Leads por mes (últimos 6 meses)
+        leads_by_month = conn.execute('''
+            SELECT strftime('%Y-%m', timestamp) as month, COUNT(*) as count
+            FROM leads
+            GROUP BY month
+            ORDER BY month DESC
+            LIMIT 6
+        ''').fetchall()
 
-    # Estado de profesionales
-    pros_stats = conn.execute(
-        'SELECT status, COUNT(*) as count FROM professionals GROUP BY status'
-    ).fetchall()
+        # Estado de profesionales
+        pros_stats = conn.execute(
+            'SELECT status, COUNT(*) as count FROM professionals GROUP BY status'
+        ).fetchall()
 
-    # Total de usuarios por rol
-    users_by_role = conn.execute(
-        'SELECT role, COUNT(*) as count FROM users GROUP BY role'
-    ).fetchall()
+        # Total de usuarios por rol
+        users_by_role = conn.execute(
+            'SELECT role, COUNT(*) as count FROM users GROUP BY role'
+        ).fetchall()
 
-    # Acciones del log de auditoría
-    audit_actions = conn.execute(
-        'SELECT action, COUNT(*) as count FROM audit_log GROUP BY action ORDER BY count DESC'
-    ).fetchall()
+        # Acciones del log de auditoría
+        audit_actions = conn.execute(
+            'SELECT action, COUNT(*) as count FROM audit_log GROUP BY action ORDER BY count DESC'
+        ).fetchall()
 
-    conn.close()
-
-    return jsonify({
-        'total_leads': total_leads,
-        'leads_by_type': [{'label': r['type'], 'value': r['count']} for r in leads_by_type],
-        'leads_by_zone': [{'label': r['zone'], 'value': r['count']} for r in leads_by_zone],
-        'leads_by_budget': [{'label': r['budget'], 'value': r['count']} for r in leads_by_budget],
-        'leads_by_month': [{'label': r['month'], 'value': r['count']} for r in reversed(leads_by_month)],
-        'pros_stats': [{'label': r['status'], 'value': r['count']} for r in pros_stats],
-        'users_by_role': [{'label': r['role'], 'value': r['count']} for r in users_by_role],
-        'audit_actions': [{'label': r['action'], 'value': r['count']} for r in audit_actions],
-    })
+        return jsonify({
+            'total_leads': total_leads,
+            'leads_by_type': [{'label': r['type'], 'value': r['count']} for r in leads_by_type],
+            'leads_by_zone': [{'label': r['zone'], 'value': r['count']} for r in leads_by_zone],
+            'leads_by_budget': [{'label': r['budget'], 'value': r['count']} for r in leads_by_budget],
+            'leads_by_month': [{'label': r['month'], 'value': r['count']} for r in reversed(leads_by_month)],
+            'pros_stats': [{'label': r['status'], 'value': r['count']} for r in pros_stats],
+            'users_by_role': [{'label': r['role'], 'value': r['count']} for r in users_by_role],
+            'audit_actions': [{'label': r['action'], 'value': r['count']} for r in audit_actions],
+        })
+    except Exception as e:
+        print(f"Error en admin_stats: {e}")
+        return jsonify({"error": "Error interno"}), 500
+    finally:
+        if conn:
+            conn.close()
 
 # --- ESTADO DEL DOCUMENTO DEL PROFESIONAL ---
 @app.route('/api/professional/doc-status', methods=['GET'])
 @login_required
 def get_doc_status():
     """Retorna el estado del documento del profesional autenticado."""
-    conn = get_db_connection()
-    user = conn.execute('SELECT doc_path FROM users WHERE id = ?', (session['user_id'],)).fetchone()
-    conn.close()
+    conn = None
+    try:
+        conn = get_db_connection()
+        user = conn.execute('SELECT doc_path FROM users WHERE id = ?', (session['user_id'],)).fetchone()
 
-    if not user:
-        return jsonify({"error": "Usuario no encontrado"}), 404
+        if not user:
+            return jsonify({"error": "Usuario no encontrado"}), 404
 
-    doc_path = user['doc_path']
-    has_doc  = bool(doc_path)
+        doc_path = user['doc_path']
+        has_doc  = bool(doc_path)
 
-    # Verificar que el archivo físico exista
-    if has_doc:
-        full_path = os.path.join(app.config['UPLOAD_FOLDER'], doc_path)
-        has_doc   = os.path.exists(full_path)
+        # Verificar que el archivo físico exista
+        if has_doc:
+            full_path = os.path.join(app.config['UPLOAD_FOLDER'], doc_path)
+            has_doc   = os.path.exists(full_path)
 
-    return jsonify({
-        "has_doc":   has_doc,
-        "filename":  doc_path if has_doc else None,
-        # Nombre legible: eliminar el prefijo "user_ID_"
-        "display_name": re.sub(r'^user_\d+_', '', doc_path) if has_doc and doc_path else None,
-    })
+        return jsonify({
+            "has_doc":   has_doc,
+            "filename":  doc_path if has_doc else None,
+            # Nombre legible: eliminar el prefijo "user_ID_"
+            "display_name": re.sub(r'^user_\d+_', '', doc_path) if has_doc and doc_path else None,
+        })
+    except Exception as e:
+        print(f"Error en get_doc_status: {e}")
+        return jsonify({"error": "Error interno"}), 500
+    finally:
+        if conn:
+            conn.close()
 
 
 # --- RUTA PARA QUE EL PROFESIONAL SUBA SU DOC ---
@@ -1248,7 +1271,7 @@ def upload_professional_doc():
     file.seek(0, 2)          # ir al final
     size = file.tell()
     file.seek(0)             # volver al inicio
-    if size > MAX_UPLOAD_BYTES:
+    if size > config.MAX_UPLOAD_SIZE:
         return jsonify({"error": "El archivo supera el límite de 10 MB."}), 413
 
     # Nombre seguro con prefijo de usuario
@@ -1357,31 +1380,38 @@ def get_all_users():
     role_filter = request.args.get('role', '').strip()
     active_filter = request.args.get('active', '').strip()  # 'all' | '1' | '0'
 
-    conn = get_db_connection()
-    query = 'SELECT id, username, email, phone, role, is_active FROM users WHERE 1=1'
-    params = []
+    conn = None
+    try:
+        conn = get_db_connection()
+        query = 'SELECT id, username, email, phone, role, is_active FROM users WHERE 1=1'
+        params = []
 
-    if search:
-        query += ' AND (username LIKE ? OR email LIKE ?)'
-        params += [f'%{search}%', f'%{search}%']
+        if search:
+            query += ' AND (username LIKE ? OR email LIKE ?)'
+            params += [f'%{search}%', f'%{search}%']
 
-    if role_filter:
-        query += ' AND role = ?'
-        params.append(role_filter)
+        if role_filter:
+            query += ' AND role = ?'
+            params.append(role_filter)
 
-    if active_filter in ('0', '1'):
-        query += ' AND is_active = ?'
-        params.append(int(active_filter))
+        if active_filter in ('0', '1'):
+            query += ' AND is_active = ?'
+            params.append(int(active_filter))
 
-    query += ' ORDER BY is_active DESC, id ASC'   # activos primero
-    users = conn.execute(query, params).fetchall()
-    conn.close()
+        query += ' ORDER BY is_active DESC, id ASC'   # activos primero
+        users = conn.execute(query, params).fetchall()
 
-    return jsonify({
-        'success': True,
-        'users': [dict(u) for u in users],
-        'total': len(users)
-    })
+        return jsonify({
+            'success': True,
+            'users': [dict(u) for u in users],
+            'total': len(users)
+        })
+    except Exception as e:
+        print(f"Error en get_all_users: {e}")
+        return jsonify({"error": "Error interno"}), 500
+    finally:
+        if conn:
+            conn.close()
 
 
 @app.route('/api/admin/user/<int:user_id>/reset-password', methods=['POST'])
@@ -1455,6 +1485,32 @@ def admin_set_user_active(user_id):
     log_action(action, f"Usuario: {user['username']} (ID: {user_id})")
 
     return jsonify({"status": "success", "message": message, "is_active": new_state})
+
+
+@app.route('/api/user/update-phone', methods=['POST'])
+def update_user_phone():
+    """Actualiza el teléfono del usuario logueado."""
+    if 'user_id' not in session:
+        return jsonify({"error": "No autorizado"}), 401
+
+    data = request.json
+    phone = (data.get('phone') or '').strip()
+
+    if not phone:
+        return jsonify({"error": "El teléfono no puede estar vacío."}), 400
+
+    conn = None
+    try:
+        conn = get_db_connection()
+        conn.execute('UPDATE users SET phone = ? WHERE id = ?', (phone, session['user_id']))
+        conn.commit()
+        return jsonify({"status": "success", "message": "Teléfono actualizado correctamente.", "phone": phone})
+    except Exception as e:
+        print(f"Error en update_user_phone: {e}")
+        return jsonify({"error": "Error al actualizar el teléfono."}), 500
+    finally:
+        if conn:
+            conn.close()
 
 
 # Inicializar la base de datos al arrancar

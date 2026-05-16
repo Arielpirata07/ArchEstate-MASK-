@@ -41,15 +41,24 @@
                         <h3 class="text-lg font-serif italic text-midnight">Parámetros Principales</h3>
                     </div>
 
-                    <!-- Tipo de Propiedad: Departamento vs Casa -->
+                    <!-- Tipo de Propiedad: Departamento vs Casa vs Dúplex vs Penthouse vs Local -->
                     <div class="mb-8">
                         <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">Tipo de Propiedad</label>
-                        <div class="flex gap-3">
-                            <button type="button" id="btn-department" class="flex-1 py-3 px-4 rounded border-2 border-midnight/20 bg-white text-midnight font-semibold transition-all hover:border-gold">
+                        <div class="flex flex-wrap gap-3">
+                            <button type="button" id="btn-department" class="flex-1 min-w-[120px] py-3 px-4 rounded border-2 border-midnight/20 bg-white text-midnight font-semibold transition-all hover:border-gold">
                                 <i data-lucide="building-2" class="w-4 h-4 inline mr-2"></i> Departamento
                             </button>
-                            <button type="button" id="btn-house" class="flex-1 py-3 px-4 rounded border-2 border-midnight/20 bg-paper-dark text-midnight font-semibold transition-all hover:border-gold">
+                            <button type="button" id="btn-house" class="flex-1 min-w-[120px] py-3 px-4 rounded border-2 border-midnight/20 bg-paper-dark text-midnight font-semibold transition-all hover:border-gold">
                                 <i data-lucide="home" class="w-4 h-4 inline mr-2"></i> Casa
+                            </button>
+                            <button type="button" id="btn-duplex" class="flex-1 min-w-[120px] py-3 px-4 rounded border-2 border-midnight/20 bg-white text-midnight font-semibold transition-all hover:border-gold">
+                                <i data-lucide="layers" class="w-4 h-4 inline mr-2"></i> Dúplex
+                            </button>
+                            <button type="button" id="btn-penthouse" class="flex-1 min-w-[120px] py-3 px-4 rounded border-2 border-midnight/20 bg-white text-midnight font-semibold transition-all hover:border-gold">
+                                <i data-lucide="apartment" class="w-4 h-4 inline mr-2"></i> Penthouse
+                            </button>
+                            <button type="button" id="btn-local" class="flex-1 min-w-[120px] py-3 px-4 rounded border-2 border-midnight/20 bg-white text-midnight font-semibold transition-all hover:border-gold">
+                                <i data-lucide="store" class="w-4 h-4 inline mr-2"></i> Local
                             </button>
                         </div>
                         <input type="hidden" id="property-type-input" name="property_type" value="departamento">
@@ -397,30 +406,45 @@
 {% block scripts %}
 <script>
 // ================================================================
-// TIPO DE PROPIEDAD: toggle Departamento ↔ Casa
+// TIPO DE PROPIEDAD: toggle entre Departamento, Casa, Dúplex, Penthouse, Local
 // ================================================================
 function setPropertyType(type) {
-    const isCasa = type === 'casa';
     document.getElementById('property-type-input').value = type;
 
-    // Botones
-    const btnDept  = document.getElementById('btn-department');
-    const btnHouse = document.getElementById('btn-house');
-    btnDept.className  = 'flex-1 py-3 px-4 rounded border-2 font-semibold transition-all '
-        + (isCasa ? 'border-midnight/20 bg-white text-midnight hover:border-gold'
-                  : 'border-midnight bg-midnight text-white');
-    btnHouse.className = 'flex-1 py-3 px-4 rounded border-2 font-semibold transition-all '
-        + (isCasa ? 'border-midnight bg-midnight text-white'
-                  : 'border-midnight/20 bg-paper-dark text-midnight hover:border-gold');
+    const propertyTypes = ['department', 'house', 'duplex', 'penthouse', 'local'];
+    const selectedTypes = {
+        'departamento': 'department',
+        'casa': 'house',
+        'duplex': 'duplex',
+        'penthouse': 'penthouse',
+        'local_comercial': 'local'
+    };
+    const currentType = selectedTypes[type] || 'department';
 
-    // Paneles de detalles
-    document.getElementById('department-details').classList.toggle('hidden', isCasa);
-    document.getElementById('house-details').classList.toggle('hidden', !isCasa);
+    // Actualizar estilos de todos los botones
+    propertyTypes.forEach(pt => {
+        const btn = document.getElementById('btn-' + pt);
+        if (btn) {
+            const isSelected = pt === currentType;
+            btn.className = 'flex-1 min-w-[120px] py-3 px-4 rounded border-2 font-semibold transition-all '
+                + (isSelected ? 'border-midnight bg-midnight text-white'
+                             : 'border-midnight/20 bg-white text-midnight hover:border-gold');
+        }
+    });
+
+    // Mostrar/ocultar paneles de detalles
+    const panels = ['department-details', 'house-details', 'duplex-details', 'penthouse-details', 'local-details'];
+    panels.forEach(p => {
+        const panel = document.getElementById(p);
+        if (panel) {
+            const expectedType = p.replace('-details', '');
+            panel.classList.toggle('hidden', expectedType !== currentType);
+        }
+    });
 
     // Coherencia: "Remodelación Integral" solo aplica a Casa; "Construir desde Cero" solo a Casa
     const opSelect = document.getElementById('operation-select');
-    const opt = opSelect.querySelector('option[value="Construir desde Cero"]')
-             || [...opSelect.options].find(o => o.text === 'Construir desde Cero');
+    const isCasa = type === 'casa';
 
     if (isCasa) {
         if (!opSelect.querySelector('option[value="Construir desde Cero"]')) {
@@ -540,6 +564,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Wiring botones de tipo de propiedad
     document.getElementById('btn-department').addEventListener('click', () => setPropertyType('departamento'));
     document.getElementById('btn-house').addEventListener('click',      () => setPropertyType('casa'));
+    document.getElementById('btn-duplex').addEventListener('click',     () => setPropertyType('duplex'));
+    document.getElementById('btn-penthouse').addEventListener('click',  () => setPropertyType('penthouse'));
+    document.getElementById('btn-local').addEventListener('click',      () => setPropertyType('local_comercial'));
 
     if (window.lucide) lucide.createIcons();
 });

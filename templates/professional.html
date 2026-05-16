@@ -781,7 +781,7 @@ function renderLeads(leads) {
                 <td class="p-4">${propBadge}</td>
                 <td class="p-4 text-sm text-midnight/70">${lead.zone}</td>
                 <td class="p-4">
-                    <div class="font-serif italic text-gold">${sym}${Number(lead.budget).toLocaleString('es-AR') || lead.budget}</div>
+                    <div class="font-serif italic text-gold">${sym}${formatBudget(lead.budget)}</div>
                     ${specLine}
                     ${extrasLine}
                 </td>
