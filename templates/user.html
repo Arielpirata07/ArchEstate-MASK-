@@ -106,107 +106,232 @@
                         <h3 class="text-lg font-serif italic text-midnight">Especificaciones Técnicas</h3>
                     </div>
 
-                    <div class="space-y-6">
-                        <!-- Habitaciones, Baños, Superficie -->
-                        <div class="grid grid-cols-2 gap-6">
+                    <div class="space-y-8">
+
+                        <!-- Ambientes, Habitaciones, Baños -->
+                        <div class="grid grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Ambientes</label>
+                                <div class="flex items-center gap-3">
+                                    <button type="button" onclick="stepNum('ambientes',-1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">−</button>
+                                    <input id="ambientes-input" name="ambientes" type="number" min="1" max="20" value="" placeholder="—"
+                                           class="w-12 text-center bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-1 text-sm font-semibold">
+                                    <button type="button" onclick="stepNum('ambientes',1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">+</button>
+                                </div>
+                                <p class="text-[9px] text-midnight/30 mt-1">Incluye living, cocina</p>
+                            </div>
                             <div>
                                 <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Habitaciones</label>
-                                <input name="bedrooms" type="number" min="0" placeholder="3" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                <div class="flex items-center gap-3">
+                                    <button type="button" onclick="stepNum('bedrooms',-1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">−</button>
+                                    <input id="bedrooms-input" name="bedrooms" type="number" min="0" max="20" value="" placeholder="—"
+                                           class="w-12 text-center bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-1 text-sm font-semibold">
+                                    <button type="button" onclick="stepNum('bedrooms',1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">+</button>
+                                </div>
                             </div>
                             <div>
                                 <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Baños</label>
-                                <input name="bathrooms" type="number" min="0" placeholder="2" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                <div class="flex items-center gap-3">
+                                    <button type="button" onclick="stepNum('bathrooms',-1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">−</button>
+                                    <input id="bathrooms-input" name="bathrooms" type="number" min="0" max="20" value="" placeholder="—"
+                                           class="w-12 text-center bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-1 text-sm font-semibold">
+                                    <button type="button" onclick="stepNum('bathrooms',1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">+</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Cochera -->
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Cochera / Estacionamiento</label>
+                            <div class="flex flex-wrap gap-2" id="parking-chips">
+                                <button type="button" data-value="" onclick="selectChip('parking','')"
+                                    class="parking-chip active-chip px-3 py-2 rounded border-2 border-midnight bg-midnight text-white text-[10px] font-bold uppercase tracking-widest transition-all">Sin preferencia</button>
+                                <button type="button" data-value="sin_cochera" onclick="selectChip('parking','sin_cochera')"
+                                    class="parking-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Sin cochera</button>
+                                <button type="button" data-value="simple_cubierta" onclick="selectChip('parking','simple_cubierta')"
+                                    class="parking-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Simple cubierta</button>
+                                <button type="button" data-value="doble_cubierta" onclick="selectChip('parking','doble_cubierta')"
+                                    class="parking-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Doble cubierta</button>
+                                <button type="button" data-value="descubierta" onclick="selectChip('parking','descubierta')"
+                                    class="parking-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Descubierta</button>
+                                <button type="button" data-value="garage" onclick="selectChip('parking','garage')"
+                                    class="parking-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Garage cerrado</button>
+                            </div>
+                            <input type="hidden" id="parking-input" name="parking" value="">
+                        </div>
+
+                        <!-- Orientación -->
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Orientación Preferida</label>
+                            <div class="flex flex-wrap gap-2" id="orientation-chips">
+                                <button type="button" data-value="" onclick="selectChip('orientation','')"
+                                    class="orientation-chip active-chip px-3 py-2 rounded border-2 border-midnight bg-midnight text-white text-[10px] font-bold uppercase tracking-widest transition-all">Indiferente</button>
+                                <button type="button" data-value="Norte" onclick="selectChip('orientation','Norte')"
+                                    class="orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">N</button>
+                                <button type="button" data-value="Sur" onclick="selectChip('orientation','Sur')"
+                                    class="orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">S</button>
+                                <button type="button" data-value="Este" onclick="selectChip('orientation','Este')"
+                                    class="orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">E</button>
+                                <button type="button" data-value="Oeste" onclick="selectChip('orientation','Oeste')"
+                                    class="orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">O</button>
+                                <button type="button" data-value="Noreste" onclick="selectChip('orientation','Noreste')"
+                                    class="orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">NE</button>
+                                <button type="button" data-value="Noroeste" onclick="selectChip('orientation','Noroeste')"
+                                    class="orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">NO</button>
+                                <button type="button" data-value="Sureste" onclick="selectChip('orientation','Sureste')"
+                                    class="orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">SE</button>
+                                <button type="button" data-value="Suroeste" onclick="selectChip('orientation','Suroeste')"
+                                    class="orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">SO</button>
+                            </div>
+                            <input type="hidden" id="orientation-input" name="orientation" value="">
+                        </div>
+
+                        <!-- Estado + Antigüedad -->
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Estado de la Propiedad</label>
+                                <div class="space-y-2" id="condition-chips">
+                                    <button type="button" data-value="" onclick="selectChip('condition','')" class="condition-chip active-chip w-full text-left px-3 py-2 rounded border-2 border-midnight bg-midnight text-white text-[10px] font-bold uppercase tracking-widest transition-all">Sin preferencia</button>
+                                    <button type="button" data-value="A estrenar" onclick="selectChip('condition','A estrenar')" class="condition-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">✦ A estrenar</button>
+                                    <button type="button" data-value="Usado" onclick="selectChip('condition','Usado')" class="condition-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Usado</button>
+                                    <button type="button" data-value="A reciclar" onclick="selectChip('condition','A reciclar')" class="condition-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">A reciclar</button>
+                                    <button type="button" data-value="En construcción" onclick="selectChip('condition','En construcción')" class="condition-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">En construcción</button>
+                                </div>
+                                <input type="hidden" id="condition-input" name="property_condition" value="">
+                            </div>
+                            <div id="age-section">
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Antigüedad Preferida</label>
+                                <div class="space-y-2" id="age-chips">
+                                    <button type="button" data-value="" onclick="selectChip('age','')" class="age-chip active-chip w-full text-left px-3 py-2 rounded border-2 border-midnight bg-midnight text-white text-[10px] font-bold uppercase tracking-widest transition-all">Indiferente</button>
+                                    <button type="button" data-value="Hasta 5 años" onclick="selectChip('age','Hasta 5 años')" class="age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Hasta 5 años</button>
+                                    <button type="button" data-value="5 a 15 años" onclick="selectChip('age','5 a 15 años')" class="age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">5 a 15 años</button>
+                                    <button type="button" data-value="15 a 30 años" onclick="selectChip('age','15 a 30 años')" class="age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">15 a 30 años</button>
+                                    <button type="button" data-value="Más de 30 años" onclick="selectChip('age','Más de 30 años')" class="age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Más de 30 años</button>
+                                </div>
+                                <input type="hidden" id="age-input" name="property_age" value="">
                             </div>
                         </div>
 
                         <!-- DETALLES DE DEPARTAMENTO -->
-                        <div id="department-details" class="space-y-6 hidden">
+                        <div id="department-details" class="space-y-5 hidden">
                             <div class="border-t border-midnight/10 pt-6">
-                                <h4 class="text-sm font-semibold text-midnight mb-4">Detalles del Departamento</h4>
+                                <h4 class="text-[10px] uppercase tracking-widest font-bold text-midnight/40 mb-4">Detalles del Departamento</h4>
                                 <div class="grid grid-cols-2 gap-6">
                                     <div>
                                         <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Piso/Bloque</label>
                                         <input name="floor_block" type="text" placeholder="5º A" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Metros Útiles</label>
-                                        <input name="usable_m2" type="number" min="0" placeholder="120 m²" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Metros Útiles (m²)</label>
+                                        <input name="usable_m2" type="number" min="0" placeholder="85" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                     </div>
                                 </div>
-                                <div class="grid grid-cols-1 gap-6 mt-6">
-                                    <label class="flex items-center gap-3 cursor-pointer">
-                                        <input type="checkbox" name="elevator" value="sí" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
-                                        <span class="text-sm text-midnight">¿Tiene ascensor?</span>
+                                <div class="flex flex-wrap gap-4 mt-4">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" name="elevator" value="sí" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
+                                        <span class="text-sm text-midnight">Ascensor</span>
                                     </label>
-                                    <label class="flex items-center gap-3 cursor-pointer">
-                                        <input type="checkbox" name="community_pool" value="sí" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
-                                        <span class="text-sm text-midnight">¿Tiene piscina comunitaria?</span>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" name="community_pool" value="sí" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
+                                        <span class="text-sm text-midnight">Piscina comunitaria</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" name="amenities_values" value="SUM" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
+                                        <span class="text-sm text-midnight">SUM</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" name="amenities_values" value="Terraza" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
+                                        <span class="text-sm text-midnight">Terraza</span>
                                     </label>
                                 </div>
                             </div>
                         </div>
 
                         <!-- DETALLES DE CASA -->
-                        <div id="house-details" class="space-y-6 hidden">
+                        <div id="house-details" class="space-y-5 hidden">
                             <div class="border-t border-midnight/10 pt-6">
-                                <h4 class="text-sm font-semibold text-midnight mb-4">Detalles de la Casa</h4>
+                                <h4 class="text-[10px] uppercase tracking-widest font-bold text-midnight/40 mb-4">Detalles de la Casa</h4>
                                 <div class="grid grid-cols-2 gap-6">
                                     <div>
                                         <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Superficie de Terreno (m²)</label>
-                                        <input name="land_area" type="number" min="0" placeholder="1400 m²" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                        <input name="land_area" type="number" min="0" placeholder="600" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                     </div>
                                     <div>
                                         <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Superficie Construida (m²)</label>
-                                        <input name="built_area" type="number" min="0" placeholder="800 m²" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                        <input name="built_area" type="number" min="0" placeholder="300" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                     </div>
                                 </div>
-                                <div class="grid grid-cols-1 gap-6 mt-6">
-                                    <label class="flex items-center gap-3 cursor-pointer">
-                                        <input id="pool-checkbox" type="checkbox" name="pool" value="sí" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
-                                        <span class="text-sm text-midnight">¿Tiene piscina?</span>
+                                <div class="flex flex-wrap gap-4 mt-4">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input id="pool-checkbox" type="checkbox" name="pool" value="sí" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
+                                        <span class="text-sm text-midnight">Piscina</span>
                                     </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" name="amenities_values" value="Quincho" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
+                                        <span class="text-sm text-midnight">Quincho / Parrilla</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" name="amenities_values" value="Jardín" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
+                                        <span class="text-sm text-midnight">Jardín</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="checkbox" name="amenities_values" value="Pileta cubierta" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
+                                        <span class="text-sm text-midnight">Pileta cubierta</span>
+                                    </label>
+                                </div>
+                                <!-- Barrio Privado -->
+                                <div class="mt-5 p-4 bg-paper-dark rounded-lg border border-midnight/10">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <input id="gated-community-check" type="checkbox" name="amenities_values" value="Barrio privado" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0" onchange="toggleGatedCommunity(this.checked)">
+                                            <span class="text-sm font-semibold text-midnight">¿Barrio Privado / Countries?</span>
+                                        </label>
+                                    </div>
+                                    <div id="gated-community-details" class="hidden space-y-3 pt-2 border-t border-midnight/10">
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <label class="flex items-center gap-2 cursor-pointer text-sm text-midnight/70">
+                                                <input type="checkbox" name="amenities_values" value="Seguridad 24h barrio" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
+                                                Seguridad 24h
+                                            </label>
+                                            <label class="flex items-center gap-2 cursor-pointer text-sm text-midnight/70">
+                                                <input type="checkbox" name="amenities_values" value="Club house" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
+                                                Club House
+                                            </label>
+                                            <label class="flex items-center gap-2 cursor-pointer text-sm text-midnight/70">
+                                                <input type="checkbox" name="amenities_values" value="Canchas deportivas" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
+                                                Canchas deportivas
+                                            </label>
+                                            <label class="flex items-center gap-2 cursor-pointer text-sm text-midnight/70">
+                                                <input type="checkbox" name="amenities_values" value="Lagunas artificiales" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
+                                                Lagunas artificiales
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Extras y Comodidades -->
+                        <!-- Extras -->
                         <div>
                             <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">Extras y Comodidades</label>
                             <div class="grid grid-cols-2 gap-4">
-                                <label id="infinity-pool-label" class="flex items-center gap-3 pool-dependent hidden opacity-50 cursor-not-allowed">
-                                    <input id="infinity-pool-checkbox" type="checkbox" name="amenities_values" value="Piscina Infinity" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0" disabled>
-                                    <span class="text-sm text-midnight">Piscina Infinity</span>
-                                </label>
-                                <label class="flex items-center gap-3">
-                                    <input type="checkbox" name="amenities_values" value="Seguridad 24h" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
-                                    <span class="text-sm text-midnight">Seguridad 24h</span>
-                                </label>
-                                <label class="flex items-center gap-3">
-                                    <input type="checkbox" name="amenities_values" value="Bodega" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
-                                    <span class="text-sm text-midnight">Bodega</span>
-                                </label>
-                                <label class="flex items-center gap-3">
-                                    <input type="checkbox" name="amenities_values" value="Gimnasio Privado" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
-                                    <span class="text-sm text-midnight">Gimnasio Privado</span>
-                                </label>
-                                <label class="flex items-center gap-3">
-                                    <input type="checkbox" name="amenities_values" value="Domotica Avanzada" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
-                                    <span class="text-sm text-midnight">Domótica Avanzada</span>
-                                </label>
-                                <label class="flex items-center gap-3">
-                                    <input type="checkbox" name="amenities_values" value="Helipad" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
-                                    <span class="text-sm text-midnight">Helipad</span>
-                                </label>
+                                <label id="infinity-pool-label" class="flex items-center gap-3 pool-dependent hidden opacity-50 cursor-not-allowed"><input id="infinity-pool-checkbox" type="checkbox" name="amenities_values" value="Piscina Infinity" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0" disabled><span class="text-sm text-midnight">Piscina Infinity</span></label>
+                                <label class="flex items-center gap-3"><input type="checkbox" name="amenities_values" value="Seguridad 24h" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0"><span class="text-sm text-midnight">Seguridad 24h</span></label>
+                                <label class="flex items-center gap-3"><input type="checkbox" name="amenities_values" value="Bodega" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0"><span class="text-sm text-midnight">Bodega</span></label>
+                                <label class="flex items-center gap-3"><input type="checkbox" name="amenities_values" value="Gimnasio Privado" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0"><span class="text-sm text-midnight">Gimnasio Privado</span></label>
+                                <label class="flex items-center gap-3"><input type="checkbox" name="amenities_values" value="Domotica Avanzada" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0"><span class="text-sm text-midnight">Domótica Avanzada</span></label>
+                                <label class="flex items-center gap-3"><input type="checkbox" name="amenities_values" value="Helipad" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0"><span class="text-sm text-midnight">Helipad</span></label>
                             </div>
                         </div>
 
-                        <!-- Características Adicionales -->
+                        <!-- Características adicionales -->
                         <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">Características Adicionales</label>
-                            <textarea name="additional_features" placeholder="Describe cualquier característica específica que estés buscando (ej: orientación sur, vistas al mar, antigüedad de la construcción, estilo arquitectónico particular, etc.)" rows="4" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm resize-none"></textarea>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Características Adicionales</label>
+                            <textarea name="additional_features" placeholder="Vistas, materiales preferidos, detalles de diseño, requerimientos especiales..." rows="3" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm resize-none"></textarea>
                         </div>
-                </section>
 
+                    </div>
+                </section>
                 <!-- 03. IDENTIDAD & CONTACTO -->
                 <section>
                     <div class="flex items-center gap-3 mb-6">
@@ -271,10 +396,157 @@
 
 {% block scripts %}
 <script>
-/**
- * Guarda el teléfono ingresado como número predeterminado en el perfil del usuario.
- * Llama a /api/user/update-phone y muestra feedback visual.
- */
+// ================================================================
+// TIPO DE PROPIEDAD: toggle Departamento ↔ Casa
+// ================================================================
+function setPropertyType(type) {
+    const isCasa = type === 'casa';
+    document.getElementById('property-type-input').value = type;
+
+    // Botones
+    const btnDept  = document.getElementById('btn-department');
+    const btnHouse = document.getElementById('btn-house');
+    btnDept.className  = 'flex-1 py-3 px-4 rounded border-2 font-semibold transition-all '
+        + (isCasa ? 'border-midnight/20 bg-white text-midnight hover:border-gold'
+                  : 'border-midnight bg-midnight text-white');
+    btnHouse.className = 'flex-1 py-3 px-4 rounded border-2 font-semibold transition-all '
+        + (isCasa ? 'border-midnight bg-midnight text-white'
+                  : 'border-midnight/20 bg-paper-dark text-midnight hover:border-gold');
+
+    // Paneles de detalles
+    document.getElementById('department-details').classList.toggle('hidden', isCasa);
+    document.getElementById('house-details').classList.toggle('hidden', !isCasa);
+
+    // Coherencia: "Remodelación Integral" solo aplica a Casa; "Construir desde Cero" solo a Casa
+    const opSelect = document.getElementById('operation-select');
+    const opt = opSelect.querySelector('option[value="Construir desde Cero"]')
+             || [...opSelect.options].find(o => o.text === 'Construir desde Cero');
+
+    if (isCasa) {
+        if (!opSelect.querySelector('option[value="Construir desde Cero"]')) {
+            const newOpt = new Option('Construir desde Cero', 'Construir desde Cero');
+            opSelect.add(newOpt);
+        }
+    } else {
+        const opt = [...opSelect.options].find(o => o.value === 'Construir desde Cero');
+        if (opt) {
+            if (opSelect.value === 'Construir desde Cero') opSelect.value = '';
+            opt.remove();
+        }
+    }
+}
+
+// ================================================================
+// BARRIO PRIVADO: subpanel dentro de Casa
+// ================================================================
+function toggleGatedCommunity(checked) {
+    document.getElementById('gated-community-details').classList.toggle('hidden', !checked);
+}
+
+// ================================================================
+// CHIPS: selector de valor único con estado visual activo
+// ================================================================
+const CHIP_GROUPS = {
+    parking:     { hidden: 'parking-input',     cls: 'parking-chip' },
+    orientation: { hidden: 'orientation-input', cls: 'orientation-chip' },
+    condition:   { hidden: 'condition-input',   cls: 'condition-chip' },
+    age:         { hidden: 'age-input',         cls: 'age-chip' },
+};
+
+const CHIP_BASE = {
+    parking:     'parking-chip px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all',
+    orientation: 'orientation-chip px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all',
+    condition:   'condition-chip w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all',
+    age:         'age-chip w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all',
+};
+
+function selectChip(group, value) {
+    const g = CHIP_GROUPS[group];
+    if (!g) return;
+    document.getElementById(g.hidden).value = value;
+    document.querySelectorAll('.' + g.cls).forEach(btn => {
+        const active = btn.dataset.value === value;
+        btn.className = CHIP_BASE[group] + ' '
+            + (active
+                ? 'border-midnight bg-midnight text-white'
+                : 'border-midnight/20 text-midnight hover:border-gold');
+    });
+
+    // Coherencia Condition → Age
+    if (group === 'condition') syncAgeToCondition(value);
+}
+
+// ================================================================
+// COHERENCIA: Estado de Propiedad ↔ Antigüedad
+// ================================================================
+function syncAgeToCondition(condition) {
+    const ageSection = document.getElementById('age-section');
+    const ageChips   = document.querySelectorAll('.age-chip');
+
+    if (condition === 'A estrenar') {
+        // Auto-seleccionar "Hasta 5 años" y bloquear el resto
+        selectChip('age', 'Hasta 5 años');
+        ageChips.forEach(btn => {
+            const isForced = btn.dataset.value === 'Hasta 5 años';
+            btn.disabled = !isForced;
+            btn.style.opacity = isForced ? '1' : '0.35';
+            btn.style.cursor  = isForced ? 'default' : 'not-allowed';
+        });
+        if (ageSection) ageSection.classList.remove('hidden');
+
+    } else if (condition === 'En construcción') {
+        // Sin antigüedad aplicable → ocultar la sección
+        selectChip('age', '');
+        if (ageSection) ageSection.classList.add('hidden');
+
+    } else if (condition === 'A reciclar') {
+        // Sugerir "Más de 30 años" pero sin bloquear
+        if (ageSection) ageSection.classList.remove('hidden');
+        ageChips.forEach(btn => { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = ''; });
+        selectChip('age', 'Más de 30 años');
+
+    } else {
+        // Sin preferencia / Usado → todo desbloqueado
+        if (ageSection) ageSection.classList.remove('hidden');
+        ageChips.forEach(btn => { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = ''; });
+    }
+}
+
+// ================================================================
+// STEPPERS: botones +/− para inputs numéricos
+// ================================================================
+function stepNum(fieldName, delta) {
+    const inputMap = {
+        ambientes: 'ambientes-input',
+        bedrooms:  'bedrooms-input',
+        bathrooms: 'bathrooms-input',
+    };
+    const el  = document.getElementById(inputMap[fieldName]);
+    if (!el) return;
+    const min  = parseInt(el.min) ?? 0;
+    const max  = parseInt(el.max) || 99;
+    const cur  = parseInt(el.value) || 0;
+    const next = cur + delta;
+    el.value   = next < min ? '' : Math.min(max, next);
+}
+
+// ================================================================
+// INIT
+// ================================================================
+document.addEventListener('DOMContentLoaded', () => {
+    // Inicializar en modo Departamento por defecto
+    setPropertyType('departamento');
+
+    // Wiring botones de tipo de propiedad
+    document.getElementById('btn-department').addEventListener('click', () => setPropertyType('departamento'));
+    document.getElementById('btn-house').addEventListener('click',      () => setPropertyType('casa'));
+
+    if (window.lucide) lucide.createIcons();
+});
+
+// ================================================================
+// GUARDAR TELÉFONO EN PERFIL
+// ================================================================
 async function savePhoneToProfile() {
     const phoneInput = document.getElementById('phone-input');
     const errorMsg   = document.getElementById('phone-error-msg');
@@ -291,7 +563,7 @@ async function savePhoneToProfile() {
 
     const originalContent = saveBtn.innerHTML;
     saveBtn.innerHTML = 'Guardando...';
-    saveBtn.disabled = true;
+    saveBtn.disabled  = true;
 
     try {
         const res  = await fetch('/api/user/update-phone', {
@@ -305,25 +577,24 @@ async function savePhoneToProfile() {
             saveBtn.textContent = '✓ Guardado';
             saveBtn.classList.add('text-emerald-600');
             if (typeof showToast === 'function') showToast('Teléfono guardado en tu perfil.');
-
             setTimeout(() => {
                 saveBtn.innerHTML = originalContent;
                 saveBtn.classList.remove('text-emerald-600');
-                saveBtn.disabled = false;
+                saveBtn.disabled  = false;
                 if (window.lucide) lucide.createIcons();
             }, 3000);
         } else {
             errorMsg.textContent = data.error || 'Error al guardar el teléfono.';
             errorMsg.classList.remove('hidden');
             saveBtn.innerHTML = originalContent;
-            saveBtn.disabled = false;
+            saveBtn.disabled  = false;
             if (window.lucide) lucide.createIcons();
         }
     } catch (err) {
         errorMsg.textContent = 'Error de conexión. Intentá de nuevo.';
         errorMsg.classList.remove('hidden');
         saveBtn.innerHTML = originalContent;
-        saveBtn.disabled = false;
+        saveBtn.disabled  = false;
         if (window.lucide) lucide.createIcons();
     }
 }

@@ -110,7 +110,12 @@ def init_db():
             ('bedrooms', "INTEGER DEFAULT 0"),
             ('bathrooms', "INTEGER DEFAULT 0"),
             ('total_area', "INTEGER DEFAULT 0"),
-            ('amenities', "TEXT DEFAULT ''")
+            ('amenities', "TEXT DEFAULT ''"),
+            ('ambientes', "INTEGER DEFAULT 0"),
+            ('parking', "TEXT DEFAULT ''"),
+            ('orientation', "TEXT DEFAULT ''"),
+            ('property_condition', "TEXT DEFAULT ''"),
+            ('property_age', "TEXT DEFAULT ''"),
         ]
         for column, column_type in schema_updates:
             if column not in existing_columns:
@@ -546,9 +551,10 @@ def submit_lead():
                 type, property_type, zone, budget, currency, 
                 phone, email, floor_block, usable_m2, elevator, 
                 land_area, built_area, pool, architectural_style,
-                bedrooms, bathrooms, total_area, amenities
+                bedrooms, bathrooms, total_area, amenities,
+                ambientes, parking, orientation, property_condition, property_age
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             data.get('type'),
             data.get('property_type', 'departamento'),
@@ -567,7 +573,12 @@ def submit_lead():
             data.get('bedrooms', 0),
             data.get('bathrooms', 0),
             data.get('total_area', 0),
-            data.get('amenities', '')
+            data.get('amenities', ''),
+            data.get('ambientes', 0),
+            data.get('parking', ''),
+            data.get('orientation', ''),
+            data.get('property_condition', ''),
+            data.get('property_age', ''),
         ))
         conn.commit()
         conn.close()
