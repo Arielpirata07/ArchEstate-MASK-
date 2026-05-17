@@ -1,37 +1,386 @@
-/* --- ESTILOS PERSONALIZADOS ARCHESTATE --- */
+/* ============================================
+   ARCHESTATE - BASE STYLES
+   Design tokens: midnight, gold, paper
+   ============================================ */
 
-/* Tipografía base y colores de fondo */
-body { 
-    font-family: 'Manrope', sans-serif; 
-    background-color: #FAF9F7; 
-    color: #000410; 
+/* --- Typography & Base --- */
+body {
+    font-family: 'Manrope', sans-serif;
+    background-color: #FAF9F7;
+    color: #000410;
 }
 
-/* Clases para la fuente Serif (Newsreader) */
-.serif { 
-    font-family: 'Newsreader', serif; 
+.serif {
+    font-family: 'Newsreader', serif;
 }
 
-.serif-italic { 
-    font-family: 'Newsreader', serif; 
-    font-style: italic; 
+.serif-italic {
+    font-family: 'Newsreader', serif;
+    font-style: italic;
 }
 
-/* Utilidades de visibilidad para la SPA (si se usa) */
-.view-section { 
-    display: none; 
+/* --- SPA Utilities (legacy) --- */
+.view-section {
+    display: none;
 }
 
-.view-section.active { 
-    display: block; 
+.view-section.active {
+    display: block;
 }
 
-/* Ajustes finos para inputs y transiciones */
-input:focus, select:focus {
+/* --- Skip to Content (Accessibility) --- */
+.skip-link {
+    position: absolute;
+    top: -100%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    padding: 0.75rem 1.5rem;
+    background: #735A3A;
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 700;
+    border-radius: 0 0 0.5rem 0.5rem;
+    transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+    top: 0;
+}
+
+/* --- Focus States --- */
+input:focus, select:focus, textarea:focus {
     outline: none;
 }
 
-/* Efectos de hover para las tarjetas de perfil */
-.group:hover .group-hover\:translate-x-1 {
-    transform: translateX(0.25rem);
+button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
+    outline: 2px solid #735A3A;
+    outline-offset: 2px;
+}
+
+/* --- Input Focus Animation --- */
+.input-animated {
+    position: relative;
+}
+
+.input-animated::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: #735A3A;
+    transition: width 0.3s ease, left 0.3s ease;
+}
+
+.input-animated:focus::after {
+    width: 100%;
+    left: 0;
+}
+
+/* --- Form Validation States --- */
+.input-valid {
+    border-color: #059669 !important;
+}
+
+.input-invalid {
+    border-color: #e11d48 !important;
+}
+
+/* --- Card Hover Lift --- */
+.card-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.card-hover:hover .card-icon {
+    transform: scale(1.1);
+    color: #735A3A;
+}
+
+.card-icon {
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+/* --- Button Ripple Effect --- */
+.btn-ripple {
+    position: relative;
+    overflow: hidden;
+}
+
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(0);
+    animation: rippleAnim 0.6s ease-out;
+    pointer-events: none;
+}
+
+@keyframes rippleAnim {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* --- Global Keyframes --- */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes scaleOut {
+    from {
+        opacity: 1;
+        transform: scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+}
+
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* --- Scroll Animation Classes --- */
+.animate-on-scroll {
+    opacity: 0;
+    transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-on-scroll.animate-in {
+    opacity: 1;
+}
+
+.animate-on-scroll.fade-in-up {
+    transform: translateY(30px);
+}
+
+.animate-on-scroll.fade-in-up.animate-in {
+    transform: translateY(0);
+}
+
+.animate-on-scroll.fade-in {
+    transform: none;
+}
+
+.animate-on-scroll.slide-in-left {
+    transform: translateX(-50px);
+}
+
+.animate-on-scroll.slide-in-left.animate-in {
+    transform: translateX(0);
+}
+
+.animate-on-scroll.slide-in-right {
+    transform: translateX(50px);
+}
+
+.animate-on-scroll.slide-in-right.animate-in {
+    transform: translateX(0);
+}
+
+/* Stagger delays */
+.stagger-1 { transition-delay: 0.1s !important; }
+.stagger-2 { transition-delay: 0.2s !important; }
+.stagger-3 { transition-delay: 0.3s !important; }
+.stagger-4 { transition-delay: 0.4s !important; }
+.stagger-5 { transition-delay: 0.5s !important; }
+
+/* --- Skeleton Loading --- */
+.skeleton {
+    background: linear-gradient(90deg, #F4F3F1 25%, #FAF9F7 50%, #F4F3F1 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 0.5rem;
+}
+
+.skeleton-text {
+    height: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.skeleton-heading {
+    height: 1.5rem;
+    width: 60%;
+    margin-bottom: 1rem;
+}
+
+.skeleton-card {
+    height: 8rem;
+    border-radius: 0.5rem;
+}
+
+.skeleton-circle {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+}
+
+/* --- Modal Animations --- */
+.modal-overlay {
+    transition: opacity 0.2s ease;
+}
+
+.modal-overlay.modal-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.modal-overlay.modal-visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-content {
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+                opacity 0.2s ease;
+}
+
+.modal-overlay.modal-hidden .modal-content {
+    transform: scale(0.95);
+    opacity: 0;
+}
+
+.modal-overlay.modal-visible .modal-content {
+    transform: scale(1);
+    opacity: 1;
+}
+
+/* --- Table Row Stagger --- */
+.table-row-animate {
+    opacity: 0;
+    animation: fadeInUp 0.4s ease-out forwards;
+}
+
+/* --- Toast Progress Bar --- */
+.toast-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.4);
+    animation: toastProgress 4s linear forwards;
+}
+
+@keyframes toastProgress {
+    from { width: 100%; }
+    to { width: 0%; }
+}
+
+/* --- Smooth Scroll --- */
+html {
+    scroll-behavior: smooth;
+}
+
+/* --- Drag and Drop Zone --- */
+.drag-drop-zone {
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.drag-drop-zone.drag-over {
+    border-color: #735A3A !important;
+    background-color: rgba(115, 90, 58, 0.05) !important;
+}
+
+/* --- Dark Mode Variables (future use) --- */
+:root {
+    --bg-primary: #FAF9F7;
+    --bg-secondary: #F4F3F1;
+    --bg-card: #FFFFFF;
+    --text-primary: #000410;
+    --text-secondary: rgba(0, 4, 16, 0.5);
+    --accent: #735A3A;
+    --accent-light: #A68A64;
+    --border: rgba(0, 4, 16, 0.1);
+}
+
+.dark-mode {
+    --bg-primary: #0a0e1a;
+    --bg-secondary: #101E33;
+    --bg-card: #1a2332;
+    --text-primary: #FAF9F7;
+    --text-secondary: rgba(250, 249, 247, 0.6);
+    --accent: #A68A64;
+    --accent-light: #735A3A;
+    --border: rgba(250, 249, 247, 0.1);
 }

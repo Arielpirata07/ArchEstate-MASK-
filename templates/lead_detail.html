@@ -17,7 +17,7 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- COLUMNA IZQUIERDA: INFORMACIÓN PRINCIPAL -->
-        <div class="bg-white rounded-3xl border border-midnight/10 shadow-xl p-6 space-y-5">
+        <div class="bg-white rounded-lg border border-midnight/10 shadow-xl p-6 space-y-5">
             <div>
                 <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Tipo de Operación</p>
                 <p class="text-base font-semibold text-midnight">{{ lead.type }}</p>
@@ -43,18 +43,27 @@
 
             <div class="border-t border-midnight/10 pt-5">
                 <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Contacto Directo</p>
-                <p class="text-sm text-midnight">📧 {{ lead.email }}</p>
-                <p class="text-sm text-midnight">📱 {{ lead.phone }}</p>
+                <div class="flex items-center gap-2 text-sm text-midnight">
+                    <i data-lucide="mail" class="w-4 h-4 text-gold flex-shrink-0"></i>
+                    <span>{{ lead.email }}</span>
+                </div>
+                <div class="flex items-center gap-2 text-sm text-midnight mt-2">
+                    <i data-lucide="phone" class="w-4 h-4 text-gold flex-shrink-0"></i>
+                    <span>{{ lead.phone }}</span>
+                </div>
             </div>
 
             <div class="border-t border-midnight/10 pt-5">
                 <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Registrado</p>
-                <p class="text-sm text-midnight">{{ lead.timestamp }}</p>
+                <div class="flex items-center gap-2 text-sm text-midnight">
+                    <i data-lucide="calendar" class="w-4 h-4 text-gold flex-shrink-0"></i>
+                    <span>{{ lead.timestamp }}</span>
+                </div>
             </div>
         </div>
 
         <!-- COLUMNA DERECHA: ESPECIFICACIONES TÉCNICAS -->
-        <div class="bg-white rounded-3xl border border-midnight/10 shadow-xl p-6 space-y-5">
+        <div class="bg-white rounded-lg border border-midnight/10 shadow-xl p-6 space-y-5">
             <h2 class="text-lg font-serif text-midnight">Especificaciones Técnicas</h2>
 
             <div class="grid grid-cols-3 gap-4">

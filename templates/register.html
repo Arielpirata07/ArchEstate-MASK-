@@ -36,28 +36,6 @@
                     <input id="license-input" name="license" type="text" placeholder="Ej: COAM-12345" class="w-full bg-transparent border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all">
                 </div>
             </div>
-            
-            <script>
-                // Toggle license field based on role selection
-                document.addEventListener('DOMContentLoaded', () => {
-                    const roleSelect = document.querySelector('select[name="role"]');
-                    const licenseContainer = document.getElementById('license-container');
-                    const licenseInput = document.getElementById('license-input');
-                    
-                    roleSelect.addEventListener('change', () => {
-                        if (roleSelect.value === 'professional') {
-                            licenseContainer.classList.remove('hidden');
-                            licenseInput.focus();
-                        } else {
-                            licenseContainer.classList.add('hidden');
-                            licenseInput.value = '';
-                        }
-                    });
-                    
-                    // Trigger change on page load in case professional was pre-selected
-                    roleSelect.dispatchEvent(new Event('change'));
-                });
-            </script>
 
             <div>
                 <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Usuario</label>

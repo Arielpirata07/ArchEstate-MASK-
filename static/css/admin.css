@@ -1,9 +1,8 @@
-/* ESTILOS ESPECÍFICOS: PANEL ADMINISTRACIÓN */
-.admin-table th {
-    color: rgba(0, 4, 16, 0.4);
-}
+/* ============================================
+   ARCHESTATE - ADMIN PANEL STYLES
+   ============================================ */
 
-/* Personalización del scrollbar del log de auditoría */
+/* --- Audit Log Scrollbar --- */
 .overflow-y-auto::-webkit-scrollbar {
     width: 4px;
 }
@@ -21,12 +20,70 @@
     background: rgba(115, 90, 58, 0.4);
 }
 
-/* Animación sutil para nuevas entradas */
-@keyframes fadeIn {
+/* --- Audit Entry Animation --- */
+@keyframes auditFadeIn {
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
 .audit-entry {
-    animation: fadeIn 0.3s ease-out forwards;
+    animation: auditFadeIn 0.3s ease-out forwards;
+}
+
+/* --- Timeline Audit Log --- */
+.timeline-item {
+    position: relative;
+    padding-left: 1.5rem;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.5rem;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+}
+
+.timeline-item.approved::before {
+    background: #059669;
+}
+
+.timeline-item.rejected::before {
+    background: #e11d48;
+}
+
+.timeline-item.other::before {
+    background: #735A3A;
+}
+
+.timeline-item::after {
+    content: '';
+    position: absolute;
+    left: 0.2rem;
+    top: 1rem;
+    bottom: -0.5rem;
+    width: 1px;
+    background: rgba(0, 4, 16, 0.1);
+}
+
+.timeline-item:last-child::after {
+    display: none;
+}
+
+/* --- KPI Card Hover --- */
+.kpi-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+/* --- Table Row Stagger --- */
+.table-row-animate {
+    opacity: 0;
+    animation: fadeInUp 0.4s ease-out forwards;
 }
