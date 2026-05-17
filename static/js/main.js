@@ -3,13 +3,25 @@
  */
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Inicializar iconos de Lucide al cargar la página
+    // Inicializar iconos de Lucide al cargar la pagina
     if (window.lucide) {
         lucide.createIcons();
     }
 
-    // Inicializar lógica específica de la vista de Usuario
+    // Inicializar logica especifica de la vista de Usuario
     initUserForm();
+
+    // Inicializar menu mobile
+    initMobileMenu();
+
+    // Inicializar scroll animations
+    initScrollObserver();
+
+    // Inicializar ripple effect en botones
+    initRippleEffect();
+
+    // Inicializar modal animations
+    initModalAnimations();
 });
 
 /**
@@ -28,9 +40,9 @@ function showToast(message, type = 'success') {
     const bgColor = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-rose-600' : 'bg-midnight';
     const icon = type === 'success' ? 'check-circle' : type === 'error' ? 'alert-circle' : 'info';
 
-    toast.className = `${bgColor} text-white px-6 py-4 rounded shadow-2xl flex items-center gap-4 transform transition-all duration-500 translate-y-10 opacity-0 border border-white/10`;
+    toast.className = `${bgColor} text-white px-6 py-4 rounded shadow-2xl flex items-center gap-4 transform transition-all duration-500 translate-y-10 opacity-0 border border-white/10 relative overflow-hidden`;
     toast.style.minWidth = '300px';
-    
+
     toast.innerHTML = `
         <div class="flex-shrink-0">
             <i data-lucide="${icon}" class="w-5 h-5"></i>
@@ -38,6 +50,7 @@ function showToast(message, type = 'success') {
         <div class="flex-grow">
             <p class="text-[10px] font-bold uppercase tracking-[0.2em] leading-tight">${message}</p>
         </div>
+        <div class="toast-progress"></div>
     `;
 
     container.appendChild(toast);
@@ -49,12 +62,12 @@ function showToast(message, type = 'success') {
         });
     }
 
-    // Animación de entrada
+    // Animacion de entrada
     requestAnimationFrame(() => {
         toast.classList.remove('translate-y-10', 'opacity-0');
     });
 
-    // Auto-eliminación
+    // Auto-eliminacion
     setTimeout(() => {
         toast.classList.add('opacity-0', '-translate-y-2');
         setTimeout(() => toast.remove(), 500);
@@ -62,8 +75,7 @@ function showToast(message, type = 'success') {
 }
 
 /**
- * Validación de Email (Feedback visual en tiempo real)
- * Nota: La validación real y final ocurre en Python (app.py)
+ * Validacion de Email (Feedback visual en tiempo real)
  */
 function validateEmail(val) {
     const isValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
@@ -86,8 +98,7 @@ function validateEmail(val) {
 }
 
 /**
- * Validación de Teléfono Argentino
- * Formatos: 11XXXXXXXX, +54XXXXXXXXXX, 0XXXXXXXXX, XXXXXXXXX
+ * Validacion de Telefono Argentino
  */
 function validatePhone(val) {
     if (!val) return false;
@@ -107,8 +118,7 @@ function validatePhone(val) {
 }
 
 /**
- * Validación de Presupuesto
- * Rango: 0 < amount <= 1 billón
+ * Validacion de Presupuesto
  */
 function validateBudget(val) {
     if (!val && val !== 0) return false;
@@ -147,13 +157,13 @@ function validateZone(val) {
 }
 
 /**
- * Inicialización del formulario de usuario
+ * Inicializacion del formulario de usuario
+ * Nota: user.html tiene su propio setPropertyType() que maneja 5 tipos.
+ * Esta funcion solo inicializa validaciones y autocomplete.
  */
 function initUserForm() {
     const form = document.getElementById('userForm');
     const emailInput = document.getElementById('email-input');
-    const departmentBtn = document.getElementById('btn-department');
-    const houseBtn = document.getElementById('btn-house');
 
     if (emailInput) {
         emailInput.addEventListener('input', function() {
@@ -161,15 +171,6 @@ function initUserForm() {
         });
     }
 
-    if (departmentBtn) {
-        departmentBtn.addEventListener('click', () => selectPropertyType('departamento'));
-    }
-
-    if (houseBtn) {
-        houseBtn.addEventListener('click', () => selectPropertyType('casa'));
-    }
-
-    selectPropertyType('departamento');
     initZoneAutocomplete();
     initArchitecturalStyleAutocomplete();
     initBudgetPopup();
@@ -193,7 +194,7 @@ function initUserForm() {
                 data.phone = `${countryCode} ${phone}`;
             }
 
-            // Validación de área para casas
+            // Validacion de area para casas
             const landArea = parseInt(data.land_area || '0', 10);
             const builtArea = parseInt(data.built_area || '0', 10);
             if (data.property_type === 'casa' && builtArea > landArea) {
@@ -201,12 +202,12 @@ function initUserForm() {
                 return;
             }
 
-            // Validación rápida en cliente
+            // Validacion rapida en cliente
             if (!validateEmail(data.email)) return;
 
             const submitBtn = form.querySelector('button[type="submit"]');
             const originalBtnContent = submitBtn.innerHTML;
-            
+
             // Estado de carga
             submitBtn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Procesando...`;
             submitBtn.disabled = true;
@@ -222,12 +223,11 @@ function initUserForm() {
                 const result = await response.json();
 
                 if (response.ok) {
-                    showToast("¡Solicitud enviada! Los profesionales se contactarán contigo.");
+                    showToast("¡Solicitud enviada! Los profesionales se contactaran contigo.");
                     setTimeout(() => {
                         window.location.href = "/";
                     }, 1500);
                 } else {
-                    // Manejar errores devueltos por Python
                     submitBtn.innerHTML = originalBtnContent;
                     submitBtn.disabled = false;
                     submitBtn.classList.remove('opacity-70');
@@ -238,7 +238,7 @@ function initUserForm() {
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('opacity-70');
                 console.error("Error al enviar el formulario:", error);
-                showToast("Error de conexión con el servidor", 'error');
+                showToast("Error de conexion con el servidor", 'error');
             }
         });
     }
@@ -258,12 +258,12 @@ function selectPropertyType(propertyType) {
 
     const departmentOptions = [
         { value: 'Comprar Propiedad', text: 'Comprar' },
-        { value: 'Remodelación Integral', text: 'Remodelación' }
+        { value: 'Remodelacion Integral', text: 'Remodelacion' }
     ];
     const houseOptions = [
         { value: 'Comprar Propiedad', text: 'Comprar' },
         { value: 'Construir desde Cero', text: 'Construir' },
-        { value: 'Remodelación Integral', text: 'Remodelación' }
+        { value: 'Remodelacion Integral', text: 'Remodelacion' }
     ];
 
     const options = propertyType === 'casa' ? houseOptions : departmentOptions;
@@ -290,11 +290,9 @@ function selectPropertyType(propertyType) {
     const infinityPoolCheckbox = document.getElementById('infinity-pool-checkbox');
 
     if (propertyType === 'casa' && poolCheckbox && infinityPoolLabel && infinityPoolCheckbox) {
-        // Agregar event listener al checkbox de piscina
-        poolCheckbox.removeEventListener('change', toggleInfinityPool); // Remover listeners previos
+        poolCheckbox.removeEventListener('change', toggleInfinityPool);
         poolCheckbox.addEventListener('change', toggleInfinityPool);
     } else if (infinityPoolLabel && infinityPoolCheckbox) {
-        // Ocultar piscina infinity si no es casa
         infinityPoolLabel.classList.add('hidden');
         infinityPoolCheckbox.disabled = true;
         infinityPoolCheckbox.checked = false;
@@ -302,8 +300,7 @@ function selectPropertyType(propertyType) {
 }
 
 /**
- * Controla la visibilidad y habilitación de la opción Piscina Infinity
- * Solo se muestra si está seleccionada la opción "¿Tiene piscina?"
+ * Controla la visibilidad y habilitacion de la opcion Piscina Infinity
  */
 function toggleInfinityPool() {
     const poolCheckbox = document.getElementById('pool-checkbox');
@@ -313,13 +310,11 @@ function toggleInfinityPool() {
     if (!poolCheckbox || !infinityPoolLabel || !infinityPoolCheckbox) return;
 
     if (poolCheckbox.checked) {
-        // Mostrar y habilitar Piscina Infinity
         infinityPoolLabel.classList.remove('hidden');
         infinityPoolLabel.classList.remove('opacity-50');
         infinityPoolLabel.classList.remove('cursor-not-allowed');
         infinityPoolCheckbox.disabled = false;
     } else {
-        // Ocultar y deshabilitar Piscina Infinity
         infinityPoolLabel.classList.add('hidden');
         infinityPoolLabel.classList.add('opacity-50');
         infinityPoolLabel.classList.add('cursor-not-allowed');
@@ -361,26 +356,10 @@ const CITY_SUGGESTIONS = [
 ];
 
 const ARCHITECTURAL_STYLES = [
-    'Moderno',
-    'Clásico',
-    'Minimalista',
-    'Industrial',
-    'Rústico',
-    'Contemporáneo',
-    'Vanguardista',
-    'Tradicional',
-    'Mediterráneo',
-    'Nórdico',
-    'Colonial',
-    'Art Decó',
-    'Bauhaus',
-    'Orgánico',
-    'High-Tech',
-    'Neoclásico',
-    'Gótico',
-    'Barroco',
-    'Renacentista',
-    'Otro'
+    'Moderno', 'Clasico', 'Minimalista', 'Industrial', 'Rustico',
+    'Contemporaneo', 'Vanguardista', 'Tradicional', 'Mediterraneo',
+    'Nordico', 'Colonial', 'Art Deco', 'Bauhaus', 'Organico',
+    'High-Tech', 'Neoclasic', 'Gotico', 'Barroco', 'Renacentista', 'Otro'
 ];
 
 function initZoneAutocomplete() {
@@ -516,7 +495,6 @@ function initBudgetPopup() {
         const isUnlimited = unlimitedCheckbox.checked;
         let minPercent, maxPercent;
         if (isUnlimited) {
-            // Para ilimitado, usar una escala arbitraria, e.g., hasta 200M para visualización
             const visualMax = Math.max(maxValue * 1.2, 200000000);
             minPercent = (minValue / visualMax) * 100;
             maxPercent = (maxValue / visualMax) * 100;
@@ -591,15 +569,11 @@ function initBudgetPopup() {
                 max: typeof result.max === 'number' ? result.max : budgetData.max,
                 ranges: result.ranges || []
             };
-            currencySelect.innerHTML = (result.currency_options || ['ARG','USD','EUR']).map(code => `<option value="${code}">${code === 'USD' ? 'Dólares' : code === 'EUR' ? 'Euros' : 'Pesos'}</option>`).join('');
+            currencySelect.innerHTML = (result.currency_options || ['ARG','USD','EUR']).map(code => `<option value="${code}">${code === 'USD' ? 'Dolares' : code === 'EUR' ? 'Euros' : 'Pesos'}</option>`).join('');
             resetBudget();
         } catch (error) {
-            console.error('No se pudieron cargar las estadísticas de presupuesto:', error);
-            budgetData = {
-                min: 0,
-                max: 150000000,
-                ranges: []
-            };
+            console.error('No se pudieron cargar las estadisticas de presupuesto:', error);
+            budgetData = { min: 0, max: 150000000, ranges: [] };
             resetBudget();
         }
     };
@@ -611,7 +585,7 @@ function initBudgetPopup() {
         if (!Number.isFinite(minInput) || minInput < budgetData.min) return;
         if (!Number.isFinite(maxInput)) return;
         if (!isUnlimited && minInput > maxInput) return;
-        if (isUnlimited && minInput > maxInput) return; // Permitir si ilimitado
+        if (isUnlimited && minInput > maxInput) return;
         minSlider.value = minInput;
         maxSlider.value = maxInput;
         updateBudgetOutput();
@@ -672,29 +646,25 @@ function initBudgetPopup() {
 }
 
 /**
- * Alternar visibilidad del teléfono (Lógica de seguridad en Python)
- * Permite mostrar y ocultar el teléfono una vez obtenido.
+ * Alternar visibilidad del telefono
  */
 async function togglePhone(btn, leadId) {
     const isRevealed = btn.getAttribute('data-revealed') === 'true';
 
     if (isRevealed) {
-        // Ocultar de nuevo
-        btn.innerHTML = `<i data-lucide="eye" class="w-3 h-3"></i> Ver Teléfono`;
+        btn.innerHTML = `<i data-lucide="eye" class="w-3 h-3"></i> Ver Telefono`;
         btn.setAttribute('data-revealed', 'false');
         btn.classList.remove('bg-gold');
         btn.classList.add('bg-midnight');
     } else {
-        // Mostrar (usar caché si ya se pidió)
         const cachedPhone = btn.getAttribute('data-phone');
-        
+
         if (cachedPhone) {
             btn.innerHTML = `<i data-lucide="eye-off" class="w-3 h-3"></i> ${cachedPhone}`;
             btn.setAttribute('data-revealed', 'true');
             btn.classList.remove('bg-midnight');
             btn.classList.add('bg-gold');
         } else {
-            // Estado de carga
             const originalContent = btn.innerHTML;
             btn.innerHTML = `<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> Cargando...`;
             btn.disabled = true;
@@ -703,7 +673,7 @@ async function togglePhone(btn, leadId) {
             try {
                 const response = await fetch(`/api/lead/${leadId}/phone`);
                 const data = await response.json();
-                
+
                 if (data.phone) {
                     btn.setAttribute('data-phone', data.phone);
                     btn.innerHTML = `<i data-lucide="eye-off" class="w-3 h-3"></i> ${data.phone}`;
@@ -712,19 +682,19 @@ async function togglePhone(btn, leadId) {
                     btn.classList.add('bg-gold');
                 } else {
                     btn.innerHTML = originalContent;
-                    showToast("No se pudo obtener el teléfono", 'error');
+                    showToast("No se pudo obtener el telefono", 'error');
                 }
             } catch (error) {
                 btn.innerHTML = originalContent;
-                console.error("Error al obtener teléfono:", error);
-                showToast("Error de red al consultar teléfono", 'error');
+                console.error("Error al obtener telefono:", error);
+                showToast("Error de red al consultar telefono", 'error');
             } finally {
                 btn.disabled = false;
                 btn.classList.remove('opacity-70');
             }
         }
     }
-    
+
     if (window.lucide) {
         lucide.createIcons();
     }
@@ -735,15 +705,14 @@ async function togglePhone(btn, leadId) {
  */
 async function updateProStatus(proId, status, btn) {
     const isRejection = status === 'rejected';
-    const message = isRejection 
-        ? "¡ADVERTENCIA! Está a punto de RECHAZAR a este profesional. Esta acción es crítica y quedará registrada permanentemente en el log de auditoría. ¿Está completamente seguro?"
+    const message = isRejection
+        ? "¡ADVERTENCIA! Esta a punto de RECHAZAR a este profesional. Esta accion quedara registrada permanentemente. ¿Esta completamente seguro?"
         : "¿Desea aprobar a este profesional para que pueda acceder a la plataforma?";
 
     if (!confirm(message)) {
         return;
     }
 
-    // Estado de carga
     const originalContent = btn.innerHTML;
     btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>`;
     btn.disabled = true;
@@ -759,28 +728,24 @@ async function updateProStatus(proId, status, btn) {
         const result = await response.json();
 
         if (response.ok) {
-            // Animación de éxito: Escalado y cambio de color
             btn.classList.remove('opacity-50', 'text-emerald-600', 'text-rose-600');
             btn.classList.add('scale-150', 'text-emerald-500', 'transition-all', 'duration-500', 'ease-out');
             btn.innerHTML = `<i data-lucide="check" class="w-4 h-4"></i>`;
-            
+
             if (window.lucide) lucide.createIcons();
-            
+
             showToast(result.message);
-            
-            // Desvanecer la fila antes de recargar
+
             const row = btn.closest('tr');
             if (row) {
-                // Actualizar visualmente el estado en la tabla
                 const statusCell = row.cells[2];
                 if (statusCell) {
-                    const label = status === 'approved' 
+                    const label = status === 'approved'
                         ? '<span class="px-2 py-1 bg-emerald-50 text-emerald-700 text-[9px] font-bold uppercase tracking-widest rounded">Aprobado</span>'
                         : '<span class="px-2 py-1 bg-rose-50 text-rose-700 text-[9px] font-bold uppercase tracking-widest rounded">Rechazado</span>';
                     statusCell.innerHTML = label;
                 }
 
-                // Ocultar botones de acción
                 const actionCell = row.cells[3];
                 if (actionCell) {
                     actionCell.innerHTML = '<span class="text-[10px] text-midnight/20 font-bold uppercase tracking-widest animate-pulse">Procesado</span>';
@@ -808,29 +773,160 @@ async function updateProStatus(proId, status, btn) {
 }
 
 /**
- * LÓGICA DINÁMICA PARA EL REGISTRO
+ * LÓGICA DINÁMICA PARA EL REGISTRO (license field toggle)
  */
 document.addEventListener('DOMContentLoaded', function() {
     const roleSelect = document.querySelector('select[name="role"]');
     const licenseContainer = document.getElementById('license-container');
     const licenseInput = document.getElementById('license-input');
 
-    if (roleSelect) {
+    if (roleSelect && licenseContainer && licenseInput) {
         roleSelect.addEventListener('change', function() {
             if (this.value === 'professional') {
-                // Mostrar campo de matrícula
                 licenseContainer.classList.remove('hidden');
                 licenseContainer.classList.add('block');
                 licenseInput.setAttribute('required', 'required');
-                
-                // Refrescar iconos de Lucide por si acaso
+                licenseInput.focus();
+
                 if (window.lucide) lucide.createIcons();
             } else {
-                // Ocultar campo
                 licenseContainer.classList.add('hidden');
                 licenseContainer.classList.remove('block');
                 licenseInput.removeAttribute('required');
+                licenseInput.value = '';
             }
         });
+
+        // Trigger on load in case professional was pre-selected
+        roleSelect.dispatchEvent(new Event('change'));
     }
 });
+
+/**
+ * Mobile Menu Toggle
+ */
+function initMobileMenu() {
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    if (!menuBtn || !mobileMenu) return;
+
+    menuBtn.addEventListener('click', () => {
+        const isOpen = !mobileMenu.classList.contains('hidden');
+        mobileMenu.classList.toggle('hidden');
+        menuBtn.setAttribute('aria-expanded', !isOpen);
+
+        const icon = document.getElementById('mobile-menu-icon');
+        if (icon) {
+            icon.setAttribute('data-lucide', isOpen ? 'menu' : 'x');
+            if (window.lucide) lucide.createIcons();
+        }
+    });
+
+    // Close menu when clicking a link
+    mobileMenu.querySelectorAll('.mobile-menu-link').forEach(link => {
+        link.addEventListener('click', () => {
+            mobileMenu.classList.add('hidden');
+            menuBtn.setAttribute('aria-expanded', 'false');
+            const icon = document.getElementById('mobile-menu-icon');
+            if (icon) {
+                icon.setAttribute('data-lucide', 'menu');
+                if (window.lucide) lucide.createIcons();
+            }
+        });
+    });
+
+    // Close menu on Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !mobileMenu.classList.contains('hidden')) {
+            mobileMenu.classList.add('hidden');
+            menuBtn.setAttribute('aria-expanded', 'false');
+            const icon = document.getElementById('mobile-menu-icon');
+            if (icon) {
+                icon.setAttribute('data-lucide', 'menu');
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+    });
+}
+
+/**
+ * Scroll Animation Observer
+ */
+function initScrollObserver() {
+    if (!('IntersectionObserver' in window)) return;
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate-in');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    });
+
+    document.querySelectorAll('.animate-on-scroll').forEach(el => {
+        observer.observe(el);
+    });
+}
+
+/**
+ * Button Ripple Effect
+ */
+function initRippleEffect() {
+    document.querySelectorAll('.btn-ripple').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const ripple = document.createElement('span');
+            ripple.className = 'ripple';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+
+            this.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+        });
+    });
+}
+
+/**
+ * Modal Animations
+ */
+function initModalAnimations() {
+    // Observe modal overlays and animate them
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach(mutation => {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                const el = mutation.target;
+                if (el.classList.contains('modal-overlay')) {
+                    if (el.classList.contains('hidden')) {
+                        el.classList.remove('modal-visible');
+                        el.classList.add('modal-hidden');
+                    } else {
+                        el.classList.remove('modal-hidden');
+                        el.classList.add('modal-visible');
+                    }
+                }
+            }
+        });
+    });
+
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+        observer.observe(modal, { attributes: true, attributeFilter: ['class'] });
+    });
+}
+
+/**
+ * Smooth Scroll to element
+ */
+function smoothScrollTo(target) {
+    const el = typeof target === 'string' ? document.querySelector(target) : target;
+    if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}

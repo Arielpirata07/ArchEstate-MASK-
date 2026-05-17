@@ -1,8 +1,44 @@
-/* ESTILOS ESPECÍFICOS: PANEL PROFESIONAL */
+/* ============================================
+   ARCHESTATE - PROFESSIONAL PANEL STYLES
+   ============================================ */
+
+/* --- Leads Table --- */
 .leads-table th {
     border-bottom: 1px solid rgba(0, 4, 16, 0.05);
 }
 
 .leads-table tr:hover {
     background-color: #FAF9F7;
+}
+
+/* --- Table Row Stagger --- */
+.table-row-animate {
+    opacity: 0;
+    animation: fadeInUp 0.4s ease-out forwards;
+}
+
+/* --- Metric Card Hover --- */
+.metric-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+/* --- Status Badge Colors --- */
+.badge-approved {
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.badge-pending {
+    background: #fffbeb;
+    color: #b45309;
+}
+
+.badge-rejected {
+    background: #fff1f2;
+    color: #be123c;
 }
