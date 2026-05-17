@@ -4,6 +4,38 @@ import pytz
 import config
 
 
+MIME_MAGIC_BYTES = {
+    'pdf':  [b'%PDF'],
+    'jpg':  [b'\xff\xd8\xff'],
+    'jpeg': [b'\xff\xd8\xff'],
+    'png':  [b'\x89PNG\r\n\x1a\n'],
+}
+
+
+def validate_mime_type(file_stream, filename):
+    """
+    Valida el tipo MIME real leyendo los magic bytes del archivo.
+    Retorna (is_valid, detected_ext, error_message).
+    """
+    if not filename or '.' not in filename:
+        return False, None, "Nombre de archivo inválido"
+
+    ext = filename.rsplit('.', 1)[1].lower()
+
+    if ext not in MIME_MAGIC_BYTES:
+        return False, None, f"Extensión .{ext} no permitida"
+
+    file_stream.seek(0)
+    header = file_stream.read(16)
+    file_stream.seek(0)
+
+    for magic in MIME_MAGIC_BYTES[ext]:
+        if header.startswith(magic):
+            return True, ext, None
+
+    return False, None, f"El contenido del archivo no corresponde a un {ext.upper()}"
+
+
 def convert_to_argentina_time(timestamp_str):
     if not timestamp_str:
         return timestamp_str

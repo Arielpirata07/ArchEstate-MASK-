@@ -245,11 +245,11 @@
                                         <span class="text-sm text-midnight">Piscina comunitaria</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" name="amenities_values" value="SUM" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
+                                        <input type="checkbox" name="amenities" value="SUM" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
                                         <span class="text-sm text-midnight">SUM</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" name="amenities_values" value="Terraza" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
+                                        <input type="checkbox" name="amenities" value="Terraza" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
                                         <span class="text-sm text-midnight">Terraza</span>
                                     </label>
                                 </div>
@@ -276,15 +276,15 @@
                                         <span class="text-sm text-midnight">Piscina</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" name="amenities_values" value="Quincho" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
+                                        <input type="checkbox" name="amenities" value="Quincho" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
                                         <span class="text-sm text-midnight">Quincho / Parrilla</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" name="amenities_values" value="Jardín" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
+                                        <input type="checkbox" name="amenities" value="Jardín" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
                                         <span class="text-sm text-midnight">Jardín</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" name="amenities_values" value="Pileta cubierta" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
+                                        <input type="checkbox" name="amenities" value="Pileta cubierta" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
                                         <span class="text-sm text-midnight">Pileta cubierta</span>
                                     </label>
                                 </div>
@@ -292,26 +292,26 @@
                                 <div class="mt-5 p-4 bg-paper-dark rounded-lg border border-midnight/10">
                                     <div class="flex items-center justify-between mb-3">
                                         <label class="flex items-center gap-2 cursor-pointer">
-                                            <input id="gated-community-check" type="checkbox" name="amenities_values" value="Barrio privado" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0" onchange="toggleGatedCommunity(this.checked)">
+                                            <input id="gated-community-check" type="checkbox" name="amenities" value="Barrio privado" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0" onchange="toggleGatedCommunity(this.checked)">
                                             <span class="text-sm font-semibold text-midnight">¿Barrio Privado / Countries?</span>
                                         </label>
                                     </div>
                                     <div id="gated-community-details" class="hidden space-y-3 pt-2 border-t border-midnight/10">
                                         <div class="grid grid-cols-2 gap-4">
                                             <label class="flex items-center gap-2 cursor-pointer text-sm text-midnight/70">
-                                                <input type="checkbox" name="amenities_values" value="Seguridad 24h barrio" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
+                                                <input type="checkbox" name="amenities" value="Seguridad 24h barrio" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
                                                 Seguridad 24h
                                             </label>
                                             <label class="flex items-center gap-2 cursor-pointer text-sm text-midnight/70">
-                                                <input type="checkbox" name="amenities_values" value="Club house" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
+                                                <input type="checkbox" name="amenities" value="Club house" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
                                                 Club House
                                             </label>
                                             <label class="flex items-center gap-2 cursor-pointer text-sm text-midnight/70">
-                                                <input type="checkbox" name="amenities_values" value="Canchas deportivas" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
+                                                <input type="checkbox" name="amenities" value="Canchas deportivas" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
                                                 Canchas deportivas
                                             </label>
                                             <label class="flex items-center gap-2 cursor-pointer text-sm text-midnight/70">
-                                                <input type="checkbox" name="amenities_values" value="Lagunas artificiales" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
+                                                <input type="checkbox" name="amenities" value="Lagunas artificiales" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
                                                 Lagunas artificiales
                                             </label>
                                         </div>
@@ -324,12 +324,12 @@
                         <div>
                             <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">Extras y Comodidades</label>
                             <div class="grid grid-cols-2 gap-4">
-                                <label id="infinity-pool-label" class="flex items-center gap-3 pool-dependent hidden opacity-50 cursor-not-allowed"><input id="infinity-pool-checkbox" type="checkbox" name="amenities_values" value="Piscina Infinity" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0" disabled><span class="text-sm text-midnight">Piscina Infinity</span></label>
-                                <label class="flex items-center gap-3"><input type="checkbox" name="amenities_values" value="Seguridad 24h" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0"><span class="text-sm text-midnight">Seguridad 24h</span></label>
-                                <label class="flex items-center gap-3"><input type="checkbox" name="amenities_values" value="Bodega" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0"><span class="text-sm text-midnight">Bodega</span></label>
-                                <label class="flex items-center gap-3"><input type="checkbox" name="amenities_values" value="Gimnasio Privado" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0"><span class="text-sm text-midnight">Gimnasio Privado</span></label>
-                                <label class="flex items-center gap-3"><input type="checkbox" name="amenities_values" value="Domotica Avanzada" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0"><span class="text-sm text-midnight">Domótica Avanzada</span></label>
-                                <label class="flex items-center gap-3"><input type="checkbox" name="amenities_values" value="Helipad" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0"><span class="text-sm text-midnight">Helipad</span></label>
+                                <label id="infinity-pool-label" class="flex items-center gap-3 pool-dependent hidden opacity-50 cursor-not-allowed"><input id="infinity-pool-checkbox" type="checkbox" name="amenities" value="Piscina Infinity" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0" disabled><span class="text-sm text-midnight">Piscina Infinity</span></label>
+                                <label class="flex items-center gap-3"><input type="checkbox" name="amenities" value="Seguridad 24h" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0"><span class="text-sm text-midnight">Seguridad 24h</span></label>
+                                <label class="flex items-center gap-3"><input type="checkbox" name="amenities" value="Bodega" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0"><span class="text-sm text-midnight">Bodega</span></label>
+                                <label class="flex items-center gap-3"><input type="checkbox" name="amenities" value="Gimnasio Privado" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0"><span class="text-sm text-midnight">Gimnasio Privado</span></label>
+                                <label class="flex items-center gap-3"><input type="checkbox" name="amenities" value="Domotica Avanzada" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0"><span class="text-sm text-midnight">Domótica Avanzada</span></label>
+                                <label class="flex items-center gap-3"><input type="checkbox" name="amenities" value="Helipad" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0"><span class="text-sm text-midnight">Helipad</span></label>
                             </div>
                         </div>
 
@@ -358,15 +358,34 @@
                         <!-- Teléfono -->
                         <div>
                             <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Teléfono</label>
-                            <input
-                                id="phone-input"
-                                name="phone"
-                                type="tel"
-                                required
-                                placeholder="+34 --- --"
-                                value="{{ session.get('phone', '') }}"
-                                class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm"
-                            >
+                            <div class="flex gap-2">
+                                <select
+                                    id="country-code-select"
+                                    onchange="updateCountryCode()"
+                                    class="w-20 bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 text-sm text-midnight"
+                                >
+                                    <option value="+54">+54 (AR)</option>
+                                    <option value="+598">+598 (UY)</option>
+                                    <option value="+56">+56 (CL)</option>
+                                    <option value="+55">+55 (BR)</option>
+                                    <option value="+595">+595 (PY)</option>
+                                    <option value="+591">+591 (BO)</option>
+                                    <option value="+57">+57 (CO)</option>
+                                    <option value="+52">+52 (MX)</option>
+                                    <option value="+34">+34 (ES)</option>
+                                    <option value="+1">+1 (US)</option>
+                                </select>
+                                <input
+                                    id="phone-input"
+                                    name="phone"
+                                    type="tel"
+                                    required
+                                    placeholder="9 11 1234 5678"
+                                    value="{{ session.get('phone', '') }}"
+                                    class="flex-1 bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm"
+                                >
+                            </div>
+                            <p class="text-[9px] text-midnight/40 mt-1">El código de país se incluirá automáticamente</p>
                             <!-- Acción de guardado de perfil -->
                             <div class="mt-2 flex items-center justify-between">
                                 <p id="phone-error-msg" class="hidden text-[10px] text-rose-500 font-medium"></p>
@@ -576,9 +595,11 @@ document.addEventListener('DOMContentLoaded', () => {
 // ================================================================
 async function savePhoneToProfile() {
     const phoneInput = document.getElementById('phone-input');
+    const countrySelect = document.getElementById('country-code-select');
     const errorMsg   = document.getElementById('phone-error-msg');
     const saveBtn    = document.getElementById('save-phone-btn');
     const phone      = phoneInput.value.trim();
+    const countryCode = countrySelect.value;
 
     errorMsg.classList.add('hidden');
 
@@ -588,6 +609,8 @@ async function savePhoneToProfile() {
         return;
     }
 
+    const fullPhone = formatPhoneWithCountry(phone, countryCode);
+
     const originalContent = saveBtn.innerHTML;
     saveBtn.innerHTML = 'Guardando...';
     saveBtn.disabled  = true;
@@ -596,7 +619,7 @@ async function savePhoneToProfile() {
         const res  = await fetch('/api/user/update-phone', {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ phone })
+            body:    JSON.stringify({ phone: fullPhone })
         });
         const data = await res.json();
 
@@ -625,5 +648,61 @@ async function savePhoneToProfile() {
         if (window.lucide) lucide.createIcons();
     }
 }
+
+// ================================================================
+// Selector de código de país
+// ================================================================
+function formatPhoneWithCountry(phone, countryCode) {
+    const digits = phone.replace(/\D/g, '');
+    const countryCodeDigits = countryCode.replace('+', '');
+
+    let formatted = countryCode + ' ';
+    const codeLen = countryCodeDigits.length;
+
+    if (countryCode === '+54' && digits.length >= 2) {
+        const mobilePrefix = digits.substring(0, 1);
+        const areaCode = digits.substring(1, codeLen + 1);
+        const rest = digits.substring(codeLen + 1);
+
+        if (mobilePrefix === '9' || mobilePrefix === '15') {
+            formatted += mobilePrefix + ' ' + (areaCode ? areaCode + ' ' : '') + rest.replace(/(\d{4})/g, '$1 ').trim();
+        } else {
+            formatted += (areaCode ? areaCode + ' ' : '') + rest.replace(/(\d{4})/g, '$1 ').trim();
+        }
+    } else if (countryCode === '+1' && digits.length >= 10) {
+        formatted = countryCode + ' (' + digits.substring(0, 3) + ') ' + digits.substring(3, 6) + '-' + digits.substring(6);
+    } else if (countryCode === '+34' && digits.length >= 9) {
+        formatted += digits.substring(0, 2) + ' ' + digits.substring(2, 5) + ' ' + digits.substring(5, 7) + ' ' + digits.substring(7);
+    } else if (digits.length > codeLen) {
+        formatted += digits.substring(codeLen).replace(/(\d{2,4})/g, '$1 ').trim();
+    } else {
+        formatted += digits;
+    }
+
+    return formatted.trim();
+}
+
+function updateCountryCode() {
+    const countryCode = document.getElementById('country-code-select').value;
+    const phoneInput = document.getElementById('phone-input');
+    const currentPhone = phoneInput.value.trim();
+
+    if (currentPhone) {
+        const fullPhone = formatPhoneWithCountry(currentPhone, countryCode);
+    }
+}
+
+// Antes de enviar el formulario, combinar código de país + teléfono
+document.getElementById('userForm').addEventListener('submit', function(e) {
+    const phoneInput = document.getElementById('phone-input');
+    const countrySelect = document.getElementById('country-code-select');
+    const phone = phoneInput.value.trim();
+    const countryCode = countrySelect.value;
+
+    if (phone) {
+        const fullPhone = formatPhoneWithCountry(phone, countryCode);
+        phoneInput.value = fullPhone;
+    }
+});
 </script>
 {% endblock %}

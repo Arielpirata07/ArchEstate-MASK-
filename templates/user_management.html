@@ -237,7 +237,9 @@ function renderUsers(users) {
 
     tbody.innerHTML = users.map(u => {
         const badge = ROLE_LABELS[u.role] || { text: u.role, cls: 'bg-paper-dark text-midnight' };
-        const phone = u.phone || '<span class="text-midnight/25 italic">Sin teléfono</span>';
+        const phone = u.phone
+            ? escapeHtml(u.phone)
+            : '<span class="text-midnight/25 italic">Sin teléfono</span>';
 
         // El admin no puede resetear su propia cuenta desde aquí
         // ni resetear a otros admins (protegido también en el backend)

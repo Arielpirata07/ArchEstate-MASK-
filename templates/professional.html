@@ -716,6 +716,22 @@ async function loadLeads() {
     }
 }
 
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatBudget(value) {
+    if (!value) return '0';
+    const cleaned = String(value).replace(/[^\d.,]/g, '');
+    if (!cleaned) return value;
+    const num = parseFloat(cleaned.replace(/,/g, '').replace(/\./g, ''));
+    if (isNaN(num)) return value;
+    if (num >= 1000000) return (num / 1000000).toFixed(1).replace('.0', '') + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(0) + 'k';
+    return num.toLocaleString('es-AR');
+}
+
 function renderLeads(leads) {
     const tbody = document.getElementById('leadsTableBody');
     if (!leads.length) {
@@ -761,14 +777,14 @@ function renderLeads(leads) {
             extraBadges.push(`<span class="px-1.5 py-0.5 bg-paper-dark text-midnight/50 rounded text-[8px] font-bold uppercase tracking-widest">${parkingLabels[lead.parking]}</span>`);
         }
         if (lead.orientation && lead.orientation !== '') {
-            extraBadges.push(`<span class="px-1.5 py-0.5 bg-paper-dark text-midnight/50 rounded text-[8px] font-bold uppercase tracking-widest">${lead.orientation}</span>`);
+            extraBadges.push(`<span class="px-1.5 py-0.5 bg-paper-dark text-midnight/50 rounded text-[8px] font-bold uppercase tracking-widest">${escapeHtml(lead.orientation)}</span>`);
         }
         if (lead.property_condition && lead.property_condition !== '') {
             const cls = conditionColors[lead.property_condition] || 'bg-paper-dark text-midnight/50';
-            extraBadges.push(`<span class="px-1.5 py-0.5 ${cls} rounded text-[8px] font-bold uppercase tracking-widest">${lead.property_condition}</span>`);
+            extraBadges.push(`<span class="px-1.5 py-0.5 ${cls} rounded text-[8px] font-bold uppercase tracking-widest">${escapeHtml(lead.property_condition)}</span>`);
         }
         if (lead.property_age && lead.property_age !== '') {
-            extraBadges.push(`<span class="px-1.5 py-0.5 bg-paper-dark text-midnight/50 rounded text-[8px] font-bold uppercase tracking-widest">${lead.property_age}</span>`);
+            extraBadges.push(`<span class="px-1.5 py-0.5 bg-paper-dark text-midnight/50 rounded text-[8px] font-bold uppercase tracking-widest">${escapeHtml(lead.property_age)}</span>`);
         }
         const extrasLine = extraBadges.length
             ? `<div class="flex flex-wrap gap-1 mt-1">${extraBadges.join('')}</div>`
@@ -777,15 +793,15 @@ function renderLeads(leads) {
         return `
             <tr class="border-b border-midnight/5 hover:bg-paper transition-colors group">
                 <td class="p-4 font-mono text-xs text-midnight/60">${lead.id}</td>
-                <td class="p-4 text-sm font-medium">${lead.type}</td>
+                <td class="p-4 text-sm font-medium">${escapeHtml(lead.type)}</td>
                 <td class="p-4">${propBadge}</td>
-                <td class="p-4 text-sm text-midnight/70">${lead.zone}</td>
+                <td class="p-4 text-sm text-midnight/70">${escapeHtml(lead.zone)}</td>
                 <td class="p-4">
-                    <div class="font-serif italic text-gold">${sym}${formatBudget(lead.budget)}</div>
+                    <div class="font-serif italic text-gold">${sym}${formatBudget(escapeHtml(lead.budget))}</div>
                     ${specLine}
                     ${extrasLine}
                 </td>
-                <td class="p-4 text-sm text-midnight/50">${lead.timestamp}</td>
+                <td class="p-4 text-sm text-midnight/50">${escapeHtml(lead.timestamp)}</td>
                 <td class="p-4 text-right">
                     <div class="flex justify-end gap-2 flex-wrap">
                         <button onclick="togglePhone(this,'${lead.id}')"
