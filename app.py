@@ -22,7 +22,7 @@ from werkzeug.utils import secure_filename
 
 import config
 import utils
-from utils import allowed_file
+from utils import allowed_file, convert_to_argentina_time
 import decorators
 import rate_limit
 import validators
@@ -32,6 +32,7 @@ import models
 app = Flask(__name__)
 app.secret_key = config.SECRET_KEY
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, config.UPLOAD_FOLDER)
+app.jinja_env.autoescape = True
 
 
 class FilterOptionsCache:
@@ -210,46 +211,22 @@ professional_required = decorators.professional_required
 # --- LÓGICA DE NEGOCIO (PYTHON) ---
 
 
-def is_valid_email(email):
-    """Lógica de validación de email en el servidor (más segura que JS)"""
-    pattern = r'^[^\s@]+@[^\s@]+\.[^\s@]+$'
-    return re.match(pattern, email) is not None
-
-
 def log_action(action, target):
     """Registra una acción en la tabla de auditoría de la base de datos"""
     conn = None
     try:
         conn = get_db_connection()
+        safe_action = utils.safe_text(action)[:100]
+        safe_target = utils.safe_text(target)[:200]
+        safe_admin = utils.safe_text(session.get('username', 'sistema'))[:50]
         conn.execute('INSERT INTO audit_log (action, target, admin) VALUES (?, ?, ?)',
-                     (action, target, session.get('username', 'sistema')))
+                     (safe_action, safe_target, safe_admin))
         conn.commit()
     except Exception as e:
         print(f"Error al registrar auditoría: {e}")
     finally:
         if conn:
             conn.close()
-
-
-def convert_to_argentina_time(timestamp_str):
-    """Convierte un timestamp UTC a hora de Argentina (UTC-3)"""
-    if not timestamp_str:
-        return timestamp_str
-    try:
-        # Parsear el timestamp (asumiendo que está en UTC)
-        utc_time = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
-        if utc_time.tzinfo is None:
-            utc_time = pytz.UTC.localize(utc_time)
-        
-        # Convertir a Argentina (UTC-3)
-        argentina_tz = pytz.timezone('America/Argentina/Buenos_Aires')
-        argentina_time = utc_time.astimezone(argentina_tz)
-        
-        # Retornar en formato legible
-        return argentina_time.strftime('%d/%m/%Y %H:%M:%S')
-    except Exception as e:
-        print(f"Error al convertir timestamp: {e}")
-        return timestamp_str
 
 
 def get_budget_stats_from_db():
@@ -373,6 +350,7 @@ def admin_view():
 
 # --- RUTA DE REGISTRO ---
 @app.route('/register', methods=['GET', 'POST'])
+@rate_limit.check_rate_limit(limit=5, window=60)
 def register():
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
@@ -382,20 +360,29 @@ def register():
         license_number = request.form.get('license', '').strip()
 
         # ✅ VALIDACIÓN DE CAMPOS OBLIGATORIOS
-        if not username:
-            flash('El nombre de usuario es requerido.', 'error')
+        if not username or len(username) < 3 or len(username) > 30:
+            flash('El nombre de usuario debe tener entre 3 y 30 caracteres.', 'error')
+            return redirect(url_for('register'))
+
+        if not re.match(r'^[a-zA-Z0-9_]+$', username):
+            flash('El usuario solo puede contener letras, números y guión bajo.', 'error')
             return redirect(url_for('register'))
 
         if not email:
             flash('El email es requerido.', 'error')
             return redirect(url_for('register'))
 
-        if not is_valid_email(email):
-            flash('El email no tiene un formato válido.', 'error')
+        is_valid_email_result, email_error = validators.validate_email(email)
+        if not is_valid_email_result:
+            flash(email_error, 'error')
             return redirect(url_for('register'))
         
         if not password or len(password) < 6:
             flash('La contraseña debe tener al menos 6 caracteres.', 'error')
+            return redirect(url_for('register'))
+
+        if not re.search(r'[A-Za-z]', password) or not re.search(r'[0-9]', password):
+            flash('La contraseña debe contener al menos una letra y un número.', 'error')
             return redirect(url_for('register'))
         
         # 🛡️ VALIDACIÓN DE SEGURIDAD CRÍTICA (Backend)
@@ -414,6 +401,14 @@ def register():
         # ✅ VALIDACIÓN: Profesional requiere matrícula
         if role == 'professional' and not license_number:
             flash('El número de matrícula es requerido para profesionales.', 'error')
+            return redirect(url_for('register'))
+
+        if role == 'professional' and (len(license_number) < 3 or len(license_number) > 50):
+            flash('El número de matrícula debe tener entre 3 y 50 caracteres.', 'error')
+            return redirect(url_for('register'))
+
+        if role == 'professional' and not re.match(r'^[a-zA-Z0-9\-]+$', license_number):
+            flash('El número de matrícula contiene caracteres no válidos.', 'error')
             return redirect(url_for('register'))
 
         conn = get_db_connection()
@@ -447,6 +442,7 @@ def register():
 
 # --- RUTA DE LOGIN ---
 @app.route('/login', methods=['GET', 'POST'])
+@rate_limit.check_rate_limit(limit=5, window=60)
 def login():
     if request.method == 'POST':
         username = request.form.get('username')
@@ -537,7 +533,33 @@ def submit_lead():
             if not is_valid:
                 return jsonify({"status": "error", "message": error}), 400
 
+        # Validar campos requeridos
+        lead_type = data.get('type')
+        if not lead_type:
+            return jsonify({"status": "error", "message": "El tipo de operación es requerido."}), 400
+        
+        zone = data.get('zone')
+        if not zone:
+            return jsonify({"status": "error", "message": "La zona es requerida."}), 400
+        
+        budget = data.get('budget')
+        if not budget:
+            return jsonify({"status": "error", "message": "El presupuesto es requerido."}), 400
+        
         property_type = data.get('property_type', 'departamento')
+        VALID_PROPERTY_TYPES = ['departamento', 'casa', 'duplex', 'penthouse', 'local_comercial']
+        if property_type not in VALID_PROPERTY_TYPES:
+            return jsonify({"status": "error", "message": "Tipo de propiedad no válido."}), 400
+
+        VALID_CURRENCIES = ['ARG', 'USD', 'EUR']
+        currency = data.get('currency', 'ARG')
+        if currency not in VALID_CURRENCIES:
+            return jsonify({"status": "error", "message": "Moneda no válida."}), 400
+
+        VALID_LEAD_TYPES = ['Comprar Propiedad', 'Remodelación Integral', 'Construir desde Cero']
+        if lead_type not in VALID_LEAD_TYPES:
+            return jsonify({"status": "error", "message": "Tipo de operación no válido."}), 400
+
         try:
             land_area = int(data.get('land_area') or 0)
             built_area = int(data.get('built_area') or 0)
@@ -559,10 +581,10 @@ def submit_lead():
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             data.get('type'),
-            data.get('property_type', 'departamento'),
-            data.get('zone'),
-            data.get('budget'),
-            data.get('currency', 'ARG'),
+            property_type,
+            zone,
+            budget,
+            currency,
             data.get('phone'),
             email,
             data.get('floor_block', ''),
@@ -633,6 +655,9 @@ def invalidate_filter_cache():
     """Invalida la caché de opciones de filtro."""
     filter_cache.invalidate()
     return jsonify({"status": "success", "message": "Caché invalidada"})
+
+
+@app.route('/api/leads/stats', methods=['GET'])
 def budget_stats():
     """Retorna estadísticas de presupuesto en formato JSON"""
     stats = get_budget_stats_from_db()
@@ -787,66 +812,71 @@ def download_lead_pdf(lead_id):
     if not lead:
         return jsonify({"status": "error", "message": "Lead no encontrado"}), 404
 
-    def safe_text(value):
-        """Convert values to text and remove unsupported Unicode characters"""
+    lead = dict(lead)
+
+    def pdf_safe(value):
+        """Convert values to ASCII-only text safe for FPDF"""
         if value is None:
             return ''
         text = str(value)
-        # Replace special characters not supported by FPDF
         replacements = {
-            '€': 'EUR',
-            '£': 'GBP',
-            '¥': 'JPY',
-            '—': '-',
-            '–': '-',
-            '•': '-',
-            '√': 'sqrt',
-            '×': 'x',
-            '÷': '/',
-            '™': 'TM',
-            '©': '(c)',
-            '®': '(R)',
-            '…': '...',
-            'á': 'a', 'é': 'e', 'í': 'i', 'ó': 'o', 'ú': 'u',
-            'à': 'a', 'è': 'e', 'ì': 'i', 'ò': 'o', 'ù': 'u',
-            'ä': 'a', 'ë': 'e', 'ï': 'i', 'ö': 'o', 'ü': 'u',
-            'ã': 'a', 'õ': 'o', 'ñ': 'n',
-            'Á': 'A', 'É': 'E', 'Í': 'I', 'Ó': 'O', 'Ú': 'U',
-            'À': 'A', 'È': 'E', 'Ì': 'I', 'Ò': 'O', 'Ù': 'U',
-            'Ä': 'A', 'Ë': 'E', 'Ï': 'I', 'Ö': 'O', 'Ü': 'U',
-            'Ã': 'A', 'Õ': 'O', 'Ñ': 'N',
-            'ç': 'c', 'Ç': 'C',
-            'ß': 'ss',
-            '°': 'deg',
-            '²': '2', '³': '3',
+            '\u20ac': 'EUR',
+            '\u00a3': 'GBP',
+            '\u00a5': 'JPY',
+            '\u2014': '-',
+            '\u2013': '-',
+            '\u2022': '-',
+            '\u221a': 'sqrt',
+            '\u00d7': 'x',
+            '\u00f7': '/',
+            '\u2122': 'TM',
+            '\u00a9': '(c)',
+            '\u00ae': '(R)',
+            '\u2026': '...',
+            '\u00b2': '2',
+            '\u00b3': '3',
+            '\u00b0': 'deg',
         }
         for old, new in replacements.items():
             text = text.replace(old, new)
-        # Remove any remaining non-ASCII characters
-        text = ''.join(char if ord(char) < 128 else '?' for char in text)
-        return text
+        accents = {
+            '\u00e1': 'a', '\u00e9': 'e', '\u00ed': 'i', '\u00f3': 'o', '\u00fa': 'u',
+            '\u00e0': 'a', '\u00e8': 'e', '\u00ec': 'i', '\u00f2': 'o', '\u00f9': 'u',
+            '\u00e4': 'a', '\u00eb': 'e', '\u00ef': 'i', '\u00f6': 'o', '\u00fc': 'u',
+            '\u00e3': 'a', '\u00f5': 'o', '\u00f1': 'n',
+            '\u00c1': 'A', '\u00c9': 'E', '\u00cd': 'I', '\u00d3': 'O', '\u00da': 'U',
+            '\u00c0': 'A', '\u00c8': 'E', '\u00cc': 'I', '\u00d2': 'O', '\u00d9': 'U',
+            '\u00c4': 'A', '\u00cb': 'E', '\u00cf': 'I', '\u00d6': 'O', '\u00dc': 'U',
+            '\u00c3': 'A', '\u00d5': 'O', '\u00d1': 'N',
+            '\u00e7': 'c', '\u00c7': 'C',
+            '\u00df': 'ss',
+        }
+        for old, new in accents.items():
+            text = text.replace(old, new)
+        return ''.join(c if ord(c) < 128 else '?' for c in text)
+
+    def pdf_val(value, default='-'):
+        """Return safe text or default for display"""
+        text = pdf_safe(value)
+        return text if text else default
 
     pdf = FPDF()
     pdf.add_page()
     pdf.set_auto_page_break(auto=True, margin=15)
 
-    # Definir colores (midnight: #000410, gold: #735A3A)
-    midnight = (0, 4, 16)  # RGB aproximado
+    midnight = (0, 4, 16)
     gold = (115, 90, 58)
 
-    # Título principal
-    pdf.set_font('Times', 'BI', 20)  # Serif italic bold
+    pdf.set_font('Times', 'BI', 20)
     pdf.set_text_color(*midnight)
     pdf.cell(0, 15, 'ArchEstate - Detalle de Lead', ln=True, align='C')
     pdf.ln(5)
 
-    # Subtítulo
     pdf.set_font('Helvetica', '', 10)
-    pdf.set_text_color(100, 100, 100)  # Gris
-    pdf.cell(0, 8, f'Lead #{lead["id"]} - Información completa enviada por el cliente', ln=True, align='C')
+    pdf.set_text_color(100, 100, 100)
+    pdf.cell(0, 8, f'Lead #{lead["id"]} - Informacion completa enviada por el cliente', ln=True, align='C')
     pdf.ln(10)
 
-    # Función para sección con fondo
     def section_header(title):
         pdf.set_fill_color(*gold)
         pdf.set_text_color(255, 255, 255)
@@ -856,72 +886,72 @@ def download_lead_pdf(lead_id):
         pdf.set_font('Helvetica', '', 10)
         pdf.ln(2)
 
-    # Sección: Información Principal
-    section_header('Tipo de Operación')
-    pdf.cell(0, 6, safe_text(lead['type']), ln=True)
+    section_header('Tipo de Operacion')
+    pdf.cell(0, 6, pdf_val(lead['type']), ln=True)
 
-    section_header('Zona Geográfica')
-    pdf.cell(0, 6, safe_text(lead['zone']), ln=True)
+    section_header('Zona Geografica')
+    pdf.cell(0, 6, pdf_val(lead['zone']), ln=True)
 
     section_header('Presupuesto')
-    budget_symbol = 'US$' if lead['currency'] == 'USD' else '€' if lead['currency'] == 'EUR' else '$'
-    pdf.cell(0, 6, f"{budget_symbol}{safe_text(lead['budget'])}", ln=True)
+    budget_symbol = 'USD' if lead['currency'] == 'USD' else 'EUR' if lead['currency'] == 'EUR' else '$'
+    pdf.cell(0, 6, f"{budget_symbol} {pdf_val(lead['budget'])}", ln=True)
 
-    section_header('Estilo Arquitectónico')
-    pdf.cell(0, 6, safe_text(lead['architectural_style']) or 'No especificado', ln=True)
+    section_header('Estilo Arquitectonico')
+    pdf.cell(0, 6, pdf_val(lead.get('architectural_style'), 'No especificado'), ln=True)
 
-    # Contacto
     section_header('Contacto Directo')
-    pdf.cell(0, 6, f"Email: {safe_text(lead['email'])}", ln=True)
-    pdf.cell(0, 6, f"Telefono: {safe_text(lead['phone'])}", ln=True)
+    pdf.cell(0, 6, f"Email: {pdf_val(lead['email'])}", ln=True)
+    pdf.cell(0, 6, f"Telefono: {pdf_val(lead['phone'])}", ln=True)
 
     section_header('Registrado')
-    pdf.cell(0, 6, safe_text(convert_to_argentina_time(lead['timestamp'])), ln=True)
+    pdf.cell(0, 6, pdf_val(convert_to_argentina_time(lead['timestamp'])), ln=True)
     pdf.ln(5)
 
-    # Sección: Especificaciones Técnicas
-    section_header('Especificaciones Técnicas')
+    section_header('Especificaciones Tecnicas')
 
-    # Grid-like for bedrooms, bathrooms, etc.
     pdf.set_font('Helvetica', 'B', 10)
     pdf.cell(60, 8, 'Habitaciones:', border=1)
-    pdf.cell(0, 8, safe_text(lead['bedrooms']) if lead['bedrooms'] else '-', ln=True, border=1)
+    pdf.cell(0, 8, pdf_val(lead['bedrooms']), ln=True, border=1)
 
-    pdf.cell(60, 8, 'Baños:', border=1)
-    pdf.cell(0, 8, safe_text(lead['bathrooms']) if lead['bathrooms'] else '-', ln=True, border=1)
+    pdf.cell(60, 8, 'Banios:', border=1)
+    pdf.cell(0, 8, pdf_val(lead['bathrooms']), ln=True, border=1)
 
-    if safe_text(lead['property_type']).lower() == 'casa':
+    prop_type = pdf_safe(lead.get('property_type', '')).lower()
+    if prop_type == 'casa':
         pdf.cell(60, 8, 'Metros de Terreno:', border=1)
-        pdf.cell(0, 8, f"{safe_text(lead['land_area'])} m²" if lead['land_area'] else '-', ln=True, border=1)
+        pdf.cell(0, 8, f"{pdf_val(lead['land_area'])} m2" if lead.get('land_area') else '-', ln=True, border=1)
     else:
-        pdf.cell(60, 8, 'Metros Útiles:', border=1)
-        pdf.cell(0, 8, f"{safe_text(lead['usable_m2'])} m²" if lead['usable_m2'] else '-', ln=True, border=1)
+        pdf.cell(60, 8, 'Metros Utiles:', border=1)
+        pdf.cell(0, 8, f"{pdf_val(lead['usable_m2'])} m2" if lead.get('usable_m2') else '-', ln=True, border=1)
 
     pdf.ln(5)
 
-    # Extras y Comodidades
     section_header('Extras y Comodidades')
-    if lead['amenities']:
-        for amenity in safe_text(lead['amenities']).split(','):
-            pdf.cell(0, 6, f"- {amenity.strip()}", ln=True)
+    amenities = lead.get('amenities', '')
+    if amenities and str(amenities).strip():
+        for amenity in pdf_safe(amenities).split(','):
+            stripped = amenity.strip()
+            if stripped:
+                pdf.cell(0, 6, f"- {stripped}", ln=True)
     else:
         pdf.cell(0, 6, 'No especificadas', ln=True)
 
-    # Detalles específicos por tipo
-    if safe_text(lead['property_type']).lower() == 'departamento':
+    if prop_type == 'departamento':
         section_header('Detalles del Departamento')
-        pdf.cell(0, 6, f"Piso / Bloque: {safe_text(lead['floor_block']) or 'No especificado'}", ln=True)
-        pdf.cell(0, 6, f"Metros Útiles: {safe_text(lead['usable_m2']) if lead['usable_m2'] else 'No especificado'} m²", ln=True)
-        pdf.cell(0, 6, f"Ascensor: {safe_text(lead['elevator']) or 'No especificado'}", ln=True)
+        pdf.cell(0, 6, f"Piso / Bloque: {pdf_val(lead.get('floor_block'), 'No especificado')}", ln=True)
+        pdf.cell(0, 6, f"Metros Utiles: {pdf_val(lead.get('usable_m2'), 'No especificado')} m2", ln=True)
+        pdf.cell(0, 6, f"Ascensor: {pdf_val(lead.get('elevator'), 'No especificado')}", ln=True)
     else:
         section_header('Detalles de la Propiedad')
-        pdf.cell(0, 6, f"Superficie de Terreno: {safe_text(lead['land_area']) if lead['land_area'] else 'No especificado'} m²", ln=True)
-        pdf.cell(0, 6, f"Superficie Construida: {safe_text(lead['built_area']) if lead['built_area'] else 'No especificado'} m²", ln=True)
-        pdf.cell(0, 6, f"Piscina: {safe_text(lead['pool']) or 'No especificado'}", ln=True)
+        pdf.cell(0, 6, f"Superficie de Terreno: {pdf_val(lead.get('land_area'), 'No especificado')} m2", ln=True)
+        pdf.cell(0, 6, f"Superficie Construida: {pdf_val(lead.get('built_area'), 'No especificado')} m2", ln=True)
+        pdf.cell(0, 6, f"Piscina: {pdf_val(lead.get('pool'), 'No especificado')}", ln=True)
 
     # Generar el PDF
     pdf_output = pdf.output(dest='S')
-    
+    if isinstance(pdf_output, str):
+        pdf_output = pdf_output.encode('latin-1')
+
     # Crear buffer con los bytes del PDF
     buffer = io.BytesIO(pdf_output)
     buffer.seek(0)
@@ -1119,6 +1149,7 @@ def get_professionals_api():
 
 
 @app.route('/api/admin/professional/<int:pro_id>/status', methods=['POST'])
+@rate_limit.check_rate_limit(limit=10, window=60)
 @admin_required
 def update_pro_status(pro_id):
     """Actualiza el estado de un profesional en la BD y registra la acción"""
@@ -1253,6 +1284,7 @@ def get_doc_status():
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 MB
 
 @app.route('/api/professional/upload', methods=['POST'])
+@rate_limit.check_rate_limit(limit=5, window=60)
 @professional_required
 def upload_professional_doc():
     if 'document' not in request.files:
@@ -1266,6 +1298,11 @@ def upload_professional_doc():
         return jsonify({
             "error": "Tipo de archivo no permitido. Usá PDF, JPG o PNG."
         }), 415
+
+    # Validar MIME type real (magic bytes)
+    mime_valid, detected_ext, mime_error = utils.validate_mime_type(file, file.filename)
+    if not mime_valid:
+        return jsonify({"error": mime_error}), 415
 
     # Validar tamaño (leer en memoria para chequear)
     file.seek(0, 2)          # ir al final
@@ -1282,21 +1319,25 @@ def upload_professional_doc():
     os.makedirs(upload_dir, exist_ok=True)
 
     # Eliminar documento anterior si existe
-    conn         = get_db_connection()
-    prev_user    = conn.execute('SELECT doc_path FROM users WHERE id = ?', (session['user_id'],)).fetchone()
-    if prev_user and prev_user['doc_path']:
-        prev_path = os.path.join(upload_dir, prev_user['doc_path'])
-        if os.path.exists(prev_path):
-            try:
-                os.remove(prev_path)
-            except Exception:
-                pass  # No bloquear el flujo si falla el borrado
+    conn = None
+    try:
+        conn = get_db_connection()
+        prev_user = conn.execute('SELECT doc_path FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+        if prev_user and prev_user['doc_path']:
+            prev_path = os.path.join(upload_dir, prev_user['doc_path'])
+            if os.path.exists(prev_path):
+                try:
+                    os.remove(prev_path)
+                except Exception:
+                    pass  # No bloquear el flujo si falla el borrado
 
-    file.save(os.path.join(upload_dir, filename))
+        file.save(os.path.join(upload_dir, filename))
 
-    conn.execute('UPDATE users SET doc_path = ? WHERE id = ?', (filename, session['user_id']))
-    conn.commit()
-    conn.close()
+        conn.execute('UPDATE users SET doc_path = ? WHERE id = ?', (filename, session['user_id']))
+        conn.commit()
+    finally:
+        if conn:
+            conn.close()
 
     log_action("Subida de Documento", f"Usuario ID: {session['user_id']}")
 
@@ -1311,10 +1352,10 @@ def upload_professional_doc():
 @app.route('/admin/download_doc/<int:user_id>')
 @admin_required 
 def download_professional_doc(user_id):
+    conn = None
     try:
         conn = get_db_connection()
         user = conn.execute('SELECT doc_path FROM users WHERE id = ?', (user_id,)).fetchone()
-        conn.close()
 
         if not user or not user['doc_path']:
             return "El profesional no ha subido ningún documento aún.", 404
@@ -1332,16 +1373,19 @@ def download_professional_doc(user_id):
 
     except Exception as e:
         return f"Error interno: {str(e)}", 500
+    finally:
+        if conn:
+            conn.close()
 
 
 # --- RUTA PARA QUE EL PROFESIONAL DESCARGUE SU PROPIO DOC ---
 @app.route('/profesional/download_doc')
 @professional_required
 def download_own_doc():
+    conn = None
     try:
         conn = get_db_connection()
         user = conn.execute('SELECT doc_path FROM users WHERE id = ?', (session['user_id'],)).fetchone()
-        conn.close()
 
         if not user or not user['doc_path']:
             flash('No has subido ningún documento aún.', 'error')
@@ -1362,6 +1406,9 @@ def download_own_doc():
     except Exception as e:
         flash(f'Error interno: {str(e)}', 'error')
         return redirect(url_for('professional_view'))
+    finally:
+        if conn:
+            conn.close()
 
 # --- GESTIÓN DE USUARIOS (ADMIN) ---
 
@@ -1415,6 +1462,7 @@ def get_all_users():
 
 
 @app.route('/api/admin/user/<int:user_id>/reset-password', methods=['POST'])
+@rate_limit.check_rate_limit(limit=5, window=60)
 @admin_required
 def admin_reset_password(user_id):
     """Resetea la contraseña de un usuario. Solo accesible por administradores."""
@@ -1424,22 +1472,24 @@ def admin_reset_password(user_id):
     if not new_password or len(new_password) < 6:
         return jsonify({"error": "La contraseña debe tener al menos 6 caracteres."}), 400
 
-    conn = get_db_connection()
-    user = conn.execute('SELECT username, role FROM users WHERE id = ?', (user_id,)).fetchone()
+    conn = None
+    try:
+        conn = get_db_connection()
+        user = conn.execute('SELECT username, role FROM users WHERE id = ?', (user_id,)).fetchone()
 
-    if not user:
-        conn.close()
-        return jsonify({"error": "Usuario no encontrado."}), 404
+        if not user:
+            return jsonify({"error": "Usuario no encontrado."}), 404
 
-    # Seguridad: no permitir resetear la contraseña de otro admin
-    if user['role'] == 'admin' and user_id != session.get('user_id'):
-        conn.close()
-        return jsonify({"error": "No se puede resetear la contraseña de otro administrador."}), 403
+        # Seguridad: no permitir resetear la contraseña de otro admin
+        if user['role'] == 'admin' and user_id != session.get('user_id'):
+            return jsonify({"error": "No se puede resetear la contraseña de otro administrador."}), 403
 
-    conn.execute('UPDATE users SET hash = ? WHERE id = ?',
-                 (generate_password_hash(new_password), user_id))
-    conn.commit()
-    conn.close()
+        conn.execute('UPDATE users SET hash = ? WHERE id = ?',
+                     (generate_password_hash(new_password), user_id))
+        conn.commit()
+    finally:
+        if conn:
+            conn.close()
 
     log_action("Reset de Contraseña", f"Usuario: {user['username']} (ID: {user_id})")
 
@@ -1450,6 +1500,7 @@ def admin_reset_password(user_id):
     
     
 @app.route('/api/admin/user/<int:user_id>/set-active', methods=['POST'])
+@rate_limit.check_rate_limit(limit=10, window=60)
 @admin_required
 def admin_set_user_active(user_id):
     """Da de baja o reactiva una cuenta de usuario. Solo admins. No aplica a otros admins."""
@@ -1459,26 +1510,27 @@ def admin_set_user_active(user_id):
     if new_state not in (True, False):
         return jsonify({"error": "Estado inválido."}), 400
 
-    conn = get_db_connection()
-    user = conn.execute('SELECT username, role FROM users WHERE id = ?', (user_id,)).fetchone()
+    conn = None
+    try:
+        conn = get_db_connection()
+        user = conn.execute('SELECT username, role FROM users WHERE id = ?', (user_id,)).fetchone()
 
-    if not user:
-        conn.close()
-        return jsonify({"error": "Usuario no encontrado."}), 404
+        if not user:
+            return jsonify({"error": "Usuario no encontrado."}), 404
 
-    # Protección: no se puede dar de baja a otro administrador
-    if user['role'] == 'admin':
-        conn.close()
-        return jsonify({"error": "No se puede dar de baja a un administrador."}), 403
+        # Protección: no se puede dar de baja a otro administrador
+        if user['role'] == 'admin':
+            return jsonify({"error": "No se puede dar de baja a un administrador."}), 403
 
-    # Protección: un admin no se da de baja a sí mismo
-    if user_id == session.get('user_id'):
-        conn.close()
-        return jsonify({"error": "No podés darte de baja a vos mismo."}), 403
+        # Protección: un admin no se da de baja a sí mismo
+        if user_id == session.get('user_id'):
+            return jsonify({"error": "No podés darte de baja a vos mismo."}), 403
 
-    conn.execute('UPDATE users SET is_active = ? WHERE id = ?', (1 if new_state else 0, user_id))
-    conn.commit()
-    conn.close()
+        conn.execute('UPDATE users SET is_active = ? WHERE id = ?', (1 if new_state else 0, user_id))
+        conn.commit()
+    finally:
+        if conn:
+            conn.close()
 
     action  = "Reactivación de Cuenta" if new_state else "Baja de Cuenta"
     message = f"Usuario '{user['username']}' {'reactivado' if new_state else 'dado de baja'} correctamente."
@@ -1488,6 +1540,7 @@ def admin_set_user_active(user_id):
 
 
 @app.route('/api/user/update-phone', methods=['POST'])
+@rate_limit.check_rate_limit(limit=10, window=60)
 def update_user_phone():
     """Actualiza el teléfono del usuario logueado."""
     if 'user_id' not in session:
@@ -1498,6 +1551,10 @@ def update_user_phone():
 
     if not phone:
         return jsonify({"error": "El teléfono no puede estar vacío."}), 400
+
+    is_valid, error = validators.validate_phone(phone)
+    if not is_valid:
+        return jsonify({"error": error}), 400
 
     conn = None
     try:
