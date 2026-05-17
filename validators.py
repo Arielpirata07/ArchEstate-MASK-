@@ -52,8 +52,8 @@ def validate_email(email):
 
 def validate_phone(phone):
     """
-    Validación de teléfono argentino.
-    Formatos aceptados: 11XXXXXXXX, +54XXXXXXXXXX, 0XXXXXXXXX, XXXXXXXXX
+    Validación de teléfono con código de país.
+    Formatos aceptados: +54 9 11 XXXX XXXX, +598 XX XXXX XXXX, 11XXXXXXXX, etc.
     Retorna (is_valid, error_message)
     """
     if not phone or not isinstance(phone, str):
@@ -63,22 +63,10 @@ def validate_phone(phone):
 
     phone_digits = re.sub(r'[^\d]', '', phone)
 
-    if len(phone_digits) < 8 or len(phone_digits) > 13:
-        return False, "Teléfono debe tener entre 8 y 13 dígitos"
+    if len(phone_digits) < 8 or len(phone_digits) > 15:
+        return False, "Teléfono debe tener entre 8 y 15 dígitos"
 
-    if len(phone_digits) == 10 and phone_digits.startswith('11'):
-        return True, None
-
-    if len(phone_digits) == 11 and phone_digits.startswith('549'):
-        return True, None
-
-    if len(phone_digits) == 9:
-        return True, None
-
-    if len(phone_digits) == 8:
-        return True, None
-
-    return False, "Formato de teléfono argentino inválido"
+    return True, None
 
 
 def validate_budget(amount):
@@ -104,13 +92,13 @@ def validate_budget(amount):
 def validate_zone(zone):
     """
     Validación de zona.
-    Debe ser una zona válida de la lista o cadena no vacía.
+    Acepta cualquier texto no vacío entre 2 y 100 caracteres.
     Retorna (is_valid, error_message)
     """
     if not zone or not isinstance(zone, str):
         return False, "Zona es requerida"
 
-    zone = zone.strip().lower()
+    zone = zone.strip()
 
     if len(zone) < 2:
         return False, "Zona demasiado corta"
@@ -118,10 +106,4 @@ def validate_zone(zone):
     if len(zone) > 100:
         return False, "Zona demasiado larga"
 
-    if zone in VALID_ZONES:
-        return True, None
-
-    if re.match(r'^[a-z][a-z0-9_\s]*$', zone):
-        return True, None
-
-    return False, f"Zona '{zone}' no es válida"
+    return True, None

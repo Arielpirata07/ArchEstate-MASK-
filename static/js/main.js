@@ -92,7 +92,7 @@ function validateEmail(val) {
 function validatePhone(val) {
     if (!val) return false;
     const phoneDigits = val.replace(/\D/g, '');
-    const isValid = phoneDigits.length >= 8 && phoneDigits.length <= 13;
+    const isValid = phoneDigits.length >= 8 && phoneDigits.length <= 15;
     const errorEl = document.getElementById('phone-error');
     const inputEl = document.getElementById('phone-input');
     if (!errorEl || !inputEl) return isValid;
@@ -116,6 +116,25 @@ function validateBudget(val) {
     const isValid = !isNaN(num) && num > 0 && num <= 1000000000000;
     const errorEl = document.getElementById('budget-error');
     const inputEl = document.getElementById('budget-input');
+    if (!errorEl || !inputEl) return isValid;
+    if (!isValid && val.length > 0) {
+        errorEl.classList.remove('hidden');
+        inputEl.classList.add('border-rose-300');
+    } else {
+        errorEl.classList.add('hidden');
+        inputEl.classList.remove('border-rose-300');
+    }
+    return isValid;
+}
+
+/**
+ * Validación de Zona (texto libre)
+ */
+function validateZone(val) {
+    if (!val) return false;
+    const isValid = val.trim().length >= 2 && val.trim().length <= 100;
+    const errorEl = document.getElementById('zone-error');
+    const inputEl = document.getElementById('zone-input');
     if (!errorEl || !inputEl) return isValid;
     if (!isValid && val.length > 0) {
         errorEl.classList.remove('hidden');
@@ -162,8 +181,17 @@ function initUserForm() {
             const data = Object.fromEntries(formData.entries());
 
             // Recolectar amenities seleccionadas
-            const amenitiesCheckboxes = document.querySelectorAll('input[name="amenities_values"]:checked');
+            const amenitiesCheckboxes = document.querySelectorAll('input[name="amenities"]:checked');
             data.amenities = Array.from(amenitiesCheckboxes).map(cb => cb.value).join(', ');
+
+            // Combinar código de país con teléfono
+            const countryCodeSelect = document.getElementById('country-code-select');
+            const phoneInput = document.getElementById('phone-input');
+            if (countryCodeSelect && phoneInput && phoneInput.value) {
+                const countryCode = countryCodeSelect.value;
+                const phone = phoneInput.value.trim();
+                data.phone = `${countryCode} ${phone}`;
+            }
 
             // Validación de área para casas
             const landArea = parseInt(data.land_area || '0', 10);
@@ -303,16 +331,33 @@ function toggleInfinityPool() {
 const CITY_SUGGESTIONS = [
     { city: 'Córdoba', country: 'Argentina' },
     { city: 'Córdoba', country: 'España' },
-    { city: 'Madrid', country: 'España' },
-    { city: 'Barcelona', country: 'España' },
+    { city: 'Buenos Aires', country: 'Argentina' },
+    { city: 'Rosario', country: 'Argentina' },
+    { city: 'Mendoza', country: 'Argentina' },
+    { city: 'Mar del Plata', country: 'Argentina' },
+    { city: 'Salta', country: 'Argentina' },
     { city: 'Villa General Belgrano', country: 'Argentina' },
     { city: 'Mina Clavero', country: 'Argentina' },
     { city: 'Merlo', country: 'Argentina' },
     { city: 'San Luis Capital', country: 'Argentina' },
     { city: 'Santa Rosa de Calamuchita', country: 'Argentina' },
+    { city: 'Madrid', country: 'España' },
+    { city: 'Barcelona', country: 'España' },
+    { city: 'Sevilla', country: 'España' },
+    { city: 'Valencia', country: 'España' },
     { city: 'Lisboa', country: 'Portugal' },
     { city: 'Santiago', country: 'Chile' },
-    { city: 'Punta del Este', country: 'Uruguay' }
+    { city: 'Valparaíso', country: 'Chile' },
+    { city: 'Punta del Este', country: 'Uruguay' },
+    { city: 'Montevideo', country: 'Uruguay' },
+    { city: 'São Paulo', country: 'Brasil' },
+    { city: 'Río de Janeiro', country: 'Brasil' },
+    { city: 'Miami', country: 'Estados Unidos' },
+    { city: 'Nueva York', country: 'Estados Unidos' },
+    { city: 'Los Ángeles', country: 'Estados Unidos' },
+    { city: 'Ciudad de México', country: 'México' },
+    { city: 'Bogotá', country: 'Colombia' },
+    { city: 'Lima', country: 'Perú' }
 ];
 
 const ARCHITECTURAL_STYLES = [
@@ -344,9 +389,17 @@ function initZoneAutocomplete() {
 
     if (!zoneInput || !suggestions) return;
 
-    const renderSuggestions = (items) => {
+    const renderSuggestions = (items, query) => {
+        if (!items.length && query.length > 0) {
+            suggestions.innerHTML = `<li class="cursor-pointer px-4 py-3 border-b border-slate-100 hover:bg-slate-50" data-value="${query}">
+                        <strong class="text-midnight">Usar: ${query}</strong><span class="ml-2 text-[11px] text-midnight/60">(texto libre)</span>
+                    </li>`;
+            suggestions.classList.remove('hidden');
+            return;
+        }
+
         if (!items.length) {
-            suggestions.innerHTML = '<li class="px-4 py-3 text-sm text-midnight/60">Sin coincidencias</li>';
+            suggestions.innerHTML = '<li class="px-4 py-3 text-sm text-midnight/60">Escribe una zona</li>';
             suggestions.classList.remove('hidden');
             return;
         }
@@ -364,7 +417,7 @@ function initZoneAutocomplete() {
         const items = query.length === 0
             ? CITY_SUGGESTIONS.slice(0, 5)
             : CITY_SUGGESTIONS.filter(item => item.city.toLowerCase().includes(query) || item.country.toLowerCase().includes(query));
-        renderSuggestions(items);
+        renderSuggestions(items, zoneInput.value.trim());
     };
 
     zoneInput.addEventListener('input', update);
