@@ -1,17 +1,40 @@
+# Python
 .venv/
-database.db
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-*.db
-*.sqlite3
-.DS_Store
+
+# Environment
 .env
 .env.example
+.env-example
+.flaskenv
+
+# Database
+*.db
+*.sqlite3
+database.db
+instance/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
 .idea/
 .vscode/
+*.sublime-*
+
+# Logs
 *.log
+
+# Uploads (user-generated content)
+static/uploads/*
+!static/uploads/docs/.gitkeep
+
+# AI/Agent files (project-specific)
 agents.md
+AGENTS.md
 .agents/
 skills-lock.json

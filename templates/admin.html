@@ -1,8 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}Administración | ArchEstate{% endblock %}
+{% block title %}Panel Admin | ArchEstate{% endblock %}
 
+{% block meta_description %}Panel de administracion de ArchEstate para gestion de profesionales y estadisticas.{% endblock %}
 {% block head %}
+<meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
 {% endblock %}
 
@@ -282,35 +284,43 @@
                 </div>
             </div>
 
-            <!-- Log de Auditoría -->
+            <!-- Log de Auditoria - Timeline -->
             <div class="space-y-6">
                 <div class="bg-white rounded-lg shadow-xl overflow-hidden flex flex-col h-full max-h-[600px]">
                     <div class="p-4 bg-midnight text-white border-b border-gold/20 flex items-center justify-between">
-                        <h3 class="text-xs font-bold uppercase tracking-widest text-gold-light">Log de Auditoría</h3>
+                        <h3 class="text-xs font-bold uppercase tracking-widest text-gold-light">Log de Auditoria</h3>
                         <i data-lucide="shield" class="w-4 h-4 text-gold/50"></i>
                     </div>
-                    <div class="flex-grow overflow-y-auto p-4 space-y-4 bg-paper-dark/30">
+                    <div class="flex-grow overflow-y-auto p-4 bg-paper-dark/30">
+                        <div class="relative border-l-2 border-gold/20 ml-4 space-y-6">
                         {% for entry in audit_log %}
-                        <div class="p-3 bg-white border border-midnight/5 rounded shadow-sm space-y-2 audit-entry">
-                            <div class="flex justify-between items-start">
-                                <span class="text-[9px] font-bold uppercase tracking-tighter 
-                                    {% if entry.action == 'Aprobación' %}text-emerald-600
-                                    {% elif entry.action == 'Rechazo' %}text-rose-600
-                                    {% else %}text-gold{% endif %}">
-                                    {{ entry.action }}
-                                </span>
-                                <span class="text-[8px] text-midnight/30 font-mono">{{ entry.timestamp }}</span>
-                            </div>
-                            <div class="text-xs font-medium text-midnight">{{ entry.target }}</div>
-                            <div class="text-[9px] text-midnight/40 flex items-center gap-1">
-                                <i data-lucide="user" class="w-2 h-2"></i>
-                                {{ entry.admin }}
+                        <div class="relative pl-6 audit-entry">
+                            <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full border-2
+                                {% if entry.action == 'Aprobación' %}border-emerald-500 bg-emerald-50
+                                {% elif entry.action == 'Rechazo' %}border-rose-500 bg-rose-50
+                                {% else %}border-gold bg-gold/10{% endif %}"></div>
+                            <div class="p-3 bg-white border border-midnight/5 rounded shadow-sm space-y-2">
+                                <div class="flex justify-between items-start">
+                                    <span class="text-[9px] font-bold uppercase tracking-tighter
+                                        {% if entry.action == 'Aprobación' %}text-emerald-600
+                                        {% elif entry.action == 'Rechazo' %}text-rose-600
+                                        {% else %}text-gold{% endif %}">
+                                        {{ entry.action }}
+                                    </span>
+                                    <span class="text-[8px] text-midnight/30 font-mono">{{ entry.timestamp }}</span>
+                                </div>
+                                <div class="text-xs font-medium text-midnight">{{ entry.target }}</div>
+                                <div class="text-[9px] text-midnight/40 flex items-center gap-1">
+                                    <i data-lucide="user" class="w-2 h-2"></i>
+                                    {{ entry.admin }}
+                                </div>
                             </div>
                         </div>
                         {% endfor %}
                         {% if not audit_log %}
-                        <p class="text-[10px] text-midnight/30 text-center uppercase tracking-widest font-bold pt-4">Sin registros aún</p>
+                        <p class="text-[10px] text-midnight/30 text-center uppercase tracking-widest font-bold pt-4">Sin registros aun</p>
                         {% endif %}
+                        </div>
                     </div>
                     <div class="p-3 bg-paper-dark border-t border-midnight/5 text-center">
                         <p class="text-[8px] text-midnight/30 uppercase tracking-widest font-bold">Fin del registro reciente</p>

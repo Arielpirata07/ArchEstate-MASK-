@@ -66,6 +66,10 @@ class FilterOptionsCache:
 
 filter_cache = FilterOptionsCache(ttl_seconds=300)
 
+_stats_cache = {}
+_stats_cache_ts = 0
+_STATS_TTL = 300
+
 
 @app.after_request
 def security_headers(response):
@@ -1049,7 +1053,7 @@ def download_lead_pdf(lead_id):
 @app.route('/api/leads')
 @professional_required
 def get_leads_api():
-    """API para obtener leads dinámicamente con filtros opcionales"""
+    """API para obtener leads dinamicamente con filtros opcionales y paginacion"""
     conn = None
     try:
         conn = get_db_connection()
@@ -1060,7 +1064,7 @@ def get_leads_api():
 
         professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
         if not professional or professional['status'] != 'approved':
-            return jsonify({"status": "error", "message": "Cuenta pendiente de aprobación"}), 403
+            return jsonify({"status": "error", "message": "Cuenta pendiente de aprobacion"}), 403
 
         search         = request.args.get('search', '').strip()
         type_filter    = request.args.get('type', '').strip()
@@ -1072,6 +1076,11 @@ def get_leads_api():
         currency_filter = request.args.get('currency', '').strip()
         sort_by        = request.args.get('sort', 'timestamp')
         sort_order     = request.args.get('order', 'desc')
+
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 20, type=int)
+        per_page = min(per_page, 100)
+        page = max(page, 1)
 
         BUDGET_RANGES = {
             'hasta_200k':    (0,       200000),
@@ -1132,7 +1141,43 @@ def get_leads_api():
         order = 'DESC' if sort_order.lower() == 'desc' else 'ASC'
         if order not in ('ASC', 'DESC'):
             order = 'ASC'
-        query += f' ORDER BY {sort_by} {order}, id DESC'
+
+        count_query = f'SELECT COUNT(*) FROM leads WHERE 1=1'
+        count_params = []
+        if search:
+            count_query += ' AND (zone LIKE ? OR email LIKE ? OR type LIKE ? OR budget LIKE ?)'
+            count_params.extend([search_param, search_param, search_param, search_param])
+        if type_filter:
+            count_query += ' AND type = ?'
+            count_params.append(type_filter)
+        if prop_type:
+            count_query += ' AND property_type = ?'
+            count_params.append(prop_type)
+        if zone_filter:
+            count_query += ' AND zone LIKE ?'
+            count_params.append(f'%{zone_filter}%')
+        if min_budget:
+            try:
+                count_query += " AND CAST(REPLACE(REPLACE(budget, '.', ''), ',', '') AS REAL) >= ?"
+                count_params.append(float(min_budget))
+            except ValueError:
+                pass
+        if max_budget:
+            try:
+                count_query += " AND CAST(REPLACE(REPLACE(budget, '.', ''), ',', '') AS REAL) <= ?"
+                count_params.append(float(max_budget))
+            except ValueError:
+                pass
+        if currency_filter:
+            count_query += ' AND currency = ?'
+            count_params.append(currency_filter)
+
+        total = conn.execute(count_query, count_params).fetchone()[0]
+        pages = max(1, (total + per_page - 1) // per_page)
+        offset = (page - 1) * per_page
+
+        query += f' ORDER BY {sort_by} {order}, id DESC LIMIT ? OFFSET ?'
+        params.extend([per_page, offset])
 
         leads = conn.execute(query, params).fetchall()
 
@@ -1145,7 +1190,10 @@ def get_leads_api():
         return jsonify({
             "success": True,
             "leads": leads_list,
-            "total": len(leads_list)
+            "total": total,
+            "page": page,
+            "per_page": per_page,
+            "pages": pages,
         })
     except Exception as e:
         print(f"Error en get_leads_api: {e}")
@@ -1260,30 +1308,30 @@ def update_pro_status(pro_id):
 @app.route('/api/admin/stats')
 @login_required
 def admin_stats():
-    """Retorna estadísticas agregadas para el dashboard del admin"""
+    """Retorna estadisticas agregadas para el dashboard del admin (cache 5 min)"""
+    global _stats_cache, _stats_cache_ts
+    now = time.time()
+    if _stats_cache and (now - _stats_cache_ts) < _STATS_TTL:
+        return jsonify(_stats_cache)
+
     conn = None
     try:
         conn = get_db_connection()
 
-        # Total de leads
         total_leads = conn.execute('SELECT COUNT(*) FROM leads').fetchone()[0]
 
-        # Leads por tipo de operación
         leads_by_type = conn.execute(
             'SELECT type, COUNT(*) as count FROM leads GROUP BY type ORDER BY count DESC'
         ).fetchall()
 
-        # Leads por zona (top 5)
         leads_by_zone = conn.execute(
             'SELECT zone, COUNT(*) as count FROM leads GROUP BY zone ORDER BY count DESC LIMIT 5'
         ).fetchall()
 
-        # Leads por presupuesto
         leads_by_budget = conn.execute(
             'SELECT budget, COUNT(*) as count FROM leads GROUP BY budget ORDER BY count DESC'
         ).fetchall()
 
-        # Leads por mes (últimos 6 meses)
         leads_by_month = conn.execute('''
             SELECT strftime('%Y-%m', timestamp) as month, COUNT(*) as count
             FROM leads
@@ -1292,22 +1340,19 @@ def admin_stats():
             LIMIT 6
         ''').fetchall()
 
-        # Estado de profesionales
         pros_stats = conn.execute(
             'SELECT status, COUNT(*) as count FROM professionals GROUP BY status'
         ).fetchall()
 
-        # Total de usuarios por rol
         users_by_role = conn.execute(
             'SELECT role, COUNT(*) as count FROM users GROUP BY role'
         ).fetchall()
 
-        # Acciones del log de auditoría
         audit_actions = conn.execute(
             'SELECT action, COUNT(*) as count FROM audit_log GROUP BY action ORDER BY count DESC'
         ).fetchall()
 
-        return jsonify({
+        result = {
             'total_leads': total_leads,
             'leads_by_type': [{'label': r['type'], 'value': r['count']} for r in leads_by_type],
             'leads_by_zone': [{'label': r['zone'], 'value': r['count']} for r in leads_by_zone],
@@ -1316,7 +1361,10 @@ def admin_stats():
             'pros_stats': [{'label': r['status'], 'value': r['count']} for r in pros_stats],
             'users_by_role': [{'label': r['role'], 'value': r['count']} for r in users_by_role],
             'audit_actions': [{'label': r['action'], 'value': r['count']} for r in audit_actions],
-        })
+        }
+        _stats_cache = result
+        _stats_cache_ts = now
+        return jsonify(result)
     except Exception as e:
         print(f"Error en admin_stats: {e}")
         return jsonify({"error": "Error interno"}), 500
@@ -1651,6 +1699,20 @@ def update_user_phone():
 
 # Inicializar la base de datos al arrancar
 init_db()
+
+
+@app.route('/sitemap.xml')
+def sitemap():
+    """Genera XML sitemap con URLs publicas solamente"""
+    public_urls = [
+        ('https://archestate.com/', '1.0', 'daily'),
+    ]
+    xml = ['<?xml version="1.0" encoding="UTF-8"?>']
+    xml.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+    for loc, priority, freq in public_urls:
+        xml.append(f'  <url><loc>{loc}</loc><priority>{priority}</priority><changefreq>{freq}</changefreq></url>')
+    xml.append('</urlset>')
+    return Response('\n'.join(xml), mimetype='application/xml')
 
 
 if __name__ == '__main__':

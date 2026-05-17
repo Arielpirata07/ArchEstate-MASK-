@@ -2,7 +2,9 @@
 
 {% block title %}Panel Profesional | ArchEstate{% endblock %}
 
+{% block meta_description %}Panel profesional de ArchEstate para gestionar leads y oportunidades de negocio.{% endblock %}
 {% block head %}
+<meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/professional.css') }}">
 {% endblock %}
 
@@ -98,6 +100,54 @@
 
     {% else %}
     <!-- ===== LEADS (aprobado) ===== -->
+
+    <!-- Metric Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white rounded-lg shadow p-5 border-l-4 border-gold">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Total Leads</p>
+                    <p id="metric-total" class="text-2xl font-serif text-midnight">—</p>
+                </div>
+                <div class="w-10 h-10 rounded-lg bg-gold/10 flex items-center justify-center">
+                    <i data-lucide="inbox" class="w-5 h-5 text-gold"></i>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-5 border-l-4 border-blue-400">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Nuevos</p>
+                    <p id="metric-new" class="text-2xl font-serif text-midnight">—</p>
+                </div>
+                <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
+                    <i data-lucide="sparkles" class="w-5 h-5 text-blue-500"></i>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-5 border-l-4 border-amber-400">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Contactados</p>
+                    <p id="metric-contacted" class="text-2xl font-serif text-midnight">—</p>
+                </div>
+                <div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center">
+                    <i data-lucide="phone" class="w-5 h-5 text-amber-500"></i>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white rounded-lg shadow p-5 border-l-4 border-emerald-400">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Convertidos</p>
+                    <p id="metric-converted" class="text-2xl font-serif text-midnight">—</p>
+                </div>
+                <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
+                    <i data-lucide="trending-up" class="w-5 h-5 text-emerald-500"></i>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Panel de filtros -->
     <div class="bg-white rounded-lg shadow-lg border border-midnight/5 overflow-hidden">

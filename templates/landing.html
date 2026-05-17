@@ -1,6 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}Inicio | ArchEstate{% endblock %}
+{% block title %}ArchEstate - Plataforma de Gestion Inmobiliaria{% endblock %}
+
+{% block meta_description %}ArchEstate conecta la demanda arquitectonica con los profesionales mas capacitados del sector inmobiliario. Compra, construye o remodela tu proxima propiedad.{% endblock %}
+
+{% block og_title %}ArchEstate - Plataforma de Gestion Inmobiliaria{% endblock %}
+{% block og_description %}La plataforma exclusiva que conecta la demanda arquitectonica con los profesionales mas capacitados del sector.{% endblock %}
+{% block og_url %}https://archestate.com{% endblock %}
+
+{% block canonical %}<link rel="canonical" href="https://archestate.com/">{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
@@ -15,156 +23,445 @@
     <div class="absolute bottom-20 right-10 w-18 h-18 bg-gold/5 rounded-full float-animation delay-4"></div>
 </div>
 
-<div class="flex flex-col items-center justify-center min-h-[60vh] text-center relative z-10">
-    <!-- Imagen Hero con efecto editorial y parallax -->
-    <div class="relative w-full max-w-5xl h-[300px] mb-12 rounded-xl overflow-hidden shadow-2xl parallax fade-in" data-scroll>
-        <img src="https://picsum.photos/seed/architecture/1200/600" alt="Arquitectura" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700">
-        <div class="absolute inset-0 bg-midnight/40 flex items-center justify-center">
-            <div class="text-white border border-white/20 p-8 backdrop-blur-sm bg-midnight/20 fade-in-up delay-1" data-scroll>
-                <span class="text-[10px] tracking-[0.3em] uppercase font-bold text-gold-light">Establecido en 2026</span>
-                <h2 class="text-3xl font-serif italic">The Private Ledger</h2>
+<!-- HERO SECTION -->
+<div class="relative z-10">
+    <div class="flex flex-col items-center justify-center min-h-[70vh] text-center">
+        <!-- Hero con gradiente -->
+        <div class="relative w-full max-w-5xl h-[350px] mb-12 rounded-xl overflow-hidden shadow-2xl animate-on-scroll fade-in" data-scroll>
+            <img src="https://picsum.photos/seed/architecture/1200/600" alt="Arquitectura moderna de propiedades exclusivas en ArchEstate" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700" width="1200" height="600" loading="lazy">
+            <div class="absolute inset-0 bg-gradient-to-br from-midnight/70 via-midnight-light/50 to-gold/20 flex items-center justify-center">
+                <div class="text-white border border-white/20 p-8 backdrop-blur-sm bg-midnight/30 rounded-lg fade-in-up delay-1" data-scroll>
+                    <span class="text-[10px] tracking-[0.3em] uppercase font-bold text-gold-light">Establecido en 2026</span>
+                    <h2 class="text-3xl font-serif italic">The Private Ledger</h2>
+                </div>
             </div>
+        </div>
+
+        <h1 class="text-5xl md:text-7xl font-serif mb-6 text-midnight animate-on-scroll fade-in-up delay-2" data-scroll>
+            Bienvenido a <span class="serif-italic typing-effect">ArchEstate</span>
+        </h1>
+        <p class="text-midnight/60 max-w-2xl mb-12 text-lg animate-on-scroll fade-in-up delay-3" data-scroll>
+            La plataforma exclusiva que conecta la demanda arquitectonica con los profesionales mas capacitados del sector.
+        </p>
+
+        <!-- CTA Button con pulse -->
+        <a href="{{ url_for('register') }}" class="cta-pulse inline-flex items-center gap-3 bg-gold hover:bg-midnight text-white hover:text-white px-10 py-5 rounded-lg font-bold uppercase tracking-widest text-sm transition-all shadow-2xl mb-16 animate-on-scroll fade-in-up delay-3" data-scroll>
+            <i data-lucide="rocket" class="w-5 h-5"></i>
+            Comenzar Ahora
+        </a>
+
+        <!-- Selectores de Perfil -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl animate-on-scroll fade-in-up delay-4" data-scroll>
+            <a href="{{ url_for('user_view') }}" class="bg-white p-8 rounded-lg shadow-lg border border-midnight/5 card-hover text-left group slide-in-left delay-1" data-scroll>
+                <i data-lucide="users" class="text-gold mb-4 w-8 h-8 card-icon transition-transform duration-300"></i>
+                <h3 class="text-xl font-serif mb-2 group-hover:text-gold transition-colors">Entrar como Usuario</h3>
+                <p class="text-sm text-midnight/50">Busco comprar o construir mi proxima propiedad.</p>
+            </a>
+
+            <a href="{{ url_for('professional_view') }}" class="bg-midnight text-white p-8 rounded-lg shadow-lg border border-transparent card-hover text-left group fade-in-up delay-2 pulse-glow" data-scroll>
+                <i data-lucide="building-2" class="text-gold mb-4 w-8 h-8 card-icon transition-transform duration-300"></i>
+                <h3 class="text-xl font-serif mb-2 group-hover:text-gold transition-colors">Entrar como Profesional</h3>
+                <p class="text-sm text-white/70">Soy arquitecto o agente inmobiliario buscando leads.</p>
+            </a>
+
+            <a href="{{ url_for('admin_view') }}" class="bg-paper-dark text-midnight p-8 rounded-lg shadow-lg border border-midnight/10 card-hover text-left group slide-in-right delay-3" data-scroll>
+                <i data-lucide="shield-check" class="text-midnight mb-4 w-8 h-8 card-icon transition-transform duration-300"></i>
+                <h3 class="text-xl font-serif mb-2 group-hover:text-gold transition-colors">Entrar como Administrador</h3>
+                <p class="text-sm text-midnight/50">Gestion de plataforma y validacion de profesionales.</p>
+            </a>
         </div>
     </div>
 
-    <h1 class="text-5xl md:text-6xl font-serif mb-6 text-midnight fade-in-up delay-2" data-scroll>
-        Bienvenido a <span class="serif-italic typing-effect">ArchEstate</span>
-    </h1>
-    <p class="text-midnight/60 max-w-2xl mb-12 text-lg fade-in-up delay-3" data-scroll>
-        La plataforma exclusiva que conecta la demanda arquitectónica con los profesionales más capacitados del sector.
-    </p>
-
-    <!-- Selectores de Perfil (Login Simulado) -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl fade-in-up delay-4" data-scroll>
-        <!-- Botón Usuario -->
-        <a href="{{ url_for('user_view') }}" class="bg-white p-8 rounded-lg shadow-lg border border-midnight/5 card-hover text-left group slide-in-left delay-1" data-scroll>
-            <i data-lucide="users" class="text-gold mb-4 w-8 h-8 card-icon transition-transform duration-300"></i>
-            <h3 class="text-xl font-serif mb-2 group-hover:text-gold transition-colors">Entrar como Usuario</h3>
-            <p class="text-sm text-midnight/50">Busco comprar o construir mi próxima propiedad.</p>
-        </a>
-
-        <!-- Botón Profesional -->
-        <a href="{{ url_for('professional_view') }}" class="bg-midnight text-white p-8 rounded-lg shadow-lg border border-transparent card-hover text-left group fade-in-up delay-2 pulse-glow" data-scroll>
-            <i data-lucide="building-2" class="text-gold mb-4 w-8 h-8 card-icon transition-transform duration-300"></i>
-            <h3 class="text-xl font-serif mb-2 group-hover:text-gold transition-colors">Entrar como Profesional</h3>
-            <p class="text-sm text-white/70">Soy arquitecto o agente inmobiliario buscando leads.</p>
-        </a>
-
-        <!-- Botón Administrador -->
-        <a href="{{ url_for('admin_view') }}" class="bg-paper-dark text-midnight p-8 rounded-lg shadow-lg border border-midnight/10 card-hover text-left group slide-in-right delay-3" data-scroll>
-            <i data-lucide="shield-check" class="text-midnight mb-4 w-8 h-8 card-icon transition-transform duration-300"></i>
-            <h3 class="text-xl font-serif mb-2 group-hover:text-gold transition-colors">Entrar como Administrador</h3>
-            <p class="text-sm text-midnight/50">Gestión de plataforma y validación de profesionales.</p>
-        </a>
+    <!-- Estadisticas animadas -->
+    <div class="mt-20 w-full max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center animate-on-scroll fade-in-up delay-5" data-scroll>
+        <div class="p-6">
+            <div class="text-3xl font-serif text-gold mb-2 counter" data-target="1500">0</div>
+            <div class="text-sm text-midnight/60 uppercase tracking-widest">Leads Generados</div>
+        </div>
+        <div class="p-6">
+            <div class="text-3xl font-serif text-gold mb-2 counter" data-target="250">0</div>
+            <div class="text-sm text-midnight/60 uppercase tracking-widest">Profesionales</div>
+        </div>
+        <div class="p-6">
+            <div class="text-3xl font-serif text-gold mb-2 counter" data-target="98">0</div>
+            <div class="text-sm text-midnight/60 uppercase tracking-widest">Satisfaccion %</div>
+        </div>
+        <div class="p-6">
+            <div class="text-3xl font-serif text-gold mb-2 counter" data-target="24">0</div>
+            <div class="text-sm text-midnight/60 uppercase tracking-widest">Horas Servicio</div>
+        </div>
     </div>
+
+    <!-- COMO FUNCIONA -->
+    <section class="mt-32 max-w-5xl mx-auto animate-on-scroll fade-in-up" data-scroll>
+        <h2 class="text-4xl font-serif text-center mb-4 text-midnight">Como <span class="serif-italic">Funciona</span></h2>
+        <p class="text-center text-midnight/50 mb-16 max-w-xl mx-auto">Tres simples pasos para conectar con los mejores profesionales del sector inmobiliario.</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="text-center p-8 bg-white rounded-xl shadow-lg border border-midnight/5 card-hover group">
+                <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-gold/10 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
+                    <i data-lucide="file-plus" class="w-8 h-8 text-gold"></i>
+                </div>
+                <div class="text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Paso 1</div>
+                <h3 class="text-xl font-serif mb-3">Registra tu Solicitud</h3>
+                <p class="text-sm text-midnight/50">Completa un formulario detallado con los parametros de tu proxima propiedad: zona, presupuesto y especificaciones tecnicas.</p>
+            </div>
+            <div class="text-center p-8 bg-white rounded-xl shadow-lg border border-midnight/5 card-hover group">
+                <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-gold/10 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
+                    <i data-lucide="search-check" class="w-8 h-8 text-gold"></i>
+                </div>
+                <div class="text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Paso 2</div>
+                <h3 class="text-xl font-serif mb-3">Match con Profesionales</h3>
+                <p class="text-sm text-midnight/50">Nuestro sistema filtra y asigna tu solicitud a los profesionales verificados mas adecuados para tu proyecto.</p>
+            </div>
+            <div class="text-center p-8 bg-white rounded-xl shadow-lg border border-midnight/5 card-hover group">
+                <div class="w-16 h-16 mx-auto mb-6 rounded-full bg-gold/10 flex items-center justify-center group-hover:bg-gold/20 transition-colors">
+                    <i data-lucide="handshake" class="w-8 h-8 text-gold"></i>
+                </div>
+                <div class="text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Paso 3</div>
+                <h3 class="text-xl font-serif mb-3">Contacto Directo</h3>
+                <p class="text-sm text-midnight/50">Recibi propuestas personalizadas y contacta directamente a los profesionales para concretar tu proyecto ideal.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- BENEFICIOS -->
+    <section class="mt-32 max-w-5xl mx-auto animate-on-scroll fade-in-up" data-scroll>
+        <h2 class="text-4xl font-serif text-center mb-4 text-midnight">Por que <span class="serif-italic">Elegirnos</span></h2>
+        <p class="text-center text-midnight/50 mb-16 max-w-xl mx-auto">Beneficios exclusivos para clientes y profesionales.</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="flex items-start gap-4 p-6 bg-white rounded-lg shadow border border-midnight/5 card-hover">
+                <div class="w-12 h-12 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="shield-check" class="w-6 h-6 text-emerald-600"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-serif mb-1">Profesionales Verificados</h3>
+                    <p class="text-sm text-midnight/50">Todos los profesionales pasan por un riguroso proceso de validacion de matriculas y antecedentes.</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-4 p-6 bg-white rounded-lg shadow border border-midnight/5 card-hover">
+                <div class="w-12 h-12 rounded-lg bg-blue-50 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="clock" class="w-6 h-6 text-blue-600"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-serif mb-1">Respuesta en 24 Horas</h3>
+                    <p class="text-sm text-midnight/50">Recibi las primeras propuestas de profesionales en menos de 24 horas despues de enviar tu solicitud.</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-4 p-6 bg-white rounded-lg shadow border border-midnight/5 card-hover">
+                <div class="w-12 h-12 rounded-lg bg-amber-50 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="lock" class="w-6 h-6 text-amber-600"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-serif mb-1">Datos Confidenciales</h3>
+                    <p class="text-sm text-midnight/50">Tu informacion personal esta protegida. Solo los profesionales aprobados pueden acceder a tus datos de contacto.</p>
+                </div>
+            </div>
+            <div class="flex items-start gap-4 p-6 bg-white rounded-lg shadow border border-midnight/5 card-hover">
+                <div class="w-12 h-12 rounded-lg bg-purple-50 flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="bar-chart-3" class="w-6 h-6 text-purple-600"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-serif mb-1">Dashboard Inteligente</h3>
+                    <p class="text-sm text-midnight/50">Panel de control con estadisticas en tiempo real para administradores y profesionales.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TESTIMONIOS CAROUSEL -->
+    <section class="mt-32 max-w-4xl mx-auto animate-on-scroll fade-in-up" data-scroll>
+        <h2 class="text-4xl font-serif text-center mb-4 text-midnight">Lo que Dicen <span class="serif-italic">Nuestros Usuarios</span></h2>
+        <p class="text-center text-midnight/50 mb-16">Experiencias reales de clientes y profesionales.</p>
+        <div class="relative bg-white rounded-xl shadow-xl border border-midnight/5 overflow-hidden">
+            <div id="testimonial-carousel" class="relative min-h-[200px]">
+                <div class="testimonial-slide absolute inset-0 p-10 flex flex-col items-center justify-center text-center transition-opacity duration-500 opacity-100">
+                    <div class="flex gap-1 mb-4">
+                        <i data-lucide="star" class="w-4 h-4 text-gold fill-gold"></i>
+                        <i data-lucide="star" class="w-4 h-4 text-gold fill-gold"></i>
+                        <i data-lucide="star" class="w-4 h-4 text-gold fill-gold"></i>
+                        <i data-lucide="star" class="w-4 h-4 text-gold fill-gold"></i>
+                        <i data-lucide="star" class="w-4 h-4 text-gold fill-gold"></i>
+                    </div>
+                    <p class="text-lg text-midnight/70 italic mb-6 max-w-lg">"Encontre al arquitecto perfecto para mi remodelacion en menos de 48 horas. La plataforma es intuitiva y los profesionales son de primer nivel."</p>
+                    <p class="text-sm font-bold text-midnight">Maria Gonzalez</p>
+                    <p class="text-[10px] text-midnight/40 uppercase tracking-widest">Cliente - Palermo, CABA</p>
+                </div>
+                <div class="testimonial-slide absolute inset-0 p-10 flex flex-col items-center justify-center text-center transition-opacity duration-500 opacity-0">
+                    <div class="flex gap-1 mb-4">
+                        <i data-lucide="star" class="w-4 h-4 text-gold fill-gold"></i>
+                        <i data-lucide="star" class="w-4 h-4 text-gold fill-gold"></i>
+                        <i data-lucide="star" class="w-4 h-4 text-gold fill-gold"></i>
+                        <i data-lucide="star" class="w-4 h-4 text-gold fill-gold"></i>
+                        <i data-lucide="star" class="w-4 h-4 text-gold fill-gold"></i>
+                    </div>
+                    <p class="text-lg text-midnight/70 italic mb-6 max-w-lg">"Como profesional, ArchEstate me conecto con clientes de alto perfil que buscan exactamente mis servicios. Excelente plataforma."</p>
+                    <p class="text-sm font-bold text-midnight">Carlos Rodriguez</p>
+                    <p class="text-[10px] text-midnight/40 uppercase tracking-widest">Arquitecto - Mat. 12345</p>
+                </div>
+                <div class="testimonial-slide absolute inset-0 p-10 flex flex-col items-center justify-center text-center transition-opacity duration-500 opacity-0">
+                    <div class="flex gap-1 mb-4">
+                        <i data-lucide="star" class="w-4 h-4 text-gold fill-gold"></i>
+                        <i data-lucide="star" class="w-4 h-4 text-gold fill-gold"></i>
+                        <i data-lucide="star" class="w-4 h-4 text-gold fill-gold"></i>
+                        <i data-lucide="star" class="w-4 h-4 text-gold fill-gold"></i>
+                        <i data-lucide="star" class="w-4 h-4 text-gold fill-gold"></i>
+                    </div>
+                    <p class="text-lg text-midnight/70 italic mb-6 max-w-lg">"Construimos nuestra casa desde cero gracias a los profesionales que encontramos aqui. El proceso fue transparente y eficiente."</p>
+                    <p class="text-sm font-bold text-midnight">Laura y Martin</p>
+                    <p class="text-[10px] text-midnight/40 uppercase tracking-widest">Clientes - Nordelta</p>
+                </div>
+            </div>
+            <div class="flex justify-center gap-2 pb-6">
+                <button class="testimonial-dot w-3 h-3 rounded-full bg-gold transition-all" data-index="0"></button>
+                <button class="testimonial-dot w-3 h-3 rounded-full bg-midnight/20 transition-all" data-index="1"></button>
+                <button class="testimonial-dot w-3 h-3 rounded-full bg-midnight/20 transition-all" data-index="2"></button>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ ACCORDION -->
+    <section class="mt-32 max-w-3xl mx-auto animate-on-scroll fade-in-up" data-scroll>
+        <h2 class="text-4xl font-serif text-center mb-4 text-midnight">Preguntas <span class="serif-italic">Frecuentes</span></h2>
+        <p class="text-center text-midnight/50 mb-16">Todo lo que necesitas saber sobre ArchEstate.</p>
+        <div class="space-y-3" id="faq-accordion">
+            <div class="faq-item bg-white rounded-lg shadow border border-midnight/5 overflow-hidden">
+                <button class="faq-toggle w-full p-6 text-left flex items-center justify-between hover:bg-paper transition-colors" onclick="toggleFaq(this)">
+                    <span class="font-serif text-lg text-midnight">Que es ArchEstate?</span>
+                    <i data-lucide="chevron-down" class="w-5 h-5 text-gold faq-icon transition-transform duration-300"></i>
+                </button>
+                <div class="faq-content hidden px-6 pb-6">
+                    <p class="text-sm text-midnight/60 leading-relaxed">ArchEstate es una plataforma exclusiva que conecta a personas que buscan comprar, construir o remodelar propiedades con profesionales verificados del sector inmobiliario y arquitectonico. Funciona como un intermediario seguro que garantiza la calidad de los servicios.</p>
+                </div>
+            </div>
+            <div class="faq-item bg-white rounded-lg shadow border border-midnight/5 overflow-hidden">
+                <button class="faq-toggle w-full p-6 text-left flex items-center justify-between hover:bg-paper transition-colors" onclick="toggleFaq(this)">
+                    <span class="font-serif text-lg text-midnight">Como me registro como profesional?</span>
+                    <i data-lucide="chevron-down" class="w-5 h-5 text-gold faq-icon transition-transform duration-300"></i>
+                </button>
+                <div class="faq-content hidden px-6 pb-6">
+                    <p class="text-sm text-midnight/60 leading-relaxed">Para registrarte como profesional, debes crear una cuenta seleccionando el rol "Profesional" y proporcionar tu numero de matricula profesional. Luego, sube tu documentacion (matricula, habilitacion) y nuestro equipo la validara en menos de 24 horas.</p>
+                </div>
+            </div>
+            <div class="faq-item bg-white rounded-lg shadow border border-midnight/5 overflow-hidden">
+                <button class="faq-toggle w-full p-6 text-left flex items-center justify-between hover:bg-paper transition-colors" onclick="toggleFaq(this)">
+                    <span class="font-serif text-lg text-midnight">Es gratuito para los clientes?</span>
+                    <i data-lucide="chevron-down" class="w-5 h-5 text-gold faq-icon transition-transform duration-300"></i>
+                </button>
+                <div class="faq-content hidden px-6 pb-6">
+                    <p class="text-sm text-midnight/60 leading-relaxed">Si, el registro y uso de la plataforma es completamente gratuito para los clientes. Puedes enviar todas las solicitudes que necesites sin ningun costo. Los profesionales son quienes acceden a los leads una vez verificados.</p>
+                </div>
+            </div>
+            <div class="faq-item bg-white rounded-lg shadow border border-midnight/5 overflow-hidden">
+                <button class="faq-toggle w-full p-6 text-left flex items-center justify-between hover:bg-paper transition-colors" onclick="toggleFaq(this)">
+                    <span class="font-serif text-lg text-midnight">Cuan seguro es mi informacion personal?</span>
+                    <i data-lucide="chevron-down" class="w-5 h-5 text-gold faq-icon transition-transform duration-300"></i>
+                </button>
+                <div class="faq-content hidden px-6 pb-6">
+                    <p class="text-sm text-midnight/60 leading-relaxed">Tu informacion esta protegida con encriptacion y solo es accesible para profesionales aprobados por nuestro equipo. Implementamos rate limiting, validacion server-side y auditoria de todas las acciones para garantizar la seguridad de tus datos.</p>
+                </div>
+            </div>
+            <div class="faq-item bg-white rounded-lg shadow border border-midnight/5 overflow-hidden">
+                <button class="faq-toggle w-full p-6 text-left flex items-center justify-between hover:bg-paper transition-colors" onclick="toggleFaq(this)">
+                    <span class="font-serif text-lg text-midnight">Cuanto tarda en llegar un profesional?</span>
+                    <i data-lucide="chevron-down" class="w-5 h-5 text-gold faq-icon transition-transform duration-300"></i>
+                </button>
+                <div class="faq-content hidden px-6 pb-6">
+                    <p class="text-sm text-midnight/60 leading-relaxed">Una vez enviada tu solicitud, los profesionales verificados pueden acceder a ella de inmediato. En la mayoria de los casos, recibis las primeras propuestas en menos de 24 horas. El tiempo puede variar segun la zona y el tipo de proyecto.</p>
+                </div>
+            </div>
+            <div class="faq-item bg-white rounded-lg shadow border border-midnight/5 overflow-hidden">
+                <button class="faq-toggle w-full p-6 text-left flex items-center justify-between hover:bg-paper transition-colors" onclick="toggleFaq(this)">
+                    <span class="font-serif text-lg text-midnight">Puedo exportar mis datos como profesional?</span>
+                    <i data-lucide="chevron-down" class="w-5 h-5 text-gold faq-icon transition-transform duration-300"></i>
+                </button>
+                <div class="faq-content hidden px-6 pb-6">
+                    <p class="text-sm text-midnight/60 leading-relaxed">Si, los profesionales aprobados pueden exportar sus leads en formato CSV o XLSX para gestionarlos externamente. Tambien pueden descargar fichas individuales en PDF con toda la informacion tecnica de cada solicitud.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA FINAL -->
+    <section class="mt-32 mb-16 text-center animate-on-scroll fade-in-up" data-scroll>
+        <div class="bg-gradient-to-br from-midnight via-midnight-light to-midnight rounded-2xl p-16 shadow-2xl">
+            <h2 class="text-4xl font-serif text-white mb-4">Listo para Comenzar?</h2>
+            <p class="text-white/60 mb-8 max-w-lg mx-auto">Unite a miles de clientes y profesionales que ya confian en ArchEstate para sus proyectos inmobiliarios.</p>
+            <a href="{{ url_for('register') }}" class="cta-pulse inline-flex items-center gap-3 bg-gold hover:bg-white hover:text-midnight text-white px-10 py-5 rounded-lg font-bold uppercase tracking-widest text-sm transition-all shadow-xl">
+                <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                Crear Cuenta Gratis
+            </a>
+        </div>
+    </section>
 </div>
 
-<!-- Estadísticas animadas -->
-<div class="mt-20 w-full max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center fade-in-up delay-5" data-scroll>
-    <div class="p-6">
-        <div class="text-3xl font-serif text-gold mb-2 counter" data-target="1500">0</div>
-        <div class="text-sm text-midnight/60 uppercase tracking-widest">Leads Generados</div>
-    </div>
-    <div class="p-6">
-        <div class="text-3xl font-serif text-gold mb-2 counter" data-target="250">0</div>
-        <div class="text-sm text-midnight/60 uppercase tracking-widest">Profesionales</div>
-    </div>
-    <div class="p-6">
-        <div class="text-3xl font-serif text-gold mb-2 counter" data-target="98">0</div>
-        <div class="text-sm text-midnight/60 uppercase tracking-widest">Satisfacción</div>
-    </div>
-    <div class="p-6">
-        <div class="text-3xl font-serif text-gold mb-2 counter" data-target="24">0</div>
-        <div class="text-sm text-midnight/60 uppercase tracking-widest">Horas de Servicio</div>
-    </div>
-</div>
+<!-- Structured Data: Organization -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ArchEstate",
+  "description": "Plataforma de gestion inmobiliaria que conecta clientes con profesionales verificados",
+  "url": "https://archestate.com",
+  "foundingDate": "2026",
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "customer service",
+    "availableLanguage": ["Spanish"]
+  }
+}
+</script>
+
+<!-- Structured Data: FAQPage -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Que es ArchEstate?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "ArchEstate es una plataforma exclusiva que conecta a personas que buscan comprar, construir o remodelar propiedades con profesionales verificados del sector inmobiliario y arquitectonico."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Como me registro como profesional?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Para registrarte como profesional, debes crear una cuenta seleccionando el rol Profesional y proporcionar tu numero de matricula profesional. Luego sube tu documentacion y nuestro equipo la validara en menos de 24 horas."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Es gratuito para los clientes?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Si, el registro y uso de la plataforma es completamente gratuito para los clientes. Puedes enviar todas las solicitudes que necesites sin ningun costo."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Cuan seguro es mi informacion personal?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Tu informacion esta protegida con encriptacion y solo es accesible para profesionales aprobados por nuestro equipo. Implementamos rate limiting, validacion server-side y auditoria de todas las acciones."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Cuanto tarda en llegar un profesional?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Una vez enviada tu solicitud, los profesionales verificados pueden acceder a ella de inmediato. En la mayoria de los casos, recibis las primeras propuestas en menos de 24 horas."
+      }
+    }
+  ]
+}
+</script>
 {% endblock %}
 
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Inicializar animaciones de scroll
     initScrollAnimations();
-    
-    // Inicializar contadores animados
     initAnimatedCounters();
-    
-    // Efecto parallax para la imagen hero
     initParallax();
+    initTestimonialCarousel();
 });
 
 function initScrollAnimations() {
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('animate');
             }
         });
-    }, observerOptions);
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
-    // Observar elementos con data-scroll
-    document.querySelectorAll('[data-scroll]').forEach(el => {
-        observer.observe(el);
-    });
+    document.querySelectorAll('[data-scroll]').forEach(el => observer.observe(el));
 }
 
 function initAnimatedCounters() {
     const counters = document.querySelectorAll('.counter');
-    const speed = 200; // Velocidad de animación
-
-    const animateCounter = (counter) => {
-        const target = +counter.getAttribute('data-target');
-        const count = +counter.innerText;
-        const increment = target / speed;
-
-        if (count < target) {
-            counter.innerText = Math.ceil(count + increment);
-            setTimeout(() => animateCounter(counter), 1);
-        } else {
-            counter.innerText = target;
-        }
-    };
-
-    // Animar cuando el elemento sea visible
     const counterObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                animateCounter(entry.target);
-                counterObserver.unobserve(entry.target);
+                const counter = entry.target;
+                const target = +counter.getAttribute('data-target');
+                const speed = 200;
+                const animate = () => {
+                    const count = +counter.innerText;
+                    const increment = target / speed;
+                    if (count < target) {
+                        counter.innerText = Math.ceil(count + increment);
+                        requestAnimationFrame(animate);
+                    } else {
+                        counter.innerText = target;
+                    }
+                };
+                animate();
+                counterObserver.unobserve(counter);
             }
         });
     });
-
-    counters.forEach(counter => {
-        counterObserver.observe(counter);
-    });
+    counters.forEach(c => counterObserver.observe(c));
 }
 
 function initParallax() {
-    const parallaxElements = document.querySelectorAll('.parallax');
-    
+    const elements = document.querySelectorAll('.parallax');
     window.addEventListener('scroll', () => {
         const scrolled = window.pageYOffset;
-        const rate = scrolled * -0.5;
-
-        parallaxElements.forEach(el => {
-            el.style.transform = `translateY(${rate}px)`;
-        });
+        elements.forEach(el => { el.style.transform = `translateY(${scrolled * -0.5}px)`; });
     });
 }
 
-// Efecto de typing mejorado
+function initTestimonialCarousel() {
+    const slides = document.querySelectorAll('.testimonial-slide');
+    const dots = document.querySelectorAll('.testimonial-dot');
+    let current = 0;
+    let autoplayInterval;
+
+    function showSlide(index) {
+        slides.forEach((s, i) => { s.style.opacity = i === index ? '1' : '0'; });
+        dots.forEach((d, i) => {
+            d.className = 'testimonial-dot w-3 h-3 rounded-full transition-all ' + (i === index ? 'bg-gold' : 'bg-midnight/20');
+        });
+        current = index;
+    }
+
+    function nextSlide() { showSlide((current + 1) % slides.length); }
+
+    dots.forEach(dot => {
+        dot.addEventListener('click', () => {
+            clearInterval(autoplayInterval);
+            showSlide(parseInt(dot.dataset.index));
+            autoplayInterval = setInterval(nextSlide, 5000);
+        });
+    });
+
+    autoplayInterval = setInterval(nextSlide, 5000);
+}
+
+function toggleFaq(btn) {
+    const content = btn.nextElementSibling;
+    const icon = btn.querySelector('.faq-icon');
+    const isOpen = !content.classList.contains('hidden');
+
+    document.querySelectorAll('.faq-content').forEach(c => c.classList.add('hidden'));
+    document.querySelectorAll('.faq-icon').forEach(i => i.style.transform = '');
+
+    if (!isOpen) {
+        content.classList.remove('hidden');
+        icon.style.transform = 'rotate(180deg)';
+    }
+}
+
 const typingElement = document.querySelector('.typing-effect');
 if (typingElement) {
     const text = typingElement.textContent;
     typingElement.textContent = '';
-    typingElement.style.width = '0';
-    
     let i = 0;
     const typeWriter = () => {
         if (i < text.length) {
@@ -172,14 +469,9 @@ if (typingElement) {
             i++;
             setTimeout(typeWriter, 100);
         } else {
-            // Remover el cursor después de completar
-            setTimeout(() => {
-                typingElement.style.borderRight = 'none';
-            }, 500);
+            setTimeout(() => { typingElement.style.borderRight = 'none'; }, 500);
         }
     };
-    
-    // Iniciar typing después de un delay
     setTimeout(typeWriter, 1000);
 }
 </script>

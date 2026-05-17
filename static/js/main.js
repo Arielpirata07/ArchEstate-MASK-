@@ -834,3 +834,169 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+/**
+ * SMOOTH SCROLL UTILITY
+ */
+function smoothScrollTo(target) {
+    const el = typeof target === 'string' ? document.querySelector(target) : target;
+    if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+/**
+ * INTERSECTION OBSERVER HELPER
+ */
+function initScrollObserver(selector, callback, options) {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                if (callback) callback(entry.target, entry);
+                entry.target.classList.add('animate');
+            }
+        });
+    }, options || { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+    document.querySelectorAll(selector).forEach(el => observer.observe(el));
+    return observer;
+}
+
+/**
+ * ACCORDION TOGGLE
+ */
+function toggleAccordion(triggerEl) {
+    const content = triggerEl.nextElementSibling;
+    const icon = triggerEl.querySelector('.faq-icon');
+    if (!content) return;
+
+    const isOpen = !content.classList.contains('hidden');
+    if (isOpen) {
+        content.classList.add('hidden');
+        if (icon) icon.style.transform = '';
+    } else {
+        content.classList.remove('hidden');
+        if (icon) icon.style.transform = 'rotate(180deg)';
+    }
+}
+
+/**
+ * CAROUSEL UTILITY
+ */
+function initCarousel(containerSelector, slideSelector, dotSelector, autoplayMs) {
+    const slides = document.querySelectorAll(slideSelector);
+    const dots = document.querySelectorAll(dotSelector);
+    let current = 0;
+    let interval;
+
+    function show(index) {
+        slides.forEach((s, i) => { s.style.opacity = i === index ? '1' : '0'; });
+        dots.forEach((d, i) => {
+            d.className = d.className.replace(/bg-\S+/g, '') + (i === index ? ' bg-gold' : ' bg-midnight/20');
+        });
+        current = index;
+    }
+
+    function next() { show((current + 1) % slides.length); }
+
+    dots.forEach(dot => {
+        dot.addEventListener('click', () => {
+            clearInterval(interval);
+            show(parseInt(dot.dataset.index));
+            interval = setInterval(next, autoplayMs || 5000);
+        });
+    });
+
+    interval = setInterval(next, autoplayMs || 5000);
+    return { show, next };
+}
+
+/**
+ * IMPROVED TOAST WITH PROGRESS BAR
+ */
+function showToast(message, type) {
+    if (type === undefined) type = 'success';
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'fixed bottom-4 right-4 md:bottom-8 md:right-8 z-50 flex flex-col gap-3 w-full md:w-auto pointer-events-none';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    const bgColor = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-rose-600' : 'bg-midnight';
+    const icon = type === 'success' ? 'check-circle' : type === 'error' ? 'alert-circle' : 'info';
+
+    toast.className = bgColor + ' text-white px-6 py-4 rounded shadow-2xl flex items-center gap-4 transform transition-all duration-500 translate-y-10 opacity-0 border border-white/10 pointer-events-auto relative overflow-hidden';
+    toast.style.minWidth = '300px';
+
+    toast.innerHTML = '<div class="flex-shrink-0"><i data-lucide="' + icon + '" class="w-5 h-5"></i></div>'
+        + '<div class="flex-grow"><p class="text-[10px] font-bold uppercase tracking-[0.2em] leading-tight">' + message + '</p></div>'
+        + '<div class="absolute bottom-0 left-0 h-0.5 bg-white/40" style="animation: toastProgress 4s linear forwards;"></div>';
+
+    container.appendChild(toast);
+    if (window.lucide) lucide.createIcons();
+
+    requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-10', 'opacity-0');
+    });
+
+    setTimeout(() => {
+        toast.classList.add('opacity-0', '-translate-y-2');
+        setTimeout(() => toast.remove(), 500);
+    }, 4000);
+}
+
+/**
+ * DRAG AND DROP SUPPORT
+ */
+function initDragDrop(dropzone, onDrop) {
+    if (!dropzone) return;
+
+    ['dragenter', 'dragover'].forEach(evt => {
+        dropzone.addEventListener(evt, (e) => {
+            e.preventDefault();
+            dropzone.classList.add('dropzone-active');
+        });
+    });
+
+    ['dragleave', 'drop'].forEach(evt => {
+        dropzone.addEventListener(evt, (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dropzone-active');
+        });
+    });
+
+    dropzone.addEventListener('drop', (e) => {
+        const files = e.dataTransfer.files;
+        if (files.length > 0 && onDrop) onDrop(files);
+    });
+}
+
+/**
+ * REAL-TIME FORM VALIDATION FEEDBACK
+ */
+function initFormValidation(formSelector) {
+    const form = document.querySelector(formSelector);
+    if (!form) return;
+
+    const inputs = form.querySelectorAll('input[required], select[required], textarea[required]');
+    inputs.forEach(input => {
+        input.addEventListener('blur', () => {
+            if (input.value.trim()) {
+                input.classList.add('form-valid');
+                input.classList.remove('form-invalid');
+            } else {
+                input.classList.add('form-invalid');
+                input.classList.remove('form-valid');
+            }
+        });
+        input.addEventListener('input', () => {
+            if (input.classList.contains('form-invalid') && input.value.trim()) {
+                input.classList.remove('form-invalid');
+                input.classList.add('form-valid');
+            }
+        });
+    });
+}

@@ -1,8 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}Solicitud | ArchEstate{% endblock %}
+{% block title %}Solicitar Propiedad | ArchEstate{% endblock %}
 
+{% block meta_description %}Completa tu solicitud de propiedad en ArchEstate con todos los detalles tecnicos.{% endblock %}
 {% block head %}
+<meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/user.css') }}">
 {% endblock %}
 

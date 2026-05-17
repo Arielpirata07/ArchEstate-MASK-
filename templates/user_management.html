@@ -1,8 +1,10 @@
 {% extends "base.html" %}
 
-{% block title %}Gestión de Usuarios | ArchEstate{% endblock %}
+{% block title %}Gestion de Usuarios | ArchEstate{% endblock %}
 
+{% block meta_description %}Gestion de usuarios y cuentas en el panel de administracion de ArchEstate.{% endblock %}
 {% block head %}
+<meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
 {% endblock %}
 

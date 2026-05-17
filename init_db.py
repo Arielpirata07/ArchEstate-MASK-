@@ -11,6 +11,7 @@ def init_db():
     db_path = get_db_path()
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
+    conn.execute('PRAGMA foreign_keys = ON')
     cursor = conn.cursor()
 
     cursor.execute('''
@@ -77,6 +78,13 @@ def init_db():
             admin TEXT NOT NULL
         )
     ''')
+
+    # Indices para optimizar consultas frecuentes
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_leads_type ON leads(type)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_leads_timestamp ON leads(timestamp)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_professionals_status ON professionals(status)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_professionals_user_id ON professionals(user_id)')
 
     cursor.execute('SELECT COUNT(*) FROM users')
     if cursor.fetchone()[0] == 0:
