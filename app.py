@@ -680,7 +680,7 @@ def export_leads_csv():
         if not professional or professional['status'] != 'approved':
             return "Cuenta pendiente de aprobación", 403
 
-        leads = conn.execute('SELECT id, type, zone, budget, currency, timestamp FROM leads ORDER BY timestamp DESC').fetchall()
+        leads = conn.execute('SELECT * FROM leads ORDER BY timestamp DESC').fetchall()
     finally:
         if conn:
             conn.close()
@@ -689,14 +689,30 @@ def export_leads_csv():
         data = StringIO()
         writer = csv.writer(data)
 
-        writer.writerow(['ID', 'Tipo Operacion', 'Zona', 'Presupuesto', 'Moneda', 'Fecha Registro (Argentina)'])
+        writer.writerow([
+            'ID', 'Tipo Operacion', 'Tipo Propiedad', 'Zona', 'Presupuesto', 'Moneda',
+            'Telefono', 'Email', 'Piso/Bloque', 'Area Util (m2)', 'Ascensor',
+            'Terreno (m2)', 'Construido (m2)', 'Piscina', 'Estilo Arquitectonico',
+            'Habitaciones', 'Banios', 'Area Total (m2)', 'Amenidades', 'Ambientes',
+            'Estacionamiento', 'Orientacion', 'Condicion', 'Antiguedad',
+            'Fecha Registro (Argentina)'
+        ])
         yield data.getvalue()
         data.seek(0)
         data.truncate(0)
 
         for lead in leads:
             timestamp_argentina = convert_to_argentina_time(lead['timestamp'])
-            writer.writerow([lead['id'], lead['type'], lead['zone'], lead['budget'], lead['currency'], timestamp_argentina])
+            writer.writerow([
+                lead['id'], lead['type'], lead['property_type'], lead['zone'],
+                lead['budget'], lead['currency'], lead['phone'], lead['email'],
+                lead['floor_block'], lead['usable_m2'], lead['elevator'],
+                lead['land_area'], lead['built_area'], lead['pool'],
+                lead['architectural_style'], lead['bedrooms'], lead['bathrooms'],
+                lead['total_area'], lead['amenities'], lead['ambientes'],
+                lead['parking'], lead['orientation'], lead['property_condition'],
+                lead['property_age'], timestamp_argentina
+            ])
             yield data.getvalue()
             data.seek(0)
             data.truncate(0)
@@ -726,7 +742,7 @@ def export_leads_xlsx():
         if not professional or professional['status'] != 'approved':
             return "Cuenta pendiente de aprobación", 403
 
-        leads = conn.execute('SELECT id, type, zone, budget, currency, timestamp FROM leads ORDER BY timestamp DESC').fetchall()
+        leads = conn.execute('SELECT * FROM leads ORDER BY timestamp DESC').fetchall()
     finally:
         if conn:
             conn.close()
@@ -735,7 +751,14 @@ def export_leads_xlsx():
     ws = wb.active
     ws.title = "Leads"
 
-    headers = ['ID', 'Tipo Operacion', 'Zona', 'Presupuesto', 'Moneda', 'Fecha Registro (Argentina)']
+    headers = [
+        'ID', 'Tipo Operacion', 'Tipo Propiedad', 'Zona', 'Presupuesto', 'Moneda',
+        'Telefono', 'Email', 'Piso/Bloque', 'Area Util (m2)', 'Ascensor',
+        'Terreno (m2)', 'Construido (m2)', 'Piscina', 'Estilo Arquitectonico',
+        'Habitaciones', 'Banios', 'Area Total (m2)', 'Amenidades', 'Ambientes',
+        'Estacionamiento', 'Orientacion', 'Condicion', 'Antiguedad',
+        'Fecha Registro (Argentina)'
+    ]
     for col_num, header in enumerate(headers, 1):
         ws.cell(row=1, column=col_num, value=header)
 
@@ -743,10 +766,29 @@ def export_leads_xlsx():
         timestamp_argentina = convert_to_argentina_time(lead['timestamp'])
         ws.cell(row=row_num, column=1, value=lead['id'])
         ws.cell(row=row_num, column=2, value=lead['type'])
-        ws.cell(row=row_num, column=3, value=lead['zone'])
-        ws.cell(row=row_num, column=4, value=lead['budget'])
-        ws.cell(row=row_num, column=5, value=lead['currency'])
-        ws.cell(row=row_num, column=6, value=timestamp_argentina)
+        ws.cell(row=row_num, column=3, value=lead['property_type'])
+        ws.cell(row=row_num, column=4, value=lead['zone'])
+        ws.cell(row=row_num, column=5, value=lead['budget'])
+        ws.cell(row=row_num, column=6, value=lead['currency'])
+        ws.cell(row=row_num, column=7, value=lead['phone'])
+        ws.cell(row=row_num, column=8, value=lead['email'])
+        ws.cell(row=row_num, column=9, value=lead['floor_block'])
+        ws.cell(row=row_num, column=10, value=lead['usable_m2'])
+        ws.cell(row=row_num, column=11, value=lead['elevator'])
+        ws.cell(row=row_num, column=12, value=lead['land_area'])
+        ws.cell(row=row_num, column=13, value=lead['built_area'])
+        ws.cell(row=row_num, column=14, value=lead['pool'])
+        ws.cell(row=row_num, column=15, value=lead['architectural_style'])
+        ws.cell(row=row_num, column=16, value=lead['bedrooms'])
+        ws.cell(row=row_num, column=17, value=lead['bathrooms'])
+        ws.cell(row=row_num, column=18, value=lead['total_area'])
+        ws.cell(row=row_num, column=19, value=lead['amenities'])
+        ws.cell(row=row_num, column=20, value=lead['ambientes'])
+        ws.cell(row=row_num, column=21, value=lead['parking'])
+        ws.cell(row=row_num, column=22, value=lead['orientation'])
+        ws.cell(row=row_num, column=23, value=lead['property_condition'])
+        ws.cell(row=row_num, column=24, value=lead['property_age'])
+        ws.cell(row=row_num, column=25, value=timestamp_argentina)
 
     buffer = io.BytesIO()
     wb.save(buffer)
@@ -889,15 +931,24 @@ def download_lead_pdf(lead_id):
     section_header('Tipo de Operacion')
     pdf.cell(0, 6, pdf_val(lead['type']), ln=True)
 
+    section_header('Tipo de Propiedad')
+    pdf.cell(0, 6, pdf_val(lead.get('property_type'), 'No especificado'), ln=True)
+
     section_header('Zona Geografica')
     pdf.cell(0, 6, pdf_val(lead['zone']), ln=True)
 
     section_header('Presupuesto')
     budget_symbol = 'USD' if lead['currency'] == 'USD' else 'EUR' if lead['currency'] == 'EUR' else '$'
-    pdf.cell(0, 6, f"{budget_symbol} {pdf_val(lead['budget'])}", ln=True)
+    pdf.cell(0, 6, f"{budget_symbol} {pdf_val(lead['budget'])} ({pdf_val(lead['currency'])})", ln=True)
 
     section_header('Estilo Arquitectonico')
     pdf.cell(0, 6, pdf_val(lead.get('architectural_style'), 'No especificado'), ln=True)
+
+    section_header('Condicion de la Propiedad')
+    pdf.cell(0, 6, pdf_val(lead.get('property_condition'), 'No especificado'), ln=True)
+
+    section_header('Antiguedad')
+    pdf.cell(0, 6, pdf_val(lead.get('property_age'), 'No especificado'), ln=True)
 
     section_header('Contacto Directo')
     pdf.cell(0, 6, f"Email: {pdf_val(lead['email'])}", ln=True)
@@ -910,19 +961,32 @@ def download_lead_pdf(lead_id):
     section_header('Especificaciones Tecnicas')
 
     pdf.set_font('Helvetica', 'B', 10)
+    pdf.cell(60, 8, 'Ambientes:', border=1)
+    pdf.cell(0, 8, pdf_val(lead['ambientes']), ln=True, border=1)
+
     pdf.cell(60, 8, 'Habitaciones:', border=1)
     pdf.cell(0, 8, pdf_val(lead['bedrooms']), ln=True, border=1)
 
     pdf.cell(60, 8, 'Banios:', border=1)
     pdf.cell(0, 8, pdf_val(lead['bathrooms']), ln=True, border=1)
 
-    prop_type = pdf_safe(lead.get('property_type', '')).lower()
-    if prop_type == 'casa':
-        pdf.cell(60, 8, 'Metros de Terreno:', border=1)
-        pdf.cell(0, 8, f"{pdf_val(lead['land_area'])} m2" if lead.get('land_area') else '-', ln=True, border=1)
-    else:
-        pdf.cell(60, 8, 'Metros Utiles:', border=1)
-        pdf.cell(0, 8, f"{pdf_val(lead['usable_m2'])} m2" if lead.get('usable_m2') else '-', ln=True, border=1)
+    pdf.cell(60, 8, 'Area Total (m2):', border=1)
+    pdf.cell(0, 8, pdf_val(lead['total_area']), ln=True, border=1)
+
+    pdf.cell(60, 8, 'Area Util (m2):', border=1)
+    pdf.cell(0, 8, pdf_val(lead['usable_m2']), ln=True, border=1)
+
+    pdf.cell(60, 8, 'Terreno (m2):', border=1)
+    pdf.cell(0, 8, pdf_val(lead['land_area']), ln=True, border=1)
+
+    pdf.cell(60, 8, 'Construido (m2):', border=1)
+    pdf.cell(0, 8, pdf_val(lead['built_area']), ln=True, border=1)
+
+    pdf.cell(60, 8, 'Orientacion:', border=1)
+    pdf.cell(0, 8, pdf_val(lead.get('orientation'), 'No especificado'), ln=True, border=1)
+
+    pdf.cell(60, 8, 'Estacionamiento:', border=1)
+    pdf.cell(0, 8, pdf_val(lead.get('parking'), 'No especificado'), ln=True, border=1)
 
     pdf.ln(5)
 
@@ -936,16 +1000,31 @@ def download_lead_pdf(lead_id):
     else:
         pdf.cell(0, 6, 'No especificadas', ln=True)
 
+    pdf.ln(3)
+
+    prop_type = pdf_safe(lead.get('property_type', '')).lower()
+
     if prop_type == 'departamento':
         section_header('Detalles del Departamento')
         pdf.cell(0, 6, f"Piso / Bloque: {pdf_val(lead.get('floor_block'), 'No especificado')}", ln=True)
-        pdf.cell(0, 6, f"Metros Utiles: {pdf_val(lead.get('usable_m2'), 'No especificado')} m2", ln=True)
         pdf.cell(0, 6, f"Ascensor: {pdf_val(lead.get('elevator'), 'No especificado')}", ln=True)
-    else:
-        section_header('Detalles de la Propiedad')
-        pdf.cell(0, 6, f"Superficie de Terreno: {pdf_val(lead.get('land_area'), 'No especificado')} m2", ln=True)
-        pdf.cell(0, 6, f"Superficie Construida: {pdf_val(lead.get('built_area'), 'No especificado')} m2", ln=True)
+    elif prop_type == 'casa':
+        section_header('Detalles de la Casa')
         pdf.cell(0, 6, f"Piscina: {pdf_val(lead.get('pool'), 'No especificado')}", ln=True)
+    elif prop_type == 'duplex':
+        section_header('Detalles del Duplex')
+        pdf.cell(0, 6, f"Piso / Bloque: {pdf_val(lead.get('floor_block'), 'No especificado')}", ln=True)
+        pdf.cell(0, 6, f"Ascensor: {pdf_val(lead.get('elevator'), 'No especificado')}", ln=True)
+        pdf.cell(0, 6, f"Piscina: {pdf_val(lead.get('pool'), 'No especificado')}", ln=True)
+    elif prop_type == 'penthouse':
+        section_header('Detalles del Penthouse')
+        pdf.cell(0, 6, f"Piso / Bloque: {pdf_val(lead.get('floor_block'), 'No especificado')}", ln=True)
+        pdf.cell(0, 6, f"Ascensor: {pdf_val(lead.get('elevator'), 'No especificado')}", ln=True)
+        pdf.cell(0, 6, f"Piscina: {pdf_val(lead.get('pool'), 'No especificado')}", ln=True)
+    elif prop_type == 'local_comercial':
+        section_header('Detalles del Local Comercial')
+        pdf.cell(0, 6, f"Area Total: {pdf_val(lead.get('total_area'), 'No especificado')} m2", ln=True)
+        pdf.cell(0, 6, f"Area Construida: {pdf_val(lead.get('built_area'), 'No especificado')} m2", ln=True)
 
     # Generar el PDF
     pdf_output = pdf.output(dest='S')

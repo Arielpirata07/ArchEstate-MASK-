@@ -24,6 +24,11 @@
             </div>
 
             <div>
+                <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Tipo de Propiedad</p>
+                <p class="text-base text-midnight capitalize">{{ lead.property_type or 'No especificado' }}</p>
+            </div>
+
+            <div>
                 <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Zona Geográfica</p>
                 <p class="text-base text-midnight">{{ lead.zone }}</p>
             </div>
@@ -33,12 +38,23 @@
                 <p class="text-base text-midnight">
                     {% set budget_symbol = 'US$' if lead.currency == 'USD' else '€' if lead.currency == 'EUR' else '$' %}
                     {{ budget_symbol }}{{ lead.budget }}
+                    {% if lead.currency == 'USD' %}(Dólares){% elif lead.currency == 'EUR' %}(Euros){% else %}(Pesos){% endif %}
                 </p>
             </div>
 
             <div>
                 <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Estilo Arquitectónico</p>
                 <p class="text-base text-midnight">{{ lead.architectural_style or 'No especificado' }}</p>
+            </div>
+
+            <div>
+                <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Condición de la Propiedad</p>
+                <p class="text-base text-midnight">{{ lead.property_condition or 'No especificado' }}</p>
+            </div>
+
+            <div>
+                <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Antigüedad</p>
+                <p class="text-base text-midnight">{{ lead.property_age or 'No especificado' }}</p>
             </div>
 
             <div class="border-t border-midnight/10 pt-5">
@@ -59,6 +75,10 @@
 
             <div class="grid grid-cols-3 gap-4">
                 <div class="text-center">
+                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Ambientes</p>
+                    <p class="text-2xl font-serif text-midnight">{{ lead.ambientes if lead.ambientes else '-' }}</p>
+                </div>
+                <div class="text-center">
                     <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Habitaciones</p>
                     <p class="text-2xl font-serif text-midnight">{{ lead.bedrooms if lead.bedrooms else '-' }}</p>
                 </div>
@@ -66,16 +86,42 @@
                     <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Baños</p>
                     <p class="text-2xl font-serif text-midnight">{{ lead.bathrooms if lead.bathrooms else '-' }}</p>
                 </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
                 <div class="text-center">
-                    {% if lead.property_type == 'casa' %}
-                        <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Metros de Terreno</p>
-                        <p class="text-2xl font-serif text-midnight">{{ lead.land_area if lead.land_area else '-' }}</p>
-                        {% if lead.land_area %}<p class="text-[10px] text-midnight/60">m²</p>{% endif %}
-                    {% else %}
-                        <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Metros Útiles</p>
-                        <p class="text-2xl font-serif text-midnight">{{ lead.usable_m2 if lead.usable_m2 else '-' }}</p>
-                        {% if lead.usable_m2 %}<p class="text-[10px] text-midnight/60">m²</p>{% endif %}
-                    {% endif %}
+                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Área Total</p>
+                    <p class="text-2xl font-serif text-midnight">{{ lead.total_area if lead.total_area else '-' }}</p>
+                    {% if lead.total_area %}<p class="text-[10px] text-midnight/60">m²</p>{% endif %}
+                </div>
+                <div class="text-center">
+                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Área Útil</p>
+                    <p class="text-2xl font-serif text-midnight">{{ lead.usable_m2 if lead.usable_m2 else '-' }}</p>
+                    {% if lead.usable_m2 %}<p class="text-[10px] text-midnight/60">m²</p>{% endif %}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="text-center">
+                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Terreno</p>
+                    <p class="text-2xl font-serif text-midnight">{{ lead.land_area if lead.land_area else '-' }}</p>
+                    {% if lead.land_area %}<p class="text-[10px] text-midnight/60">m²</p>{% endif %}
+                </div>
+                <div class="text-center">
+                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Construido</p>
+                    <p class="text-2xl font-serif text-midnight">{{ lead.built_area if lead.built_area else '-' }}</p>
+                    {% if lead.built_area %}<p class="text-[10px] text-midnight/60">m²</p>{% endif %}
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Orientación</p>
+                    <p class="text-base text-midnight">{{ lead.orientation or 'No especificado' }}</p>
+                </div>
+                <div>
+                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Estacionamiento</p>
+                    <p class="text-base text-midnight capitalize">{{ lead.parking or 'No especificado' }}</p>
                 </div>
             </div>
 
@@ -105,34 +151,68 @@
                         <p class="text-sm text-midnight">{{ lead.floor_block or 'No especificado' }}</p>
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Metros Útiles</p>
-                        <p class="text-sm text-midnight">{{ lead.usable_m2 if lead.usable_m2 else 'No especificado' }} m²</p>
+                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Ascensor</p>
+                        <p class="text-sm text-midnight">{{ lead.elevator or 'No especificado' }}</p>
+                    </div>
+                </div>
+            </div>
+            {% elif lead.property_type == 'casa' %}
+            <div class="border-t border-midnight/10 pt-5">
+                <p class="text-lg font-serif text-midnight mb-4">Detalles de la Casa</p>
+                <div class="space-y-3">
+                    <div>
+                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Piscina</p>
+                        <p class="text-sm text-midnight">{{ lead.pool or 'No especificado' }}</p>
+                    </div>
+                </div>
+            </div>
+            {% elif lead.property_type == 'duplex' %}
+            <div class="border-t border-midnight/10 pt-5">
+                <p class="text-lg font-serif text-midnight mb-4">Detalles del Dúplex</p>
+                <div class="space-y-3">
+                    <div>
+                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Piso / Bloque</p>
+                        <p class="text-sm text-midnight">{{ lead.floor_block or 'No especificado' }}</p>
                     </div>
                     <div>
                         <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Ascensor</p>
                         <p class="text-sm text-midnight">{{ lead.elevator or 'No especificado' }}</p>
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Piscina Comunitaria</p>
-                        <p class="text-sm text-midnight">{{ lead.community_pool or 'No especificado' }}</p>
+                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Piscina</p>
+                        <p class="text-sm text-midnight">{{ lead.pool or 'No especificado' }}</p>
                     </div>
                 </div>
             </div>
-            {% elif lead.property_type == 'casa' %}
+            {% elif lead.property_type == 'penthouse' %}
             <div class="border-t border-midnight/10 pt-5">
-                <p class="text-lg font-serif text-midnight mb-4">Detalles de la Propiedad</p>
+                <p class="text-lg font-serif text-midnight mb-4">Detalles del Penthouse</p>
                 <div class="space-y-3">
                     <div>
-                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Superficie de Terreno</p>
-                        <p class="text-sm text-midnight">{{ lead.land_area if lead.land_area else 'No especificado' }} m²</p>
+                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Piso / Bloque</p>
+                        <p class="text-sm text-midnight">{{ lead.floor_block or 'No especificado' }}</p>
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Superficie Construida</p>
-                        <p class="text-sm text-midnight">{{ lead.built_area if lead.built_area else 'No especificado' }} m²</p>
+                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Ascensor</p>
+                        <p class="text-sm text-midnight">{{ lead.elevator or 'No especificado' }}</p>
                     </div>
                     <div>
                         <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Piscina</p>
                         <p class="text-sm text-midnight">{{ lead.pool or 'No especificado' }}</p>
+                    </div>
+                </div>
+            </div>
+            {% elif lead.property_type == 'local_comercial' %}
+            <div class="border-t border-midnight/10 pt-5">
+                <p class="text-lg font-serif text-midnight mb-4">Detalles del Local Comercial</p>
+                <div class="space-y-3">
+                    <div>
+                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Área Total</p>
+                        <p class="text-sm text-midnight">{{ lead.total_area if lead.total_area else 'No especificado' }} m²</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Área Construida</p>
+                        <p class="text-sm text-midnight">{{ lead.built_area if lead.built_area else 'No especificado' }} m²</p>
                     </div>
                 </div>
             </div>
