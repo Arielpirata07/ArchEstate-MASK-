@@ -1571,14 +1571,15 @@ def get_lead_reports():
                 l.timestamp as lead_timestamp
             FROM lead_reports lr
             JOIN users u ON lr.reported_by = u.id
-            JOIN leads l ON lr.lead_id = l.id
+            LEFT JOIN leads l ON lr.lead_id = l.id
             ORDER BY lr.created_at DESC
         ''').fetchall()
 
         reports_list = []
         for r in reports:
             rd = dict(r)
-            rd['lead_timestamp'] = convert_to_argentina_time(rd['lead_timestamp'])
+            if rd['lead_timestamp']:
+                rd['lead_timestamp'] = convert_to_argentina_time(rd['lead_timestamp'])
             rd['created_at'] = convert_to_argentina_time(rd['created_at'])
             reports_list.append(rd)
 
@@ -1603,7 +1604,7 @@ def get_lead_reports():
 @app.route('/api/admin/report/<int:report_id>/delete', methods=['POST'])
 @admin_required
 def delete_reported_lead(report_id):
-    """Eliminar un lead reportado como falso."""
+    """Eliminar (soft delete) un lead reportado como falso."""
     conn = None
     try:
         conn = get_db_connection()
@@ -1614,12 +1615,17 @@ def delete_reported_lead(report_id):
         if not report:
             return jsonify({'error': 'Reporte no encontrado'}), 404
 
+        if report['status'] == 'deleted':
+            return jsonify({'error': 'El reporte ya esta eliminado'}), 400
+
         lead_id = report['lead_id']
+        argentina_tz = pytz.timezone('America/Argentina/Buenos_Aires')
+        now = datetime.now(argentina_tz).strftime('%Y-%m-%d %H:%M:%S')
 
-        conn.execute('DELETE FROM lead_tracking WHERE lead_id = ?', (lead_id,))
-        conn.execute('DELETE FROM lead_reports WHERE lead_id = ?', (lead_id,))
-        conn.execute('DELETE FROM leads WHERE id = ?', (lead_id,))
-
+        conn.execute(
+            'UPDATE lead_reports SET status = ?, reviewed_by = ?, reviewed_at = ? WHERE id = ?',
+            ('deleted', session.get('username'), now, report_id)
+        )
         conn.commit()
         log_action("Eliminacion de Lead", f"Lead ID: {lead_id} eliminado tras reporte #{report_id} por {session.get('username')}")
 
@@ -1665,6 +1671,42 @@ def dismiss_report(report_id):
         })
     except Exception as e:
         print(f"Error en dismiss_report: {e}")
+        return jsonify({'error': 'Error interno'}), 500
+    finally:
+        if conn:
+            conn.close()
+
+
+@app.route('/api/admin/report/<int:report_id>/restore', methods=['POST'])
+@admin_required
+def restore_report(report_id):
+    """Restaurar un reporte eliminado o descartado a estado pendiente."""
+    conn = None
+    try:
+        conn = get_db_connection()
+
+        report = conn.execute(
+            'SELECT * FROM lead_reports WHERE id = ?', (report_id,)
+        ).fetchone()
+        if not report:
+            return jsonify({'error': 'Reporte no encontrado'}), 404
+
+        if report['status'] == 'pending':
+            return jsonify({'error': 'El reporte ya esta pendiente'}), 400
+
+        conn.execute(
+            'UPDATE lead_reports SET status = ?, reviewed_by = NULL, reviewed_at = NULL WHERE id = ?',
+            ('pending', report_id)
+        )
+        conn.commit()
+        log_action("Reporte Restaurado", f"Reporte #{report_id} restaurado a pendiente por {session.get('username')}")
+
+        return jsonify({
+            'success': True,
+            'message': 'Reporte restaurado correctamente'
+        })
+    except Exception as e:
+        print(f"Error en restore_report: {e}")
         return jsonify({'error': 'Error interno'}), 500
     finally:
         if conn:

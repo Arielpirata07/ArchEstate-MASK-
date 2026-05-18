@@ -332,7 +332,7 @@
     <div id="panel-reports" class="hidden space-y-6">
 
         <!-- KPIs de Reportes -->
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-white rounded-lg shadow p-5 border-l-4 border-rose-600">
                 <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Total Reportes</p>
                 <p class="text-3xl font-serif text-rose-600" id="kpiTotalReports">0</p>
@@ -342,8 +342,12 @@
                 <p class="text-3xl font-serif text-amber-500" id="kpiPendingReports">0</p>
             </div>
             <div class="bg-white rounded-lg shadow p-5 border-l-4 border-emerald-600">
-                <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Resueltos</p>
-                <p class="text-3xl font-serif text-emerald-600" id="kpiResolvedReports">0</p>
+                <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Descartados</p>
+                <p class="text-3xl font-serif text-emerald-600" id="kpiDismissedReports">0</p>
+            </div>
+            <div class="bg-white rounded-lg shadow p-5 border-l-4 border-midnight">
+                <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Eliminados</p>
+                <p class="text-3xl font-serif text-midnight" id="kpiDeletedReports">0</p>
             </div>
         </div>
 
@@ -358,6 +362,7 @@
                     <button onclick="filterReports('pending')" class="report-filter-chip report-filter-active" data-filter="pending">Pendientes</button>
                     <button onclick="filterReports('all')" class="report-filter-chip" data-filter="all">Todos</button>
                     <button onclick="filterReports('dismissed')" class="report-filter-chip" data-filter="dismissed">Descartados</button>
+                    <button onclick="filterReports('deleted')" class="report-filter-chip" data-filter="deleted">Eliminados</button>
                 </div>
             </div>
             <div id="reportsTableContainer">
@@ -1189,8 +1194,8 @@ function loadReports() {
 function renderReportsKPIs(data) {
     document.getElementById('kpiTotalReports').textContent = data.total || 0;
     document.getElementById('kpiPendingReports').textContent = (data.status_counts && data.status_counts.pending) || 0;
-    const resolved = (data.status_counts && data.status_counts.dismissed) || 0;
-    document.getElementById('kpiResolvedReports').textContent = resolved;
+    document.getElementById('kpiDismissedReports').textContent = (data.status_counts && data.status_counts.dismissed) || 0;
+    document.getElementById('kpiDeletedReports').textContent = (data.status_counts && data.status_counts.deleted) || 0;
 }
 
 function updateReportBadge(statusCounts) {
@@ -1213,6 +1218,7 @@ function filterReports(filter) {
     let filtered = allReports;
     if (filter === 'pending') filtered = allReports.filter(r => r.status === 'pending');
     else if (filter === 'dismissed') filtered = allReports.filter(r => r.status === 'dismissed');
+    else if (filter === 'deleted') filtered = allReports.filter(r => r.status === 'deleted');
 
     renderReports(filtered);
 }
@@ -1240,10 +1246,13 @@ function renderReports(reports) {
     tbody.innerHTML = reports.map(r => {
         const statusBadge = r.status === 'pending'
             ? '<span class="px-2 py-1 bg-amber-50 text-amber-700 text-[9px] font-bold uppercase tracking-widest rounded">Pendiente</span>'
-            : '<span class="px-2 py-1 bg-paper-dark text-midnight/40 text-[9px] font-bold uppercase tracking-widest rounded">Descartado</span>';
+            : r.status === 'dismissed'
+            ? '<span class="px-2 py-1 bg-paper-dark text-midnight/40 text-[9px] font-bold uppercase tracking-widest rounded">Descartado</span>'
+            : '<span class="px-2 py-1 bg-rose-50 text-rose-600 text-[9px] font-bold uppercase tracking-widest rounded">Eliminado</span>';
 
-        const actions = r.status === 'pending'
-            ? `<div class="flex justify-end gap-2 flex-wrap">
+        let actions;
+        if (r.status === 'pending') {
+            actions = `<div class="flex justify-end gap-2 flex-wrap">
                     <button onclick="viewLeadDetail(${r.lead_id})" class="px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">
                         Ver Lead
                     </button>
@@ -1253,15 +1262,22 @@ function renderReports(reports) {
                     <button onclick="dismissReport(${r.id})" class="px-3 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-all">
                         Descartar
                     </button>
-               </div>`
-            : '<div class="text-right text-[10px] text-midnight/30 font-bold uppercase tracking-widest">&mdash;</div>';
+               </div>`;
+        } else {
+            actions = `<div class="flex justify-end gap-2 flex-wrap">
+                    ${r.lead_id ? `<button onclick="viewLeadDetail(${r.lead_id})" class="px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">Ver Lead</button>` : ''}
+                    <button onclick="restoreReport(${r.id})" class="px-3 py-2 bg-emerald-600 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
+                        Restaurar
+                    </button>
+               </div>`;
+        }
 
         return `
-            <tr class="border-b border-midnight/5 hover:bg-paper transition-colors">
+            <tr class="border-b border-midnight/5 hover:bg-paper transition-colors ${r.status === 'deleted' ? 'opacity-60' : ''}">
                 <td class="p-4 font-mono text-xs text-midnight/60">#${r.lead_id}</td>
-                <td class="p-4 text-sm">${escapeHtml(r.lead_type)}</td>
-                <td class="p-4 text-sm text-midnight/70">${escapeHtml(r.lead_zone)}</td>
-                <td class="p-4 font-mono text-xs text-rose-600">${escapeHtml(r.lead_phone)}</td>
+                <td class="p-4 text-sm">${r.lead_type ? escapeHtml(r.lead_type) : '<span class="text-midnight/30">Lead eliminado</span>'}</td>
+                <td class="p-4 text-sm text-midnight/70">${r.lead_zone ? escapeHtml(r.lead_zone) : '—'}</td>
+                <td class="p-4 font-mono text-xs text-rose-600">${r.lead_phone ? escapeHtml(r.lead_phone) : '—'}</td>
                 <td class="p-4 text-sm">${escapeHtml(r.reported_by_name)}</td>
                 <td class="p-4">${statusBadge}</td>
                 <td class="p-4 text-sm text-midnight/50">${r.created_at}</td>
@@ -1396,6 +1412,25 @@ function dismissReport(reportId) {
                 loadReports();
             } else {
                 if (typeof showToast === 'function') showToast(data.error || 'Error', 'error');
+            }
+        })
+        .catch(() => {
+            if (typeof showToast === 'function') showToast('Error de conexion', 'error');
+        });
+}
+
+function restoreReport(reportId) {
+    if (!confirm('Restaurar este reporte a estado pendiente?')) return;
+
+    fetch(`/api/admin/report/${reportId}/restore`, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                if (typeof showToast === 'function') showToast('Reporte restaurado correctamente', 'success');
+                loadReports();
+                if (typeof loadDashboard === 'function') loadDashboard();
+            } else {
+                if (typeof showToast === 'function') showToast(data.error || 'Error al restaurar', 'error');
             }
         })
         .catch(() => {
