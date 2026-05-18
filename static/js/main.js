@@ -22,6 +22,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Inicializar modal animations
     initModalAnimations();
+
+    // Inicializar navbar scroll effect
+    initNavbarScroll();
+
+    // Inicializar back to top
+    initBackToTop();
 });
 
 /**
@@ -929,4 +935,54 @@ function smoothScrollTo(target) {
     if (el) {
         el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+}
+
+/**
+ * Navbar Scroll Effect
+ */
+function initNavbarScroll() {
+    const navbar = document.getElementById('main-navbar');
+    if (!navbar) return;
+
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            window.requestAnimationFrame(() => {
+                if (window.pageYOffset > 50) {
+                    navbar.classList.add('navbar-scrolled');
+                } else {
+                    navbar.classList.remove('navbar-scrolled');
+                }
+                ticking = false;
+            });
+            ticking = true;
+        }
+    });
+}
+
+/**
+ * Back to Top Button
+ */
+function initBackToTop() {
+    const btn = document.getElementById('back-to-top');
+    if (!btn) return;
+
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            window.requestAnimationFrame(() => {
+                if (window.pageYOffset > 400) {
+                    btn.classList.add('visible');
+                } else {
+                    btn.classList.remove('visible');
+                }
+                ticking = false;
+            });
+            ticking = true;
+        }
+    });
+
+    btn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
 }

@@ -257,6 +257,51 @@ def index():
     return render_template('landing.html')
 
 
+@app.route('/api/landing/stats', methods=['GET'])
+def landing_stats():
+    """Retorna estadisticas publicas para la landing page (sin auth)."""
+    conn = None
+    try:
+        conn = get_db_connection()
+
+        # Total de leads
+        total_leads = conn.execute('SELECT COUNT(*) FROM leads').fetchone()[0]
+
+        # Profesionales aprobados
+        total_pros = conn.execute(
+            "SELECT COUNT(*) FROM professionals WHERE status = 'approved'"
+        ).fetchone()[0]
+
+        # Zonas unicas cubiertas
+        total_zones = conn.execute(
+            'SELECT COUNT(DISTINCT zone) FROM leads WHERE zone != ""'
+        ).fetchone()[0]
+
+        # Leads del mes actual
+        leads_this_month = conn.execute('''
+            SELECT COUNT(*) FROM leads
+            WHERE strftime('%Y-%m', timestamp) = strftime('%Y-%m', 'now')
+        ''').fetchone()[0]
+
+        return jsonify({
+            'total_leads': total_leads or 0,
+            'total_professionals': total_pros or 0,
+            'total_zones': total_zones or 0,
+            'leads_this_month': leads_this_month or 0,
+        })
+    except Exception as e:
+        print(f"Error en landing_stats: {e}")
+        return jsonify({
+            'total_leads': 0,
+            'total_professionals': 0,
+            'total_zones': 0,
+            'leads_this_month': 0,
+        }), 500
+    finally:
+        if conn:
+            conn.close()
+
+
 @app.route('/sitemap.xml')
 def sitemap():
     """Generate XML sitemap for search engines."""

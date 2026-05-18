@@ -384,3 +384,13 @@ html {
     --accent-light: #735A3A;
     --border: rgba(250, 249, 247, 0.1);
 }
+
+/* --- Landing Counter Glow --- */
+@keyframes counterGlow {
+    0%, 100% { text-shadow: 0 0 0px rgba(115, 90, 58, 0); }
+    50% { text-shadow: 0 0 20px rgba(115, 90, 58, 0.15); }
+}
+
+.counter-glow {
+    animation: counterGlow 2s ease-in-out;
+}

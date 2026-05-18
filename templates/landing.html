@@ -18,7 +18,7 @@
 <div class="flex flex-col items-center justify-center min-h-[60vh] text-center relative z-10">
     <!-- Imagen Hero con efecto editorial y parallax -->
     <div class="relative w-full max-w-5xl h-[300px] mb-12 rounded-xl overflow-hidden shadow-2xl parallax fade-in" data-scroll>
-        <img src="https://picsum.photos/seed/architecture/1200/600" alt="Arquitectura" class="w-full h-full object-cover grayscale hover:grayscale-0 transition-all duration-700">
+        <img src="https://picsum.photos/seed/architecture/1200/600" alt="Arquitectura" class="w-full h-full object-cover hero-img">
         <div class="absolute inset-0 bg-midnight/40 flex items-center justify-center">
             <div class="text-white border border-white/20 p-8 backdrop-blur-sm bg-midnight/20 fade-in-up delay-1" data-scroll>
                 <span class="text-[10px] tracking-[0.3em] uppercase font-bold text-gold-light">Establecido en 2026</span>
@@ -37,21 +37,21 @@
     <!-- Selectores de Perfil (Login Simulado) -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl fade-in-up delay-4" data-scroll>
         <!-- Botón Usuario -->
-        <a href="{{ url_for('user_view') }}" class="bg-white p-8 rounded-lg shadow-lg border border-midnight/5 card-hover text-left group slide-in-left delay-1" data-scroll>
+        <a href="{{ url_for('user_view') }}" class="bg-white p-8 rounded-lg shadow-lg border border-midnight/5 card-hover text-left group slide-in-left delay-1 magnetic-hover" data-scroll>
             <i data-lucide="users" class="text-gold mb-4 w-8 h-8 card-icon transition-transform duration-300"></i>
             <h3 class="text-xl font-serif mb-2 group-hover:text-gold transition-colors">Entrar como Usuario</h3>
             <p class="text-sm text-midnight/50">Busco comprar o construir mi próxima propiedad.</p>
         </a>
 
         <!-- Botón Profesional -->
-        <a href="{{ url_for('professional_view') }}" class="bg-midnight text-white p-8 rounded-lg shadow-lg border border-transparent card-hover text-left group fade-in-up delay-2 pulse-glow" data-scroll>
+        <a href="{{ url_for('professional_view') }}" class="bg-midnight text-white p-8 rounded-lg shadow-lg border border-transparent card-hover text-left group fade-in-up delay-2 pulse-glow magnetic-hover" data-scroll>
             <i data-lucide="building-2" class="text-gold mb-4 w-8 h-8 card-icon transition-transform duration-300"></i>
             <h3 class="text-xl font-serif mb-2 group-hover:text-gold transition-colors">Entrar como Profesional</h3>
             <p class="text-sm text-white/70">Soy arquitecto o agente inmobiliario buscando leads.</p>
         </a>
 
         <!-- Botón Administrador -->
-        <a href="{{ url_for('admin_view') }}" class="bg-paper-dark text-midnight p-8 rounded-lg shadow-lg border border-midnight/10 card-hover text-left group slide-in-right delay-3" data-scroll>
+        <a href="{{ url_for('admin_view') }}" class="bg-paper-dark text-midnight p-8 rounded-lg shadow-lg border border-midnight/10 card-hover text-left group slide-in-right delay-3 magnetic-hover" data-scroll>
             <i data-lucide="shield-check" class="text-midnight mb-4 w-8 h-8 card-icon transition-transform duration-300"></i>
             <h3 class="text-xl font-serif mb-2 group-hover:text-gold transition-colors">Entrar como Administrador</h3>
             <p class="text-sm text-midnight/50">Gestión de plataforma y validación de profesionales.</p>
@@ -59,128 +59,291 @@
     </div>
 </div>
 
-<!-- Estadísticas animadas -->
-<div class="mt-20 w-full max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center fade-in-up delay-5" data-scroll>
-    <div class="p-6">
-        <div class="text-3xl font-serif text-gold mb-2 counter" data-target="1500">0</div>
-        <div class="text-sm text-midnight/60 uppercase tracking-widest">Leads Generados</div>
+<!-- Estadisticas animadas con datos reales -->
+<div class="mt-20 w-full max-w-5xl mx-auto">
+    <!-- Linea decorativa superior -->
+    <div class="w-24 h-px bg-gold/30 mx-auto mb-12"></div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+        <div class="p-6 group">
+            <div class="text-4xl font-serif text-gold mb-2">
+                <span class="counter" data-target="0" data-suffix="">0</span>
+            </div>
+            <div class="text-[10px] uppercase tracking-widest text-midnight/50 font-bold">Leads Generados</div>
+        </div>
+        <div class="p-6 group">
+            <div class="text-4xl font-serif text-gold mb-2">
+                <span class="counter" data-target="0" data-suffix="">0</span>
+            </div>
+            <div class="text-[10px] uppercase tracking-widest text-midnight/50 font-bold">Profesionales Activos</div>
+        </div>
+        <div class="p-6 group">
+            <div class="text-4xl font-serif text-gold mb-2">
+                <span class="counter" data-target="0" data-suffix="">0</span>
+            </div>
+            <div class="text-[10px] uppercase tracking-widest text-midnight/50 font-bold">Zonas Cubiertas</div>
+        </div>
+        <div class="p-6 group">
+            <div class="text-4xl font-serif text-gold mb-2">
+                <span class="counter" data-target="0" data-suffix="">0</span>
+            </div>
+            <div class="text-[10px] uppercase tracking-widest text-midnight/50 font-bold">Leads Este Mes</div>
+        </div>
     </div>
-    <div class="p-6">
-        <div class="text-3xl font-serif text-gold mb-2 counter" data-target="250">0</div>
-        <div class="text-sm text-midnight/60 uppercase tracking-widest">Profesionales</div>
+
+    <!-- Linea decorativa inferior -->
+    <div class="w-24 h-px bg-gold/30 mx-auto mt-12"></div>
+</div>
+
+<!-- Como Funciona -->
+<div class="mt-24 w-full max-w-5xl mx-auto">
+    <div class="text-center mb-16" data-scroll>
+        <span class="text-[10px] uppercase tracking-widest font-bold text-gold">Proceso Simple</span>
+        <h2 class="text-3xl md:text-4xl font-serif italic mt-3">Como Funciona</h2>
     </div>
-    <div class="p-6">
-        <div class="text-3xl font-serif text-gold mb-2 counter" data-target="98">0</div>
-        <div class="text-sm text-midnight/60 uppercase tracking-widest">Satisfacción</div>
-    </div>
-    <div class="p-6">
-        <div class="text-3xl font-serif text-gold mb-2 counter" data-target="24">0</div>
-        <div class="text-sm text-midnight/60 uppercase tracking-widest">Horas de Servicio</div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
+        <!-- Paso 1 -->
+        <div class="text-center animate-on-scroll fade-in-up stagger-1" data-scroll>
+            <div class="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-6">
+                <span class="text-2xl font-serif text-gold font-bold">1</span>
+            </div>
+            <h3 class="text-lg font-serif italic mb-3">Describe tu Proyecto</h3>
+            <p class="text-sm text-midnight/60 leading-relaxed">
+                Completa un formulario detallado con las caracteristicas de tu propiedad ideal: tipo, presupuesto, zona y estilo arquitectonico.
+            </p>
+        </div>
+
+        <!-- Paso 2 -->
+        <div class="text-center animate-on-scroll fade-in-up stagger-2" data-scroll>
+            <div class="w-16 h-16 rounded-full bg-midnight/5 flex items-center justify-center mx-auto mb-6">
+                <span class="text-2xl font-serif text-midnight font-bold">2</span>
+            </div>
+            <h3 class="text-lg font-serif italic mb-3">Conectamos con Expertos</h3>
+            <p class="text-sm text-midnight/60 leading-relaxed">
+                Tu solicitud llega a profesionales verificados especializados en tu tipo de proyecto y zona geografica.
+            </p>
+        </div>
+
+        <!-- Paso 3 -->
+        <div class="text-center animate-on-scroll fade-in-up stagger-3" data-scroll>
+            <div class="w-16 h-16 rounded-full bg-gold/10 flex items-center justify-center mx-auto mb-6">
+                <span class="text-2xl font-serif text-gold font-bold">3</span>
+            </div>
+            <h3 class="text-lg font-serif italic mb-3">Recibe Propuestas</h3>
+            <p class="text-sm text-midnight/60 leading-relaxed">
+                Profesionales calificados se contactan directamente contigo con propuestas personalizadas para tu proyecto.
+            </p>
+        </div>
     </div>
 </div>
+
+<!-- FAQ -->
+<div class="mt-24 w-full max-w-3xl mx-auto">
+    <div class="text-center mb-12" data-scroll>
+        <span class="text-[10px] uppercase tracking-widest font-bold text-gold">Preguntas Frecuentes</span>
+        <h2 class="text-3xl md:text-4xl font-serif italic mt-3">FAQ</h2>
+    </div>
+
+    <div class="space-y-0">
+        <!-- FAQ 1 -->
+        <div class="faq-item animate-on-scroll fade-in-up stagger-1" data-scroll>
+            <div class="faq-question flex items-center justify-between py-5" onclick="toggleFaq(this)">
+                <span class="text-sm font-medium">Es gratuito para usuarios?</span>
+                <i data-lucide="chevron-down" class="w-4 h-4 text-gold faq-chevron flex-shrink-0 ml-4"></i>
+            </div>
+            <div class="faq-answer text-sm text-midnight/60 leading-relaxed">
+                Si, el servicio es completamente gratuito para usuarios que buscan profesionales. Solo los profesionales pagan por acceder a los leads.
+            </div>
+        </div>
+
+        <!-- FAQ 2 -->
+        <div class="faq-item animate-on-scroll fade-in-up stagger-2" data-scroll>
+            <div class="faq-question flex items-center justify-between py-5" onclick="toggleFaq(this)">
+                <span class="text-sm font-medium">Como se verifican los profesionales?</span>
+                <i data-lucide="chevron-down" class="w-4 h-4 text-gold faq-chevron flex-shrink-0 ml-4"></i>
+            </div>
+            <div class="faq-answer text-sm text-midnight/60 leading-relaxed">
+                Cada profesional debe presentar documentacion valida (matricula profesional, identificacion) que es revisada manualmente por nuestro equipo antes de ser aprobado.
+            </div>
+        </div>
+
+        <!-- FAQ 3 -->
+        <div class="faq-item animate-on-scroll fade-in-up stagger-3" data-scroll>
+            <div class="faq-question flex items-center justify-between py-5" onclick="toggleFaq(this)">
+                <span class="text-sm font-medium">En que zonas operan?</span>
+                <i data-lucide="chevron-down" class="w-4 h-4 text-gold faq-chevron flex-shrink-0 ml-4"></i>
+            </div>
+            <div class="faq-answer text-sm text-midnight/60 leading-relaxed">
+                Operamos en multiples ciudades de Latinoamerica y Espana. La cobertura se expande constantemente a medida que se incorporan nuevos profesionales.
+            </div>
+        </div>
+
+        <!-- FAQ 4 -->
+        <div class="faq-item animate-on-scroll fade-in-up stagger-4" data-scroll>
+            <div class="faq-question flex items-center justify-between py-5" onclick="toggleFaq(this)">
+                <span class="text-sm font-medium">Cuan rapido recibo respuestas?</span>
+                <i data-lucide="chevron-down" class="w-4 h-4 text-gold faq-chevron flex-shrink-0 ml-4"></i>
+            </div>
+            <div class="faq-answer text-sm text-midnight/60 leading-relaxed">
+                La mayoria de los profesionales se contactan dentro de las primeras 24 horas. El tiempo puede variar segun la disponibilidad y la zona.
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Inicializar animaciones de scroll
     initScrollAnimations();
-    
-    // Inicializar contadores animados
-    initAnimatedCounters();
-    
-    // Efecto parallax para la imagen hero
     initParallax();
+    initTypingEffect();
+    fetchAndAnimateCounters();
 });
 
+// --- Scroll Animations ---
 function initScrollAnimations() {
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
+    if (!('IntersectionObserver' in window)) {
+        document.querySelectorAll('[data-scroll]').forEach(el => el.classList.add('animate'));
+        return;
+    }
 
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('animate');
+                observer.unobserve(entry.target);
             }
         });
-    }, observerOptions);
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
-    // Observar elementos con data-scroll
-    document.querySelectorAll('[data-scroll]').forEach(el => {
-        observer.observe(el);
-    });
+    document.querySelectorAll('[data-scroll]').forEach(el => observer.observe(el));
 }
 
-function initAnimatedCounters() {
-    const counters = document.querySelectorAll('.counter');
-    const speed = 200; // Velocidad de animación
-
-    const animateCounter = (counter) => {
-        const target = +counter.getAttribute('data-target');
-        const count = +counter.innerText;
-        const increment = target / speed;
-
-        if (count < target) {
-            counter.innerText = Math.ceil(count + increment);
-            setTimeout(() => animateCounter(counter), 1);
-        } else {
-            counter.innerText = target;
-        }
-    };
-
-    // Animar cuando el elemento sea visible
-    const counterObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                animateCounter(entry.target);
-                counterObserver.unobserve(entry.target);
-            }
-        });
-    });
-
-    counters.forEach(counter => {
-        counterObserver.observe(counter);
-    });
-}
-
+// --- Parallax ---
 function initParallax() {
-    const parallaxElements = document.querySelectorAll('.parallax');
-    
-    window.addEventListener('scroll', () => {
-        const scrolled = window.pageYOffset;
-        const rate = scrolled * -0.5;
+    const parallaxEl = document.querySelector('.parallax');
+    if (!parallaxEl) return;
 
-        parallaxElements.forEach(el => {
-            el.style.transform = `translateY(${rate}px)`;
-        });
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            window.requestAnimationFrame(() => {
+                const scrolled = window.pageYOffset;
+                const rate = scrolled * -0.3;
+                parallaxEl.style.transform = `translateY(${rate}px) scale(${1 + scrolled * 0.0002})`;
+                ticking = false;
+            });
+            ticking = true;
+        }
     });
 }
 
-// Efecto de typing mejorado
-const typingElement = document.querySelector('.typing-effect');
-if (typingElement) {
+// --- Typing Effect ---
+function initTypingEffect() {
+    const typingElement = document.querySelector('.typing-effect');
+    if (!typingElement) return;
+
     const text = typingElement.textContent;
     typingElement.textContent = '';
-    typingElement.style.width = '0';
-    
+    typingElement.style.borderRight = '2px solid #735A3A';
     let i = 0;
     const typeWriter = () => {
         if (i < text.length) {
             typingElement.textContent += text.charAt(i);
             i++;
-            setTimeout(typeWriter, 100);
+            setTimeout(typeWriter, 80 + Math.random() * 60);
         } else {
-            // Remover el cursor después de completar
-            setTimeout(() => {
-                typingElement.style.borderRight = 'none';
-            }, 500);
+            setTimeout(() => { typingElement.style.borderRight = 'none'; }, 500);
         }
     };
-    
-    // Iniciar typing después de un delay
-    setTimeout(typeWriter, 1000);
+    setTimeout(typeWriter, 800);
+}
+
+// --- Contadores Dinamicos con API ---
+async function fetchAndAnimateCounters() {
+    const counters = document.querySelectorAll('.counter');
+    if (!counters.length) return;
+
+    // Mostrar loading state
+    counters.forEach(c => { c.textContent = '...'; });
+
+    let data = null;
+    try {
+        const response = await fetch('/api/landing/stats');
+        if (response.ok) data = await response.json();
+    } catch (e) {
+        console.error('Error fetching landing stats:', e);
+    }
+
+    if (!data) {
+        // Fallback si la API falla
+        data = { total_leads: 0, total_professionals: 0, total_zones: 0, leads_this_month: 0 };
+    }
+
+    const targets = [
+        data.total_leads,
+        data.total_professionals,
+        data.total_zones,
+        data.leads_this_month
+    ];
+
+    // Animar cada contador con stagger
+    counters.forEach((counter, index) => {
+        const target = targets[index] || 0;
+        counter.setAttribute('data-target', target);
+
+        // Stagger: cada contador inicia 200ms despues del anterior
+        setTimeout(() => {
+            animateCounter(counter, target, 2000);
+        }, 300 + (index * 200));
+    });
+}
+
+function animateCounter(element, target, duration) {
+    const start = 0;
+    const startTime = performance.now();
+
+    const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
+
+    const update = (currentTime) => {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easedProgress = easeOutCubic(progress);
+        const currentValue = Math.round(start + (target - start) * easedProgress);
+
+        element.textContent = currentValue.toLocaleString('es-AR');
+
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        }
+    };
+
+    requestAnimationFrame(update);
+}
+
+// --- FAQ Toggle ---
+function toggleFaq(questionEl) {
+    const faqItem = questionEl.closest('.faq-item');
+    const answer = faqItem.querySelector('.faq-answer');
+    const isOpen = faqItem.classList.contains('open');
+
+    // Cerrar todos los demas
+    document.querySelectorAll('.faq-item.open').forEach(item => {
+        if (item !== faqItem) {
+            item.classList.remove('open');
+            item.querySelector('.faq-answer').classList.remove('open');
+        }
+    });
+
+    // Toggle el actual
+    faqItem.classList.toggle('open');
+    answer.classList.toggle('open');
+
+    // Re-init lucide icons
+    if (window.lucide) lucide.createIcons();
 }
 </script>
 {% endblock %}

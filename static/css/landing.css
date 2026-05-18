@@ -107,21 +107,6 @@
 .delay-4 { animation-delay: 0.8s; }
 .delay-5 { animation-delay: 1s; }
 
-/* --- Card Hover --- */
-.card-hover {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.card-hover:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-}
-
-.card-hover:hover .card-icon {
-    transform: scale(1.1);
-    color: #735A3A;
-}
-
 /* --- FAQ Accordion --- */
 .faq-item {
     border-bottom: 1px solid rgba(0, 4, 16, 0.08);
@@ -207,4 +192,146 @@
     .card-hover:hover {
         transform: none;
     }
+}
+
+/* --- Magnetic Hover Effect (desktop only) --- */
+@media (hover: hover) {
+    .magnetic-hover {
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        will-change: transform;
+    }
+}
+
+/* --- Counter Number Animation --- */
+@keyframes countUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.counter-animating {
+    animation: countUp 0.3s ease-out;
+}
+
+/* --- Decorative Line Pulse --- */
+@keyframes lineGlow {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.6; }
+}
+
+.line-glow {
+    animation: lineGlow 3s ease-in-out infinite;
+}
+
+/* --- Hero Image Grayscale Reveal --- */
+.hero-img {
+    filter: grayscale(100%);
+    transition: filter 1.5s ease-out, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hero-img.revealed {
+    filter: grayscale(0%);
+}
+
+/* --- Navbar Scroll Effect --- */
+.navbar-scrolled {
+    background-color: rgba(16, 30, 51, 0.95) !important;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* --- Back to Top Button --- */
+.back-to-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #735A3A;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease, background 0.2s ease;
+    z-index: 40;
+    border: none;
+    box-shadow: 0 4px 12px rgba(115, 90, 58, 0.3);
+}
+
+.back-to-top.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.back-to-top:hover {
+    background: #000410;
+}
+
+/* --- How It Works Section --- */
+.step-connector {
+    position: relative;
+}
+
+.step-connector::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: -2rem;
+    width: 4rem;
+    height: 1px;
+    background: linear-gradient(to right, #735A3A, transparent);
+}
+
+@media (max-width: 768px) {
+    .step-connector::after {
+        display: none;
+    }
+}
+
+/* --- FAQ Accordion Enhanced --- */
+.faq-item {
+    border-bottom: 1px solid rgba(0, 4, 16, 0.08);
+    transition: background 0.2s ease;
+}
+
+.faq-item:hover {
+    background: rgba(115, 90, 58, 0.02);
+}
+
+.faq-question {
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.faq-question:hover {
+    color: #735A3A;
+}
+
+.faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s ease;
+}
+
+.faq-answer.open {
+    max-height: 500px;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.faq-chevron {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.faq-item.open .faq-chevron {
+    transform: rotate(180deg);
 }
