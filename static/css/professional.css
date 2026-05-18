@@ -42,3 +42,94 @@
     background: #fff1f2;
     color: #be123c;
 }
+
+/* ============================================
+   LEAD STATUS TOGGLE BUTTONS
+   ============================================ */
+
+.status-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.6rem;
+    border: 1.5px solid rgba(0, 4, 16, 0.12);
+    border-radius: 0.375rem;
+    background: transparent;
+    color: rgba(0, 4, 16, 0.45);
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+    font-family: 'Manrope', sans-serif;
+}
+
+.status-btn:hover {
+    border-color: rgba(115, 90, 58, 0.4);
+    color: rgba(0, 4, 16, 0.7);
+    background: rgba(115, 90, 58, 0.04);
+}
+
+.status-btn:active {
+    transform: scale(0.96);
+}
+
+.status-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Estado Activo - Visto (gold) */
+.status-btn.status-active.status-btn-seen {
+    border-color: #735A3A;
+    background: rgba(115, 90, 58, 0.1);
+    color: #735A3A;
+}
+
+.status-btn.status-active.status-btn-seen:hover {
+    background: rgba(115, 90, 58, 0.15);
+    border-color: #5a4530;
+}
+
+/* Estado Activo - Contactado (emerald) */
+.status-btn.status-active.status-btn-contacted {
+    border-color: #059669;
+    background: rgba(5, 150, 105, 0.08);
+    color: #059669;
+}
+
+.status-btn.status-active.status-btn-contacted:hover {
+    background: rgba(5, 150, 105, 0.12);
+    border-color: #047857;
+}
+
+/* Animacion de Toggle */
+.status-btn.status-toggling {
+    animation: statusPulse 0.3s ease-out;
+}
+
+@keyframes statusPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+    100% { transform: scale(1); }
+}
+
+/* Icono con fill sutil en estado activo */
+.status-btn.status-active i[data-lucide] {
+    fill: currentColor;
+    fill-opacity: 0.15;
+}
+
+/* Mobile: solo icono, sin texto */
+@media (max-width: 1024px) {
+    .status-btn span {
+        display: none;
+    }
+
+    .status-btn {
+        padding: 0.35rem;
+        justify-content: center;
+    }
+}

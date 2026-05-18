@@ -244,7 +244,8 @@
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-paper-dark border-b border-midnight/5">
-                        <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">ID Pedido</th>
+                        <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">ID</th>
+                        <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Estado</th>
                         <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Tipo Operación</th>
                         <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Vivienda</th>
                         <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Zona</th>
@@ -255,7 +256,7 @@
                 </thead>
                 <tbody id="leadsTableBody">
                     <tr>
-                        <td colspan="7" class="p-8 text-center text-midnight/60">
+                        <td colspan="8" class="p-8 text-center text-midnight/60">
                             <div class="flex justify-center items-center gap-2">
                                 <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gold"></div>
                                 Cargando leads...
@@ -695,7 +696,7 @@ async function loadLeads() {
     Object.entries(currentFilters).forEach(([k, v]) => { if (v) params.set(k, v); });
 
     const tbody = document.getElementById('leadsTableBody');
-    tbody.innerHTML = `<tr><td colspan="7" class="p-8 text-center text-midnight/60">
+    tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-midnight/60">
         <div class="flex justify-center items-center gap-2">
             <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gold"></div>
             Buscando leads...
@@ -736,7 +737,7 @@ function renderLeads(leads) {
     const tbody = document.getElementById('leadsTableBody');
     if (!leads.length) {
         tbody.innerHTML = `
-            <tr><td colspan="7" class="p-12 text-center text-midnight/60">
+            <tr><td colspan="8" class="p-12 text-center text-midnight/60">
                 <i data-lucide="search-x" class="w-10 h-10 mx-auto mb-3 text-midnight/20"></i>
                 <p class="font-semibold text-midnight/40">Sin resultados para estos filtros</p>
                 <p class="text-xs text-midnight/30 mt-1">Probá ajustando el tipo de vivienda o el rango de inversión</p>
@@ -790,9 +791,29 @@ function renderLeads(leads) {
             ? `<div class="flex flex-wrap gap-1 mt-1">${extraBadges.join('')}</div>`
             : '';
 
+        const tracking = lead.tracking || { seen: false, contacted: false };
+
         return `
-            <tr class="border-b border-midnight/5 hover:bg-paper transition-colors group">
+            <tr class="border-b border-midnight/5 hover:bg-paper transition-colors group" data-lead-id="${lead.id}" data-seen="${tracking.seen}" data-contacted="${tracking.contacted}">
                 <td class="p-4 font-mono text-xs text-midnight/60">${lead.id}</td>
+                <td class="p-4">
+                    <div class="flex flex-col gap-1.5">
+                        <button type="button" onclick="toggleLeadStatus(${lead.id}, 'seen', this)"
+                                class="status-btn status-btn-seen ${tracking.seen ? 'status-active' : ''}"
+                                data-status="seen"
+                                data-lead-id="${lead.id}">
+                            <i data-lucide="eye" class="w-3 h-3"></i>
+                            <span>${tracking.seen ? 'Visto' : 'Ver'}</span>
+                        </button>
+                        <button type="button" onclick="toggleLeadStatus(${lead.id}, 'contacted', this)"
+                                class="status-btn status-btn-contacted ${tracking.contacted ? 'status-active' : ''}"
+                                data-status="contacted"
+                                data-lead-id="${lead.id}">
+                            <i data-lucide="message-circle" class="w-3 h-3"></i>
+                            <span>${tracking.contacted ? 'Contactado' : 'Contactar'}</span>
+                        </button>
+                    </div>
+                </td>
                 <td class="p-4 text-sm font-medium">${escapeHtml(lead.type)}</td>
                 <td class="p-4">${propBadge}</td>
                 <td class="p-4 text-sm text-midnight/70">${escapeHtml(lead.zone)}</td>
@@ -821,6 +842,72 @@ function renderLeads(leads) {
             </tr>`;
     }).join('');
     if (window.lucide) lucide.createIcons();
+}
+
+/**
+ * Toggle estado de un lead (visto / contactado)
+ */
+async function toggleLeadStatus(leadId, statusType, btn) {
+    if (btn.disabled) return;
+
+    const isActive = btn.classList.contains('status-active');
+    const label = btn.querySelector('span');
+
+    // UI optimista: toggle inmediato
+    btn.disabled = true;
+    btn.classList.toggle('status-active');
+    btn.classList.add('status-toggling');
+
+    if (!isActive) {
+        if (label) label.textContent = statusType === 'seen' ? 'Visto' : 'Contactado';
+    } else {
+        if (label) label.textContent = statusType === 'seen' ? 'Ver' : 'Contactar';
+    }
+
+    try {
+        const response = await fetch(`/api/lead/${leadId}/toggle-status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: statusType })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            // Confirmar estado desde servidor
+            if (data.value === 1) {
+                btn.classList.add('status-active');
+            } else {
+                btn.classList.remove('status-active');
+            }
+            btn.classList.remove('status-toggling');
+
+            // Actualizar data attributes del row para filtrado
+            const row = document.querySelector(`tr[data-lead-id="${leadId}"]`);
+            if (row) {
+                row.dataset[statusType] = data.value === 1 ? 'true' : 'false';
+            }
+        } else {
+            // Revertir en caso de error
+            btn.classList.toggle('status-active');
+            btn.classList.remove('status-toggling');
+            if (label) label.textContent = isActive
+                ? (statusType === 'seen' ? 'Visto' : 'Contactado')
+                : (statusType === 'seen' ? 'Ver' : 'Contactar');
+            showToast(data.error || 'Error al actualizar estado', 'error');
+        }
+    } catch (error) {
+        console.error('Error toggling lead status:', error);
+        // Revertir en caso de error de red
+        btn.classList.toggle('status-active');
+        btn.classList.remove('status-toggling');
+        if (label) label.textContent = isActive
+            ? (statusType === 'seen' ? 'Visto' : 'Contactado')
+            : (statusType === 'seen' ? 'Ver' : 'Contactar');
+        showToast('Error de conexion', 'error');
+    } finally {
+        btn.disabled = false;
+    }
 }
 
 function applyFilters() {
@@ -861,7 +948,7 @@ function toggleSortOrder() {
 
 function showLeadError(msg) {
     document.getElementById('leadsTableBody').innerHTML = `
-        <tr><td colspan="7" class="p-8 text-center text-rose-600">
+        <tr><td colspan="8" class="p-8 text-center text-rose-600">
             <i data-lucide="alert-circle" class="w-8 h-8 mx-auto mb-2"></i>
             <p>${msg}</p>
         </td></tr>`;
