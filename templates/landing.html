@@ -201,6 +201,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initParallax();
     initTypingEffect();
     fetchAndAnimateCounters();
+    initMagneticHover();
+    initHeroReveal();
 });
 
 // --- Scroll Animations ---
@@ -322,6 +324,43 @@ function animateCounter(element, target, duration) {
     };
 
     requestAnimationFrame(update);
+}
+
+// --- Magnetic Hover Effect ---
+function initMagneticHover() {
+    if (window.matchMedia('(hover: none)').matches) return;
+
+    document.querySelectorAll('.magnetic-hover').forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left - rect.width / 2;
+            const y = e.clientY - rect.top - rect.height / 2;
+            card.style.transform = `translate(${x * 0.06}px, ${y * 0.06}px)`;
+        });
+
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'translate(0, 0)';
+        });
+    });
+}
+
+// --- Hero Image Grayscale Reveal ---
+function initHeroReveal() {
+    const heroImg = document.querySelector('.hero-img');
+    if (!heroImg) return;
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                setTimeout(() => {
+                    heroImg.classList.add('revealed');
+                }, 300);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.3 });
+
+    observer.observe(heroImg);
 }
 
 // --- FAQ Toggle ---

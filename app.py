@@ -192,7 +192,23 @@ def init_db():
                 admin TEXT NOT NULL
             )
         ''')
-        
+
+        # Tabla de Tracking de Leads por Profesional
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS lead_tracking (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                professional_id INTEGER NOT NULL,
+                lead_id INTEGER NOT NULL,
+                seen INTEGER NOT NULL DEFAULT 0,
+                contacted INTEGER NOT NULL DEFAULT 0,
+                seen_at DATETIME DEFAULT NULL,
+                contacted_at DATETIME DEFAULT NULL,
+                UNIQUE(professional_id, lead_id),
+                FOREIGN KEY (professional_id) REFERENCES users(id),
+                FOREIGN KEY (lead_id) REFERENCES leads(id)
+            )
+        ''')
+
         # CREAMOS EL ADMIN POR DEFECTO (Ahora con su rol)
         cursor.execute('SELECT COUNT(*) FROM users')
         if cursor.fetchone()[0] == 0:
@@ -1044,6 +1060,87 @@ def download_lead_pdf(lead_id):
     )
 
 
+@app.route('/api/lead/<int:lead_id>/toggle-status', methods=['POST'])
+@professional_required
+def toggle_lead_status(lead_id):
+    """Toggle 'visto' o 'contactado' para un lead (por profesional actual)."""
+    conn = None
+    try:
+        conn = get_db_connection()
+
+        # Validar que el profesional esta aprobado (mismo patron que get_leads_api)
+        user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+        if not user:
+            return jsonify({'error': 'Acceso denegado'}), 403
+
+        professional = conn.execute(
+            'SELECT status FROM professionals WHERE name = ?',
+            (user['username'],)
+        ).fetchone()
+        if not professional or professional['status'] != 'approved':
+            return jsonify({'error': 'Cuenta pendiente de aprobacion'}), 403
+
+        # Validar que el lead existe
+        lead = conn.execute('SELECT id FROM leads WHERE id = ?', (lead_id,)).fetchone()
+        if not lead:
+            return jsonify({'error': 'Lead no encontrado'}), 404
+
+        data = request.get_json()
+        status_type = data.get('status')
+
+        if status_type not in ('seen', 'contacted'):
+            return jsonify({'error': 'Tipo de estado invalido'}), 400
+
+        professional_id = session['user_id']
+        argentina_tz = pytz.timezone('America/Argentina/Buenos_Aires')
+        now = datetime.now(argentina_tz).strftime('%Y-%m-%d %H:%M:%S')
+
+        # Buscar registro existente
+        tracking = conn.execute(
+            'SELECT * FROM lead_tracking WHERE professional_id = ? AND lead_id = ?',
+            (professional_id, lead_id)
+        ).fetchone()
+
+        if tracking:
+            # Toggle: invertir el valor actual
+            current_value = tracking[status_type]
+            new_value = 0 if current_value else 1
+            timestamp_col = f'{status_type}_at'
+            timestamp_value = now if new_value else None
+
+            conn.execute(
+                f'UPDATE lead_tracking SET {status_type} = ?, {timestamp_col} = ? WHERE professional_id = ? AND lead_id = ?',
+                (new_value, timestamp_value, professional_id, lead_id)
+            )
+        else:
+            # Crear nuevo registro con el estado activado
+            seen_val = 1 if status_type == 'seen' else 0
+            contacted_val = 1 if status_type == 'contacted' else 0
+            seen_at = now if status_type == 'seen' else None
+            contacted_at = now if status_type == 'contacted' else None
+
+            conn.execute(
+                'INSERT INTO lead_tracking (professional_id, lead_id, seen, contacted, seen_at, contacted_at) VALUES (?, ?, ?, ?, ?, ?)',
+                (professional_id, lead_id, seen_val, contacted_val, seen_at, contacted_at)
+            )
+            new_value = 1
+
+        conn.commit()
+
+        return jsonify({
+            'success': True,
+            'status': status_type,
+            'value': new_value,
+            'timestamp': now if new_value else None
+        })
+    except Exception as e:
+        print(f"Error en toggle_lead_status: {e}")
+        return jsonify({'error': 'Error interno'}), 500
+    finally:
+        if conn:
+            conn.close()
+
+
 # --- NUEVA API: OBTENER LEADS DINÁMICAMENTE ---
 @app.route('/api/leads')
 @professional_required
@@ -1140,6 +1237,28 @@ def get_leads_api():
             lead_dict = dict(lead)
             lead_dict['timestamp'] = convert_to_argentina_time(lead_dict['timestamp'])
             leads_list.append(lead_dict)
+
+        # Obtener tracking del profesional actual para estos leads
+        professional_id = session['user_id']
+        lead_ids = [lead['id'] for lead in leads_list]
+
+        tracking_map = {}
+        if lead_ids:
+            placeholders = ','.join(['?'] * len(lead_ids))
+            tracking_rows = conn.execute(
+                f'SELECT lead_id, seen, contacted FROM lead_tracking WHERE professional_id = ? AND lead_id IN ({placeholders})',
+                [professional_id] + lead_ids
+            ).fetchall()
+            for row in tracking_rows:
+                tracking_map[row['lead_id']] = {
+                    'seen': bool(row['seen']),
+                    'contacted': bool(row['contacted'])
+                }
+
+        # Agregar tracking a cada lead
+        for lead in leads_list:
+            tracking = tracking_map.get(lead['id'], {'seen': False, 'contacted': False})
+            lead['tracking'] = tracking
 
         return jsonify({
             "success": True,
