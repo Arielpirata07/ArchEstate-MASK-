@@ -25,6 +25,13 @@
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2"><i data-lucide="building-2" class="w-3 h-3"></i> Profesionales</span>
             </button>
+            <button onclick="showTab('reports')" id="tab-reports"
+                class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white">
+                <span class="flex items-center gap-2">
+                    <i data-lucide="flag" class="w-3 h-3"></i> Reportes
+                    <span id="reportBadge" class="hidden ml-1 px-1.5 py-0.5 bg-rose-600 text-white text-[8px] font-bold rounded-full">0</span>
+                </span>
+            </button>
             <a href="{{ url_for('user_management_view') }}"
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2"><i data-lucide="users" class="w-3 h-3"></i> Usuarios</span>
@@ -321,6 +328,93 @@
         </div>
     </div>
 
+    <!-- ===== TAB: REPORTES ===== -->
+    <div id="panel-reports" class="hidden space-y-6">
+
+        <!-- KPIs de Reportes -->
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div class="bg-white rounded-lg shadow p-5 border-l-4 border-rose-600">
+                <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Total Reportes</p>
+                <p class="text-3xl font-serif text-rose-600" id="kpiTotalReports">0</p>
+            </div>
+            <div class="bg-white rounded-lg shadow p-5 border-l-4 border-amber-500">
+                <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Pendientes</p>
+                <p class="text-3xl font-serif text-amber-500" id="kpiPendingReports">0</p>
+            </div>
+            <div class="bg-white rounded-lg shadow p-5 border-l-4 border-emerald-600">
+                <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Resueltos</p>
+                <p class="text-3xl font-serif text-emerald-600" id="kpiResolvedReports">0</p>
+            </div>
+        </div>
+
+        <!-- Tabla de Reportes -->
+        <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+            <div class="p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <i data-lucide="flag" class="w-4 h-4 text-rose-600"></i>
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Pedidos Reportados</h3>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="filterReports('pending')" class="report-filter-chip report-filter-active" data-filter="pending">Pendientes</button>
+                    <button onclick="filterReports('all')" class="report-filter-chip" data-filter="all">Todos</button>
+                    <button onclick="filterReports('dismissed')" class="report-filter-chip" data-filter="dismissed">Descartados</button>
+                </div>
+            </div>
+            <div id="reportsTableContainer">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-paper-dark border-b border-midnight/5">
+                            <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">ID Lead</th>
+                            <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Tipo</th>
+                            <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Zona</th>
+                            <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Telefono</th>
+                            <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Reportado Por</th>
+                            <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Estado</th>
+                            <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Fecha</th>
+                            <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportsTableBody">
+                        <tr>
+                            <td colspan="8" class="p-8 text-center text-midnight/60">
+                                <div class="flex justify-center items-center gap-2">
+                                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gold"></div>
+                                    Cargando reportes...
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ===== MODAL: DETALLE DE LEAD REPORTADO ===== -->
+<div id="leadDetailModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
+    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeLeadDetailModal()"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl max-h-[90vh] overflow-y-auto p-4">
+        <div class="bg-white rounded-lg shadow-2xl overflow-hidden">
+            <!-- Header -->
+            <div class="border-t-4 border-gold px-8 pt-6 pb-4 flex items-start justify-between">
+                <div>
+                    <p class="text-[10px] uppercase tracking-widest font-bold text-gold mb-1">Detalle del Pedido</p>
+                    <h3 class="text-2xl font-serif">Lead <span id="leadDetailId" class="serif-italic text-gold"></span></h3>
+                </div>
+                <button onclick="closeLeadDetailModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div id="leadDetailContent" class="px-8 pb-8">
+                <div class="flex justify-center py-8">
+                    <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-gold"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- ===== MODAL: DAR DE BAJA / REACTIVAR ===== -->
@@ -394,6 +488,7 @@
 function showTab(tab) {
     document.getElementById('panel-dashboard').classList.add('hidden');
     document.getElementById('panel-management').classList.add('hidden');
+    document.getElementById('panel-reports').classList.add('hidden');
     document.getElementById('panel-' + tab).classList.remove('hidden');
 
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -403,6 +498,10 @@ function showTab(tab) {
     const active = document.getElementById('tab-' + tab);
     active.classList.add('bg-midnight', 'text-white');
     active.classList.remove('bg-paper-dark', 'text-midnight');
+
+    if (tab === 'reports') {
+        loadReports();
+    }
 }
 
 // ================================================================
@@ -1020,7 +1119,12 @@ function closeDeactivateModal() {
     deactivateNewState   = null;
 }
 
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDeactivateModal(); });
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+        closeDeactivateModal();
+        closeLeadDetailModal();
+    }
+});
 
 async function confirmDeactivate() {
     if (deactivateTargetId === null) return;
@@ -1060,6 +1164,243 @@ async function confirmDeactivate() {
         btn.innerHTML = orig;
         btn.disabled  = false;
     }
+}
+
+/**
+ * Gestion de Reportes de Leads
+ */
+let allReports = [];
+let currentReportFilter = 'pending';
+
+function loadReports() {
+    fetch('/api/admin/reports')
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                allReports = data.reports;
+                renderReportsKPIs(data);
+                renderReports(data.reports);
+                updateReportBadge(data.status_counts);
+            }
+        })
+        .catch(e => console.error('Error loading reports:', e));
+}
+
+function renderReportsKPIs(data) {
+    document.getElementById('kpiTotalReports').textContent = data.total || 0;
+    document.getElementById('kpiPendingReports').textContent = (data.status_counts && data.status_counts.pending) || 0;
+    const resolved = (data.status_counts && data.status_counts.dismissed) || 0;
+    document.getElementById('kpiResolvedReports').textContent = resolved;
+}
+
+function updateReportBadge(statusCounts) {
+    const badge = document.getElementById('reportBadge');
+    const pending = (statusCounts && statusCounts.pending) || 0;
+    if (pending > 0) {
+        badge.textContent = pending;
+        badge.classList.remove('hidden');
+    } else {
+        badge.classList.add('hidden');
+    }
+}
+
+function filterReports(filter) {
+    currentReportFilter = filter;
+    document.querySelectorAll('.report-filter-chip').forEach(chip => {
+        chip.classList.toggle('report-filter-active', chip.dataset.filter === filter);
+    });
+
+    let filtered = allReports;
+    if (filter === 'pending') filtered = allReports.filter(r => r.status === 'pending');
+    else if (filter === 'dismissed') filtered = allReports.filter(r => r.status === 'dismissed');
+
+    renderReports(filtered);
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+function renderReports(reports) {
+    const tbody = document.getElementById('reportsTableBody');
+
+    if (!reports.length) {
+        tbody.innerHTML = `
+            <tr><td colspan="8" class="p-12 text-center text-midnight/60">
+                <i data-lucide="check-circle" class="w-10 h-10 mx-auto mb-3 text-emerald-200"></i>
+                <p class="font-semibold text-midnight/40">No hay reportes para mostrar</p>
+            </td></tr>`;
+        if (window.lucide) lucide.createIcons();
+        return;
+    }
+
+    tbody.innerHTML = reports.map(r => {
+        const statusBadge = r.status === 'pending'
+            ? '<span class="px-2 py-1 bg-amber-50 text-amber-700 text-[9px] font-bold uppercase tracking-widest rounded">Pendiente</span>'
+            : '<span class="px-2 py-1 bg-paper-dark text-midnight/40 text-[9px] font-bold uppercase tracking-widest rounded">Descartado</span>';
+
+        const actions = r.status === 'pending'
+            ? `<div class="flex justify-end gap-2 flex-wrap">
+                    <button onclick="viewLeadDetail(${r.lead_id})" class="px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">
+                        Ver Lead
+                    </button>
+                    <button onclick="deleteLead(${r.id}, ${r.lead_id})" class="px-3 py-2 bg-rose-600 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
+                        Eliminar
+                    </button>
+                    <button onclick="dismissReport(${r.id})" class="px-3 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-all">
+                        Descartar
+                    </button>
+               </div>`
+            : '<div class="text-right text-[10px] text-midnight/30 font-bold uppercase tracking-widest">&mdash;</div>';
+
+        return `
+            <tr class="border-b border-midnight/5 hover:bg-paper transition-colors">
+                <td class="p-4 font-mono text-xs text-midnight/60">#${r.lead_id}</td>
+                <td class="p-4 text-sm">${escapeHtml(r.lead_type)}</td>
+                <td class="p-4 text-sm text-midnight/70">${escapeHtml(r.lead_zone)}</td>
+                <td class="p-4 font-mono text-xs text-rose-600">${escapeHtml(r.lead_phone)}</td>
+                <td class="p-4 text-sm">${escapeHtml(r.reported_by_name)}</td>
+                <td class="p-4">${statusBadge}</td>
+                <td class="p-4 text-sm text-midnight/50">${r.created_at}</td>
+                <td class="p-4">${actions}</td>
+            </tr>`;
+    }).join('');
+
+    if (window.lucide) lucide.createIcons();
+}
+
+function viewLeadDetail(leadId) {
+    document.getElementById('leadDetailId').textContent = '#' + leadId;
+    document.getElementById('leadDetailContent').innerHTML = `
+        <div class="flex justify-center py-8">
+            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-gold"></div>
+        </div>`;
+    document.getElementById('leadDetailModal').classList.remove('hidden');
+    if (window.lucide) lucide.createIcons();
+
+    fetch(`/api/admin/lead/${leadId}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                renderLeadDetail(data.lead);
+            } else {
+                document.getElementById('leadDetailContent').innerHTML = `
+                    <p class="text-center text-rose-600 py-8">${data.error || 'Error al cargar'}</p>`;
+            }
+        })
+        .catch(() => {
+            document.getElementById('leadDetailContent').innerHTML = `
+                <p class="text-center text-rose-600 py-8">Error de conexion</p>`;
+        });
+}
+
+function renderLeadDetail(lead) {
+    const sym = lead.currency === 'USD' ? 'US$' : lead.currency === 'EUR' ? '€' : '$';
+    const budget = `${sym}${lead.budget}`;
+    const style = lead.architectural_style || 'No especificado';
+    const amenities = lead.amenities
+        ? lead.amenities.split(',').map(a => `
+            <div class="flex items-center gap-2">
+                <span class="w-2 h-2 bg-gold rounded-full"></span>
+                <p class="text-sm text-midnight">${escapeHtml(a.trim())}</p>
+            </div>`).join('')
+        : '<p class="text-sm text-midnight/50">No especificadas</p>';
+
+    let typeDetails = '';
+    if (lead.property_type === 'departamento') {
+        typeDetails = `
+            <div class="border-t border-midnight/10 pt-5 mt-5">
+                <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-3">Detalles del Departamento</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Piso/Bloque</p><p class="text-sm text-midnight">${lead.floor_block || 'No especificado'}</p></div>
+                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Metros Utiles</p><p class="text-sm text-midnight">${lead.usable_m2 ? lead.usable_m2 + ' m²' : 'No especificado'}</p></div>
+                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Ascensor</p><p class="text-sm text-midnight">${lead.elevator || 'No especificado'}</p></div>
+                </div>
+            </div>`;
+    } else if (lead.property_type === 'casa') {
+        typeDetails = `
+            <div class="border-t border-midnight/10 pt-5 mt-5">
+                <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-3">Detalles de la Casa</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Terreno</p><p class="text-sm text-midnight">${lead.land_area ? lead.land_area + ' m²' : 'No especificado'}</p></div>
+                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Construida</p><p class="text-sm text-midnight">${lead.built_area ? lead.built_area + ' m²' : 'No especificado'}</p></div>
+                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Piscina</p><p class="text-sm text-midnight">${lead.pool || 'No especificado'}</p></div>
+                </div>
+            </div>`;
+    }
+
+    document.getElementById('leadDetailContent').innerHTML = `
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-4">
+                <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Tipo de Operacion</p><p class="text-base font-semibold text-midnight">${escapeHtml(lead.type)}</p></div>
+                <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Zona</p><p class="text-base text-midnight">${escapeHtml(lead.zone)}</p></div>
+                <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Presupuesto</p><p class="text-base font-serif italic text-gold">${budget}</p></div>
+                <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Estilo Arquitectonico</p><p class="text-base text-midnight">${escapeHtml(style)}</p></div>
+                <div class="border-t border-midnight/10 pt-4">
+                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Contacto</p>
+                    <div class="flex items-center gap-2 text-sm text-midnight"><i data-lucide="mail" class="w-4 h-4 text-gold flex-shrink-0"></i><span>${escapeHtml(lead.email)}</span></div>
+                    <div class="flex items-center gap-2 text-sm text-midnight mt-1"><i data-lucide="phone" class="w-4 h-4 text-gold flex-shrink-0"></i><span>${escapeHtml(lead.phone)}</span></div>
+                </div>
+                <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Registrado</p><p class="text-sm text-midnight">${lead.timestamp}</p></div>
+            </div>
+            <div class="space-y-4">
+                <p class="text-lg font-serif text-midnight">Especificaciones Tecnicas</p>
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="text-center"><p class="text-[9px] uppercase tracking-widest text-gold font-bold mb-1">Habitaciones</p><p class="text-2xl font-serif text-midnight">${lead.bedrooms || '-'}</p></div>
+                    <div class="text-center"><p class="text-[9px] uppercase tracking-widest text-gold font-bold mb-1">Banos</p><p class="text-2xl font-serif text-midnight">${lead.bathrooms || '-'}</p></div>
+                    <div class="text-center"><p class="text-[9px] uppercase tracking-widest text-gold font-bold mb-1">Metros</p><p class="text-2xl font-serif text-midnight">${lead.land_area || lead.usable_m2 || '-'}</p>${lead.land_area || lead.usable_m2 ? '<p class="text-[9px] text-midnight/60">m²</p>' : ''}</div>
+                </div>
+                <div class="border-t border-midnight/10 pt-4">
+                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-3">Extras y Comodidades</p>
+                    <div class="space-y-1.5">${amenities}</div>
+                </div>
+                ${typeDetails}
+            </div>
+        </div>`;
+
+    if (window.lucide) lucide.createIcons();
+}
+
+function closeLeadDetailModal() {
+    document.getElementById('leadDetailModal').classList.add('hidden');
+}
+
+function deleteLead(reportId, leadId) {
+    if (!confirm(`Eliminar permanentemente el lead #${leadId}? Esta accion no se puede deshacer.`)) return;
+
+    fetch(`/api/admin/report/${reportId}/delete`, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                if (typeof showToast === 'function') showToast('Lead eliminado correctamente', 'success');
+                loadReports();
+                if (typeof loadDashboard === 'function') loadDashboard();
+            } else {
+                if (typeof showToast === 'function') showToast(data.error || 'Error al eliminar', 'error');
+            }
+        })
+        .catch(() => {
+            if (typeof showToast === 'function') showToast('Error de conexion', 'error');
+        });
+}
+
+function dismissReport(reportId) {
+    fetch(`/api/admin/report/${reportId}/dismiss`, { method: 'POST' })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                if (typeof showToast === 'function') showToast('Reporte descartado', 'success');
+                loadReports();
+            } else {
+                if (typeof showToast === 'function') showToast(data.error || 'Error', 'error');
+            }
+        })
+        .catch(() => {
+            if (typeof showToast === 'function') showToast('Error de conexion', 'error');
+        });
 }
 </script>
 {% endblock %}
