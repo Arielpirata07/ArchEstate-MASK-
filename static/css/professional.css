@@ -133,3 +133,14 @@
         justify-content: center;
     }
 }
+
+/* Boton de Reportar en tabla de leads */
+button[title="Reportar telefono inexistente"]:hover {
+    background: #e11d48 !important;
+    color: white !important;
+}
+
+button[title="Reportar telefono inexistente"]:hover i[data-lucide] {
+    fill: white;
+    fill-opacity: 0.2;
+}

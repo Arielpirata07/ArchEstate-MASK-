@@ -209,6 +209,23 @@ def init_db():
             )
         ''')
 
+        # Tabla de Reportes de Leads por Profesionales
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS lead_reports (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                lead_id INTEGER NOT NULL,
+                reported_by INTEGER NOT NULL,
+                reason TEXT NOT NULL DEFAULT 'telefono_inexistente',
+                notes TEXT DEFAULT '',
+                status TEXT NOT NULL DEFAULT 'pending',
+                reviewed_by TEXT DEFAULT NULL,
+                reviewed_at DATETIME DEFAULT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (lead_id) REFERENCES leads(id),
+                FOREIGN KEY (reported_by) REFERENCES users(id)
+            )
+        ''')
+
         # CREAMOS EL ADMIN POR DEFECTO (Ahora con su rol)
         cursor.execute('SELECT COUNT(*) FROM users')
         if cursor.fetchone()[0] == 0:
@@ -1141,6 +1158,59 @@ def toggle_lead_status(lead_id):
             conn.close()
 
 
+@app.route('/api/lead/<int:lead_id>/report', methods=['POST'])
+@professional_required
+def report_lead(lead_id):
+    """Reportar un lead como telefono inexistente."""
+    conn = None
+    try:
+        conn = get_db_connection()
+
+        user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+        if not user:
+            return jsonify({'error': 'Acceso denegado'}), 403
+
+        professional = conn.execute(
+            'SELECT status FROM professionals WHERE name = ?',
+            (user['username'],)
+        ).fetchone()
+        if not professional or professional['status'] != 'approved':
+            return jsonify({'error': 'Cuenta pendiente de aprobacion'}), 403
+
+        lead = conn.execute('SELECT id, type, phone FROM leads WHERE id = ?', (lead_id,)).fetchone()
+        if not lead:
+            return jsonify({'error': 'Lead no encontrado'}), 404
+
+        data = request.get_json() or {}
+        notes = utils.safe_text(data.get('notes', ''))[:500]
+
+        existing = conn.execute(
+            'SELECT id FROM lead_reports WHERE lead_id = ? AND reported_by = ? AND status = ?',
+            (lead_id, session['user_id'], 'pending')
+        ).fetchone()
+        if existing:
+            return jsonify({'error': 'Ya reportaste este pedido anteriormente'}), 400
+
+        conn.execute(
+            'INSERT INTO lead_reports (lead_id, reported_by, reason, notes, status) VALUES (?, ?, ?, ?, ?)',
+            (lead_id, session['user_id'], 'telefono_inexistente', notes, 'pending')
+        )
+        conn.commit()
+
+        log_action("Reporte de Lead", f"Lead ID: {lead_id} (Telefono: {lead['phone']}) reportado por {user['username']}")
+
+        return jsonify({
+            'success': True,
+            'message': 'Pedido reportado correctamente'
+        })
+    except Exception as e:
+        print(f"Error en report_lead: {e}")
+        return jsonify({'error': 'Error interno'}), 500
+    finally:
+        if conn:
+            conn.close()
+
+
 # --- NUEVA API: OBTENER LEADS DINÁMICAMENTE ---
 @app.route('/api/leads')
 @professional_required
@@ -1425,6 +1495,11 @@ def admin_stats():
             'SELECT action, COUNT(*) as count FROM audit_log GROUP BY action ORDER BY count DESC'
         ).fetchall()
 
+        # Conteo de reportes pendientes
+        pending_reports = conn.execute(
+            "SELECT COUNT(*) FROM lead_reports WHERE status = 'pending'"
+        ).fetchone()[0]
+
         return jsonify({
             'total_leads': total_leads,
             'leads_by_type': [{'label': r['type'], 'value': r['count']} for r in leads_by_type],
@@ -1434,6 +1509,7 @@ def admin_stats():
             'pros_stats': [{'label': r['status'], 'value': r['count']} for r in pros_stats],
             'users_by_role': [{'label': r['role'], 'value': r['count']} for r in users_by_role],
             'audit_actions': [{'label': r['action'], 'value': r['count']} for r in audit_actions],
+            'pending_reports': pending_reports,
         })
     except Exception as e:
         print(f"Error en admin_stats: {e}")
@@ -1441,6 +1517,159 @@ def admin_stats():
     finally:
         if conn:
             conn.close()
+
+
+@app.route('/api/admin/lead/<int:lead_id>', methods=['GET'])
+@admin_required
+def admin_lead_detail(lead_id):
+    """Obtener detalles de un lead para el admin."""
+    conn = None
+    try:
+        conn = get_db_connection()
+        lead = conn.execute('SELECT * FROM leads WHERE id = ?', (lead_id,)).fetchone()
+        if not lead:
+            return jsonify({'error': 'Lead no encontrado'}), 404
+
+        lead_dict = dict(lead)
+        lead_dict['timestamp'] = convert_to_argentina_time(lead_dict['timestamp'])
+
+        return jsonify({
+            'success': True,
+            'lead': lead_dict
+        })
+    except Exception as e:
+        print(f"Error en admin_lead_detail: {e}")
+        return jsonify({'error': 'Error interno'}), 500
+    finally:
+        if conn:
+            conn.close()
+
+
+@app.route('/api/admin/reports', methods=['GET'])
+@admin_required
+def get_lead_reports():
+    """Obtener todos los reportes de leads para el admin."""
+    conn = None
+    try:
+        conn = get_db_connection()
+
+        reports = conn.execute('''
+            SELECT
+                lr.id,
+                lr.lead_id,
+                lr.reason,
+                lr.notes,
+                lr.status,
+                lr.reviewed_by,
+                lr.reviewed_at,
+                lr.created_at,
+                u.username as reported_by_name,
+                l.type as lead_type,
+                l.zone as lead_zone,
+                l.phone as lead_phone,
+                l.budget as lead_budget,
+                l.timestamp as lead_timestamp
+            FROM lead_reports lr
+            JOIN users u ON lr.reported_by = u.id
+            JOIN leads l ON lr.lead_id = l.id
+            ORDER BY lr.created_at DESC
+        ''').fetchall()
+
+        reports_list = []
+        for r in reports:
+            rd = dict(r)
+            rd['lead_timestamp'] = convert_to_argentina_time(rd['lead_timestamp'])
+            rd['created_at'] = convert_to_argentina_time(rd['created_at'])
+            reports_list.append(rd)
+
+        status_counts = {}
+        for r in conn.execute('SELECT status, COUNT(*) as c FROM lead_reports GROUP BY status').fetchall():
+            status_counts[r['status']] = r['c']
+
+        return jsonify({
+            'success': True,
+            'reports': reports_list,
+            'total': len(reports_list),
+            'status_counts': status_counts
+        })
+    except Exception as e:
+        print(f"Error en get_lead_reports: {e}")
+        return jsonify({'error': 'Error interno'}), 500
+    finally:
+        if conn:
+            conn.close()
+
+
+@app.route('/api/admin/report/<int:report_id>/delete', methods=['POST'])
+@admin_required
+def delete_reported_lead(report_id):
+    """Eliminar un lead reportado como falso."""
+    conn = None
+    try:
+        conn = get_db_connection()
+
+        report = conn.execute(
+            'SELECT * FROM lead_reports WHERE id = ?', (report_id,)
+        ).fetchone()
+        if not report:
+            return jsonify({'error': 'Reporte no encontrado'}), 404
+
+        lead_id = report['lead_id']
+
+        conn.execute('DELETE FROM lead_tracking WHERE lead_id = ?', (lead_id,))
+        conn.execute('DELETE FROM lead_reports WHERE lead_id = ?', (lead_id,))
+        conn.execute('DELETE FROM leads WHERE id = ?', (lead_id,))
+
+        conn.commit()
+        log_action("Eliminacion de Lead", f"Lead ID: {lead_id} eliminado tras reporte #{report_id} por {session.get('username')}")
+
+        return jsonify({
+            'success': True,
+            'message': 'Lead eliminado correctamente'
+        })
+    except Exception as e:
+        print(f"Error en delete_reported_lead: {e}")
+        return jsonify({'error': 'Error interno'}), 500
+    finally:
+        if conn:
+            conn.close()
+
+
+@app.route('/api/admin/report/<int:report_id>/dismiss', methods=['POST'])
+@admin_required
+def dismiss_report(report_id):
+    """Descartar un reporte (marcar como revisado sin eliminar lead)."""
+    conn = None
+    try:
+        conn = get_db_connection()
+
+        report = conn.execute(
+            'SELECT * FROM lead_reports WHERE id = ?', (report_id,)
+        ).fetchone()
+        if not report:
+            return jsonify({'error': 'Reporte no encontrado'}), 404
+
+        argentina_tz = pytz.timezone('America/Argentina/Buenos_Aires')
+        now = datetime.now(argentina_tz).strftime('%Y-%m-%d %H:%M:%S')
+
+        conn.execute(
+            'UPDATE lead_reports SET status = ?, reviewed_by = ?, reviewed_at = ? WHERE id = ?',
+            ('dismissed', session.get('username'), now, report_id)
+        )
+        conn.commit()
+        log_action("Reporte Descartado", f"Reporte #{report_id} descartado por {session.get('username')}")
+
+        return jsonify({
+            'success': True,
+            'message': 'Reporte descartado'
+        })
+    except Exception as e:
+        print(f"Error en dismiss_report: {e}")
+        return jsonify({'error': 'Error interno'}), 500
+    finally:
+        if conn:
+            conn.close()
+
 
 # --- ESTADO DEL DOCUMENTO DEL PROFESIONAL ---
 @app.route('/api/professional/doc-status', methods=['GET'])

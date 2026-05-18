@@ -87,3 +87,46 @@
     opacity: 0;
     animation: fadeInUp 0.4s ease-out forwards;
 }
+
+/* Report Filter Chips */
+.report-filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.6rem;
+    border: 1.5px solid rgba(0, 4, 16, 0.1);
+    border-radius: 9999px;
+    background: transparent;
+    color: rgba(0, 4, 16, 0.5);
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Manrope', sans-serif;
+}
+
+.report-filter-chip:hover {
+    border-color: rgba(225, 29, 72, 0.3);
+    color: rgba(0, 4, 16, 0.7);
+}
+
+.report-filter-chip.report-filter-active {
+    border-color: #e11d48;
+    background: #e11d48;
+    color: white;
+}
+
+#reportBadge {
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+#reportBadge:not(.hidden) {
+    animation: badgePop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes badgePop {
+    0% { transform: scale(0); }
+    100% { transform: scale(1); }
+}

@@ -286,6 +286,49 @@
     </div>
     {% endif %}
 
+    <!-- Modal: Reportar Lead -->
+    <div id="reportModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="reportModalTitle">
+        <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeReportModal()"></div>
+        <div class="flex items-center justify-center min-h-full p-4">
+            <div class="relative bg-white rounded-lg shadow-2xl border-t-4 border-rose-600 max-w-md w-full p-8 transform transition-all">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="flag" class="w-5 h-5 text-rose-600"></i>
+                    </div>
+                    <div>
+                        <h3 id="reportModalTitle" class="text-lg font-serif italic text-midnight">Reportar Pedido</h3>
+                        <p class="text-xs text-midnight/50">Pedido <span id="reportLeadId" class="font-mono"></span></p>
+                    </div>
+                </div>
+
+                <p class="text-sm text-midnight/70 mb-6 leading-relaxed">
+                    Estas por reportar este pedido como <strong>telefono inexistente</strong>.
+                    Esta accion quedara registrada y sera visible para el equipo de administracion.
+                </p>
+
+                <div class="mb-6">
+                    <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">
+                        Notas adicionales (opcional)
+                    </label>
+                    <textarea id="reportNotes" rows="3"
+                        class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-rose-600 focus:outline-none resize-none"
+                        placeholder="Ej: El numero no existe, contesta otra persona..."></textarea>
+                </div>
+
+                <div class="flex gap-3 justify-end">
+                    <button onclick="closeReportModal()"
+                        class="px-4 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight hover:text-white transition-all">
+                        Cancelar
+                    </button>
+                    <button onclick="confirmReport()"
+                        class="px-4 py-2 bg-rose-600 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
+                        Confirmar Reporte
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 {% endblock %}
 
@@ -837,6 +880,11 @@ function renderLeads(leads) {
                             class="inline-flex items-center gap-1.5 px-3 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-all">
                             <i data-lucide="download" class="w-3 h-3"></i> PDF
                         </a>
+                        <button type="button" onclick="openReportModal(${lead.id})"
+                            class="inline-flex items-center gap-1.5 px-3 py-2 bg-paper-dark text-rose-600 rounded text-[10px] font-bold uppercase tracking-widest hover:bg-rose-600 hover:text-white transition-all"
+                            title="Reportar telefono inexistente">
+                            <i data-lucide="flag" class="w-3 h-3"></i>
+                        </button>
                     </div>
                 </td>
             </tr>`;
@@ -954,6 +1002,61 @@ function showLeadError(msg) {
         </td></tr>`;
     if (window.lucide) lucide.createIcons();
 }
+
+/**
+ * Modal de Reporte de Lead
+ */
+let currentReportLeadId = null;
+
+function openReportModal(leadId) {
+    currentReportLeadId = leadId;
+    document.getElementById('reportLeadId').textContent = '#' + leadId;
+    document.getElementById('reportNotes').value = '';
+    document.getElementById('reportModal').classList.remove('hidden');
+    if (window.lucide) lucide.createIcons();
+}
+
+function closeReportModal() {
+    currentReportLeadId = null;
+    document.getElementById('reportModal').classList.add('hidden');
+}
+
+async function confirmReport() {
+    if (!currentReportLeadId) return;
+
+    const notes = document.getElementById('reportNotes').value.trim();
+    const btn = event.target;
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Enviando...';
+
+    try {
+        const response = await fetch(`/api/lead/${currentReportLeadId}/report`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ notes: notes })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            showToast(data.message, 'success');
+            closeReportModal();
+        } else {
+            showToast(data.error || 'Error al reportar', 'error');
+        }
+    } catch (error) {
+        console.error('Error reporting lead:', error);
+        showToast('Error de conexion', 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+    }
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeReportModal();
+});
 {% endif %}
 </script>
 {% endblock %}
