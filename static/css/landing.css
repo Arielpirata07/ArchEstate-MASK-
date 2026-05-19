@@ -141,6 +141,22 @@
     transform: rotate(180deg);
 }
 
+/* Focus visible for keyboard users on FAQ questions */
+.faq-question:focus-visible {
+    outline: 3px solid #735A3A;
+    outline-offset: 3px;
+    border-radius: 0.25rem;
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    .fade-in-up, .fade-in, .slide-in-left, .slide-in-right, .float-animation, .pulse-glow, .typing-animated, .parallax {
+        animation: none !important;
+        transition: none !important;
+        transform: none !important;
+    }
+}
+
 /* --- Testimonial Carousel --- */
 .carousel-container {
     position: relative;

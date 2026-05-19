@@ -67,26 +67,26 @@
     <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
         <div class="p-6 group">
             <div class="text-4xl font-serif text-gold mb-2">
-                <span class="counter" data-target="0" data-suffix="">0</span>
-            </div>
+                    <span class="counter" data-target="0" data-suffix="" role="status" aria-live="polite">0</span>
+                </div>
             <div class="text-[10px] uppercase tracking-widest text-midnight/50 font-bold">Leads Generados</div>
         </div>
         <div class="p-6 group">
             <div class="text-4xl font-serif text-gold mb-2">
-                <span class="counter" data-target="0" data-suffix="">0</span>
-            </div>
+                    <span class="counter" data-target="0" data-suffix="" role="status" aria-live="polite">0</span>
+                </div>
             <div class="text-[10px] uppercase tracking-widest text-midnight/50 font-bold">Profesionales Activos</div>
         </div>
         <div class="p-6 group">
             <div class="text-4xl font-serif text-gold mb-2">
-                <span class="counter" data-target="0" data-suffix="">0</span>
-            </div>
+                    <span class="counter" data-target="0" data-suffix="" role="status" aria-live="polite">0</span>
+                </div>
             <div class="text-[10px] uppercase tracking-widest text-midnight/50 font-bold">Zonas Cubiertas</div>
         </div>
         <div class="p-6 group">
             <div class="text-4xl font-serif text-gold mb-2">
-                <span class="counter" data-target="0" data-suffix="">0</span>
-            </div>
+                    <span class="counter" data-target="0" data-suffix="" role="status" aria-live="polite">0</span>
+                </div>
             <div class="text-[10px] uppercase tracking-widest text-midnight/50 font-bold">Leads Este Mes</div>
         </div>
     </div>
@@ -148,44 +148,44 @@
     <div class="space-y-0">
         <!-- FAQ 1 -->
         <div class="faq-item animate-on-scroll fade-in-up stagger-1" data-scroll>
-            <div class="faq-question flex items-center justify-between py-5" onclick="toggleFaq(this)">
+            <div class="faq-question flex items-center justify-between py-5" onclick="toggleFaq(this)" tabindex="0" role="button" aria-controls="faq-answer-1" aria-expanded="false">
                 <span class="text-sm font-medium">Es gratuito para usuarios?</span>
                 <i data-lucide="chevron-down" class="w-4 h-4 text-gold faq-chevron flex-shrink-0 ml-4"></i>
             </div>
-            <div class="faq-answer text-sm text-midnight/60 leading-relaxed">
+            <div id="faq-answer-1" class="faq-answer text-sm text-midnight/60 leading-relaxed" aria-hidden="true">
                 Si, el servicio es completamente gratuito para usuarios que buscan profesionales. Solo los profesionales pagan por acceder a los leads.
             </div>
         </div>
 
         <!-- FAQ 2 -->
         <div class="faq-item animate-on-scroll fade-in-up stagger-2" data-scroll>
-            <div class="faq-question flex items-center justify-between py-5" onclick="toggleFaq(this)">
+            <div class="faq-question flex items-center justify-between py-5" onclick="toggleFaq(this)" tabindex="0" role="button" aria-controls="faq-answer-2" aria-expanded="false">
                 <span class="text-sm font-medium">Como se verifican los profesionales?</span>
                 <i data-lucide="chevron-down" class="w-4 h-4 text-gold faq-chevron flex-shrink-0 ml-4"></i>
             </div>
-            <div class="faq-answer text-sm text-midnight/60 leading-relaxed">
+            <div id="faq-answer-2" class="faq-answer text-sm text-midnight/60 leading-relaxed" aria-hidden="true">
                 Cada profesional debe presentar documentacion valida (matricula profesional, identificacion) que es revisada manualmente por nuestro equipo antes de ser aprobado.
             </div>
         </div>
 
         <!-- FAQ 3 -->
         <div class="faq-item animate-on-scroll fade-in-up stagger-3" data-scroll>
-            <div class="faq-question flex items-center justify-between py-5" onclick="toggleFaq(this)">
+            <div class="faq-question flex items-center justify-between py-5" onclick="toggleFaq(this)" tabindex="0" role="button" aria-controls="faq-answer-3" aria-expanded="false">
                 <span class="text-sm font-medium">En que zonas operan?</span>
                 <i data-lucide="chevron-down" class="w-4 h-4 text-gold faq-chevron flex-shrink-0 ml-4"></i>
             </div>
-            <div class="faq-answer text-sm text-midnight/60 leading-relaxed">
+            <div id="faq-answer-3" class="faq-answer text-sm text-midnight/60 leading-relaxed" aria-hidden="true">
                 Operamos en multiples ciudades de Latinoamerica y Espana. La cobertura se expande constantemente a medida que se incorporan nuevos profesionales.
             </div>
         </div>
 
         <!-- FAQ 4 -->
         <div class="faq-item animate-on-scroll fade-in-up stagger-4" data-scroll>
-            <div class="faq-question flex items-center justify-between py-5" onclick="toggleFaq(this)">
+            <div class="faq-question flex items-center justify-between py-5" onclick="toggleFaq(this)" tabindex="0" role="button" aria-controls="faq-answer-4" aria-expanded="false">
                 <span class="text-sm font-medium">Cuan rapido recibo respuestas?</span>
                 <i data-lucide="chevron-down" class="w-4 h-4 text-gold faq-chevron flex-shrink-0 ml-4"></i>
             </div>
-            <div class="faq-answer text-sm text-midnight/60 leading-relaxed">
+            <div id="faq-answer-4" class="faq-answer text-sm text-midnight/60 leading-relaxed" aria-hidden="true">
                 La mayoria de los profesionales se contactan dentro de las primeras 24 horas. El tiempo puede variar segun la disponibilidad y la zona.
             </div>
         </div>
@@ -197,12 +197,39 @@
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) document.documentElement.classList.add('reduced-motion');
+
     initScrollAnimations();
     initParallax();
     initTypingEffect();
     fetchAndAnimateCounters();
     initMagneticHover();
     initHeroReveal();
+
+    // FAQ: make keyboard accessible and add ARIA attributes
+    document.querySelectorAll('.faq-question').forEach((q, i) => {
+        const answer = q.nextElementSibling;
+        if (!answer) return;
+        const answerId = answer.id || `faq-answer-${i+1}`;
+        answer.id = answerId;
+        q.setAttribute('tabindex', '0');
+        q.setAttribute('role', 'button');
+        q.setAttribute('aria-controls', answerId);
+        q.setAttribute('aria-expanded', 'false');
+        q.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                toggleFaq(q);
+            }
+        });
+    });
+
+    // Ensure counters have ARIA and respect reduced motion
+    document.querySelectorAll('.counter').forEach(c => {
+        if (!c.getAttribute('role')) c.setAttribute('role', 'status');
+        if (!c.getAttribute('aria-live')) c.setAttribute('aria-live', 'polite');
+    });
 });
 
 // --- Scroll Animations ---
@@ -373,13 +400,26 @@ function toggleFaq(questionEl) {
     document.querySelectorAll('.faq-item.open').forEach(item => {
         if (item !== faqItem) {
             item.classList.remove('open');
-            item.querySelector('.faq-answer').classList.remove('open');
+            const otherAnswer = item.querySelector('.faq-answer');
+            const otherQuestion = item.querySelector('.faq-question');
+            if (otherAnswer) {
+                otherAnswer.classList.remove('open');
+                otherAnswer.setAttribute('aria-hidden', 'true');
+            }
+            if (otherQuestion) {
+                otherQuestion.setAttribute('aria-expanded', 'false');
+            }
         }
     });
 
     // Toggle el actual
     faqItem.classList.toggle('open');
     answer.classList.toggle('open');
+    answer.setAttribute('aria-hidden', (!isOpen).toString());
+    // Update aria-expanded on the control
+    try {
+        questionEl.setAttribute('aria-expanded', (!isOpen).toString());
+    } catch (e) {}
 
     // Re-init lucide icons
     if (window.lucide) lucide.createIcons();

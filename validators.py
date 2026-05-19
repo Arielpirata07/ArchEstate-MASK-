@@ -19,6 +19,9 @@ VALID_ZONES = [
     'malvinas_argentinas', 'pilar', 'del_viso', 'polvorines', '_MANZANA_'
 ]
 
+VALID_PROPERTY_TYPES = ['departamento', 'casa', 'duplex', 'penthouse', 'local_comercial']
+VALID_OPERATION_TYPES = ['Comprar Propiedad', 'Remodelación Integral', 'Construir desde Cero']
+
 
 def validate_email(email):
     """
@@ -106,4 +109,32 @@ def validate_zone(zone):
     if len(zone) > 100:
         return False, "Zona demasiado larga"
 
+    return True, None
+
+
+def validate_username(username):
+    if not username or len(username) < 3 or len(username) > 30:
+        return False, 'El nombre de usuario debe tener entre 3 y 30 caracteres.'
+    if not re.match(r'^[a-zA-Z0-9_]+$', username):
+        return False, 'El usuario solo puede contener letras, numeros y guion bajo.'
+    return True, None
+
+
+def validate_password(password):
+    if not password or len(password) < 6:
+        return False, 'La contrasena debe tener al menos 6 caracteres.'
+    if not re.search(r'[A-Za-z]', password) or not re.search(r'[0-9]', password):
+        return False, 'La contrasena debe contener al menos una letra y un numero.'
+    return True, None
+
+
+def validate_property_type(ptype):
+    if not ptype or ptype not in VALID_PROPERTY_TYPES:
+        return False, 'Tipo de propiedad no valido.'
+    return True, None
+
+
+def validate_operation_type(otype):
+    if not otype or otype not in VALID_OPERATION_TYPES:
+        return False, 'Tipo de operacion no valido.'
     return True, None

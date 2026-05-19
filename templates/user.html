@@ -473,6 +473,9 @@
                         <!-- Teléfono -->
                         <div>
                             <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Teléfono</label>
+                            {% if session.get('phone') %}
+                            <input id="phone-input" type="tel" name="phone" value="{{ session.get('phone', '') }}" readonly class="w-full bg-white border-0 border-b-2 border-midnight/20 py-2 text-midnight/50 text-sm cursor-not-allowed">
+                            {% else %}
                             <div class="flex gap-2">
                                 <select
                                     id="country-code-select"
@@ -496,12 +499,10 @@
                                     type="tel"
                                     required
                                     placeholder="9 11 1234 5678"
-                                    value="{{ session.get('phone', '') }}"
                                     class="flex-1 bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm"
                                 >
                             </div>
                             <p class="text-[9px] text-midnight/40 mt-1">El código de país se incluirá automáticamente</p>
-                            <!-- Acción de guardado de perfil -->
                             <div class="mt-2 flex items-center justify-between">
                                 <p id="phone-error-msg" class="hidden text-[10px] text-rose-500 font-medium"></p>
                                 <button
@@ -514,6 +515,7 @@
                                     Guardar como predeterminado
                                 </button>
                             </div>
+                            {% endif %}
                         </div>
                     </div>
                 </section>
@@ -847,10 +849,10 @@ function updateCountryCode() {
 document.getElementById('userForm').addEventListener('submit', function(e) {
     const phoneInput = document.getElementById('phone-input');
     const countrySelect = document.getElementById('country-code-select');
-    const phone = phoneInput.value.trim();
-    const countryCode = countrySelect.value;
+    const phone = phoneInput ? phoneInput.value.trim() : '';
+    const countryCode = countrySelect ? countrySelect.value : '+54';
 
-    if (phone) {
+    if (phone && countrySelect) {
         const fullPhone = formatPhoneWithCountry(phone, countryCode);
         phoneInput.value = fullPhone;
     }
