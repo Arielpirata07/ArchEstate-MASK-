@@ -626,11 +626,12 @@ def submit_lead():
         if not is_valid:
             return jsonify({"status": "error", "message": error}), 400
 
-        phone = data.get('phone', '')
-        if phone:
-            is_valid, error = validators.validate_phone(phone)
-            if not is_valid:
-                return jsonify({"status": "error", "message": error}), 400
+        phone = data.get('phone', '').strip()
+        if not phone:
+            return jsonify({"status": "error", "message": "Telefono es obligatorio"}), 400
+        is_valid, error = validators.validate_phone(phone)
+        if not is_valid:
+            return jsonify({"status": "error", "message": error}), 400
 
         budget = data.get('budget')
         if budget:

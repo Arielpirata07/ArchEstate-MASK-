@@ -49,10 +49,33 @@ function validateEmail(val) {
     return isValid; // ¡Clave para que no se bloquee el formulario!
 }
 
+function validatePhoneInput(val) {
+    const digits = val.replace(/\D/g, '');
+    const isValid = digits.length >= 8 && digits.length <= 15;
+    const errorEl = document.getElementById('phone-error');
+    const inputEl = document.getElementById('phone-input');
+    const iconEl = document.getElementById('phone-icon');
+
+    if (!isValid && val.length > 0) {
+        if (errorEl) errorEl.classList.remove('hidden');
+        if (inputEl) inputEl.classList.add('border-rose-300', 'text-rose-900');
+        if (iconEl) iconEl.classList.add('text-rose-500');
+    } else {
+        if (errorEl) errorEl.classList.add('hidden');
+        if (inputEl) inputEl.classList.remove('border-rose-300', 'text-rose-900');
+        if (iconEl) iconEl.classList.remove('text-rose-500');
+    }
+
+    return isValid;
+}
+
 function handleUserSubmit(e) {
     e.preventDefault();
     const email = document.getElementById('email-input').value;
     if (!validateEmail(email)) return;
+
+    const phone = document.getElementById('phone-input').value;
+    if (!validatePhoneInput(phone)) return;
     
     // Recoger datos del formulario
     const formData = {
