@@ -2,6 +2,13 @@
  * LOGICA PRINCIPAL - ARCHESTATE
  */
 
+function escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Inicializar iconos de Lucide al cargar la pagina
     if (window.lucide) {
@@ -218,6 +225,7 @@ function initUserForm() {
             submitBtn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Procesando...`;
             submitBtn.disabled = true;
             submitBtn.classList.add('opacity-70');
+            if (window.lucide) lucide.createIcons();
 
             try {
                 const response = await fetch('/api/submit', {
@@ -237,12 +245,14 @@ function initUserForm() {
                     submitBtn.innerHTML = originalBtnContent;
                     submitBtn.disabled = false;
                     submitBtn.classList.remove('opacity-70');
+                    if (window.lucide) lucide.createIcons();
                     showToast(result.message, 'error');
                 }
             } catch (error) {
                 submitBtn.innerHTML = originalBtnContent;
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('opacity-70');
+                if (window.lucide) lucide.createIcons();
                 console.error("Error al enviar el formulario:", error);
                 showToast("Error de conexion con el servidor", 'error');
             }
@@ -666,7 +676,7 @@ async function togglePhone(btn, leadId) {
         const cachedPhone = btn.getAttribute('data-phone');
 
         if (cachedPhone) {
-            btn.innerHTML = `<i data-lucide="eye-off" class="w-3 h-3"></i> ${cachedPhone}`;
+            btn.innerHTML = `<i data-lucide="eye-off" class="w-3 h-3"></i> ${escapeHtml(cachedPhone)}`;
             btn.setAttribute('data-revealed', 'true');
             btn.classList.remove('bg-midnight');
             btn.classList.add('bg-gold');
@@ -682,7 +692,7 @@ async function togglePhone(btn, leadId) {
 
                 if (data.phone) {
                     btn.setAttribute('data-phone', data.phone);
-                    btn.innerHTML = `<i data-lucide="eye-off" class="w-3 h-3"></i> ${data.phone}`;
+                    btn.innerHTML = `<i data-lucide="eye-off" class="w-3 h-3"></i> ${escapeHtml(data.phone)}`;
                     btn.setAttribute('data-revealed', 'true');
                     btn.classList.remove('bg-midnight');
                     btn.classList.add('bg-gold');
