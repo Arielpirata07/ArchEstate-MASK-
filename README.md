@@ -65,8 +65,7 @@ Este MVP (Producto Mínimo Viable) se centra en la captura limpia de oportunidad
 |------|------------|---------|
 | **Backend** | Python 3 | 3.10+ |
 | **Framework** | Flask | 3.0.0 |
-| **Base de Datos** | SQLite | 3.x |
-| **ORM** | SQLAlchemy | 2.0+ |
+| **Base de Datos** | SQLite3 (raw) | stdlib |
 | **Frontend** | HTML5 + JavaScript (Vanilla) | - |
 | **Estilos** | Tailwind CSS | 3.4 (CDN) |
 | **Icons** | Lucide Icons | - |
@@ -78,20 +77,43 @@ Este MVP (Producto Mínimo Viable) se centra en la captura limpia de oportunidad
 
 ```
 archestate/
-├── app.py                 # Punto de entrada de la aplicación
-├── init_db.py             # Script de inicialización de base de datos
+├── app.py                 # Punto de entrada (~2100 líneas)
+├── config.py              # Constantes centralizadas
+├── models.py              # Funciones de base de datos
+├── utils.py               # Helpers (timezone, safe_text)
+├── validators.py          # Validaciones server-side
+├── decorators.py          # @login_required, @admin_required
+├── rate_limit.py          # Rate limiting
+├── routes_profile.py      # Blueprint de perfil de usuario
+├── verify_coherence.py    # Script de verificación de integridad
+├── init_db.py             # Inicialización de base de datos
 ├── requirements.txt       # Dependencias Python
-├──/
-│   ├── templates/         # Plantillas HTML
-│   │   ├── index.html     # Landing page / Portal clientes
-│   │   ├── login.html     # Página de inicio de sesión
-│   │   ├── dashboard.html # Panel de profesionales
-│   │   └── admin.html     # Panel de administración
-│   ├── static/
-│   │   └── css/
-│   │       └── styles.css # Estilos personalizados
-│   └── database/
-│       └── archestate.db  # Base de datos SQLite (auto-generada)
+├── .env                   # Variables de entorno
+├── AGENTS.md              # Guía para asistentes AI
+├── design.md              # Sistema de diseño
+├── static/
+│   ├── css/
+│   │   ├── base.css       # Tokens, tipografía, animaciones
+│   │   ├── landing.css    # Estilos de landing page
+│   │   ├── user.css       # Estilos de formularios
+│   │   ├── professional.css # Panel profesional
+│   │   ├── admin.css      # Panel admin
+│   │   ├── profile.css    # Perfil de usuario
+│   │   └── spa.css        # Legacy SPA
+│   └── js/
+│       └── tailwind-config.js # Config inline de Tailwind
+└── templates/
+    ├── base.html          # Layout principal
+    ├── index.html         # Landing page / Portal clientes
+    ├── landing.html       # Landing alternativo
+    ├── login.html         # Inicio de sesión
+    ├── register.html      # Registro
+    ├── user.html          # Formulario de lead
+    ├── professional.html  # Panel de profesionales
+    ├── admin.html         # Panel de administración
+    ├── profile.html       # Perfil/ajustes
+    ├── lead_detail.html   # Detalle de lead
+    └── user_management.html # Gestión de usuarios
 ```
 
 ---
@@ -106,7 +128,7 @@ archestate/
 ### 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/Arielpirata07/ArchEstate-MASK-.git
+git clone <repo-url>
 cd archestate
 ```
 
@@ -136,8 +158,8 @@ python init_db.py
 ```
 
 Esto creará:
-- Archivo `database/archestate.db`
-- Tablas: `users`, `leads`, `audit_logs`, `professionals`
+- Archivo `database.db` en la raíz del proyecto
+- Tablas: `users`, `leads`, `audit_logs`, `professionals`, `user_profiles`, `professional_profiles`, `lead_versions`
 - Usuario admin por defecto (si está configurado)
 
 ### 5. Iniciar el servidor
@@ -169,7 +191,7 @@ FLASK_ENV=development
 SECRET_KEY=tu-clave-secreta-aqui-minimo-32-caracteres
 
 # Configuración de Base de Datos
-DATABASE_URL=sqlite:///database/archestate.db
+DATABASE_URL=sqlite:///database.db
 ```
 
 > ⚠️ **Nota:** Para producción, cambia `FLASK_ENV=production` y usa una clave secreta segura.
@@ -187,6 +209,14 @@ DATABASE_URL=sqlite:///database/archestate.db
 | `GET` | `/api/professionals` | Listar profesionales | ✅ Admin |
 | `POST` | `/api/professionals` | Crear profesional | ✅ Admin |
 | `GET` | `/api/audit` | Ver logs de auditoría | ✅ Admin |
+| `GET` | `/api/profile/leads` | Leads del profesional autenticado | ✅ |
+| `GET` | `/api/profile/lead/<id>` | Detalle de lead propio | ✅ |
+| `PUT` | `/api/profile/lead/<id>` | Actualizar estado de lead | ✅ |
+| `GET` | `/api/profile/user` | Perfil del usuario autenticado | ✅ |
+| `PUT` | `/api/profile/user` | Actualizar perfil propio | ✅ |
+| `PUT` | `/api/profile/user/password` | Cambiar contraseña | ✅ |
+| `GET` | `/api/profile/professional` | Perfil profesional | ✅ |
+| `PUT` | `/api/profile/professional` | Actualizar perfil profesional | ✅ |
 
 ---
 
@@ -221,7 +251,7 @@ DATABASE_URL=sqlite:///database/archestate.db
 
 ## 🛡️ Características de Seguridad Implementadas
 
-- 🔐 **Autenticación:** Sesiones basadas en Flask-Login
+- 🔐 **Autenticación:** Sesiones personalizadas con decoradores
 - 🔒 **Protección de rutas:** Decoradores `@login_required` y `@admin_required`
 - 🛡️ **Sanitización:** Escape de entradas para prevenir XSS
 - 📝 **Auditoría:** Logging de todas las acciones sensibles
