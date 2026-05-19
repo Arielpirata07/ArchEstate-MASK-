@@ -70,8 +70,42 @@
                             </div>
                             <div>
                                 <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Telefono</label>
-                                <input id="profile-phone" type="tel" value="{{ user.phone if user and user.phone else '' }}"
-                                    class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
+                                <div class="flex gap-2">
+                                    <select
+                                        id="profile-country-code"
+                                        onchange="updateProfilePhoneFormat()"
+                                        class="w-20 px-2 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all bg-paper-dark">
+                                        <option value="+54">+54</option>
+                                        <option value="+598">+598</option>
+                                        <option value="+56">+56</option>
+                                        <option value="+55">+55</option>
+                                        <option value="+595">+595</option>
+                                        <option value="+591">+591</option>
+                                        <option value="+57">+57</option>
+                                        <option value="+52">+52</option>
+                                        <option value="+34">+34</option>
+                                        <option value="+1">+1</option>
+                                    </select>
+                                    <input id="profile-phone" type="tel" value="{{ user.phone if user and user.phone else '' }}"
+                                        oninput="validateProfilePhone()"
+                                        class="flex-1 px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all" placeholder="9 11 1234 5678">
+                                </div>
+                                <div class="flex items-center justify-between mt-1">
+                                    <p id="profile-phone-hint" class="text-[9px] text-midnight/30">El codigo de pais se incluira automaticamente</p>
+                                    <p id="profile-phone-valid" class="hidden text-[9px] text-emerald-600 font-medium">Formato valido</p>
+                                    <p id="profile-phone-invalid" class="hidden text-[9px] text-rose-500 font-medium">Formato invalido</p>
+                                </div>
+                                <div class="mt-2 flex items-center justify-between">
+                                    <p id="profile-phone-error" class="hidden text-[10px] text-rose-500 font-medium"></p>
+                                    <button
+                                        type="button"
+                                        id="save-phone-btn"
+                                        onclick="savePhoneFromProfile()"
+                                        class="ml-auto text-[9px] uppercase tracking-widest font-bold text-midnight/30 hover:text-gold transition-colors flex items-center gap-1">
+                                        <i data-lucide="save" class="w-3 h-3"></i>
+                                        Guardar telefono
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -224,6 +258,35 @@
 document.addEventListener('DOMContentLoaded', function() {
     if (window.lucide) lucide.createIcons();
     loadUserLeads();
+    initProfilePhone();
 });
+
+function initProfilePhone() {
+    const phoneInput = document.getElementById('profile-phone');
+    const countrySelect = document.getElementById('profile-country-code');
+    if (!phoneInput || !countrySelect) return;
+
+    const currentPhone = phoneInput.value.trim();
+    if (currentPhone) {
+        const match = currentPhone.match(/^(\+\d+)/);
+        if (match) {
+            const code = match[1];
+            const options = countrySelect.querySelectorAll('option');
+            let found = false;
+            options.forEach(opt => {
+                if (opt.value === code) {
+                    opt.selected = true;
+                    found = true;
+                }
+            });
+            if (found) {
+                const digits = currentPhone.replace(/\D/g, '');
+                const codeDigits = code.replace('+', '');
+                phoneInput.value = digits.substring(codeDigits.length);
+            }
+        }
+    }
+    validateProfilePhone();
+}
 </script>
 {% endblock %}

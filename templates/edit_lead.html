@@ -35,16 +35,17 @@
     <div class="bg-white p-12 lg:p-16 overflow-y-auto max-h-[85vh]">
         <div class="max-w-2xl">
             <h2 class="text-2xl font-serif italic text-midnight mb-2">Parametros Editables</h2>
-            <p class="text-sm text-midnight/60 mb-8">Solo se pueden modificar los campos tecnicos y de contacto.</p>
+            <p class="text-sm text-midnight/60 mb-8">Edita solo las secciones que necesites actualizar.</p>
 
-            <form id="editLeadForm" class="space-y-8">
-                <!-- Campos inmutables (solo lectura) -->
-                <section class="p-4 bg-paper-dark rounded-lg border border-midnight/10">
-                    <h3 class="text-[10px] uppercase tracking-widest font-bold text-midnight/40 mb-4 flex items-center gap-2">
-                        <i data-lucide="lock" class="w-3 h-3"></i>
-                        Campos Inmutables
-                    </h3>
-                    <div class="grid grid-cols-2 gap-4">
+            <form id="editLeadForm" class="space-y-6">
+                <!-- Campos inmutables -->
+                <details class="group border border-midnight/10 rounded-lg overflow-hidden">
+                    <summary class="flex items-center gap-3 px-5 py-4 bg-paper-dark cursor-pointer hover:bg-midnight/5 transition-colors">
+                        <i data-lucide="lock" class="w-4 h-4 text-midnight/30"></i>
+                        <span class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Campos Inmutables</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 ml-auto text-midnight/30 transition-transform group-open:rotate-180"></i>
+                    </summary>
+                    <div class="p-5 grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/40 mb-2">Tipo de Operacion</label>
                             <input type="text" value="{{ lead.type }}" readonly class="w-full px-3 py-2 border border-midnight/10 rounded text-sm field-readonly">
@@ -62,153 +63,299 @@
                             <input type="text" value="{{ lead.timestamp }}" readonly class="w-full px-3 py-2 border border-midnight/10 rounded text-sm field-readonly">
                         </div>
                     </div>
-                </section>
+                </details>
 
-                <!-- Campos editables -->
-                <section>
-                    <h3 class="text-[10px] uppercase tracking-widest font-bold text-gold mb-4">Datos Editables</h3>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Zona</label>
-                            <input id="edit-zone" name="zone" type="text" value="{{ lead.zone if lead.zone else '' }}"
-                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
+                <!-- 01. Parametros Principales -->
+                <details class="group border border-midnight/10 rounded-lg overflow-hidden" open>
+                    <summary class="flex items-center gap-3 px-5 py-4 bg-paper-dark cursor-pointer hover:bg-midnight/5 transition-colors">
+                        <span class="text-[14px] font-serif italic text-gold">01.</span>
+                        <span class="text-sm font-serif italic text-midnight">Parametros Principales</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 ml-auto text-midnight/30 transition-transform group-open:rotate-180"></i>
+                    </summary>
+                    <div class="p-5 space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Zona</label>
+                                <input id="edit-zone" name="zone" type="text" value="{{ lead.zone if lead.zone else '' }}"
+                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Presupuesto</label>
+                                <div class="flex gap-2">
+                                    <select id="edit-currency" name="currency"
+                                        class="w-16 px-2 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 text-sm bg-transparent">
+                                        <option value="ARG" {% if lead.currency == 'ARG' %}selected{% endif %}>$</option>
+                                        <option value="USD" {% if lead.currency == 'USD' %}selected{% endif %}>US$</option>
+                                        <option value="EUR" {% if lead.currency == 'EUR' %}selected{% endif %}>EUR</option>
+                                    </select>
+                                    <input id="edit-budget" name="budget" type="text" value="{{ lead.budget if lead.budget else '' }}"
+                                        class="flex-1 px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Presupuesto</label>
-                            <input id="edit-budget" name="budget" type="text" value="{{ lead.budget if lead.budget else '' }}"
-                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Estilo Arquitectonico</label>
+                                <input id="edit-architectural-style" name="architectural_style" type="text" value="{{ lead.architectural_style if lead.architectural_style else '' }}"
+                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm" placeholder="Ej. Moderno, Clasico">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Telefono</label>
+                                <input type="text" value="{{ lead.phone if lead.phone else '' }}" readonly
+                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 py-2 text-midnight/50 text-sm cursor-not-allowed">
+                                <a href="{{ url_for('profile.profile_view') }}" class="inline-flex items-center gap-1 mt-1 text-[9px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors">
+                                    <i data-lucide="settings" class="w-3 h-3"></i>
+                                    Editar en Configuracion
+                                </a>
+                            </div>
                         </div>
                     </div>
+                </details>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Moneda</label>
-                            <select id="edit-currency" name="currency"
-                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all bg-paper-dark">
-                                <option value="ARG" {% if lead.currency == 'ARG' %}selected{% endif %}>$ ARG</option>
-                                <option value="USD" {% if lead.currency == 'USD' %}selected{% endif %}>US$ USD</option>
-                                <option value="EUR" {% if lead.currency == 'EUR' %}selected{% endif %}>EUR</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Telefono</label>
-                            <input id="edit-phone" name="phone" type="tel" value="{{ lead.phone if lead.phone else '' }}"
-                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
+                <!-- 02. Espacios -->
+                <details class="group border border-midnight/10 rounded-lg overflow-hidden">
+                    <summary class="flex items-center gap-3 px-5 py-4 bg-paper-dark cursor-pointer hover:bg-midnight/5 transition-colors">
+                        <span class="text-[14px] font-serif italic text-gold">02.</span>
+                        <span class="text-sm font-serif italic text-midnight">Espacios</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 ml-auto text-midnight/30 transition-transform group-open:rotate-180"></i>
+                    </summary>
+                    <div class="p-5 space-y-6">
+                        <div class="grid grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Ambientes</label>
+                                <div class="flex items-center gap-3">
+                                    <button type="button" onclick="stepEditNum('edit-ambientes',-1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">-</button>
+                                    <input id="edit-ambientes" name="ambientes" type="number" min="0" max="20" value="{{ lead.ambientes if lead.ambientes else '' }}"
+                                        class="w-12 text-center bg-transparent border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-1 text-sm font-semibold">
+                                    <button type="button" onclick="stepEditNum('edit-ambientes',1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">+</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Habitaciones</label>
+                                <div class="flex items-center gap-3">
+                                    <button type="button" onclick="stepEditNum('edit-bedrooms',-1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">-</button>
+                                    <input id="edit-bedrooms" name="bedrooms" type="number" min="0" max="20" value="{{ lead.bedrooms if lead.bedrooms else '' }}"
+                                        class="w-12 text-center bg-transparent border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-1 text-sm font-semibold">
+                                    <button type="button" onclick="stepEditNum('edit-bedrooms',1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">+</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Banios</label>
+                                <div class="flex items-center gap-3">
+                                    <button type="button" onclick="stepEditNum('edit-bathrooms',-1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">-</button>
+                                    <input id="edit-bathrooms" name="bathrooms" type="number" min="0" max="20" value="{{ lead.bathrooms if lead.bathrooms else '' }}"
+                                        class="w-12 text-center bg-transparent border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-1 text-sm font-semibold">
+                                    <button type="button" onclick="stepEditNum('edit-bathrooms',1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">+</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
+                </details>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                        <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Estilo Arquitectonico</label>
-                            <input id="edit-architectural-style" name="architectural_style" type="text" value="{{ lead.architectural_style if lead.architectural_style else '' }}"
-                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all" placeholder="Ej. Moderno, Clasico">
+                <!-- 03. Superficies -->
+                <details class="group border border-midnight/10 rounded-lg overflow-hidden">
+                    <summary class="flex items-center gap-3 px-5 py-4 bg-paper-dark cursor-pointer hover:bg-midnight/5 transition-colors">
+                        <span class="text-[14px] font-serif italic text-gold">03.</span>
+                        <span class="text-sm font-serif italic text-midnight">Superficies</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 ml-auto text-midnight/30 transition-transform group-open:rotate-180"></i>
+                    </summary>
+                    <div class="p-5 space-y-6">
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Metros Utiles (m2)</label>
+                                <input id="edit-usable-m2" name="usable_m2" type="number" min="0" value="{{ lead.usable_m2 if lead.usable_m2 else '' }}"
+                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Superficie Total (m2)</label>
+                                <input id="edit-total-area" name="total_area" type="number" min="0" value="{{ lead.total_area if lead.total_area else '' }}"
+                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Terreno (m2)</label>
+                                <input id="edit-land-area" name="land_area" type="number" min="0" value="{{ lead.land_area if lead.land_area else '' }}"
+                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Construida (m2)</label>
+                                <input id="edit-built-area" name="built_area" type="number" min="0" value="{{ lead.built_area if lead.built_area else '' }}"
+                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                <p id="edit-area-warning" class="hidden text-[10px] text-rose-500 font-medium mt-1">Los metros construidos superan el 80% del terreno.</p>
+                                <p id="edit-area-hint" class="text-[9px] text-midnight/30 mt-1">Maximo 80% del terreno</p>
+                            </div>
                         </div>
                         <div>
                             <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Piso / Bloque</label>
                             <input id="edit-floor-block" name="floor_block" type="text" value="{{ lead.floor_block if lead.floor_block else '' }}"
-                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all" placeholder="Ej. 5 A">
+                                class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm" placeholder="Ej. 5 A">
                         </div>
                     </div>
+                </details>
 
-                    <div class="grid grid-cols-3 gap-6 mb-6">
-                        <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Ambientes</label>
-                            <input id="edit-ambientes" name="ambientes" type="number" min="0" value="{{ lead.ambientes if lead.ambientes else '' }}"
-                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
+                <!-- 04. Caracteristicas -->
+                <details class="group border border-midnight/10 rounded-lg overflow-hidden">
+                    <summary class="flex items-center gap-3 px-5 py-4 bg-paper-dark cursor-pointer hover:bg-midnight/5 transition-colors">
+                        <span class="text-[14px] font-serif italic text-gold">04.</span>
+                        <span class="text-sm font-serif italic text-midnight">Caracteristicas</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 ml-auto text-midnight/30 transition-transform group-open:rotate-180"></i>
+                    </summary>
+                    <div class="p-5 space-y-6">
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Ascensor</label>
+                                <select id="edit-elevator" name="elevator"
+                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm bg-transparent">
+                                    <option value="">Sin preferencia</option>
+                                    <option value="si" {% if lead.elevator == 'si' %}selected{% endif %}>Si</option>
+                                    <option value="no" {% if lead.elevator == 'no' %}selected{% endif %}>No</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Piscina</label>
+                                <select id="edit-pool" name="pool"
+                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm bg-transparent">
+                                    <option value="">Sin preferencia</option>
+                                    <option value="si" {% if lead.pool == 'si' %}selected{% endif %}>Si</option>
+                                    <option value="no" {% if lead.pool == 'no' %}selected{% endif %}>No</option>
+                                </select>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Habitaciones</label>
-                            <input id="edit-bedrooms" name="bedrooms" type="number" min="0" value="{{ lead.bedrooms if lead.bedrooms else '' }}"
-                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Banios</label>
-                            <input id="edit-bathrooms" name="bathrooms" type="number" min="0" value="{{ lead.bathrooms if lead.bathrooms else '' }}"
-                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
-                        </div>
-                    </div>
 
-                    <div class="grid grid-cols-2 gap-6 mb-6">
-                        <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Metros Utiles (m2)</label>
-                            <input id="edit-usable-m2" name="usable_m2" type="number" min="0" value="{{ lead.usable_m2 if lead.usable_m2 else '' }}"
-                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Superficie Total (m2)</label>
-                            <input id="edit-total-area" name="total_area" type="number" min="0" value="{{ lead.total_area if lead.total_area else '' }}"
-                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-6 mb-6">
-                        <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Superficie Terreno (m2)</label>
-                            <input id="edit-land-area" name="land_area" type="number" min="0" value="{{ lead.land_area if lead.land_area else '' }}"
-                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Superficie Construida (m2)</label>
-                            <input id="edit-built-area" name="built_area" type="number" min="0" value="{{ lead.built_area if lead.built_area else '' }}"
-                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-6 mb-6">
-                        <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Ascensor</label>
-                            <select id="edit-elevator" name="elevator"
-                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all bg-paper-dark">
-                                <option value="">Sin preferencia</option>
-                                <option value="si" {% if lead.elevator == 'si' %}selected{% endif %}>Si</option>
-                                <option value="no" {% if lead.elevator == 'no' %}selected{% endif %}>No</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Piscina</label>
-                            <select id="edit-pool" name="pool"
-                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all bg-paper-dark">
-                                <option value="">Sin preferencia</option>
-                                <option value="si" {% if lead.pool == 'si' %}selected{% endif %}>Si</option>
-                                <option value="no" {% if lead.pool == 'no' %}selected{% endif %}>No</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-6 mb-6">
                         <div>
                             <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Estacionamiento</label>
-                            <input id="edit-parking" name="parking" type="text" value="{{ lead.parking if lead.parking else '' }}"
-                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all" placeholder="Ej. doble_cubierta">
+                            <div class="flex flex-wrap gap-2" id="edit-parking-chips">
+                                <button type="button" data-value="" onclick="selectEditChip('parking','')"
+                                    class="edit-parking-chip px-3 py-2 rounded border-2 border-midnight bg-midnight text-white text-[10px] font-bold uppercase tracking-widest transition-all">Sin preferencia</button>
+                                <button type="button" data-value="sin_cochera" onclick="selectEditChip('parking','sin_cochera')"
+                                    class="edit-parking-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Sin cochera</button>
+                                <button type="button" data-value="simple_cubierta" onclick="selectEditChip('parking','simple_cubierta')"
+                                    class="edit-parking-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Simple cubierta</button>
+                                <button type="button" data-value="doble_cubierta" onclick="selectEditChip('parking','doble_cubierta')"
+                                    class="edit-parking-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Doble cubierta</button>
+                                <button type="button" data-value="descubierta" onclick="selectEditChip('parking','descubierta')"
+                                    class="edit-parking-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Descubierta</button>
+                                <button type="button" data-value="garage" onclick="selectEditChip('parking','garage')"
+                                    class="edit-parking-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Garage cerrado</button>
+                            </div>
+                            <input type="hidden" id="edit-parking" name="parking" value="{{ lead.parking if lead.parking else '' }}">
                         </div>
+
                         <div>
                             <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Orientacion</label>
-                            <input id="edit-orientation" name="orientation" type="text" value="{{ lead.orientation if lead.orientation else '' }}"
-                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all" placeholder="Ej. Norte">
+                            <div class="flex flex-wrap gap-2" id="edit-orientation-chips">
+                                <button type="button" data-value="" onclick="selectEditChip('orientation','')"
+                                    class="edit-orientation-chip px-3 py-2 rounded border-2 border-midnight bg-midnight text-white text-[10px] font-bold uppercase tracking-widest transition-all">Indiferente</button>
+                                <button type="button" data-value="Norte" onclick="selectEditChip('orientation','Norte')"
+                                    class="edit-orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">N</button>
+                                <button type="button" data-value="Sur" onclick="selectEditChip('orientation','Sur')"
+                                    class="edit-orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">S</button>
+                                <button type="button" data-value="Este" onclick="selectEditChip('orientation','Este')"
+                                    class="edit-orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">E</button>
+                                <button type="button" data-value="Oeste" onclick="selectEditChip('orientation','Oeste')"
+                                    class="edit-orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">O</button>
+                                <button type="button" data-value="Noreste" onclick="selectEditChip('orientation','Noreste')"
+                                    class="edit-orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">NE</button>
+                                <button type="button" data-value="Noroeste" onclick="selectEditChip('orientation','Noroeste')"
+                                    class="edit-orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">NO</button>
+                                <button type="button" data-value="Sureste" onclick="selectEditChip('orientation','Sureste')"
+                                    class="edit-orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">SE</button>
+                                <button type="button" data-value="Suroeste" onclick="selectEditChip('orientation','Suroeste')"
+                                    class="edit-orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">SO</button>
+                            </div>
+                            <input type="hidden" id="edit-orientation" name="orientation" value="{{ lead.orientation if lead.orientation else '' }}">
                         </div>
-                    </div>
 
-                    <div class="grid grid-cols-2 gap-6 mb-6">
-                        <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Estado</label>
-                            <input id="edit-property-condition" name="property_condition" type="text" value="{{ lead.property_condition if lead.property_condition else '' }}"
-                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all" placeholder="Ej. A estrenar">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Antiguedad</label>
-                            <input id="edit-property-age" name="property_age" type="text" value="{{ lead.property_age if lead.property_age else '' }}"
-                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all" placeholder="Ej. Hasta 5 anios">
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Estado</label>
+                                <div class="space-y-2" id="edit-condition-chips">
+                                    <button type="button" data-value="" onclick="selectEditChip('condition','')" class="edit-condition-chip w-full text-left px-3 py-2 rounded border-2 border-midnight bg-midnight text-white text-[10px] font-bold uppercase tracking-widest transition-all">Sin preferencia</button>
+                                    <button type="button" data-value="A estrenar" onclick="selectEditChip('condition','A estrenar')" class="edit-condition-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">A estrenar</button>
+                                    <button type="button" data-value="Usado" onclick="selectEditChip('condition','Usado')" class="edit-condition-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Usado</button>
+                                    <button type="button" data-value="A reciclar" onclick="selectEditChip('condition','A reciclar')" class="edit-condition-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">A reciclar</button>
+                                    <button type="button" data-value="En construccion" onclick="selectEditChip('condition','En construccion')" class="edit-condition-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">En construccion</button>
+                                </div>
+                                <input type="hidden" id="edit-property-condition" name="property_condition" value="{{ lead.property_condition if lead.property_condition else '' }}">
+                            </div>
+                            <div id="edit-age-section">
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Antiguedad</label>
+                                <div class="space-y-2" id="edit-age-chips">
+                                    <button type="button" data-value="" onclick="selectEditChip('age','')" class="edit-age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight bg-midnight text-white text-[10px] font-bold uppercase tracking-widest transition-all">Indiferente</button>
+                                    <button type="button" data-value="Hasta 5 anios" onclick="selectEditChip('age','Hasta 5 anios')" class="edit-age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Hasta 5 anios</button>
+                                    <button type="button" data-value="5 a 15 anios" onclick="selectEditChip('age','5 a 15 anios')" class="edit-age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">5 a 15 anios</button>
+                                    <button type="button" data-value="15 a 30 anios" onclick="selectEditChip('age','15 a 30 anios')" class="edit-age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">15 a 30 anios</button>
+                                    <button type="button" data-value="Mas de 30 anios" onclick="selectEditChip('age','Mas de 30 anios')" class="edit-age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Mas de 30 anios</button>
+                                </div>
+                                <input type="hidden" id="edit-property-age" name="property_age" value="{{ lead.property_age if lead.property_age else '' }}">
+                            </div>
                         </div>
                     </div>
+                </details>
 
-                    <div class="mb-6">
-                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Amenidades (separadas por coma)</label>
-                        <textarea id="edit-amenities" name="amenities" rows="2"
-                            class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all resize-none"
-                            placeholder="Ej. SUM, Terraza, Seguridad 24h">{{ lead.amenities if lead.amenities else '' }}</textarea>
+                <!-- 05. Extras y Comodidades -->
+                <details class="group border border-midnight/10 rounded-lg overflow-hidden">
+                    <summary class="flex items-center gap-3 px-5 py-4 bg-paper-dark cursor-pointer hover:bg-midnight/5 transition-colors">
+                        <span class="text-[14px] font-serif italic text-gold">05.</span>
+                        <span class="text-sm font-serif italic text-midnight">Extras y Comodidades</span>
+                        <i data-lucide="chevron-down" class="w-4 h-4 ml-auto text-midnight/30 transition-transform group-open:rotate-180"></i>
+                    </summary>
+                    <div class="p-5">
+                        <div class="grid grid-cols-2 gap-4">
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" name="edit-amenity" value="Piscina Infinity" class="amenity-checkbox w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
+                                <span class="text-sm text-midnight">Piscina Infinity</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" name="edit-amenity" value="Seguridad 24h" class="amenity-checkbox w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
+                                <span class="text-sm text-midnight">Seguridad 24h</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" name="edit-amenity" value="Bodega" class="amenity-checkbox w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
+                                <span class="text-sm text-midnight">Bodega</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" name="edit-amenity" value="Gimnasio Privado" class="amenity-checkbox w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
+                                <span class="text-sm text-midnight">Gimnasio Privado</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" name="edit-amenity" value="Domotica Avanzada" class="amenity-checkbox w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
+                                <span class="text-sm text-midnight">Domotica Avanzada</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" name="edit-amenity" value="Helipad" class="amenity-checkbox w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
+                                <span class="text-sm text-midnight">Helipad</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" name="edit-amenity" value="SUM" class="amenity-checkbox w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
+                                <span class="text-sm text-midnight">SUM</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" name="edit-amenity" value="Terraza" class="amenity-checkbox w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
+                                <span class="text-sm text-midnight">Terraza</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" name="edit-amenity" value="Quincho" class="amenity-checkbox w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
+                                <span class="text-sm text-midnight">Quincho / Parrilla</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" name="edit-amenity" value="Jardin" class="amenity-checkbox w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
+                                <span class="text-sm text-midnight">Jardin</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" name="edit-amenity" value="Jacuzzi" class="amenity-checkbox w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
+                                <span class="text-sm text-midnight">Jacuzzi</span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer">
+                                <input type="checkbox" name="edit-amenity" value="Aire acondicionado" class="amenity-checkbox w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
+                                <span class="text-sm text-midnight">Aire acondicionado</span>
+                            </label>
+                        </div>
+                        <input type="hidden" id="edit-amenities" name="amenities" value="">
                     </div>
-                </section>
+                </details>
 
                 <!-- Botones -->
                 <div class="flex items-center gap-4 pt-4 border-t border-midnight/10">
@@ -257,9 +404,26 @@
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/profile.js') }}" defer></script>
 <script>
+window.__leadData = {
+    parking: '{{ lead.parking if lead.parking else '' }}',
+    orientation: '{{ lead.orientation if lead.orientation else '' }}',
+    property_condition: '{{ lead.property_condition if lead.property_condition else '' }}',
+    property_age: '{{ lead.property_age if lead.property_age else '' }}'
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     if (window.lucide) lucide.createIcons();
     initEditLeadForm({{ lead.id }});
+    initEditChips();
+
+    {% if lead.amenities %}
+    const existingAmenities = '{{ lead.amenities }}'.split(',').map(a => a.trim());
+    document.querySelectorAll('.amenity-checkbox').forEach(cb => {
+        if (existingAmenities.includes(cb.value)) {
+            cb.checked = true;
+        }
+    });
+    {% endif %}
 });
 </script>
 {% endblock %}

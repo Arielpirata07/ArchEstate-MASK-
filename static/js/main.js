@@ -208,11 +208,13 @@ function initUserForm() {
             }
 
             // Validacion de area para casas
-            const landArea = parseInt(data.land_area || '0', 10);
-            const builtArea = parseInt(data.built_area || '0', 10);
-            if (data.property_type === 'casa' && builtArea > landArea) {
-                showToast('Los metros construidos no pueden ser mayores que los metros de terreno.', 'error');
-                return;
+            const landArea = parseFloat(data.land_area || '0');
+            const builtArea = parseFloat(data.built_area || '0');
+            if (data.property_type === 'casa' && landArea > 0 && builtArea > 0) {
+                if (builtArea > landArea * 0.8) {
+                    showToast('Los metros construidos no pueden superar el 80% del terreno.', 'error');
+                    return;
+                }
             }
 
             // Validacion rapida en cliente
@@ -816,6 +818,59 @@ document.addEventListener('DOMContentLoaded', function() {
         // Trigger on load in case professional was pre-selected
         roleSelect.dispatchEvent(new Event('change'));
     }
+});
+
+function initHouseAreaValidation() {
+    const landInput = document.getElementById('house-land-area');
+    const builtInput = document.getElementById('house-built-area');
+    const warning = document.getElementById('house-area-warning');
+    if (!landInput || !builtInput || !warning) return;
+
+    function checkArea() {
+        const land = parseFloat(landInput.value || '0');
+        const built = parseFloat(builtInput.value || '0');
+        if (land > 0 && built > 0 && built > land * 0.8) {
+            warning.classList.remove('hidden');
+            builtInput.classList.add('border-rose-500');
+            builtInput.classList.remove('border-midnight/20');
+        } else {
+            warning.classList.add('hidden');
+            builtInput.classList.remove('border-rose-500');
+            builtInput.classList.add('border-midnight/20');
+        }
+    }
+
+    landInput.addEventListener('input', checkArea);
+    builtInput.addEventListener('input', checkArea);
+}
+
+function initDuplexAreaValidation() {
+    const landInput = document.getElementById('duplex-land-area');
+    const builtInput = document.getElementById('duplex-built-area');
+    const warning = document.getElementById('duplex-area-warning');
+    if (!landInput || !builtInput || !warning) return;
+
+    function checkArea() {
+        const land = parseFloat(landInput.value || '0');
+        const built = parseFloat(builtInput.value || '0');
+        if (land > 0 && built > 0 && built > land * 0.8) {
+            warning.classList.remove('hidden');
+            builtInput.classList.add('border-rose-500');
+            builtInput.classList.remove('border-midnight/20');
+        } else {
+            warning.classList.add('hidden');
+            builtInput.classList.remove('border-rose-500');
+            builtInput.classList.add('border-midnight/20');
+        }
+    }
+
+    landInput.addEventListener('input', checkArea);
+    builtInput.addEventListener('input', checkArea);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    initHouseAreaValidation();
+    initDuplexAreaValidation();
 });
 
 /**

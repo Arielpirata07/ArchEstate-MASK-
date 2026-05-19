@@ -29,7 +29,7 @@ def _log_action(action, target):
             conn.close()
 
 ALLOWED_LEAD_EDIT_FIELDS = [
-    'zone', 'budget', 'currency', 'phone',
+    'zone', 'budget', 'currency',
     'floor_block', 'usable_m2', 'elevator',
     'land_area', 'built_area', 'pool',
     'architectural_style', 'bedrooms', 'bathrooms',

@@ -263,11 +263,12 @@
                                 <div class="grid grid-cols-2 gap-6">
                                     <div>
                                         <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Superficie de Terreno (m²)</label>
-                                        <input name="land_area" type="number" min="0" placeholder="600" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                        <input id="house-land-area" name="land_area" type="number" min="0" placeholder="600" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                     </div>
                                     <div>
                                         <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Superficie Construida (m²)</label>
-                                        <input name="built_area" type="number" min="0" placeholder="300" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                        <input id="house-built-area" name="built_area" type="number" min="0" placeholder="300" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                        <p id="house-area-warning" class="hidden text-[10px] text-rose-500 font-medium mt-1">Los metros construidos superan el 80% del terreno.</p>
                                     </div>
                                 </div>
                                 <div class="flex flex-wrap gap-4 mt-4">
@@ -327,11 +328,12 @@
                                 <div class="grid grid-cols-2 gap-6">
                                     <div>
                                         <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Superficie de Terreno (m²)</label>
-                                        <input name="land_area" type="number" min="0" placeholder="300" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                        <input id="duplex-land-area" name="land_area" type="number" min="0" placeholder="300" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                     </div>
                                     <div>
                                         <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Superficie Construida (m²)</label>
-                                        <input name="built_area" type="number" min="0" placeholder="180" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                        <input id="duplex-built-area" name="built_area" type="number" min="0" placeholder="180" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                        <p id="duplex-area-warning" class="hidden text-[10px] text-rose-500 font-medium mt-1">Los metros construidos superan el 80% del terreno.</p>
                                     </div>
                                 </div>
                                 <div class="flex flex-wrap gap-4 mt-4">
@@ -468,6 +470,10 @@
                         <div>
                             <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Email Profesional</label>
                             <input id="email-input" type="email" name="email" value="{{ session.get('email', '') }}" readonly class="w-full bg-white border-0 border-b-2 border-midnight/20 py-2 text-midnight/50 text-sm cursor-not-allowed">
+                            <a href="{{ url_for('profile.profile_view') }}" class="inline-flex items-center gap-1 mt-2 text-[9px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors">
+                                <i data-lucide="settings" class="w-3 h-3"></i>
+                                Editar en Configuración
+                            </a>
                         </div>
 
                         <!-- Teléfono -->
@@ -475,6 +481,10 @@
                             <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Teléfono</label>
                             {% if session.get('phone') %}
                             <input id="phone-input" type="tel" name="phone" value="{{ session.get('phone', '') }}" readonly class="w-full bg-white border-0 border-b-2 border-midnight/20 py-2 text-midnight/50 text-sm cursor-not-allowed">
+                            <a href="{{ url_for('profile.profile_view') }}" class="inline-flex items-center gap-1 mt-2 text-[9px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors">
+                                <i data-lucide="settings" class="w-3 h-3"></i>
+                                Editar en Configuración
+                            </a>
                             {% else %}
                             <div class="flex gap-2">
                                 <select
