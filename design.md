@@ -318,4 +318,4 @@ grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6
 - Forget `loading="lazy"` on below-fold images
 - Use `text-midnight/40` for 10px text (fails contrast)
 - Create modals without animations or ARIA attributes
-- Add new font families without updating tailwind-config.js
+- Add new font families without updating static/js/tailwind-config.js

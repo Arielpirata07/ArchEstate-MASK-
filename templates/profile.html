@@ -1,0 +1,229 @@
+{% extends "base.html" %}
+
+{% block title %}Configuracion | ArchEstate{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto pt-8">
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h1 class="text-3xl font-serif italic text-midnight">Configuracion</h1>
+            <p class="text-sm text-midnight/60 mt-1">Administra tu cuenta y solicitudes</p>
+        </div>
+        <a href="{{ url_for('index') }}" class="text-[10px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors flex items-center gap-2">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            Volver al sitio
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-0 bg-white rounded-lg shadow-xl overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="lg:col-span-1 bg-midnight text-white p-6 lg:min-h-[600px]">
+            <nav class="space-y-1" aria-label="Configuracion">
+                <button onclick="showSettingsTab('cuenta')" id="tab-cuenta"
+                    class="settings-tab-btn active w-full flex items-center gap-3 px-4 py-3 rounded text-sm font-medium transition-all text-left hover:bg-white/5">
+                    <i data-lucide="user" class="w-4 h-4"></i>
+                    Cuenta
+                </button>
+                <button onclick="showSettingsTab('solicitudes')" id="tab-solicitudes"
+                    class="settings-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded text-sm font-medium transition-all text-left text-white/70 hover:bg-white/5 hover:text-white">
+                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                    Solicitudes
+                </button>
+                <button onclick="showSettingsTab('seguridad')" id="tab-seguridad"
+                    class="settings-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded text-sm font-medium transition-all text-left text-white/70 hover:bg-white/5 hover:text-white">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i>
+                    Seguridad
+                </button>
+                {% if user and user.role == 'professional' %}
+                <button onclick="showSettingsTab('profesional')" id="tab-profesional"
+                    class="settings-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded text-sm font-medium transition-all text-left text-white/70 hover:bg-white/5 hover:text-white">
+                    <i data-lucide="briefcase" class="w-4 h-4"></i>
+                    Profesional
+                </button>
+                {% endif %}
+            </nav>
+        </aside>
+
+        <!-- Content -->
+        <div class="lg:col-span-4 p-8 lg:p-10 bg-paper">
+            <!-- Panel: Cuenta -->
+            <div id="panel-cuenta" class="settings-panel">
+                <div class="bg-white rounded-lg shadow-xl border-t-4 border-gold p-8">
+                    <h2 class="text-xl font-serif italic text-midnight mb-6">Datos Personales</h2>
+
+                    <div class="settings-section">
+                        <div class="mb-6">
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Usuario</label>
+                            <input id="profile-username" type="text" value="{{ user.username if user else '' }}" readonly
+                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm field-readonly">
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Email</label>
+                                <input id="profile-email" type="email" value="{{ user.email if user else '' }}"
+                                    class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Telefono</label>
+                                <input id="profile-phone" type="tel" value="{{ user.phone if user and user.phone else '' }}"
+                                    class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Nombre</label>
+                                <input id="profile-first-name" type="text" value="{{ user.first_name if user and user.first_name else '' }}"
+                                    class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all" placeholder="Tu nombre">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Apellido</label>
+                                <input id="profile-last-name" type="text" value="{{ user.last_name if user and user.last_name else '' }}"
+                                    class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all" placeholder="Tu apellido">
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Biografia</label>
+                            <textarea id="profile-bio" rows="3"
+                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all resize-none"
+                                placeholder="Contanos sobre vos...">{{ user.bio if user and user.bio else '' }}</textarea>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <button id="save-profile-btn" onclick="saveUserProfile()"
+                            class="bg-gold text-white py-3 px-8 rounded font-bold uppercase tracking-widest text-xs hover:bg-midnight transition-all duration-300 flex items-center gap-2">
+                            <i data-lucide="save" class="w-4 h-4"></i>
+                            Guardar Cambios
+                        </button>
+                        <span id="profile-save-msg" class="text-sm text-emerald-600 hidden">Guardado correctamente</span>
+                        <span id="profile-error-msg" class="text-sm text-rose-600 hidden"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel: Solicitudes -->
+            <div id="panel-solicitudes" class="settings-panel hidden">
+                <div class="bg-white rounded-lg shadow-xl border-t-4 border-gold p-8">
+                    <h2 class="text-xl font-serif italic text-midnight mb-6">Mis Solicitudes</h2>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse" id="leads-table">
+                            <thead>
+                                <tr class="bg-paper-dark border-b border-midnight/5">
+                                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">ID</th>
+                                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Tipo</th>
+                                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Zona</th>
+                                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Presupuesto</th>
+                                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Fecha</th>
+                                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Accion</th>
+                                </tr>
+                            </thead>
+                            <tbody id="leads-tbody">
+                                <tr>
+                                    <td colspan="6" class="p-8 text-center text-midnight/40 text-sm">Cargando solicitudes...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="no-leads-msg" class="hidden p-8 text-center">
+                        <i data-lucide="inbox" class="w-12 h-12 mx-auto text-midnight/20 mb-4"></i>
+                        <p class="text-midnight/50 text-sm">No tenes solicitudes registradas aun.</p>
+                        <a href="{{ url_for('user_view') }}" class="inline-block mt-4 text-[10px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors">
+                            Crear una solicitud
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel: Seguridad -->
+            <div id="panel-seguridad" class="settings-panel hidden">
+                <div class="bg-white rounded-lg shadow-xl border-t-4 border-gold p-8">
+                    <h2 class="text-xl font-serif italic text-midnight mb-6">Cambiar Contrasena</h2>
+
+                    <div class="settings-section">
+                        <div class="mb-6">
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Contrasena Actual</label>
+                            <input id="current-password" type="password"
+                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Nueva Contrasena</label>
+                            <input id="new-password" type="password"
+                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
+                            <p class="text-[9px] text-midnight/40 mt-1">Minimo 6 caracteres, al menos una letra y un numero</p>
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Confirmar Nueva Contrasena</label>
+                            <input id="confirm-password" type="password"
+                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <button id="save-password-btn" onclick="changePassword()"
+                            class="bg-gold text-white py-3 px-8 rounded font-bold uppercase tracking-widest text-xs hover:bg-midnight transition-all duration-300 flex items-center gap-2">
+                            <i data-lucide="lock" class="w-4 h-4"></i>
+                            Cambiar Contrasena
+                        </button>
+                        <span id="password-save-msg" class="text-sm text-emerald-600 hidden">Contrasena actualizada</span>
+                        <span id="password-error-msg" class="text-sm text-rose-600 hidden"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel: Profesional -->
+            {% if user and user.role == 'professional' %}
+            <div id="panel-profesional" class="settings-panel hidden">
+                <div class="bg-white rounded-lg shadow-xl border-t-4 border-gold p-8">
+                    <h2 class="text-xl font-serif italic text-midnight mb-6">Perfil Profesional</h2>
+
+                    <div class="settings-section">
+                        <div class="mb-6">
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Especialidad</label>
+                            <input id="prof-specialty" type="text" value=""
+                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all" placeholder="Ej. Diseno de interiores">
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Titulo</label>
+                            <input id="prof-title" type="text" value=""
+                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all" placeholder="Ej. Arq. Juan Perez">
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <button id="save-prof-btn" onclick="saveProfessionalData()"
+                            class="bg-gold text-white py-3 px-8 rounded font-bold uppercase tracking-widest text-xs hover:bg-midnight transition-all duration-300 flex items-center gap-2">
+                            <i data-lucide="save" class="w-4 h-4"></i>
+                            Guardar Cambios
+                        </button>
+                        <span id="prof-save-msg" class="text-sm text-emerald-600 hidden">Guardado correctamente</span>
+                        <span id="prof-error-msg" class="text-sm text-rose-600 hidden"></span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/profile.js') }}" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.lucide) lucide.createIcons();
+    loadUserLeads();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Solicitud #{{ lead.id }} | ArchEstate{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="grid grid-cols-1 lg:grid-cols-2 min-h-[85vh] gap-0">
+    <!-- LADO IZQUIERDO - Oscuro -->
+    <div class="bg-gradient-to-br from-midnight via-midnight-light to-midnight text-white p-12 lg:p-16 flex flex-col justify-between">
+        <div class="space-y-6">
+            <div>
+                <h1 class="text-5xl lg:text-6xl font-serif italic mb-4">Editar<br/><span class="font-serif italic">Solicitud</span></h1>
+                <p class="text-lg text-white/70 leading-relaxed">
+                    Modifica los parametros de tu solicitud. Los campos marcados como inmutables no pueden ser alterados.
+                </p>
+            </div>
+            <div class="mt-8 p-4 bg-white/5 rounded-lg border border-white/10">
+                <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Solicitud #{{ lead.id }}</p>
+                <p class="text-sm text-white/60">{{ lead.type }} - {{ lead.zone }}</p>
+            </div>
+        </div>
+
+        <div class="space-y-2">
+            <a href="{{ url_for('profile.profile_view') }}" class="text-[10px] uppercase tracking-widest text-gold hover:text-white transition-colors flex items-center gap-2">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                Volver a Configuracion
+            </a>
+        </div>
+    </div>
+
+    <!-- LADO DERECHO - Formulario -->
+    <div class="bg-white p-12 lg:p-16 overflow-y-auto max-h-[85vh]">
+        <div class="max-w-2xl">
+            <h2 class="text-2xl font-serif italic text-midnight mb-2">Parametros Editables</h2>
+            <p class="text-sm text-midnight/60 mb-8">Solo se pueden modificar los campos tecnicos y de contacto.</p>
+
+            <form id="editLeadForm" class="space-y-8">
+                <!-- Campos inmutables (solo lectura) -->
+                <section class="p-4 bg-paper-dark rounded-lg border border-midnight/10">
+                    <h3 class="text-[10px] uppercase tracking-widest font-bold text-midnight/40 mb-4 flex items-center gap-2">
+                        <i data-lucide="lock" class="w-3 h-3"></i>
+                        Campos Inmutables
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/40 mb-2">Tipo de Operacion</label>
+                            <input type="text" value="{{ lead.type }}" readonly class="w-full px-3 py-2 border border-midnight/10 rounded text-sm field-readonly">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/40 mb-2">Tipo de Propiedad</label>
+                            <input type="text" value="{{ lead.property_type }}" readonly class="w-full px-3 py-2 border border-midnight/10 rounded text-sm field-readonly">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/40 mb-2">Email</label>
+                            <input type="text" value="{{ lead.email }}" readonly class="w-full px-3 py-2 border border-midnight/10 rounded text-sm field-readonly">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/40 mb-2">Fecha de Registro</label>
+                            <input type="text" value="{{ lead.timestamp }}" readonly class="w-full px-3 py-2 border border-midnight/10 rounded text-sm field-readonly">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Campos editables -->
+                <section>
+                    <h3 class="text-[10px] uppercase tracking-widest font-bold text-gold mb-4">Datos Editables</h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Zona</label>
+                            <input id="edit-zone" name="zone" type="text" value="{{ lead.zone if lead.zone else '' }}"
+                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Presupuesto</label>
+                            <input id="edit-budget" name="budget" type="text" value="{{ lead.budget if lead.budget else '' }}"
+                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Moneda</label>
+                            <select id="edit-currency" name="currency"
+                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all bg-paper-dark">
+                                <option value="ARG" {% if lead.currency == 'ARG' %}selected{% endif %}>$ ARG</option>
+                                <option value="USD" {% if lead.currency == 'USD' %}selected{% endif %}>US$ USD</option>
+                                <option value="EUR" {% if lead.currency == 'EUR' %}selected{% endif %}>EUR</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Telefono</label>
+                            <input id="edit-phone" name="phone" type="tel" value="{{ lead.phone if lead.phone else '' }}"
+                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Estilo Arquitectonico</label>
+                            <input id="edit-architectural-style" name="architectural_style" type="text" value="{{ lead.architectural_style if lead.architectural_style else '' }}"
+                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all" placeholder="Ej. Moderno, Clasico">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Piso / Bloque</label>
+                            <input id="edit-floor-block" name="floor_block" type="text" value="{{ lead.floor_block if lead.floor_block else '' }}"
+                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all" placeholder="Ej. 5 A">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-6 mb-6">
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Ambientes</label>
+                            <input id="edit-ambientes" name="ambientes" type="number" min="0" value="{{ lead.ambientes if lead.ambientes else '' }}"
+                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Habitaciones</label>
+                            <input id="edit-bedrooms" name="bedrooms" type="number" min="0" value="{{ lead.bedrooms if lead.bedrooms else '' }}"
+                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Banios</label>
+                            <input id="edit-bathrooms" name="bathrooms" type="number" min="0" value="{{ lead.bathrooms if lead.bathrooms else '' }}"
+                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Metros Utiles (m2)</label>
+                            <input id="edit-usable-m2" name="usable_m2" type="number" min="0" value="{{ lead.usable_m2 if lead.usable_m2 else '' }}"
+                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Superficie Total (m2)</label>
+                            <input id="edit-total-area" name="total_area" type="number" min="0" value="{{ lead.total_area if lead.total_area else '' }}"
+                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Superficie Terreno (m2)</label>
+                            <input id="edit-land-area" name="land_area" type="number" min="0" value="{{ lead.land_area if lead.land_area else '' }}"
+                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Superficie Construida (m2)</label>
+                            <input id="edit-built-area" name="built_area" type="number" min="0" value="{{ lead.built_area if lead.built_area else '' }}"
+                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Ascensor</label>
+                            <select id="edit-elevator" name="elevator"
+                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all bg-paper-dark">
+                                <option value="">Sin preferencia</option>
+                                <option value="si" {% if lead.elevator == 'si' %}selected{% endif %}>Si</option>
+                                <option value="no" {% if lead.elevator == 'no' %}selected{% endif %}>No</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Piscina</label>
+                            <select id="edit-pool" name="pool"
+                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all bg-paper-dark">
+                                <option value="">Sin preferencia</option>
+                                <option value="si" {% if lead.pool == 'si' %}selected{% endif %}>Si</option>
+                                <option value="no" {% if lead.pool == 'no' %}selected{% endif %}>No</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Estacionamiento</label>
+                            <input id="edit-parking" name="parking" type="text" value="{{ lead.parking if lead.parking else '' }}"
+                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all" placeholder="Ej. doble_cubierta">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Orientacion</label>
+                            <input id="edit-orientation" name="orientation" type="text" value="{{ lead.orientation if lead.orientation else '' }}"
+                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all" placeholder="Ej. Norte">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Estado</label>
+                            <input id="edit-property-condition" name="property_condition" type="text" value="{{ lead.property_condition if lead.property_condition else '' }}"
+                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all" placeholder="Ej. A estrenar">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Antiguedad</label>
+                            <input id="edit-property-age" name="property_age" type="text" value="{{ lead.property_age if lead.property_age else '' }}"
+                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all" placeholder="Ej. Hasta 5 anios">
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Amenidades (separadas por coma)</label>
+                        <textarea id="edit-amenities" name="amenities" rows="2"
+                            class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all resize-none"
+                            placeholder="Ej. SUM, Terraza, Seguridad 24h">{{ lead.amenities if lead.amenities else '' }}</textarea>
+                    </div>
+                </section>
+
+                <!-- Botones -->
+                <div class="flex items-center gap-4 pt-4 border-t border-midnight/10">
+                    <button type="submit" id="save-lead-btn"
+                        class="bg-gold text-white py-3 px-8 rounded font-bold uppercase tracking-widest text-xs hover:bg-midnight transition-all duration-300 flex items-center gap-2">
+                        <i data-lucide="save" class="w-4 h-4"></i>
+                        Guardar Cambios
+                    </button>
+                    <a href="{{ url_for('profile.profile_view') }}"
+                        class="text-[10px] uppercase tracking-widest font-bold text-midnight/60 hover:text-midnight transition-colors flex items-center gap-2">
+                        Cancelar
+                    </a>
+                    <span id="lead-save-msg" class="text-sm text-emerald-600 hidden">Guardado correctamente</span>
+                    <span id="lead-error-msg" class="text-sm text-rose-600 hidden"></span>
+                </div>
+            </form>
+
+            <!-- Historial de Versiones -->
+            {% if versions %}
+            <div class="mt-10 pt-8 border-t border-midnight/10">
+                <details class="group">
+                    <summary class="flex items-center gap-2 cursor-pointer text-[10px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors">
+                        <i data-lucide="history" class="w-4 h-4"></i>
+                        Historial de Versiones ({{ versions|length }})
+                        <i data-lucide="chevron-down" class="w-4 h-4 ml-auto transition-transform group-open:rotate-180"></i>
+                    </summary>
+                    <div class="mt-4 space-y-3">
+                        {% for v in versions %}
+                        <div class="p-3 bg-paper-dark rounded border border-midnight/5 text-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="font-semibold text-midnight">Version {{ v.version }}</span>
+                                <span class="text-midnight/40 text-[10px]">{{ v.edited_at }}</span>
+                            </div>
+                            <p class="text-midnight/50 text-xs mt-1">{{ v.change_summary or 'Sin resumen de cambios' }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </details>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/profile.js') }}" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (window.lucide) lucide.createIcons();
+    initEditLeadForm({{ lead.id }});
+});
+</script>
+{% endblock %}

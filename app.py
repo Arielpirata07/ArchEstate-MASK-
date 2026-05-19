@@ -157,6 +157,44 @@ def init_db():
             if column not in existing_columns:
                 cursor.execute(f"ALTER TABLE leads ADD COLUMN {column} {column_type}")
 
+        # Migración: agregar user_id a leads si no existe
+        cursor.execute('PRAGMA table_info(leads)')
+        lead_columns = [row[1] for row in cursor.fetchall()]
+        if 'user_id' not in lead_columns:
+            cursor.execute('ALTER TABLE leads ADD COLUMN user_id INTEGER DEFAULT NULL')
+            cursor.execute('''
+                UPDATE leads SET user_id = (
+                    SELECT u.id FROM users u WHERE u.email = leads.email
+                ) WHERE user_id IS NULL AND leads.email IN (SELECT email FROM users)
+            ''')
+
+        # Tabla de Perfiles de Usuario
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS user_profiles (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL UNIQUE REFERENCES users(id),
+                first_name TEXT DEFAULT '',
+                last_name TEXT DEFAULT '',
+                bio TEXT DEFAULT '',
+                title TEXT DEFAULT '',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        # Tabla de Versiones de Leads
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS lead_versions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                lead_id INTEGER NOT NULL REFERENCES leads(id),
+                version INTEGER NOT NULL,
+                data_snapshot TEXT NOT NULL,
+                created_by INTEGER REFERENCES users(id),
+                change_summary TEXT DEFAULT '',
+                edited_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
         # Tabla de Profesionales
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS professionals (
@@ -685,12 +723,12 @@ def submit_lead():
         conn.execute('''
             INSERT INTO leads (
                 type, property_type, zone, budget, currency,
-                phone, email, floor_block, usable_m2, elevator,
+                phone, email, user_id, floor_block, usable_m2, elevator,
                 land_area, built_area, pool, architectural_style,
                 bedrooms, bathrooms, total_area, amenities,
                 ambientes, parking, orientation, property_condition, property_age
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             data.get('type'),
             property_type,
@@ -699,6 +737,7 @@ def submit_lead():
             currency,
             data.get('phone'),
             email,
+            user_id,
             data.get('floor_block', ''),
             data.get('usable_m2', 0),
             data.get('elevator', ''),
@@ -2038,6 +2077,9 @@ def update_user_phone():
         if conn:
             conn.close()
 
+
+from routes_profile import profile_bp
+app.register_blueprint(profile_bp)
 
 # Inicializar la base de datos al arrancar
 init_db()
