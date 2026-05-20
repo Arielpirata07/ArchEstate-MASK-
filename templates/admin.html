@@ -512,11 +512,28 @@ function showTab(tab) {
 // ================================================================
 // DASHBOARD INTERACTIVO
 // ================================================================
-const PALETTE = {
-    gold:  ['#735A3A', '#A68A64', '#C4A882', '#D4BC9A', '#E8D5B7'],
-    dark:  ['#000410', '#101E33', '#1A2E4A', '#243E62', '#2E4E7A'],
-    mixed: ['#735A3A', '#000410', '#A68A64', '#101E33', '#C4A882', '#1A2E4A'],
-};
+function isDarkMode() {
+    return document.documentElement.classList.contains('dark');
+}
+
+function getPalette() {
+    if (isDarkMode()) {
+        return {
+            gold:  ['#A68A64', '#C4A882', '#D4BC9A', '#E8D5B7', '#F0E6D0'],
+            dark:  ['#243E62', '#2E4E7A', '#3A5F96', '#4A70A8', '#5A82BA'],
+            mixed: ['#A68A64', '#243E62', '#C4A882', '#2E4E7A', '#D4BC9A', '#3A5F96'],
+        };
+    }
+    return {
+        gold:  ['#735A3A', '#A68A64', '#C4A882', '#D4BC9A', '#E8D5B7'],
+        dark:  ['#000410', '#101E33', '#1A2E4A', '#243E62', '#2E4E7A'],
+        mixed: ['#735A3A', '#000410', '#A68A64', '#101E33', '#C4A882', '#1A2E4A'],
+    };
+}
+
+function chartGridColor() {
+    return isDarkMode() ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)';
+}
 
 const baseFont = { family: 'Manrope', size: 10, weight: 'bold' };
 
@@ -591,7 +608,7 @@ function filterZoneChart() {
     if (!charts['zone']) return;
     charts['zone'].data.labels   = filtered.map(d => d.label);
     charts['zone'].data.datasets[0].data            = filtered.map(d => d.value);
-    charts['zone'].data.datasets[0].backgroundColor = PALETTE.dark.slice(0, filtered.length);
+    charts['zone'].data.datasets[0].backgroundColor = getPalette().dark.slice(0, filtered.length);
     charts['zone'].update();
 }
 
@@ -612,7 +629,7 @@ function renderTypeChart() {
             labels: data.leads_by_type.map(d => d.label),
             datasets: [{
                 data: data.leads_by_type.map(d => d.value),
-                backgroundColor: PALETTE.gold,
+                backgroundColor: getPalette().gold,
                 borderWidth: 0,
                 hoverOffset: 6,
                 borderRadius: isDoughnut ? 0 : 4,
@@ -636,7 +653,7 @@ function renderTypeChart() {
             },
             scales: isDoughnut ? {} : {
                 x: { ticks: { font: { family: 'Manrope', size: 9 } }, grid: { display: false } },
-                y: { ticks: { font: baseFont, stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.04)' }, beginAtZero: true }
+                y: { ticks: { font: baseFont, stepSize: 1 }, grid: { color: chartGridColor() }, beginAtZero: true }
             }
         }
     });
@@ -697,8 +714,8 @@ function renderMonthChart() {
                 }
             },
             scales: {
-                x: { ticks: { font: baseFont }, grid: { color: 'rgba(0,0,0,0.04)' } },
-                y: { ticks: { font: baseFont, stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.04)' }, beginAtZero: true }
+                x: { ticks: { font: baseFont }, grid: { color: chartGridColor() } },
+                y: { ticks: { font: baseFont, stepSize: 1 }, grid: { color: chartGridColor() }, beginAtZero: true }
             },
             animation: { duration: 400 }
         }
@@ -742,7 +759,7 @@ async function initDashboard() {
             type: 'bar',
             data: {
                 labels: data.leads_by_zone.map(d => d.label),
-                datasets: [{ label: 'Leads', data: data.leads_by_zone.map(d => d.value), backgroundColor: PALETTE.dark, borderRadius: 4, borderSkipped: false }]
+                datasets: [{ label: 'Leads', data: data.leads_by_zone.map(d => d.value), backgroundColor: getPalette().dark, borderRadius: 4, borderSkipped: false }]
             },
             options: {
                 responsive: true,
@@ -751,7 +768,7 @@ async function initDashboard() {
                     tooltip: { callbacks: { label: ctx => `  ${ctx.parsed.x} leads` } }
                 },
                 scales: {
-                    x: { ticks: { font: baseFont, stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.04)' } },
+                    x: { ticks: { font: baseFont, stepSize: 1 }, grid: { color: chartGridColor() } },
                     y: { ticks: { font: baseFont }, grid: { display: false } }
                 }
             }
@@ -765,7 +782,7 @@ async function initDashboard() {
             type: 'bar',
             data: {
                 labels: data.leads_by_budget.map(d => d.label),
-                datasets: [{ label: 'Leads', data: data.leads_by_budget.map(d => d.value), backgroundColor: PALETTE.mixed, borderRadius: 4, borderSkipped: false }]
+                datasets: [{ label: 'Leads', data: data.leads_by_budget.map(d => d.value), backgroundColor: getPalette().mixed, borderRadius: 4, borderSkipped: false }]
             },
             options: {
                 responsive: true,
@@ -774,7 +791,7 @@ async function initDashboard() {
                 },
                 scales: {
                     x: { ticks: { font: { family: 'Manrope', size: 8, weight: 'bold' }, maxRotation: 30 }, grid: { display: false } },
-                    y: { ticks: { font: baseFont, stepSize: 1 }, grid: { color: 'rgba(0,0,0,0.04)' }, beginAtZero: true }
+                    y: { ticks: { font: baseFont, stepSize: 1 }, grid: { color: chartGridColor() }, beginAtZero: true }
                 }
             }
         });

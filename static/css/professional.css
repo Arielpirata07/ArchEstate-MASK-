@@ -2,9 +2,60 @@
    ARCHESTATE - PROFESSIONAL PANEL STYLES
    ============================================ */
 
+/* --- Dark Mode Hover Overrides --- */
+.dark [id^="dropzone-"]:hover {
+    background: var(--bg-card) !important;
+    border-color: var(--accent) !important;
+}
+
+.dark .leads-table tr:hover {
+    background: var(--bg-secondary) !important;
+}
+
+.dark .metric-card:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4) !important;
+}
+
+.dark .status-btn {
+    border-color: var(--border);
+    color: var(--text-secondary);
+}
+
+.dark .status-btn:hover {
+    border-color: var(--accent);
+    color: var(--text-primary);
+    background: rgba(166, 138, 100, 0.08);
+}
+
+.dark .status-btn.status-active.status-btn-seen {
+    border-color: #A68A64;
+    background: rgba(166, 138, 100, 0.1);
+    color: #A68A64;
+}
+
+.dark .status-btn.status-active.status-btn-seen:hover {
+    background: rgba(166, 138, 100, 0.15);
+    border-color: #8a7050;
+}
+
+.dark .status-btn.status-active.status-btn-contacted {
+    border-color: #6ee7b7;
+    background: rgba(5, 150, 105, 0.1);
+    color: #6ee7b7;
+}
+
+.dark .status-btn.status-active.status-btn-contacted:hover {
+    background: rgba(5, 150, 105, 0.15);
+    border-color: #34d399;
+}
+
 /* --- Leads Table --- */
 .leads-table th {
     border-bottom: 1px solid rgba(0, 4, 16, 0.05);
+}
+
+.dark .leads-table th {
+    border-bottom-color: var(--border);
 }
 
 .leads-table tr:hover {
@@ -27,10 +78,19 @@
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
 }
 
+.dark .metric-card {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
 /* --- Status Badge Colors --- */
 .badge-approved {
     background: #ecfdf5;
     color: #047857;
+}
+
+.dark .badge-approved {
+    background: rgba(5, 150, 105, 0.1);
+    color: #6ee7b7;
 }
 
 .badge-pending {
@@ -38,9 +98,19 @@
     color: #b45309;
 }
 
+.dark .badge-pending {
+    background: rgba(217, 119, 6, 0.1);
+    color: #fcd34d;
+}
+
 .badge-rejected {
     background: #fff1f2;
     color: #be123c;
+}
+
+.dark .badge-rejected {
+    background: rgba(225, 29, 72, 0.1);
+    color: #fda4af;
 }
 
 /* ============================================
@@ -138,6 +208,10 @@
 button[title="Reportar telefono inexistente"]:hover {
     background: #e11d48 !important;
     color: white !important;
+}
+
+.dark button[title="Reportar telefono inexistente"]:hover {
+    background: #be123c !important;
 }
 
 button[title="Reportar telefono inexistente"]:hover i[data-lucide] {

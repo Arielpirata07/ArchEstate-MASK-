@@ -4,31 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ArchEstate | Private Ledger</title>
+
+    <!-- Anti-FOUC: aplicar dark mode antes del render -->
+    <script>
+        (function() {
+            var theme = localStorage.getItem('archestate-theme');
+            if (!theme) {
+                theme = '{{ user_theme if user_theme else "light" }}';
+            }
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind Config -->
+    <script src="{{ url_for('static', filename='js/tailwind-config.js') }}"></script>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Manrope:wght@200..800&display=swap" rel="stylesheet">
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Base Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
     
     <style>
         .selected {
             background-color: #A68A64 !important;
             color: white !important;
         }
+        .view-section {
+            display: none;
+        }
+        .view-section.active {
+            display: block;
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
 
     <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-50 bg-[#101E33] border-b border-[#735A3A]/20 h-16 flex items-center justify-between px-8 shadow-lg">
+    <nav class="fixed top-0 w-full z-50 bg-midnight-light border-b border-gold/20 h-16 flex items-center justify-between px-8 shadow-lg">
         <div class="text-xl font-serif italic text-white cursor-pointer" onclick="showView('landing')">
             ArchEstate
         </div>
         
         <div class="flex items-center gap-6">
+            <!-- Theme Toggle -->
+            <button id="theme-toggle" class="p-2 text-white/60 hover:text-gold transition-colors" aria-label="Cambiar tema">
+                <i data-lucide="sun" class="theme-sun w-4 h-4"></i>
+                <i data-lucide="moon" class="theme-moon w-4 h-4"></i>
+            </button>
             {% if session.get('user_id') %}
-                <a href="{{ url_for('logout') }}" class="flex items-center gap-2 text-[#A68A64] hover:text-white transition-colors text-sm font-medium">
+                <a href="{{ url_for('logout') }}" class="flex items-center gap-2 text-gold-light hover:text-white transition-colors text-sm font-medium">
                     <i data-lucide="log-out" class="w-4 h-4"></i>
                     Salir
                 </a>
@@ -36,7 +65,7 @@
                 <a href="{{ url_for('login') }}" class="text-white/70 hover:text-white transition-colors text-sm font-medium">
                     Ingresar
                 </a>
-                <a href="{{ url_for('register') }}" class="bg-[#735A3A] hover:bg-[#A68A64] text-white px-5 py-2 rounded-md text-sm font-bold tracking-wide transition-all shadow-md">
+                <a href="{{ url_for('register') }}" class="bg-gold hover:bg-gold-light text-white px-5 py-2 rounded-md text-sm font-bold tracking-wide transition-all shadow-md">
                     Registrarse
                 </a>
             {% endif %}
@@ -229,5 +258,6 @@
 
     <!-- Scripts Globales -->
     <script src="{{ url_for('static', filename='js/spa.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
 </body>
 </html>

@@ -1,37 +1,60 @@
-/**
- * Dark Mode Toggle — ArchEstate
- * Persiste en backend via /api/profile/settings
- */
+(function() {
+    var STORAGE_KEY = 'archestate-theme';
 
-document.addEventListener('DOMContentLoaded', function() {
-    const toggle = document.getElementById('theme-toggle');
-    if (!toggle) return;
+    var html = document.documentElement;
+    var toggle1 = document.getElementById('theme-toggle');
+    var toggle2 = document.getElementById('theme-toggle-mobile');
+    var label = document.getElementById('theme-toggle-label');
+    var toggles = [];
 
-    const html = document.documentElement;
-    const sunIcon = toggle.querySelector('.theme-sun');
-    const moonIcon = toggle.querySelector('.theme-moon');
+    if (toggle1) toggles.push(toggle1);
+    if (toggle2) toggles.push(toggle2);
+    if (!toggles.length) return;
 
-    toggle.addEventListener('click', async function() {
-        const isDark = html.classList.toggle('dark-mode');
-        updateIcons(isDark);
-
+    function persist(theme) {
+        localStorage.setItem(STORAGE_KEY, theme);
         try {
-            await fetch('/api/profile/settings', {
+            fetch('/api/profile/settings', {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ theme: isDark ? 'dark' : 'light' })
+                body: JSON.stringify({ theme: theme })
             });
-        } catch (e) {
-            // fallback silencioso
+        } catch (e) {}
+    }
+
+    function applyTheme(theme) {
+        var isDark = theme === 'dark';
+        html.classList.toggle('dark', isDark);
+        if (label) label.textContent = isDark ? 'Modo Claro' : 'Modo Oscuro';
+    }
+
+    function getSystemTheme() {
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+
+    function resolveInitialTheme() {
+        var saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) return saved;
+        if (html.classList.contains('dark')) return 'dark';
+        return getSystemTheme();
+    }
+
+    var mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    mediaQuery.addEventListener('change', function(e) {
+        if (!localStorage.getItem(STORAGE_KEY)) {
+            applyTheme(e.matches ? 'dark' : 'light');
         }
     });
 
-    function updateIcons(isDark) {
-        if (sunIcon) sunIcon.style.display = isDark ? 'none' : 'block';
-        if (moonIcon) moonIcon.style.display = isDark ? 'block' : 'none';
-        if (window.lucide) lucide.createIcons();
+    for (var i = 0; i < toggles.length; i++) {
+        (function(btn) {
+            btn.addEventListener('click', function() {
+                var isDark = !html.classList.contains('dark');
+                applyTheme(isDark ? 'dark' : 'light');
+                persist(isDark ? 'dark' : 'light');
+            });
+        })(toggles[i]);
     }
 
-    // Estado inicial
-    updateIcons(html.classList.contains('dark-mode'));
-});
+    applyTheme(resolveInitialTheme());
+})();

@@ -354,6 +354,15 @@ def _ensure_user_profile(user_id):
         conn.close()
 
 
+def get_user_avatar_path(user_id):
+    conn = get_db_connection()
+    try:
+        row = conn.execute('SELECT avatar_path FROM user_profiles WHERE user_id = ?', (user_id,)).fetchone()
+        return row['avatar_path'] if row and row['avatar_path'] else None
+    finally:
+        conn.close()
+
+
 def update_user_avatar(user_id, path):
     _ensure_user_profile(user_id)
     conn = get_db_connection()
@@ -363,6 +372,15 @@ def update_user_avatar(user_id, path):
         return True
     except Exception:
         return False
+    finally:
+        conn.close()
+
+
+def get_professional_photo_path(user_id):
+    conn = get_db_connection()
+    try:
+        row = conn.execute('SELECT photo_path FROM professional_profiles WHERE user_id = ?', (user_id,)).fetchone()
+        return row['photo_path'] if row and row['photo_path'] else None
     finally:
         conn.close()
 

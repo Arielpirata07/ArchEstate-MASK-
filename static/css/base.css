@@ -3,12 +3,24 @@
    Design tokens: midnight, gold, paper
    ============================================ */
 
+/* --- Theme Transitions --- */
+*, *::before, *::after {
+    transition: background-color 0.25s ease,
+                color 0.25s ease,
+                border-color 0.25s ease,
+                box-shadow 0.25s ease;
+}
+
+/* --- Theme Icons (CSS-only toggle, evita conflicto con lucide.createIcons) --- */
+.theme-moon { display: none; }
+.dark .theme-sun { display: none; }
+.dark .theme-moon { display: inline-block; }
+
 /* --- Typography & Base --- */
 body {
     font-family: 'Manrope', sans-serif;
     background-color: var(--bg-primary);
     color: var(--text-primary);
-    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .serif {
@@ -369,6 +381,7 @@ html {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
+        transition: none !important;
     }
 }
 
@@ -384,7 +397,7 @@ html {
     --border: rgba(0, 4, 16, 0.1);
 }
 
-.dark-mode {
+.dark {
     --bg-primary: #0a0e1a;
     --bg-secondary: #101E33;
     --bg-card: #1a2332;
@@ -394,6 +407,84 @@ html {
     --accent-light: #735A3A;
     --border: rgba(250, 249, 247, 0.1);
 }
+
+/* Dark mode overrides for Tailwind utility classes */
+.dark .bg-white { background: var(--bg-card) !important; }
+.dark .bg-paper-dark { background: var(--bg-secondary) !important; }
+.dark .bg-paper { background: var(--bg-primary) !important; }
+.dark .text-midnight { color: var(--text-primary) !important; }
+.dark .text-midlight { color: var(--text-primary) !important; }
+.dark .text-midnight\/60 { color: var(--text-secondary) !important; }
+.dark .text-midnight\/40 { color: rgba(250, 249, 247, 0.4) !important; }
+.dark .text-midnight\/30 { color: rgba(250, 249, 247, 0.3) !important; }
+.dark .text-midnight\/20 { color: rgba(250, 249, 247, 0.2) !important; }
+.dark .text-midnight\/10 { color: rgba(250, 249, 247, 0.1) !important; }
+.dark .border-midnight\/20 { border-color: var(--border) !important; }
+.dark .border-midnight\/10 { border-color: rgba(250, 249, 247, 0.08) !important; }
+.dark .divide-midnight\/20 > * + * { border-color: var(--border) !important; }
+.dark .bg-midnight { background: var(--bg-card) !important; }
+.dark .hover\:bg-midnight:hover { background: var(--bg-secondary) !important; }
+.dark .hover\:border-midnight:hover { border-color: rgba(250, 249, 247, 0.4) !important; }
+.dark .bg-midnight\/5 { background: rgba(250, 249, 247, 0.04) !important; }
+.dark .bg-midnight\/10 { background: rgba(250, 249, 247, 0.08) !important; }
+.dark .bg-midnight\/20 { background: rgba(250, 249, 247, 0.12) !important; }
+.dark .bg-midnight\/60 { background: rgba(0, 0, 0, 0.7) !important; }
+.dark .text-midnight\/70 { color: rgba(250, 249, 247, 0.7) !important; }
+.dark .text-midnight\/50 { color: rgba(250, 249, 247, 0.5) !important; }
+.dark .border-midnight { border-color: rgba(250, 249, 247, 0.3) !important; }
+.dark .border-midnight\/5 { border-color: rgba(250, 249, 247, 0.04) !important; }
+.dark .border-slate-200 { border-color: var(--border) !important; }
+.dark .bg-slate-200 { background: var(--bg-secondary) !important; }
+.dark .shadow-sm { box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important; }
+.dark .shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.4) !important; }
+.dark .shadow-md { box-shadow: 0 4px 6px rgba(0,0,0,0.5) !important; }
+.dark .shadow-lg { box-shadow: 0 10px 15px rgba(0,0,0,0.5) !important; }
+.dark .shadow-xl { box-shadow: 0 20px 25px rgba(0,0,0,0.6) !important; }
+.dark .shadow-2xl { box-shadow: 0 25px 50px rgba(0,0,0,0.7) !important; }
+
+/* Dark mode: form inputs */
+.dark input:not([type="checkbox"]):not([type="radio"]),
+.dark select,
+.dark textarea {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    caret-color: var(--accent) !important;
+}
+.dark input::placeholder,
+.dark textarea::placeholder {
+    color: var(--text-secondary) !important;
+    opacity: 0.6 !important;
+}
+
+/* Dark mode: status badges and alerts */
+.dark .bg-rose-50 { background: rgba(225, 29, 72, 0.1) !important; }
+.dark .text-rose-700 { color: #fda4af !important; }
+.dark .text-rose-600 { color: #fda4af !important; }
+.dark .text-rose-500 { color: #fb7185 !important; }
+.dark .border-rose-200,
+.dark .border-rose-100 { border-color: rgba(225, 29, 72, 0.3) !important; }
+.dark .bg-emerald-50 { background: rgba(5, 150, 105, 0.1) !important; }
+.dark .text-emerald-700 { color: #6ee7b7 !important; }
+.dark .text-emerald-600 { color: #6ee7b7 !important; }
+.dark .border-emerald-200,
+.dark .border-emerald-100 { border-color: rgba(5, 150, 105, 0.3) !important; }
+.dark .bg-amber-50 { background: rgba(217, 119, 6, 0.1) !important; }
+.dark .text-amber-700 { color: #fcd34d !important; }
+.dark .text-amber-600 { color: #fcd34d !important; }
+.dark .text-amber-500 { color: #fbbf24 !important; }
+.dark .border-amber-200,
+.dark .border-amber-100 { border-color: rgba(217, 119, 6, 0.3) !important; }
+.dark .bg-blue-50 { background: rgba(59, 130, 246, 0.1) !important; }
+.dark .text-blue-700 { color: #93c5fd !important; }
+.dark .text-blue-600 { color: #93c5fd !important; }
+.dark .text-blue-500 { color: #93c5fd !important; }
+.dark .border-blue-200,
+.dark .border-blue-100 { border-color: rgba(59, 130, 246, 0.3) !important; }
+.dark .bg-green-50 { background: rgba(34, 197, 94, 0.1) !important; }
+.dark .text-green-700 { color: #86efac !important; }
+.dark .text-green-600 { color: #86efac !important; }
+.dark .border-green-200,
+.dark .border-green-100 { border-color: rgba(34, 197, 94, 0.3) !important; }
 
 /* --- Back to Top Button --- */
 .back-to-top {

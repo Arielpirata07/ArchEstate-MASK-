@@ -13,7 +13,7 @@
     color: white;
 }
 
-.dark-mode .settings-sidebar {
+.dark .settings-sidebar {
     background: #0d1520;
 }
 
@@ -50,7 +50,7 @@
     background: rgba(255, 255, 255, 0.1);
 }
 
-.dark-mode .settings-tab.active {
+.dark .settings-tab.active {
     color: #A68A64;
 }
 
@@ -63,7 +63,7 @@
     padding: 2rem;
 }
 
-.dark-mode .settings-card {
+.dark .settings-card {
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
     border-top-color: #A68A64;
 }
@@ -79,7 +79,7 @@
     color: #735A3A;
 }
 
-.dark-mode .input-label {
+.dark .input-label {
     color: #A68A64;
 }
 
@@ -101,7 +101,7 @@
     box-shadow: 0 0 0 2px rgba(115, 90, 58, 0.15);
 }
 
-.dark-mode .input-field:focus {
+.dark .input-field:focus {
     border-color: #A68A64;
     box-shadow: 0 0 0 2px rgba(166, 138, 100, 0.15);
 }
@@ -139,7 +139,7 @@
     background: #000410;
 }
 
-.dark-mode .btn-primary:hover {
+.dark .btn-primary:hover {
     background: #A68A64;
 }
 
@@ -243,7 +243,7 @@
     background: #735A3A;
 }
 
-.dark-mode .toggle-input:checked + .toggle-slider {
+.dark .toggle-input:checked + .toggle-slider {
     background: #A68A64;
 }
 
@@ -280,7 +280,7 @@
     background: rgba(115, 90, 58, 0.08);
 }
 
-.dark-mode .theme-option.active {
+.dark .theme-option.active {
     border-color: #A68A64;
     background: rgba(166, 138, 100, 0.1);
 }
@@ -316,7 +316,7 @@
     color: #735A3A;
 }
 
-.dark-mode .chip-checkbox input:checked + .chip-label {
+.dark .chip-checkbox input:checked + .chip-label {
     border-color: #A68A64;
     background: rgba(166, 138, 100, 0.1);
     color: #A68A64;
@@ -369,7 +369,7 @@
     border: 3px solid var(--bg-card);
 }
 
-.dark-mode .activity-dot {
+.dark .activity-dot {
     background: #A68A64;
 }
 

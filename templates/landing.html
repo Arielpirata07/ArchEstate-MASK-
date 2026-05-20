@@ -277,7 +277,7 @@ function initTypingEffect() {
 
     const text = typingElement.textContent;
     typingElement.textContent = '';
-    typingElement.style.borderRight = '2px solid #735A3A';
+    typingElement.style.borderRight = '2px solid var(--accent)';
     let i = 0;
     const typeWriter = () => {
         if (i < text.length) {

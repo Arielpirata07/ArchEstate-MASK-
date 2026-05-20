@@ -1,7 +1,7 @@
 import os
 import json
 
-from flask import Blueprint, render_template, request, session, jsonify, redirect, url_for
+from flask import Blueprint, render_template, request, session, jsonify, redirect, url_for, current_app
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 
@@ -325,13 +325,31 @@ def api_upload_avatar():
     if file.filename == '':
         return jsonify({'error': 'Nombre de archivo vacio'}), 400
 
-    original_name = secure_filename(file.filename)
-    ext = original_name.rsplit('.', 1)[-1].lower() if '.' in original_name else ''
-    if ext not in {'jpg', 'jpeg', 'png', 'gif', 'webp'}:
+    if not utils.allowed_file(file.filename):
         return jsonify({'error': 'Formato no permitido. Usa JPG, PNG, GIF o WebP'}), 400
 
+    mime_valid, detected_ext, mime_error = utils.validate_mime_type(file, file.filename)
+    if not mime_valid:
+        return jsonify({'error': mime_error}), 400
+
+    file.seek(0, os.SEEK_END)
+    size = file.tell()
+    if size > config.MAX_UPLOAD_SIZE:
+        return jsonify({'error': 'El archivo excede el tamaño maximo de 16MB'}), 400
+    file.seek(0)
+
+    ext = detected_ext or 'jpg'
     safe_filename = f'user_{user_id}_avatar.{ext}'
-    filepath = os.path.join(config.AVATAR_FOLDER, safe_filename)
+    avatar_dir = current_app.config['AVATAR_FOLDER']
+    filepath = os.path.join(avatar_dir, safe_filename)
+
+    # Eliminar avatar anterior si existe
+    old_path = models.get_user_avatar_path(user_id)
+    if old_path:
+        old_file = os.path.join(avatar_dir, os.path.basename(old_path))
+        if os.path.exists(old_file):
+            os.remove(old_file)
+
     file.save(filepath)
 
     avatar_rel = f'uploads/avatars/{safe_filename}'
@@ -346,6 +364,11 @@ def api_upload_avatar():
 @rate_limit.check_rate_limit(limit=5, window=60)
 def api_delete_avatar():
     user_id = session['user_id']
+    old_path = models.get_user_avatar_path(user_id)
+    if old_path:
+        old_file = os.path.join(current_app.config['AVATAR_FOLDER'], os.path.basename(old_path))
+        if os.path.exists(old_file):
+            os.remove(old_file)
     models.delete_user_avatar(user_id)
     _log_action('Avatar eliminado', f'Usuario: {session["username"]}')
     return jsonify({'status': 'success', 'message': 'Avatar eliminado'})
@@ -407,13 +430,30 @@ def api_upload_professional_photo():
     if file.filename == '':
         return jsonify({'error': 'Nombre de archivo vacio'}), 400
 
-    original_name = secure_filename(file.filename)
-    ext = original_name.rsplit('.', 1)[-1].lower() if '.' in original_name else ''
-    if ext not in {'jpg', 'jpeg', 'png', 'gif', 'webp'}:
+    if not utils.allowed_file(file.filename):
         return jsonify({'error': 'Formato no permitido. Usa JPG, PNG, GIF o WebP'}), 400
 
+    mime_valid, detected_ext, mime_error = utils.validate_mime_type(file, file.filename)
+    if not mime_valid:
+        return jsonify({'error': mime_error}), 400
+
+    file.seek(0, os.SEEK_END)
+    size = file.tell()
+    if size > config.MAX_UPLOAD_SIZE:
+        return jsonify({'error': 'El archivo excede el tamaño maximo de 16MB'}), 400
+    file.seek(0)
+
+    ext = detected_ext or 'jpg'
     safe_filename = f'pro_{user_id}_photo.{ext}'
-    filepath = os.path.join(config.AVATAR_FOLDER, safe_filename)
+    avatar_dir = current_app.config['AVATAR_FOLDER']
+    filepath = os.path.join(avatar_dir, safe_filename)
+
+    old_path = models.get_professional_photo_path(user_id)
+    if old_path:
+        old_file = os.path.join(avatar_dir, os.path.basename(old_path))
+        if os.path.exists(old_file):
+            os.remove(old_file)
+
     file.save(filepath)
 
     photo_rel = f'uploads/avatars/{safe_filename}'
@@ -428,6 +468,11 @@ def api_upload_professional_photo():
 @rate_limit.check_rate_limit(limit=5, window=60)
 def api_delete_professional_photo():
     user_id = session['user_id']
+    old_path = models.get_professional_photo_path(user_id)
+    if old_path:
+        old_file = os.path.join(current_app.config['AVATAR_FOLDER'], os.path.basename(old_path))
+        if os.path.exists(old_file):
+            os.remove(old_file)
     models.create_or_update_professional_profile(user_id, {'photo_path': ''})
     _log_action('Foto profesional eliminada', f'Usuario: {session["username"]}')
     return jsonify({'status': 'success', 'message': 'Foto eliminada'})

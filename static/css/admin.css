@@ -130,3 +130,52 @@
     0% { transform: scale(0); }
     100% { transform: scale(1); }
 }
+
+/* ============================================
+   DARK MODE OVERRIDES
+   ============================================ */
+
+/* --- Timeline --- */
+.dark .timeline-item::after {
+    background: rgba(250, 249, 247, 0.08);
+}
+
+/* --- Scrollbar --- */
+.dark .overflow-y-auto::-webkit-scrollbar-thumb {
+    background: rgba(166, 138, 100, 0.3);
+}
+.dark .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+    background: rgba(166, 138, 100, 0.5);
+}
+
+/* --- KPI Card Hover --- */
+.dark .kpi-card:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* --- Report Filter Chips --- */
+.dark .report-filter-chip {
+    border-color: rgba(250, 249, 247, 0.15);
+    color: rgba(250, 249, 247, 0.5);
+}
+.dark .report-filter-chip:hover {
+    border-color: rgba(225, 29, 72, 0.4);
+    color: rgba(250, 249, 247, 0.7);
+}
+.dark .report-filter-chip.report-filter-active {
+    border-color: #e11d48;
+    background: #e11d48;
+    color: white;
+}
+
+/* --- Chart panel header borders --- */
+.dark .border-midnight\/5 { border-color: rgba(250, 249, 247, 0.06) !important; }
+
+/* --- Audit log entries --- */
+.dark .bg-paper-dark\/30 { background: rgba(16, 30, 51, 0.5) !important; }
+
+/* --- Status button rows in dark mode --- */
+.dark .hover\:bg-rose-50:hover { background: rgba(225, 29, 72, 0.15) !important; }
+.dark .hover\:bg-rose-100:hover { background: rgba(225, 29, 72, 0.2) !important; }
+.dark .hover\:bg-emerald-50:hover { background: rgba(5, 150, 105, 0.15) !important; }
+.dark .hover\:bg-emerald-100:hover { background: rgba(5, 150, 105, 0.2) !important; }

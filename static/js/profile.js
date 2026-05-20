@@ -332,9 +332,9 @@ function setToggle(id, value) {
 function setTheme(theme) {
     const html = document.documentElement;
     if (theme === 'dark') {
-        html.classList.add('dark-mode');
+        html.classList.add('dark');
     } else {
-        html.classList.remove('dark-mode');
+        html.classList.remove('dark');
     }
     setThemeUI(theme);
     saveSettings();
@@ -347,11 +347,7 @@ function setThemeUI(theme) {
         btn.classList.toggle('active', isActive);
         btn.setAttribute('aria-pressed', isActive);
     });
-    // Update navbar theme toggle icons
-    const sunIcon = document.querySelector('.theme-sun');
-    const moonIcon = document.querySelector('.theme-moon');
-    if (sunIcon) sunIcon.style.display = theme === 'dark' ? 'none' : 'block';
-    if (moonIcon) moonIcon.style.display = theme === 'dark' ? 'block' : 'none';
+    // El CSS maneja la visibilidad de sun/moon via .dark
 }
 
 function saveSettings() {
