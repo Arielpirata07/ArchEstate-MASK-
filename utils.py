@@ -9,6 +9,8 @@ MIME_MAGIC_BYTES = {
     'jpg':  [b'\xff\xd8\xff'],
     'jpeg': [b'\xff\xd8\xff'],
     'png':  [b'\x89PNG\r\n\x1a\n'],
+    'gif':  [b'GIF87a', b'GIF89a'],
+    'webp': [b'RIFF'],  # se valida RIFF + WEBP en validate_mime_type
 }
 
 
@@ -31,6 +33,8 @@ def validate_mime_type(file_stream, filename):
 
     for magic in MIME_MAGIC_BYTES[ext]:
         if header.startswith(magic):
+            if ext == 'webp' and (header[0:4] != b'RIFF' or header[8:12] != b'WEBP'):
+                continue
             return True, ext, None
 
     return False, None, f"El contenido del archivo no corresponde a un {ext.upper()}"

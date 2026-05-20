@@ -73,7 +73,7 @@
                         <!-- Avatar -->
                         <div class="flex-shrink-0 text-center">
                             <div class="avatar-upload relative mx-auto" id="avatar-container" onclick="document.getElementById('avatar-input').click()" role="button" tabindex="0" aria-label="Cambiar foto de perfil" onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
-                                <img id="avatar-preview" src="{% if user and user.avatar_path %}{{ url_for('static', filename=user.avatar_path) }}{% else %}{{ url_for('static', filename='img/default-avatar.svg') }}{% endif %}" alt="Foto de perfil" class="w-28 h-28 rounded-full object-cover border-4" style="border-color:var(--border)">
+                                <img id="avatar-preview" src="{% if user and user.avatar_path %}{{ url_for('static', filename=user.avatar_path) }}{% else %}{{ url_for('static', filename='img/default-avatar.svg') }}{% endif %}" alt="Foto de perfil" class="w-full h-full rounded-full object-cover border-4" style="border-color:var(--border)">
                                 <div class="avatar-overlay">
                                     <i data-lucide="camera" class="w-6 h-6 text-white"></i>
                                 </div>
@@ -106,8 +106,8 @@
                                 <input id="profile-email" type="email" value="{{ user.email if user else '' }}" class="input-field" oninput="validateProfileEmail()">
                                 <div class="flex items-center justify-between mt-1">
                                     <p id="profile-email-hint" class="text-[9px] hint-text">Ingresa un email valido</p>
-                                    <p id="profile-email-valid" class="hidden text-[9px] font-medium" style="color:#059669">Email valido</p>
-                                    <p id="profile-email-invalid" class="hidden text-[9px] font-medium" style="color:#e11d48">Email invalido</p>
+                                    <p id="profile-email-valid" class="hidden text-[9px] font-medium text-green-600">Email valido</p>
+                                    <p id="profile-email-invalid" class="hidden text-[9px] font-medium text-rose-600">Email invalido</p>
                                 </div>
                             </div>
                             <div>
@@ -159,8 +159,8 @@
                                 </div>
                                 <div class="flex items-center justify-between mt-1">
                                     <p id="profile-phone-hint" class="text-[9px] hint-text">El codigo de pais se incluira automaticamente</p>
-                                    <p id="profile-phone-valid" class="hidden text-[9px] font-medium" style="color:#059669">Formato valido</p>
-                                    <p id="profile-phone-invalid" class="hidden text-[9px] font-medium" style="color:#e11d48">Formato invalido</p>
+                                    <p id="profile-phone-valid" class="hidden text-[9px] font-medium text-green-600">Formato valido</p>
+                                    <p id="profile-phone-invalid" class="hidden text-[9px] font-medium text-rose-600">Formato invalido</p>
                                 </div>
                             </div>
                             <div>
@@ -175,8 +175,8 @@
                             <i data-lucide="save" class="w-4 h-4" aria-hidden="true"></i>
                             Guardar Cambios
                         </button>
-                        <span id="profile-save-msg" class="hidden text-sm font-medium" style="color:#059669" aria-live="polite">Guardado correctamente</span>
-                        <span id="profile-error-msg" class="hidden text-sm font-medium" style="color:#e11d48" role="alert"></span>
+                        <span id="profile-save-msg" class="hidden text-sm font-medium text-green-600" aria-live="polite">Guardado correctamente</span>
+                        <span id="profile-error-msg" class="hidden text-sm font-medium text-rose-600" role="alert"></span>
                     </div>
                 </div>
             </div>
@@ -215,8 +215,8 @@
                             <i data-lucide="save" class="w-4 h-4" aria-hidden="true"></i>
                             Guardar Preferencias
                         </button>
-                        <span id="settings-save-msg" class="hidden text-sm font-medium" style="color:#059669" aria-live="polite">Preferencias guardadas</span>
-                        <span id="settings-error-msg" class="hidden text-sm font-medium" style="color:#e11d48" role="alert"></span>
+                        <span id="settings-save-msg" class="hidden text-sm font-medium text-green-600" aria-live="polite">Preferencias guardadas</span>
+                        <span id="settings-error-msg" class="hidden text-sm font-medium text-rose-600" role="alert"></span>
                     </div>
                 </div>
             </div>
@@ -245,7 +245,7 @@
                     </div>
 
                     <div class="flex items-center gap-4 pt-6 mt-6 border-t" style="border-color:var(--border)">
-                        <span id="notif-save-msg" class="text-sm font-medium" style="color:#059669" aria-live="polite">Se guarda automaticamente</span>
+                        <span id="notif-save-msg" class="text-sm font-medium text-green-600" aria-live="polite">Se guarda automaticamente</span>
                     </div>
                 </div>
             </div>
@@ -277,8 +277,8 @@
                                     <i data-lucide="lock" class="w-4 h-4" aria-hidden="true"></i>
                                     Cambiar Contrasena
                                 </button>
-                                <span id="password-save-msg" class="hidden text-sm font-medium" style="color:#059669" aria-live="polite">Contrasena actualizada</span>
-                                <span id="password-error-msg" class="hidden text-sm font-medium" style="color:#e11d48" role="alert"></span>
+                                <span id="password-save-msg" class="hidden text-sm font-medium text-green-600" aria-live="polite">Contrasena actualizada</span>
+                                <span id="password-error-msg" class="hidden text-sm font-medium text-rose-600" role="alert"></span>
                             </div>
                         </div>
                     </div>
@@ -348,7 +348,7 @@
                         <div class="space-y-6">
                             <div class="text-center">
                                 <div class="avatar-upload relative mx-auto" id="pro-photo-container" onclick="document.getElementById('pro-photo-input').click()" role="button" tabindex="0" aria-label="Cambiar foto profesional" onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
-                                    <img id="pro-photo-preview" src="{{ url_for('static', filename='img/default-avatar.svg') }}" alt="Foto profesional" class="w-32 h-32 rounded-full object-cover border-4" style="border-color:var(--border)">
+                                    <img id="pro-photo-preview" src="{{ url_for('static', filename='img/default-avatar.svg') }}" alt="Foto profesional" class="w-full h-full rounded-full object-cover border-4" style="border-color:var(--border)">
                                     <div class="avatar-overlay">
                                         <i data-lucide="camera" class="w-6 h-6 text-white"></i>
                                     </div>
@@ -379,7 +379,7 @@
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
-                                    <label for="pro-experience" class="input-label">Anios de Experiencia</label>
+                                    <label for="pro-experience" class="input-label">Años de Experiencia</label>
                                     <input id="pro-experience" type="number" min="0" max="50" class="input-field" placeholder="0">
                                 </div>
                                 <div>
@@ -492,8 +492,8 @@
                             <i data-lucide="save" class="w-4 h-4" aria-hidden="true"></i>
                             Guardar Perfil Profesional
                         </button>
-                        <span id="pro-full-save-msg" class="hidden text-sm font-medium" style="color:#059669" aria-live="polite">Guardado correctamente</span>
-                        <span id="pro-full-error-msg" class="hidden text-sm font-medium" style="color:#e11d48" role="alert"></span>
+                        <span id="pro-full-save-msg" class="hidden text-sm font-medium text-green-600" aria-live="polite">Guardado correctamente</span>
+                        <span id="pro-full-error-msg" class="hidden text-sm font-medium text-rose-600" role="alert"></span>
                     </div>
                 </div>
             </div>

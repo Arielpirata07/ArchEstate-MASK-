@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es-AR" class="{% if user_theme == 'dark' %}dark-mode{% endif %}">
+<html lang="es-AR" class="{% if user_theme == 'dark' %}dark{% endif %}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,6 +20,19 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ request.url }}">
     <meta property="og:locale" content="es_AR">
+
+    <!-- Anti-FOUC: aplicar dark mode antes del render -->
+    <script>
+        (function() {
+            var theme = localStorage.getItem('archestate-theme');
+            if (!theme) {
+                theme = '{{ user_theme if user_theme else "light" }}';
+            }
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+    </script>
 
     <!-- Tailwind CSS (CDN solo para desarrollo; en produccion usar PostCSS o CLI) -->
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
@@ -73,12 +86,12 @@
         </div>
 
         <div class="flex items-center gap-2 md:gap-4">
-            {% if session.get('user_id') %}
-            <!-- Theme Toggle -->
+            <!-- Theme Toggle (visible para todos) -->
             <button id="theme-toggle" class="p-2 text-white/60 hover:text-gold transition-colors" aria-label="Cambiar tema">
                 <i data-lucide="sun" class="theme-sun w-4 h-4"></i>
-                <i data-lucide="moon" class="theme-moon w-4 h-4" style="display:none"></i>
+                <i data-lucide="moon" class="theme-moon w-4 h-4"></i>
             </button>
+            {% if session.get('user_id') %}
                 {% set active_role = 'Cliente' %}
                 {% if session.get('role') == 'admin' %}
                     {% set active_role = 'Administrador' %}
@@ -133,6 +146,13 @@
 
             <div class="border-t border-white/10 w-48 my-4"></div>
 
+            <!-- Theme Toggle Mobile -->
+            <button id="theme-toggle-mobile" class="flex items-center gap-2 text-white/60 hover:text-gold transition-colors text-sm font-bold uppercase tracking-widest mobile-menu-link" aria-label="Cambiar tema">
+                <i data-lucide="sun" class="theme-sun w-4 h-4"></i>
+                <i data-lucide="moon" class="theme-moon w-4 h-4"></i>
+                <span id="theme-toggle-label">Modo Oscuro</span>
+            </button>
+
             {% if session.get('user_id') %}
                 {% set active_role = 'Cliente' %}
                 {% if session.get('role') == 'admin' %}
@@ -161,15 +181,15 @@
     <div class="pt-24 px-6 max-w-7xl mx-auto w-full">
         {% for category, message in messages %}
             {% if category == 'success' %}
-        <div class="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700 shadow-sm">
+        <div class="mb-4 rounded-lg border px-4 py-3 text-sm shadow-sm" style="border-color:rgba(5,150,105,0.3);background:var(--bg-card);color:var(--text-primary)">
             {{ message }}
         </div>
             {% elif category == 'error' %}
-        <div class="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700 shadow-sm">
+        <div class="mb-4 rounded-lg border px-4 py-3 text-sm shadow-sm" style="border-color:rgba(225,29,72,0.3);background:var(--bg-card);color:var(--text-primary)">
             {{ message }}
         </div>
             {% else %}
-        <div class="mb-4 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 text-sm text-blue-700 shadow-sm">
+        <div class="mb-4 rounded-lg border px-4 py-3 text-sm shadow-sm" style="border-color:rgba(59,130,246,0.3);background:var(--bg-card);color:var(--text-primary)">
             {{ message }}
         </div>
             {% endif %}

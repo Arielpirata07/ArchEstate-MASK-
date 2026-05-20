@@ -19,7 +19,7 @@ if not SECRET_KEY:
 UPLOAD_FOLDER = os.path.join('static', 'uploads', 'docs')
 AVATAR_FOLDER = os.path.join('static', 'uploads', 'avatars')
 
-ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg'}
+ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp'}
 
 MAX_UPLOAD_SIZE = 16 * 1024 * 1024
 
