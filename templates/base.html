@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es-AR">
+<html lang="es-AR" class="{% if user_theme == 'dark' %}dark-mode{% endif %}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -74,6 +74,11 @@
 
         <div class="flex items-center gap-2 md:gap-4">
             {% if session.get('user_id') %}
+            <!-- Theme Toggle -->
+            <button id="theme-toggle" class="p-2 text-white/60 hover:text-gold transition-colors" aria-label="Cambiar tema">
+                <i data-lucide="sun" class="theme-sun w-4 h-4"></i>
+                <i data-lucide="moon" class="theme-moon w-4 h-4" style="display:none"></i>
+            </button>
                 {% set active_role = 'Cliente' %}
                 {% if session.get('role') == 'admin' %}
                     {% set active_role = 'Administrador' %}
@@ -196,6 +201,7 @@
 
     <!-- Scripts Globales -->
     <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/dark-mode.js') }}" defer></script>
 
     {% block scripts %}{% endblock %}
 </body>

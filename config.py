@@ -17,6 +17,7 @@ if not SECRET_KEY:
     raise ValueError("SECRET_KEY must be set in .env file")
 
 UPLOAD_FOLDER = os.path.join('static', 'uploads', 'docs')
+AVATAR_FOLDER = os.path.join('static', 'uploads', 'avatars')
 
 ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg'}
 

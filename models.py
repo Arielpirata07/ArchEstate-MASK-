@@ -198,7 +198,8 @@ def get_user_profile(user_id):
     try:
         row = conn.execute(
             'SELECT u.id, u.username, u.email, u.phone, u.role, u.is_active, '
-            'up.first_name, up.last_name, up.bio, up.title, up.created_at, up.updated_at '
+            'up.first_name, up.last_name, up.bio, up.title, up.avatar_path, '
+            'up.created_at, up.updated_at '
             'FROM users u LEFT JOIN user_profiles up ON u.id = up.user_id WHERE u.id = ?',
             (user_id,)
         ).fetchone()
@@ -251,5 +252,176 @@ def update_professional_profile(user_id, data):
         return True
     except Exception:
         return False
+    finally:
+        conn.close()
+
+
+def get_user_preferences(user_id):
+    conn = get_db_connection()
+    try:
+        prefs = conn.execute(
+            'SELECT * FROM user_preferences WHERE user_id = ?', (user_id,)
+        ).fetchone()
+        if prefs:
+            return dict(prefs)
+        return {
+            'user_id': user_id,
+            'theme': 'light',
+            'language': 'es',
+            'email_notifications': 1,
+            'sms_notifications': 1,
+            'lead_alerts': 1,
+        }
+    finally:
+        conn.close()
+
+
+def update_user_preferences(user_id, data):
+    conn = get_db_connection()
+    try:
+        existing = conn.execute(
+            'SELECT user_id FROM user_preferences WHERE user_id = ?', (user_id,)
+        ).fetchone()
+        if existing:
+            set_clause = ', '.join(f'{k} = ?' for k in data.keys())
+            values = list(data.values()) + [user_id]
+            conn.execute(f'UPDATE user_preferences SET {set_clause}, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?', values)
+        else:
+            data['user_id'] = user_id
+            columns = ', '.join(data.keys())
+            placeholders = ', '.join('?' for _ in data)
+            conn.execute(f'INSERT INTO user_preferences ({columns}) VALUES ({placeholders})', list(data.values()))
+        conn.commit()
+        return True
+    except Exception:
+        return False
+    finally:
+        conn.close()
+
+
+def get_professional_full_profile(user_id):
+    conn = get_db_connection()
+    try:
+        row = conn.execute(
+            'SELECT p.id as prof_id, p.name, p.license, p.specialty, p.status, p.license_verified, '
+            'pp.id as pro_profile_id, pp.photo_path, pp.bio_pro, pp.experience_years, '
+            'pp.services_offered, pp.portfolio, pp.availability, pp.social_links, '
+            'pp.fee_range_min, pp.fee_range_max, pp.professional_address, '
+            'pp.created_at, pp.updated_at '
+            'FROM professionals p '
+            'LEFT JOIN professional_profiles pp ON p.user_id = pp.user_id '
+            'WHERE p.user_id = ?',
+            (user_id,)
+        ).fetchone()
+        return dict(row) if row else None
+    finally:
+        conn.close()
+
+
+def create_or_update_professional_profile(user_id, data):
+    conn = get_db_connection()
+    try:
+        existing = conn.execute(
+            'SELECT id FROM professional_profiles WHERE user_id = ?', (user_id,)
+        ).fetchone()
+        if existing:
+            set_clause = ', '.join(f'{k} = ?' for k in data.keys())
+            values = list(data.values()) + [user_id]
+            conn.execute(f'UPDATE professional_profiles SET {set_clause}, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?', values)
+        else:
+            data['user_id'] = user_id
+            columns = ', '.join(data.keys())
+            placeholders = ', '.join('?' for _ in data)
+            conn.execute(f'INSERT INTO professional_profiles ({columns}) VALUES ({placeholders})', list(data.values()))
+        conn.commit()
+        return True
+    except Exception:
+        return False
+    finally:
+        conn.close()
+
+
+def _ensure_user_profile(user_id):
+    conn = get_db_connection()
+    try:
+        existing = conn.execute('SELECT id FROM user_profiles WHERE user_id = ?', (user_id,)).fetchone()
+        if not existing:
+            conn.execute('INSERT INTO user_profiles (user_id) VALUES (?)', (user_id,))
+            conn.commit()
+    except Exception:
+        pass
+    finally:
+        conn.close()
+
+
+def update_user_avatar(user_id, path):
+    _ensure_user_profile(user_id)
+    conn = get_db_connection()
+    try:
+        conn.execute('UPDATE user_profiles SET avatar_path = ? WHERE user_id = ?', (path, user_id))
+        conn.commit()
+        return True
+    except Exception:
+        return False
+    finally:
+        conn.close()
+
+
+def delete_user_avatar(user_id):
+    conn = get_db_connection()
+    try:
+        conn.execute("UPDATE user_profiles SET avatar_path = '' WHERE user_id = ?", (user_id,))
+        conn.commit()
+        return True
+    except Exception:
+        return False
+    finally:
+        conn.close()
+
+
+def get_user_login_history(user_id, limit=20):
+    conn = get_db_connection()
+    try:
+        rows = conn.execute(
+            'SELECT * FROM user_login_history WHERE user_id = ? ORDER BY last_active DESC LIMIT ?',
+            (user_id, limit)
+        ).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def delete_login_history_entry(entry_id, user_id):
+    conn = get_db_connection()
+    try:
+        conn.execute(
+            'DELETE FROM user_login_history WHERE id = ? AND user_id = ?',
+            (entry_id, user_id)
+        )
+        conn.commit()
+        return conn.total_changes > 0
+    finally:
+        conn.close()
+
+
+def get_user_activity(user_id, limit=50):
+    conn = get_db_connection()
+    try:
+        rows = conn.execute(
+            'SELECT * FROM audit_log WHERE user_id = ? ORDER BY timestamp DESC LIMIT ?',
+            (user_id, limit)
+        ).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def get_professional_by_license(license_number):
+    conn = get_db_connection()
+    try:
+        pro = conn.execute(
+            'SELECT * FROM professionals WHERE license = ?', (license_number,)
+        ).fetchone()
+        return dict(pro) if pro else None
     finally:
         conn.close()
