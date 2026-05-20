@@ -264,6 +264,72 @@ def init_db():
             )
         ''')
 
+        # Tabla de Perfiles Profesionales Extendidos
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS professional_profiles (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL UNIQUE REFERENCES users(id),
+                photo_path TEXT DEFAULT '',
+                bio_pro TEXT DEFAULT '',
+                experience_years INTEGER DEFAULT 0,
+                services_offered TEXT DEFAULT '[]',
+                portfolio TEXT DEFAULT '[]',
+                availability TEXT DEFAULT '{}',
+                social_links TEXT DEFAULT '{}',
+                fee_range_min REAL DEFAULT 0,
+                fee_range_max REAL DEFAULT 0,
+                professional_address TEXT DEFAULT '',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        # Tabla de Preferencias de Usuario
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS user_preferences (
+                user_id INTEGER PRIMARY KEY REFERENCES users(id),
+                theme TEXT NOT NULL DEFAULT 'light',
+                language TEXT NOT NULL DEFAULT 'es',
+                email_notifications INTEGER NOT NULL DEFAULT 1,
+                sms_notifications INTEGER NOT NULL DEFAULT 1,
+                lead_alerts INTEGER NOT NULL DEFAULT 1,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        # Tabla de Historial de Sesiones (auditoría, no enforcement)
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS user_login_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL REFERENCES users(id),
+                ip_address TEXT DEFAULT '',
+                user_agent TEXT DEFAULT '',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                last_active DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        # Migraciones adicionales en tablas existentes
+        cursor.execute('PRAGMA table_info(user_profiles)')
+        up_cols = [r[1] for r in cursor.fetchall()]
+        if 'avatar_path' not in up_cols:
+            cursor.execute("ALTER TABLE user_profiles ADD COLUMN avatar_path TEXT DEFAULT ''")
+
+        cursor.execute('PRAGMA table_info(professionals)')
+        pro_cols = [r[1] for r in cursor.fetchall()]
+        if 'license_verified' not in pro_cols:
+            cursor.execute("ALTER TABLE professionals ADD COLUMN license_verified INTEGER NOT NULL DEFAULT 0")
+
+        cursor.execute('PRAGMA table_info(audit_log)')
+        al_cols = [r[1] for r in cursor.fetchall()]
+        if 'user_id' not in al_cols:
+            cursor.execute("ALTER TABLE audit_log ADD COLUMN user_id INTEGER REFERENCES users(id)")
+
+        # Crear directorios de uploads
+        os.makedirs(config.AVATAR_FOLDER, exist_ok=True)
+        os.makedirs(os.path.join('static', 'uploads', 'portfolio'), exist_ok=True)
+
         # CREAMOS EL ADMIN POR DEFECTO (Ahora con su rol)
         cursor.execute('SELECT COUNT(*) FROM users')
         if cursor.fetchone()[0] == 0:
@@ -290,8 +356,9 @@ def log_action(action, target):
         safe_action = utils.safe_text(action)[:100]
         safe_target = utils.safe_text(target)[:200]
         safe_admin = utils.safe_text(session.get('username', 'sistema'))[:50]
-        conn.execute('INSERT INTO audit_log (action, target, admin) VALUES (?, ?, ?)',
-                     (safe_action, safe_target, safe_admin))
+        user_id = session.get('user_id')
+        conn.execute('INSERT INTO audit_log (action, target, admin, user_id) VALUES (?, ?, ?, ?)',
+                     (safe_action, safe_target, safe_admin, user_id))
         conn.commit()
     except Exception as e:
         print(f"Error al registrar auditoría: {e}")
@@ -494,6 +561,20 @@ def admin_view():
                            audit_log=audit_log_converted)
 
 
+# --- CONTEXT PROCESSOR: inyectar tema en todas las templates ---
+@app.context_processor
+def inject_theme():
+    user_id = session.get('user_id')
+    theme = 'light'
+    if user_id:
+        try:
+            prefs = models.get_user_preferences(user_id)
+            theme = prefs.get('theme', 'light')
+        except Exception:
+            pass
+    return dict(user_theme=theme)
+
+
 # --- RUTAS DE API (LÓGICA DE DATOS) ---
 
 
@@ -591,7 +672,7 @@ def register():
 
 # --- RUTA DE LOGIN ---
 @app.route('/login', methods=['GET', 'POST'])
-@rate_limit.check_rate_limit(limit=5, window=60)
+@rate_limit.check_rate_limit(limit=20, window=60)
 def login():
     if request.method == 'POST':
         username = request.form.get('username')
@@ -615,6 +696,18 @@ def login():
             session['username'] = user['username']
             session['email'] = user['email']
             session['role'] = user['role']
+
+            # Registrar sesión en historial
+            try:
+                conn2 = get_db_connection()
+                conn2.execute(
+                    'INSERT INTO user_login_history (user_id, ip_address, user_agent) VALUES (?, ?, ?)',
+                    (user['id'], request.remote_addr or '', request.user_agent.string[:255] if request.user_agent else '')
+                )
+                conn2.commit()
+                conn2.close()
+            except Exception:
+                pass
 
             if user['role'] == 'admin':
                 return redirect(url_for('admin_view'))

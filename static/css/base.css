@@ -6,8 +6,9 @@
 /* --- Typography & Base --- */
 body {
     font-family: 'Manrope', sans-serif;
-    background-color: #FAF9F7;
-    color: #000410;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .serif {
@@ -362,7 +363,16 @@ html {
     background-color: rgba(115, 90, 58, 0.05) !important;
 }
 
-/* --- Dark Mode Variables (future use) --- */
+/* --- Reduced Motion --- */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* --- Dark Mode Variables --- */
 :root {
     --bg-primary: #FAF9F7;
     --bg-secondary: #F4F3F1;

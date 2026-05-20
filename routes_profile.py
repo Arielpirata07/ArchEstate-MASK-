@@ -1,12 +1,16 @@
-from flask import Blueprint, render_template, request, session, jsonify, redirect, url_for
+import os
 import json
 
+from flask import Blueprint, render_template, request, session, jsonify, redirect, url_for
+from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
+
+import config
 import models
 import decorators
 import validators
 import utils
 import rate_limit
-from werkzeug.security import generate_password_hash, check_password_hash
 
 
 profile_bp = Blueprint('profile', __name__, url_prefix='')
@@ -19,8 +23,9 @@ def _log_action(action, target):
         safe_action = utils.safe_text(action)[:100]
         safe_target = utils.safe_text(target)[:200]
         safe_admin = utils.safe_text(session.get('username', 'sistema'))[:50]
-        conn.execute('INSERT INTO audit_log (action, target, admin) VALUES (?, ?, ?)',
-                     (safe_action, safe_target, safe_admin))
+        user_id = session.get('user_id')
+        conn.execute('INSERT INTO audit_log (action, target, admin, user_id) VALUES (?, ?, ?, ?)',
+                     (safe_action, safe_target, safe_admin, user_id))
         conn.commit()
     except Exception as e:
         print(f"Error al registrar auditoria: {e}")
@@ -236,3 +241,193 @@ def api_update_professional():
     _log_action('Actualizacion Profesional', f'Usuario: {session["username"]}')
 
     return jsonify({'status': 'success', 'message': 'Perfil profesional actualizado'})
+
+
+# ============================================================
+# NUEVOS ENDPOINTS — Preferencias, Sesiones, Actividad
+# ============================================================
+
+
+@profile_bp.route('/api/profile/settings', methods=['GET'])
+@decorators.login_required
+def api_get_settings():
+    prefs = models.get_user_preferences(session['user_id'])
+    return jsonify({'success': True, 'preferences': prefs})
+
+
+@profile_bp.route('/api/profile/settings', methods=['PUT'])
+@decorators.login_required
+@rate_limit.check_rate_limit(limit=10, window=60)
+def api_update_settings():
+    user_id = session['user_id']
+    data = request.json
+
+    allowed = {'theme', 'language', 'email_notifications', 'sms_notifications', 'lead_alerts'}
+    update_data = {}
+    for key in allowed:
+        if key in data:
+            update_data[key] = data[key]
+
+    if not update_data:
+        return jsonify({'error': 'No hay datos validos para actualizar'}), 400
+
+    if 'theme' in update_data and update_data['theme'] not in ('light', 'dark'):
+        return jsonify({'error': 'Tema no valido'}), 400
+
+    if 'language' in update_data and update_data['language'] not in ('es', 'en'):
+        return jsonify({'error': 'Idioma no valido'}), 400
+
+    models.update_user_preferences(user_id, update_data)
+    _log_action('Actualizacion de Preferencias', f'Usuario: {session["username"]}')
+
+    return jsonify({'status': 'success', 'message': 'Preferencias actualizadas'})
+
+
+@profile_bp.route('/api/profile/sessions', methods=['GET'])
+@decorators.login_required
+def api_get_sessions():
+    history = models.get_user_login_history(session['user_id'])
+    return jsonify({'success': True, 'sessions': history})
+
+
+@profile_bp.route('/api/profile/sessions/<int:entry_id>', methods=['DELETE'])
+@decorators.login_required
+@rate_limit.check_rate_limit(limit=5, window=60)
+def api_delete_session(entry_id):
+    deleted = models.delete_login_history_entry(entry_id, session['user_id'])
+    if not deleted:
+        return jsonify({'error': 'Sesion no encontrada'}), 404
+    _log_action('Sesion cerrada', f'Sesion ID: {entry_id}')
+    return jsonify({'status': 'success', 'message': 'Sesion cerrada'})
+
+
+@profile_bp.route('/api/profile/activity', methods=['GET'])
+@decorators.login_required
+def api_get_activity():
+    limit = request.args.get('limit', 50, type=int)
+    limit = min(limit, 100)
+    activity = models.get_user_activity(session['user_id'], limit)
+    for entry in activity:
+        if entry.get('timestamp'):
+            entry['timestamp'] = utils.convert_to_argentina_time(entry['timestamp'])
+    return jsonify({'success': True, 'activity': activity})
+
+
+@profile_bp.route('/api/profile/user/avatar', methods=['POST'])
+@decorators.login_required
+@rate_limit.check_rate_limit(limit=5, window=60)
+def api_upload_avatar():
+    user_id = session['user_id']
+    if 'avatar' not in request.files:
+        return jsonify({'error': 'No se envio ningun archivo'}), 400
+
+    file = request.files['avatar']
+    if file.filename == '':
+        return jsonify({'error': 'Nombre de archivo vacio'}), 400
+
+    original_name = secure_filename(file.filename)
+    ext = original_name.rsplit('.', 1)[-1].lower() if '.' in original_name else ''
+    if ext not in {'jpg', 'jpeg', 'png', 'gif', 'webp'}:
+        return jsonify({'error': 'Formato no permitido. Usa JPG, PNG, GIF o WebP'}), 400
+
+    safe_filename = f'user_{user_id}_avatar.{ext}'
+    filepath = os.path.join(config.AVATAR_FOLDER, safe_filename)
+    file.save(filepath)
+
+    avatar_rel = f'uploads/avatars/{safe_filename}'
+    models.update_user_avatar(user_id, avatar_rel)
+    _log_action('Avatar actualizado', f'Usuario: {session["username"]}')
+
+    return jsonify({'status': 'success', 'avatar_url': url_for('static', filename=avatar_rel)})
+
+
+@profile_bp.route('/api/profile/user/avatar', methods=['DELETE'])
+@decorators.login_required
+@rate_limit.check_rate_limit(limit=5, window=60)
+def api_delete_avatar():
+    user_id = session['user_id']
+    models.delete_user_avatar(user_id)
+    _log_action('Avatar eliminado', f'Usuario: {session["username"]}')
+    return jsonify({'status': 'success', 'message': 'Avatar eliminado'})
+
+
+# ============================================================
+# NUEVOS ENDPOINTS — Perfil Profesional Extendido
+# ============================================================
+
+
+@profile_bp.route('/api/profile/professional/full', methods=['GET'])
+@decorators.professional_required
+def api_get_professional_full():
+    user_id = session['user_id']
+    pro = models.get_professional_full_profile(user_id)
+    if not pro:
+        return jsonify({'error': 'Perfil profesional no encontrado'}), 404
+    return jsonify({'success': True, 'professional': pro})
+
+
+@profile_bp.route('/api/profile/professional/full', methods=['PUT'])
+@decorators.professional_required
+@rate_limit.check_rate_limit(limit=10, window=60)
+def api_update_professional_full():
+    user_id = session['user_id']
+    data = request.json
+
+    allowed = {
+        'bio_pro', 'experience_years', 'services_offered',
+        'portfolio', 'availability', 'social_links',
+        'fee_range_min', 'fee_range_max', 'professional_address'
+    }
+    update_data = {}
+    for key in allowed:
+        if key in data:
+            val = data[key]
+            if isinstance(val, str):
+                val = utils.safe_text(val).strip()
+            update_data[key] = val
+
+    if not update_data:
+        return jsonify({'error': 'No hay datos validos para actualizar'}), 400
+
+    models.create_or_update_professional_profile(user_id, update_data)
+    _log_action('Perfil profesional actualizado', f'Usuario: {session["username"]}')
+
+    return jsonify({'status': 'success', 'message': 'Perfil profesional actualizado'})
+
+
+@profile_bp.route('/api/profile/professional/photo', methods=['POST'])
+@decorators.professional_required
+@rate_limit.check_rate_limit(limit=5, window=60)
+def api_upload_professional_photo():
+    user_id = session['user_id']
+    if 'photo' not in request.files:
+        return jsonify({'error': 'No se envio ningun archivo'}), 400
+
+    file = request.files['photo']
+    if file.filename == '':
+        return jsonify({'error': 'Nombre de archivo vacio'}), 400
+
+    original_name = secure_filename(file.filename)
+    ext = original_name.rsplit('.', 1)[-1].lower() if '.' in original_name else ''
+    if ext not in {'jpg', 'jpeg', 'png', 'gif', 'webp'}:
+        return jsonify({'error': 'Formato no permitido. Usa JPG, PNG, GIF o WebP'}), 400
+
+    safe_filename = f'pro_{user_id}_photo.{ext}'
+    filepath = os.path.join(config.AVATAR_FOLDER, safe_filename)
+    file.save(filepath)
+
+    photo_rel = f'uploads/avatars/{safe_filename}'
+    models.create_or_update_professional_profile(user_id, {'photo_path': photo_rel})
+    _log_action('Foto profesional actualizada', f'Usuario: {session["username"]}')
+
+    return jsonify({'status': 'success', 'photo_url': url_for('static', filename=photo_rel)})
+
+
+@profile_bp.route('/api/profile/professional/photo', methods=['DELETE'])
+@decorators.professional_required
+@rate_limit.check_rate_limit(limit=5, window=60)
+def api_delete_professional_photo():
+    user_id = session['user_id']
+    models.create_or_update_professional_profile(user_id, {'photo_path': ''})
+    _log_action('Foto profesional eliminada', f'Usuario: {session["username"]}')
+    return jsonify({'status': 'success', 'message': 'Foto eliminada'})

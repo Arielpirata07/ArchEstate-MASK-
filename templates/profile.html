@@ -10,71 +10,110 @@
 <div class="max-w-7xl mx-auto pt-8">
     <div class="flex items-center justify-between mb-8">
         <div>
-            <h1 class="text-3xl font-serif italic text-midnight">Configuracion</h1>
-            <p class="text-sm text-midnight/60 mt-1">Administra tu cuenta y solicitudes</p>
+            <h1 class="text-3xl font-serif italic" style="color:var(--text-primary)">Configuracion</h1>
+            <p class="text-sm mt-1" style="color:var(--text-secondary)">Administra tu cuenta y preferencias</p>
         </div>
-        <a href="{{ url_for('index') }}" class="text-[10px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors flex items-center gap-2">
-            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        <a href="{{ url_for('index') }}" class="text-[10px] uppercase tracking-widest font-bold" style="color:var(--accent);" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--accent)'">
+            <i data-lucide="arrow-left" class="w-4 h-4 inline -mt-0.5"></i>
             Volver al sitio
         </a>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-5 gap-0 bg-white rounded-lg shadow-xl overflow-hidden">
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-0 rounded-lg shadow-xl overflow-hidden settings-page">
         <!-- Sidebar -->
-        <aside class="lg:col-span-1 bg-midnight text-white p-6 lg:min-h-[600px]">
-            <nav class="space-y-1" aria-label="Configuracion">
-                <button onclick="showSettingsTab('cuenta')" id="tab-cuenta"
-                    class="settings-tab-btn active w-full flex items-center gap-3 px-4 py-3 rounded text-sm font-medium transition-all text-left hover:bg-white/5">
-                    <i data-lucide="user" class="w-4 h-4"></i>
-                    Cuenta
+        <aside class="lg:col-span-1 settings-sidebar p-6 lg:min-h-[600px]" role="tablist" aria-label="Configuracion">
+            <nav class="space-y-1">
+                <button role="tab" aria-selected="true" aria-controls="panel-cuenta" id="tab-cuenta" tabindex="0"
+                    class="settings-tab active" onclick="showSettingsTab('cuenta')">
+                    <i data-lucide="user" class="w-4 h-4" aria-hidden="true"></i>
+                    <span>Cuenta</span>
                 </button>
-                <button onclick="showSettingsTab('solicitudes')" id="tab-solicitudes"
-                    class="settings-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded text-sm font-medium transition-all text-left text-white/70 hover:bg-white/5 hover:text-white">
-                    <i data-lucide="file-text" class="w-4 h-4"></i>
-                    Solicitudes
+                <button role="tab" aria-selected="false" aria-controls="panel-apariencia" id="tab-apariencia" tabindex="-1"
+                    class="settings-tab" onclick="showSettingsTab('apariencia')">
+                    <i data-lucide="palette" class="w-4 h-4" aria-hidden="true"></i>
+                    <span>Apariencia</span>
                 </button>
-                <button onclick="showSettingsTab('seguridad')" id="tab-seguridad"
-                    class="settings-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded text-sm font-medium transition-all text-left text-white/70 hover:bg-white/5 hover:text-white">
-                    <i data-lucide="shield-check" class="w-4 h-4"></i>
-                    Seguridad
+                <button role="tab" aria-selected="false" aria-controls="panel-notificaciones" id="tab-notificaciones" tabindex="-1"
+                    class="settings-tab" onclick="showSettingsTab('notificaciones')">
+                    <i data-lucide="bell" class="w-4 h-4" aria-hidden="true"></i>
+                    <span>Notificaciones</span>
+                </button>
+                <button role="tab" aria-selected="false" aria-controls="panel-seguridad" id="tab-seguridad" tabindex="-1"
+                    class="settings-tab" onclick="showSettingsTab('seguridad')">
+                    <i data-lucide="shield" class="w-4 h-4" aria-hidden="true"></i>
+                    <span>Seguridad</span>
+                </button>
+                <button role="tab" aria-selected="false" aria-controls="panel-actividad" id="tab-actividad" tabindex="-1"
+                    class="settings-tab" onclick="showSettingsTab('actividad')">
+                    <i data-lucide="activity" class="w-4 h-4" aria-hidden="true"></i>
+                    <span>Actividad</span>
+                </button>
+                <button role="tab" aria-selected="false" aria-controls="panel-solicitudes" id="tab-solicitudes" tabindex="-1"
+                    class="settings-tab" onclick="showSettingsTab('solicitudes')">
+                    <i data-lucide="file-text" class="w-4 h-4" aria-hidden="true"></i>
+                    <span>Solicitudes</span>
                 </button>
                 {% if user and user.role == 'professional' %}
-                <button onclick="showSettingsTab('profesional')" id="tab-profesional"
-                    class="settings-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded text-sm font-medium transition-all text-left text-white/70 hover:bg-white/5 hover:text-white">
-                    <i data-lucide="briefcase" class="w-4 h-4"></i>
-                    Profesional
+                <button role="tab" aria-selected="false" aria-controls="panel-profesional" id="tab-profesional" tabindex="-1"
+                    class="settings-tab" onclick="showSettingsTab('profesional')">
+                    <i data-lucide="briefcase" class="w-4 h-4" aria-hidden="true"></i>
+                    <span>Profesional</span>
                 </button>
                 {% endif %}
             </nav>
         </aside>
 
         <!-- Content -->
-        <div class="lg:col-span-4 p-8 lg:p-10 bg-paper">
-            <!-- Panel: Cuenta -->
-            <div id="panel-cuenta" class="settings-panel">
-                <div class="bg-white rounded-lg shadow-xl border-t-4 border-gold p-8">
-                    <h2 class="text-xl font-serif italic text-midnight mb-6">Datos Personales</h2>
+        <div class="lg:col-span-4 p-8 lg:p-10 settings-content">
 
-                    <div class="settings-section">
-                        <div class="mb-6">
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Usuario</label>
-                            <input id="profile-username" type="text" value="{{ user.username if user else '' }}" readonly
-                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm field-readonly">
+            <!-- ==================== PANEL: CUENTA ==================== -->
+            <div role="tabpanel" id="panel-cuenta" aria-labelledby="tab-cuenta">
+                <div class="settings-card">
+                    <div class="flex items-start gap-8 mb-8">
+                        <!-- Avatar -->
+                        <div class="flex-shrink-0 text-center">
+                            <div class="avatar-upload relative mx-auto" id="avatar-container" onclick="document.getElementById('avatar-input').click()" role="button" tabindex="0" aria-label="Cambiar foto de perfil" onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
+                                <img id="avatar-preview" src="{% if user and user.avatar_path %}{{ url_for('static', filename=user.avatar_path) }}{% else %}{{ url_for('static', filename='img/default-avatar.svg') }}{% endif %}" alt="Foto de perfil" class="w-28 h-28 rounded-full object-cover border-4" style="border-color:var(--border)">
+                                <div class="avatar-overlay">
+                                    <i data-lucide="camera" class="w-6 h-6 text-white"></i>
+                                </div>
+                            </div>
+                            <input type="file" id="avatar-input" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" onchange="uploadAvatar(this)">
+                            <button onclick="deleteAvatar()" class="text-[9px] uppercase tracking-widest font-bold mt-2 hover:text-rose-500 transition-colors" style="color:var(--text-secondary)" type="button">
+                                <span class="sr-only">Eliminar</span>Eliminar foto
+                            </button>
+                            <p id="avatar-status" class="text-[9px] mt-1" aria-live="polite"></p>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <!-- Personal data -->
+                        <div class="flex-grow space-y-5">
                             <div>
-                                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Email</label>
-                                <input id="profile-email" type="email" value="{{ user.email if user else '' }}"
-                                    class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
+                                <label for="profile-username" class="input-label">Usuario</label>
+                                <input id="profile-username" type="text" value="{{ user.username if user else '' }}" readonly class="input-field field-readonly">
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div>
+                                    <label for="profile-first-name" class="input-label">Nombre</label>
+                                    <input id="profile-first-name" type="text" value="{{ user.first_name if user and user.first_name else '' }}" class="input-field" placeholder="Tu nombre">
+                                </div>
+                                <div>
+                                    <label for="profile-last-name" class="input-label">Apellido</label>
+                                    <input id="profile-last-name" type="text" value="{{ user.last_name if user and user.last_name else '' }}" class="input-field" placeholder="Tu apellido">
+                                </div>
                             </div>
                             <div>
-                                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Telefono</label>
+                                <label for="profile-email" class="input-label">Email</label>
+                                <input id="profile-email" type="email" value="{{ user.email if user else '' }}" class="input-field" oninput="validateProfileEmail()">
+                                <div class="flex items-center justify-between mt-1">
+                                    <p id="profile-email-hint" class="text-[9px] hint-text">Ingresa un email valido</p>
+                                    <p id="profile-email-valid" class="hidden text-[9px] font-medium" style="color:#059669">Email valido</p>
+                                    <p id="profile-email-invalid" class="hidden text-[9px] font-medium" style="color:#e11d48">Email invalido</p>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="profile-phone" class="input-label">Telefono</label>
                                 <div class="flex gap-2">
-                                    <select
-                                        id="profile-country-code"
-                                        onchange="updateProfilePhoneFormat()"
-                                        class="w-20 px-2 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all bg-paper-dark">
+                                    <select id="profile-country-code" onchange="updateProfilePhoneFormat()" class="input-field w-20 flex-shrink-0">
                                         <option value="+54">+54</option>
                                         <option value="+598">+598</option>
                                         <option value="+56">+56</option>
@@ -86,163 +125,375 @@
                                         <option value="+34">+34</option>
                                         <option value="+1">+1</option>
                                     </select>
-                                    <input id="profile-phone" type="tel" value="{{ user.phone if user and user.phone else '' }}"
-                                        oninput="validateProfilePhone()"
-                                        class="flex-1 px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all" placeholder="9 11 1234 5678">
+                                    <select id="profile-province" onchange="applyProvincePrefix()" class="input-field w-24 flex-shrink-0 hidden">
+                                        <option value="11">CABA</option>
+                                        <option value="221">La Plata</option>
+                                        <option value="223">Mar del Plata</option>
+                                        <option value="341">Rosario</option>
+                                        <option value="351">Cordoba</option>
+                                        <option value="261">Mendoza</option>
+                                        <option value="264">San Juan</option>
+                                        <option value="266">San Luis</option>
+                                        <option value="280">Tucuman</option>
+                                        <option value="291">Bahia Blanca</option>
+                                        <option value="299">Neuquen</option>
+                                        <option value="379">Corrientes</option>
+                                        <option value="381">Sgo. del Estero</option>
+                                        <option value="383">Catamarca</option>
+                                        <option value="387">Jujuy</option>
+                                        <option value="388">Salta</option>
+                                        <option value="358">Rio Cuarto</option>
+                                        <option value="342">Santa Fe</option>
+                                        <option value="343">Parana</option>
+                                        <option value="345">Concepcion del Uruguay</option>
+                                        <option value="362">Resistencia</option>
+                                        <option value="364">Formosa</option>
+                                        <option value="370">Posadas</option>
+                                        <option value="375">Goya</option>
+                                        <option value="376">Eldorado</option>
+                                        <option value="377">Puerto Iguazu</option>
+                                        <option value="378">Obera</option>
+                                        <option value="385">La Rioja</option>
+                                    </select>
+                                    <input id="profile-phone" type="tel" value="{{ user.phone if user and user.phone else '' }}" class="input-field flex-1" placeholder="9 11 1234 5678">
                                 </div>
                                 <div class="flex items-center justify-between mt-1">
-                                    <p id="profile-phone-hint" class="text-[9px] text-midnight/30">El codigo de pais se incluira automaticamente</p>
-                                    <p id="profile-phone-valid" class="hidden text-[9px] text-emerald-600 font-medium">Formato valido</p>
-                                    <p id="profile-phone-invalid" class="hidden text-[9px] text-rose-500 font-medium">Formato invalido</p>
-                                </div>
-                                <div class="mt-2 flex items-center justify-between">
-                                    <p id="profile-phone-error" class="hidden text-[10px] text-rose-500 font-medium"></p>
-                                    <button
-                                        type="button"
-                                        id="save-phone-btn"
-                                        onclick="savePhoneFromProfile()"
-                                        class="ml-auto text-[9px] uppercase tracking-widest font-bold text-midnight/30 hover:text-gold transition-colors flex items-center gap-1">
-                                        <i data-lucide="save" class="w-3 h-3"></i>
-                                        Guardar telefono
-                                    </button>
+                                    <p id="profile-phone-hint" class="text-[9px] hint-text">El codigo de pais se incluira automaticamente</p>
+                                    <p id="profile-phone-valid" class="hidden text-[9px] font-medium" style="color:#059669">Formato valido</p>
+                                    <p id="profile-phone-invalid" class="hidden text-[9px] font-medium" style="color:#e11d48">Formato invalido</p>
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                             <div>
-                                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Nombre</label>
-                                <input id="profile-first-name" type="text" value="{{ user.first_name if user and user.first_name else '' }}"
-                                    class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all" placeholder="Tu nombre">
+                                <label for="profile-bio" class="input-label">Biografia</label>
+                                <textarea id="profile-bio" rows="3" class="input-field resize-none" placeholder="Contanos sobre vos...">{{ user.bio if user and user.bio else '' }}</textarea>
                             </div>
-                            <div>
-                                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Apellido</label>
-                                <input id="profile-last-name" type="text" value="{{ user.last_name if user and user.last_name else '' }}"
-                                    class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all" placeholder="Tu apellido">
-                            </div>
-                        </div>
-
-                        <div class="mb-6">
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Biografia</label>
-                            <textarea id="profile-bio" rows="3"
-                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all resize-none"
-                                placeholder="Contanos sobre vos...">{{ user.bio if user and user.bio else '' }}</textarea>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-4">
-                        <button id="save-profile-btn" onclick="saveUserProfile()"
-                            class="bg-gold text-white py-3 px-8 rounded font-bold uppercase tracking-widest text-xs hover:bg-midnight transition-all duration-300 flex items-center gap-2">
-                            <i data-lucide="save" class="w-4 h-4"></i>
+                    <div class="flex items-center gap-4 pt-6 border-t" style="border-color:var(--border)">
+                        <button id="save-profile-btn" onclick="saveUserProfile()" class="btn-primary">
+                            <i data-lucide="save" class="w-4 h-4" aria-hidden="true"></i>
                             Guardar Cambios
                         </button>
-                        <span id="profile-save-msg" class="text-sm text-emerald-600 hidden">Guardado correctamente</span>
-                        <span id="profile-error-msg" class="text-sm text-rose-600 hidden"></span>
+                        <span id="profile-save-msg" class="hidden text-sm font-medium" style="color:#059669" aria-live="polite">Guardado correctamente</span>
+                        <span id="profile-error-msg" class="hidden text-sm font-medium" style="color:#e11d48" role="alert"></span>
                     </div>
                 </div>
             </div>
 
-            <!-- Panel: Solicitudes -->
-            <div id="panel-solicitudes" class="settings-panel hidden">
-                <div class="bg-white rounded-lg shadow-xl border-t-4 border-gold p-8">
-                    <h2 class="text-xl font-serif italic text-midnight mb-6">Mis Solicitudes</h2>
+            <!-- ==================== PANEL: APARIENCIA ==================== -->
+            <div role="tabpanel" id="panel-apariencia" aria-labelledby="tab-apariencia" hidden>
+                <div class="settings-card">
+                    <h2 class="text-xl font-serif italic mb-6" style="color:var(--text-primary)">Apariencia</h2>
+
+                    <div class="space-y-6">
+                        <div>
+                            <label class="input-label">Tema</label>
+                            <div class="flex gap-4 mt-2">
+                                <button id="theme-light-btn" onclick="setTheme('light')" class="theme-option active" data-theme="light" aria-pressed="true">
+                                    <i data-lucide="sun" class="w-5 h-5" aria-hidden="true"></i>
+                                    <span class="text-xs font-bold uppercase tracking-widest">Claro</span>
+                                </button>
+                                <button id="theme-dark-btn" onclick="setTheme('dark')" class="theme-option" data-theme="dark" aria-pressed="false">
+                                    <i data-lucide="moon" class="w-5 h-5" aria-hidden="true"></i>
+                                    <span class="text-xs font-bold uppercase tracking-widest">Oscuro</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="settings-language" class="input-label">Idioma</label>
+                            <select id="settings-language" class="input-field max-w-xs">
+                                <option value="es">Español</option>
+                                <option value="en">English</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-4 pt-6 mt-6 border-t" style="border-color:var(--border)">
+                        <button onclick="saveSettings()" class="btn-primary">
+                            <i data-lucide="save" class="w-4 h-4" aria-hidden="true"></i>
+                            Guardar Preferencias
+                        </button>
+                        <span id="settings-save-msg" class="hidden text-sm font-medium" style="color:#059669" aria-live="polite">Preferencias guardadas</span>
+                        <span id="settings-error-msg" class="hidden text-sm font-medium" style="color:#e11d48" role="alert"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== PANEL: NOTIFICACIONES ==================== -->
+            <div role="tabpanel" id="panel-notificaciones" aria-labelledby="tab-notificaciones" hidden>
+                <div class="settings-card">
+                    <h2 class="text-xl font-serif italic mb-6" style="color:var(--text-primary)">Notificaciones</h2>
+
+                    <div class="space-y-5">
+                        <label class="toggle-row">
+                            <span class="toggle-label">Notificaciones por email</span>
+                            <input type="checkbox" id="notif-email" class="toggle-input" checked onchange="saveSettings()">
+                            <span class="toggle-slider" aria-hidden="true"></span>
+                        </label>
+                        <label class="toggle-row">
+                            <span class="toggle-label">Notificaciones por SMS</span>
+                            <input type="checkbox" id="notif-sms" class="toggle-input" checked onchange="saveSettings()">
+                            <span class="toggle-slider" aria-hidden="true"></span>
+                        </label>
+                        <label class="toggle-row">
+                            <span class="toggle-label">Alertas de nuevos leads</span>
+                            <input type="checkbox" id="notif-leads" class="toggle-input" checked onchange="saveSettings()">
+                            <span class="toggle-slider" aria-hidden="true"></span>
+                        </label>
+                    </div>
+
+                    <div class="flex items-center gap-4 pt-6 mt-6 border-t" style="border-color:var(--border)">
+                        <span id="notif-save-msg" class="text-sm font-medium" style="color:#059669" aria-live="polite">Se guarda automaticamente</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== PANEL: SEGURIDAD ==================== -->
+            <div role="tabpanel" id="panel-seguridad" aria-labelledby="tab-seguridad" hidden>
+                <div class="settings-card">
+                    <h2 class="text-xl font-serif italic mb-6" style="color:var(--text-primary)">Seguridad</h2>
+
+                    <!-- Cambiar contraseña -->
+                    <div class="settings-section">
+                        <h3 class="text-xs font-bold uppercase tracking-widest mb-4" style="color:var(--accent)">Cambiar Contrasena</h3>
+                        <div class="space-y-4 max-w-md">
+                            <div>
+                                <label for="current-password" class="input-label">Contrasena Actual</label>
+                                <input id="current-password" type="password" class="input-field">
+                            </div>
+                            <div>
+                                <label for="new-password" class="input-label">Nueva Contrasena</label>
+                                <input id="new-password" type="password" class="input-field">
+                                <p class="text-[9px] mt-1 hint-text">Minimo 6 caracteres, al menos una letra y un numero</p>
+                            </div>
+                            <div>
+                                <label for="confirm-password" class="input-label">Confirmar Nueva Contrasena</label>
+                                <input id="confirm-password" type="password" class="input-field">
+                            </div>
+                            <div class="flex items-center gap-4">
+                                <button onclick="changePassword()" class="btn-primary">
+                                    <i data-lucide="lock" class="w-4 h-4" aria-hidden="true"></i>
+                                    Cambiar Contrasena
+                                </button>
+                                <span id="password-save-msg" class="hidden text-sm font-medium" style="color:#059669" aria-live="polite">Contrasena actualizada</span>
+                                <span id="password-error-msg" class="hidden text-sm font-medium" style="color:#e11d48" role="alert"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sesiones activas -->
+                    <div>
+                        <h3 class="text-xs font-bold uppercase tracking-widest mb-4" style="color:var(--accent)">Sesiones Activas</h3>
+                        <div id="sessions-container">
+                            <div class="text-sm hint-text">Cargando sesiones...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== PANEL: ACTIVIDAD ==================== -->
+            <div role="tabpanel" id="panel-actividad" aria-labelledby="tab-actividad" hidden>
+                <div class="settings-card">
+                    <h2 class="text-xl font-serif italic mb-6" style="color:var(--text-primary)">Actividad Reciente</h2>
+                    <div id="activity-container">
+                        <div class="text-sm hint-text">Cargando actividad...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== PANEL: SOLICITUDES ==================== -->
+            <div role="tabpanel" id="panel-solicitudes" aria-labelledby="tab-solicitudes" hidden>
+                <div class="settings-card">
+                    <h2 class="text-xl font-serif italic mb-6" style="color:var(--text-primary)">Mis Solicitudes</h2>
 
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse" id="leads-table">
                             <thead>
-                                <tr class="bg-paper-dark border-b border-midnight/5">
-                                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">ID</th>
-                                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Tipo</th>
-                                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Zona</th>
-                                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Presupuesto</th>
-                                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Fecha</th>
-                                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold">Accion</th>
+                                <tr style="border-bottom:1px solid var(--border)">
+                                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold" style="color:var(--accent)">ID</th>
+                                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold" style="color:var(--accent)">Tipo</th>
+                                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold" style="color:var(--accent)">Zona</th>
+                                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold" style="color:var(--accent)">Presupuesto</th>
+                                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold" style="color:var(--accent)">Fecha</th>
+                                    <th class="p-4 text-[10px] uppercase tracking-widest font-bold" style="color:var(--accent)">Accion</th>
                                 </tr>
                             </thead>
                             <tbody id="leads-tbody">
                                 <tr>
-                                    <td colspan="6" class="p-8 text-center text-midnight/40 text-sm">Cargando solicitudes...</td>
+                                    <td colspan="6" class="p-8 text-center text-sm hint-text">Cargando solicitudes...</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
-
                     <div id="no-leads-msg" class="hidden p-8 text-center">
-                        <i data-lucide="inbox" class="w-12 h-12 mx-auto text-midnight/20 mb-4"></i>
-                        <p class="text-midnight/50 text-sm">No tenes solicitudes registradas aun.</p>
-                        <a href="{{ url_for('user_view') }}" class="inline-block mt-4 text-[10px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors">
+                        <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4" style="color:var(--text-secondary)"></i>
+                        <p class="text-sm hint-text">No tenes solicitudes registradas aun.</p>
+                        <a href="{{ url_for('user_view') }}" class="inline-block mt-4 text-[10px] uppercase tracking-widest font-bold" style="color:var(--accent)">
                             Crear una solicitud
                         </a>
                     </div>
                 </div>
             </div>
 
-            <!-- Panel: Seguridad -->
-            <div id="panel-seguridad" class="settings-panel hidden">
-                <div class="bg-white rounded-lg shadow-xl border-t-4 border-gold p-8">
-                    <h2 class="text-xl font-serif italic text-midnight mb-6">Cambiar Contrasena</h2>
-
-                    <div class="settings-section">
-                        <div class="mb-6">
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Contrasena Actual</label>
-                            <input id="current-password" type="password"
-                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
-                        </div>
-
-                        <div class="mb-6">
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Nueva Contrasena</label>
-                            <input id="new-password" type="password"
-                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
-                            <p class="text-[9px] text-midnight/40 mt-1">Minimo 6 caracteres, al menos una letra y un numero</p>
-                        </div>
-
-                        <div class="mb-6">
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Confirmar Nueva Contrasena</label>
-                            <input id="confirm-password" type="password"
-                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all">
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-4">
-                        <button id="save-password-btn" onclick="changePassword()"
-                            class="bg-gold text-white py-3 px-8 rounded font-bold uppercase tracking-widest text-xs hover:bg-midnight transition-all duration-300 flex items-center gap-2">
-                            <i data-lucide="lock" class="w-4 h-4"></i>
-                            Cambiar Contrasena
-                        </button>
-                        <span id="password-save-msg" class="text-sm text-emerald-600 hidden">Contrasena actualizada</span>
-                        <span id="password-error-msg" class="text-sm text-rose-600 hidden"></span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Panel: Profesional -->
+            <!-- ==================== PANEL: PROFESIONAL ==================== -->
             {% if user and user.role == 'professional' %}
-            <div id="panel-profesional" class="settings-panel hidden">
-                <div class="bg-white rounded-lg shadow-xl border-t-4 border-gold p-8">
-                    <h2 class="text-xl font-serif italic text-midnight mb-6">Perfil Profesional</h2>
+            <div role="tabpanel" id="panel-profesional" aria-labelledby="tab-profesional" hidden>
+                <div class="settings-card">
+                    <h2 class="text-xl font-serif italic mb-6" style="color:var(--text-primary)">Perfil Profesional</h2>
 
-                    <div class="settings-section">
-                        <div class="mb-6">
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Especialidad</label>
-                            <input id="prof-specialty" type="text" value=""
-                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all" placeholder="Ej. Diseno de interiores">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <!-- Columna izquierda: foto + datos básicos -->
+                        <div class="space-y-6">
+                            <div class="text-center">
+                                <div class="avatar-upload relative mx-auto" id="pro-photo-container" onclick="document.getElementById('pro-photo-input').click()" role="button" tabindex="0" aria-label="Cambiar foto profesional" onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
+                                    <img id="pro-photo-preview" src="{{ url_for('static', filename='img/default-avatar.svg') }}" alt="Foto profesional" class="w-32 h-32 rounded-full object-cover border-4" style="border-color:var(--border)">
+                                    <div class="avatar-overlay">
+                                        <i data-lucide="camera" class="w-6 h-6 text-white"></i>
+                                    </div>
+                                </div>
+                                <input type="file" id="pro-photo-input" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" onchange="uploadProfessionalPhoto(this)">
+                                <button onclick="deleteProfessionalPhoto()" class="text-[9px] uppercase tracking-widest font-bold mt-2 hover:text-rose-500 transition-colors" style="color:var(--text-secondary)" type="button">Eliminar foto</button>
+                                <p id="pro-photo-status" class="text-[9px] mt-1" aria-live="polite"></p>
+                            </div>
+
+                            <div>
+                                <label class="input-label">Matricula</label>
+                                <p id="pro-license" class="text-sm font-mono font-semibold" style="color:var(--text-primary)"></p>
+                                <p id="pro-license-status" class="text-[10px] font-bold uppercase tracking-widest mt-1"></p>
+                            </div>
+
+                            <div>
+                                <label class="input-label">Estado</label>
+                                <p id="pro-status" class="text-sm font-semibold"></p>
+                            </div>
                         </div>
 
-                        <div class="mb-6">
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Titulo</label>
-                            <input id="prof-title" type="text" value=""
-                                class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all" placeholder="Ej. Arq. Juan Perez">
+                        <!-- Columnas derechas: formulario -->
+                        <div class="lg:col-span-2 space-y-5">
+                            <div>
+                                <label for="pro-bio" class="input-label">Bio Profesional</label>
+                                <textarea id="pro-bio" rows="4" class="input-field resize-none" placeholder="Describi tu experiencia y especializacion..."></textarea>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div>
+                                    <label for="pro-experience" class="input-label">Anios de Experiencia</label>
+                                    <input id="pro-experience" type="number" min="0" max="50" class="input-field" placeholder="0">
+                                </div>
+                                <div>
+                                    <label for="pro-address" class="input-label">Direccion Profesional</label>
+                                    <input id="pro-address" type="text" class="input-field" placeholder="Ej: Av. Corrientes 1234, CABA">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="input-label">Servicios Ofrecidos</label>
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2" id="services-container">
+                                    <label class="chip-checkbox">
+                                        <input type="checkbox" value="tasacion" onchange="updateServicesOffered()">
+                                        <span class="chip-label">Tasacion</span>
+                                    </label>
+                                    <label class="chip-checkbox">
+                                        <input type="checkbox" value="proyecto" onchange="updateServicesOffered()">
+                                        <span class="chip-label">Proyecto Arquitectonico</span>
+                                    </label>
+                                    <label class="chip-checkbox">
+                                        <input type="checkbox" value="direccion_obra" onchange="updateServicesOffered()">
+                                        <span class="chip-label">Direccion de Obra</span>
+                                    </label>
+                                    <label class="chip-checkbox">
+                                        <input type="checkbox" value="venta" onchange="updateServicesOffered()">
+                                        <span class="chip-label">Venta</span>
+                                    </label>
+                                    <label class="chip-checkbox">
+                                        <input type="checkbox" value="alquiler" onchange="updateServicesOffered()">
+                                        <span class="chip-label">Alquiler</span>
+                                    </label>
+                                    <label class="chip-checkbox">
+                                        <input type="checkbox" value="property_management" onchange="updateServicesOffered()">
+                                        <span class="chip-label">Property Management</span>
+                                    </label>
+                                    <label class="chip-checkbox">
+                                        <input type="checkbox" value="decoracion" onchange="updateServicesOffered()">
+                                        <span class="chip-label">Decoracion</span>
+                                    </label>
+                                    <label class="chip-checkbox">
+                                        <input type="checkbox" value="otro" onchange="updateServicesOffered()">
+                                        <span class="chip-label">Otro</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div>
+                                    <label for="pro-fee-min" class="input-label">Honorarios Minimos</label>
+                                    <input id="pro-fee-min" type="number" min="0" class="input-field" placeholder="$0">
+                                </div>
+                                <div>
+                                    <label for="pro-fee-max" class="input-label">Honorarios Maximos</label>
+                                    <input id="pro-fee-max" type="number" min="0" class="input-field" placeholder="$0">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="input-label">Disponibilidad</label>
+                                <div class="flex flex-wrap gap-3 mt-2" id="availability-container">
+                                    <label class="chip-checkbox">
+                                        <input type="checkbox" value="lun" onchange="updateAvailability()">
+                                        <span class="chip-label">Lun</span>
+                                    </label>
+                                    <label class="chip-checkbox">
+                                        <input type="checkbox" value="mar" onchange="updateAvailability()">
+                                        <span class="chip-label">Mar</span>
+                                    </label>
+                                    <label class="chip-checkbox">
+                                        <input type="checkbox" value="mie" onchange="updateAvailability()">
+                                        <span class="chip-label">Mie</span>
+                                    </label>
+                                    <label class="chip-checkbox">
+                                        <input type="checkbox" value="jue" onchange="updateAvailability()">
+                                        <span class="chip-label">Jue</span>
+                                    </label>
+                                    <label class="chip-checkbox">
+                                        <input type="checkbox" value="vie" onchange="updateAvailability()">
+                                        <span class="chip-label">Vie</span>
+                                    </label>
+                                    <label class="chip-checkbox">
+                                        <input type="checkbox" value="sab" onchange="updateAvailability()">
+                                        <span class="chip-label">Sab</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="input-label">Redes Sociales</label>
+                                <div class="space-y-3 mt-2">
+                                    <div class="flex items-center gap-3">
+                                        <i data-lucide="linkedin" class="w-4 h-4 flex-shrink-0" style="color:var(--text-secondary)" aria-hidden="true"></i>
+                                        <input id="pro-linkedin" type="url" class="input-field flex-1" placeholder="https://linkedin.com/in/tu-perfil">
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <i data-lucide="camera" class="w-4 h-4 flex-shrink-0" style="color:var(--text-secondary)" aria-hidden="true"></i>
+                                        <input id="pro-instagram" type="url" class="input-field flex-1" placeholder="https://instagram.com/tu-cuenta">
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <i data-lucide="globe" class="w-4 h-4 flex-shrink-0" style="color:var(--text-secondary)" aria-hidden="true"></i>
+                                        <input id="pro-website" type="url" class="input-field flex-1" placeholder="https://tusitio.com">
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-4">
-                        <button id="save-prof-btn" onclick="saveProfessionalData()"
-                            class="bg-gold text-white py-3 px-8 rounded font-bold uppercase tracking-widest text-xs hover:bg-midnight transition-all duration-300 flex items-center gap-2">
-                            <i data-lucide="save" class="w-4 h-4"></i>
-                            Guardar Cambios
+                    <div class="flex items-center gap-4 pt-6 mt-6 border-t" style="border-color:var(--border)">
+                        <button onclick="saveProfessionalFullProfile()" class="btn-primary">
+                            <i data-lucide="save" class="w-4 h-4" aria-hidden="true"></i>
+                            Guardar Perfil Profesional
                         </button>
-                        <span id="prof-save-msg" class="text-sm text-emerald-600 hidden">Guardado correctamente</span>
-                        <span id="prof-error-msg" class="text-sm text-rose-600 hidden"></span>
+                        <span id="pro-full-save-msg" class="hidden text-sm font-medium" style="color:#059669" aria-live="polite">Guardado correctamente</span>
+                        <span id="pro-full-error-msg" class="hidden text-sm font-medium" style="color:#e11d48" role="alert"></span>
                     </div>
                 </div>
             </div>
@@ -257,36 +508,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     if (window.lucide) lucide.createIcons();
-    loadUserLeads();
-    initProfilePhone();
+    initSettingsPage();
 });
-
-function initProfilePhone() {
-    const phoneInput = document.getElementById('profile-phone');
-    const countrySelect = document.getElementById('profile-country-code');
-    if (!phoneInput || !countrySelect) return;
-
-    const currentPhone = phoneInput.value.trim();
-    if (currentPhone) {
-        const match = currentPhone.match(/^(\+\d+)/);
-        if (match) {
-            const code = match[1];
-            const options = countrySelect.querySelectorAll('option');
-            let found = false;
-            options.forEach(opt => {
-                if (opt.value === code) {
-                    opt.selected = true;
-                    found = true;
-                }
-            });
-            if (found) {
-                const digits = currentPhone.replace(/\D/g, '');
-                const codeDigits = code.replace('+', '');
-                phoneInput.value = digits.substring(codeDigits.length);
-            }
-        }
-    }
-    validateProfilePhone();
-}
 </script>
 {% endblock %}

@@ -3,6 +3,7 @@
  * Define los colores y tipografías personalizados de ArchEstate
  */
 tailwind.config = {
+    darkMode: 'class',
     theme: {
         extend: {
             colors: {
