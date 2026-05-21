@@ -33,6 +33,7 @@ app = Flask(__name__)
 app.secret_key = config.SECRET_KEY
 app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, config.UPLOAD_FOLDER)
 app.config['AVATAR_FOLDER'] = os.path.join(app.root_path, config.AVATAR_FOLDER)
+app.config['PERMANENT_SESSION_LIFETIME'] = config.PERMANENT_SESSION_LIFETIME
 app.jinja_env.autoescape = True
 
 
@@ -75,6 +76,9 @@ def security_headers(response):
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['X-Frame-Options'] = 'DENY'
         response.headers['X-XSS-Protection'] = '1; mode=block'
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+        response.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=()'
     return rate_limit.add_rate_limit_headers(response)
 
 
@@ -331,6 +335,19 @@ def init_db():
         os.makedirs(config.AVATAR_FOLDER, exist_ok=True)
         os.makedirs(os.path.join('static', 'uploads', 'portfolio'), exist_ok=True)
 
+        # Indices para optimizar consultas frecuentes
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_leads_user_id ON leads(user_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_leads_timestamp ON leads(timestamp)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_leads_zone ON leads(zone)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_leads_type ON leads(type)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_professionals_user_id ON professionals(user_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_professionals_name ON professionals(name)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_professionals_status ON professionals(status)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_lead_tracking_professional ON lead_tracking(professional_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_lead_reports_status ON lead_reports(status)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_audit_log_user ON audit_log(user_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_login_history_user ON user_login_history(user_id)')
+
         # CREAMOS EL ADMIN POR DEFECTO (Ahora con su rol)
         cursor.execute('SELECT COUNT(*) FROM users')
         if cursor.fetchone()[0] == 0:
@@ -347,25 +364,6 @@ professional_required = decorators.professional_required
 
 
 # --- LÓGICA DE NEGOCIO (PYTHON) ---
-
-
-def log_action(action, target):
-    """Registra una acción en la tabla de auditoría de la base de datos"""
-    conn = None
-    try:
-        conn = get_db_connection()
-        safe_action = utils.safe_text(action)[:100]
-        safe_target = utils.safe_text(target)[:200]
-        safe_admin = utils.safe_text(session.get('username', 'sistema'))[:50]
-        user_id = session.get('user_id')
-        conn.execute('INSERT INTO audit_log (action, target, admin, user_id) VALUES (?, ?, ?, ?)',
-                     (safe_action, safe_target, safe_admin, user_id))
-        conn.commit()
-    except Exception as e:
-        print(f"Error al registrar auditoría: {e}")
-    finally:
-        if conn:
-            conn.close()
 
 
 def get_budget_stats_from_db():
@@ -693,6 +691,7 @@ def login():
                 return redirect(url_for('login'))
 
             session.clear()
+            session.permanent = True
             session['user_id'] = user['id']
             session['username'] = user['username']
             session['email'] = user['email']
@@ -1025,7 +1024,7 @@ def get_lead_phone(lead_id):
         lead = conn.execute('SELECT phone, type FROM leads WHERE id = ?', (lead_id,)).fetchone()
 
         if lead:
-            log_action("Consulta Teléfono", f"Lead ID: {lead_id} ({lead['type']})")
+            utils.log_action("Consulta Teléfono", f"Lead ID: {lead_id} ({lead['type']})", session)
             return jsonify({"status": "success", "phone": lead['phone']})
 
         return jsonify({"status": "error", "message": "Lead no encontrado"}), 404
@@ -1331,7 +1330,7 @@ def report_lead(lead_id):
         )
         conn.commit()
 
-        log_action("Reporte de Lead", f"Lead ID: {lead_id} (Telefono: {lead['phone']}) reportado por {user['username']}")
+        utils.log_action("Reporte de Lead", f"Lead ID: {lead_id} (Telefono: {lead['phone']}) reportado por {user['username']}", session)
 
         return jsonify({
             'success': True,
@@ -1570,7 +1569,7 @@ def update_pro_status(pro_id):
             conn.commit()
 
             action = "Aprobación" if new_status == 'approved' else "Rechazo"
-            log_action(action, pro['name'])
+            utils.log_action(action, pro['name'], session)
             return jsonify({"status": "success", "message": f"Profesional {action.lower()} correctamente"})
 
         return jsonify({"error": "Profesional no encontrado"}), 404
@@ -1761,7 +1760,7 @@ def delete_reported_lead(report_id):
             ('deleted', session.get('username'), now, report_id)
         )
         conn.commit()
-        log_action("Eliminacion de Lead", f"Lead ID: {lead_id} eliminado tras reporte #{report_id} por {session.get('username')}")
+        utils.log_action("Eliminacion de Lead", f"Lead ID: {lead_id} eliminado tras reporte #{report_id} por {session.get('username')}", session)
 
         return jsonify({
             'success': True,
@@ -1797,7 +1796,7 @@ def dismiss_report(report_id):
             ('dismissed', session.get('username'), now, report_id)
         )
         conn.commit()
-        log_action("Reporte Descartado", f"Reporte #{report_id} descartado por {session.get('username')}")
+        utils.log_action("Reporte Descartado", f"Reporte #{report_id} descartado por {session.get('username')}", session)
 
         return jsonify({
             'success': True,
@@ -1833,7 +1832,7 @@ def restore_report(report_id):
             ('pending', report_id)
         )
         conn.commit()
-        log_action("Reporte Restaurado", f"Reporte #{report_id} restaurado a pendiente por {session.get('username')}")
+        utils.log_action("Reporte Restaurado", f"Reporte #{report_id} restaurado a pendiente por {session.get('username')}", session)
 
         return jsonify({
             'success': True,
@@ -1941,7 +1940,7 @@ def upload_professional_doc():
         if conn:
             conn.close()
 
-    log_action("Subida de Documento", f"Usuario ID: {session['user_id']}")
+    utils.log_action("Subida de Documento", f"Usuario ID: {session['user_id']}", session)
 
     return jsonify({
         "status":       "success",
@@ -2093,7 +2092,7 @@ def admin_reset_password(user_id):
         if conn:
             conn.close()
 
-    log_action("Reset de Contraseña", f"Usuario: {user['username']} (ID: {user_id})")
+    utils.log_action("Reset de Contraseña", f"Usuario: {user['username']} (ID: {user_id})", session)
 
     return jsonify({
         "status": "success",
@@ -2136,7 +2135,7 @@ def admin_set_user_active(user_id):
 
     action  = "Reactivación de Cuenta" if new_state else "Baja de Cuenta"
     message = f"Usuario '{user['username']}' {'reactivado' if new_state else 'dado de baja'} correctamente."
-    log_action(action, f"Usuario: {user['username']} (ID: {user_id})")
+    utils.log_action(action, f"Usuario: {user['username']} (ID: {user_id})", session)
 
     return jsonify({"status": "success", "message": message, "is_active": new_state})
 
@@ -2180,7 +2179,8 @@ init_db()
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    debug_mode = os.environ.get('FLASK_DEBUG', 'false').lower() == 'true'
+    app.run(debug=debug_mode)
 
 
 

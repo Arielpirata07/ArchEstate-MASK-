@@ -16,23 +16,6 @@ import rate_limit
 profile_bp = Blueprint('profile', __name__, url_prefix='')
 
 
-def _log_action(action, target):
-    conn = None
-    try:
-        conn = models.get_db_connection()
-        safe_action = utils.safe_text(action)[:100]
-        safe_target = utils.safe_text(target)[:200]
-        safe_admin = utils.safe_text(session.get('username', 'sistema'))[:50]
-        user_id = session.get('user_id')
-        conn.execute('INSERT INTO audit_log (action, target, admin, user_id) VALUES (?, ?, ?, ?)',
-                     (safe_action, safe_target, safe_admin, user_id))
-        conn.commit()
-    except Exception as e:
-        print(f"Error al registrar auditoria: {e}")
-    finally:
-        if conn:
-            conn.close()
-
 ALLOWED_LEAD_EDIT_FIELDS = [
     'zone', 'budget', 'currency',
     'floor_block', 'usable_m2', 'elevator',
@@ -110,7 +93,7 @@ def api_update_lead(lead_id):
 
     models.update_lead(lead_id, update_data)
 
-    _log_action('Edicion de Lead', f'Lead ID: {lead_id} editado por {session["username"]}')
+    utils.log_action('Edicion de Lead', f'Lead ID: {lead_id} editado por {session["username"]}', session)
 
     return jsonify({'status': 'success', 'message': 'Solicitud actualizada'})
 
@@ -171,7 +154,7 @@ def api_update_user():
     session['email'] = email
     session['phone'] = phone
 
-    _log_action('Actualizacion de Perfil', f'Usuario: {session["username"]}')
+    utils.log_action('Actualizacion de Perfil', f'Usuario: {session["username"]}', session)
 
     return jsonify({'status': 'success', 'message': 'Perfil actualizado'})
 
@@ -205,7 +188,7 @@ def api_change_password():
     finally:
         conn.close()
 
-    _log_action('Cambio de Contrasena', f'Usuario: {session["username"]}')
+    utils.log_action('Cambio de Contrasena', f'Usuario: {session["username"]}', session)
 
     return jsonify({'status': 'success', 'message': 'Contrasena actualizada'})
 
@@ -238,7 +221,7 @@ def api_update_professional():
 
     models.update_professional_profile(user_id, update_data)
 
-    _log_action('Actualizacion Profesional', f'Usuario: {session["username"]}')
+    utils.log_action('Actualizacion Profesional', f'Usuario: {session["username"]}', session)
 
     return jsonify({'status': 'success', 'message': 'Perfil profesional actualizado'})
 
@@ -278,7 +261,7 @@ def api_update_settings():
         return jsonify({'error': 'Idioma no valido'}), 400
 
     models.update_user_preferences(user_id, update_data)
-    _log_action('Actualizacion de Preferencias', f'Usuario: {session["username"]}')
+    utils.log_action('Actualizacion de Preferencias', f'Usuario: {session["username"]}', session)
 
     return jsonify({'status': 'success', 'message': 'Preferencias actualizadas'})
 
@@ -297,7 +280,7 @@ def api_delete_session(entry_id):
     deleted = models.delete_login_history_entry(entry_id, session['user_id'])
     if not deleted:
         return jsonify({'error': 'Sesion no encontrada'}), 404
-    _log_action('Sesion cerrada', f'Sesion ID: {entry_id}')
+    utils.log_action('Sesion cerrada', f'Sesion ID: {entry_id}', session)
     return jsonify({'status': 'success', 'message': 'Sesion cerrada'})
 
 
@@ -354,7 +337,7 @@ def api_upload_avatar():
 
     avatar_rel = f'uploads/avatars/{safe_filename}'
     models.update_user_avatar(user_id, avatar_rel)
-    _log_action('Avatar actualizado', f'Usuario: {session["username"]}')
+    utils.log_action('Avatar actualizado', f'Usuario: {session["username"]}', session)
 
     return jsonify({'status': 'success', 'avatar_url': url_for('static', filename=avatar_rel)})
 
@@ -370,7 +353,7 @@ def api_delete_avatar():
         if os.path.exists(old_file):
             os.remove(old_file)
     models.delete_user_avatar(user_id)
-    _log_action('Avatar eliminado', f'Usuario: {session["username"]}')
+    utils.log_action('Avatar eliminado', f'Usuario: {session["username"]}', session)
     return jsonify({'status': 'success', 'message': 'Avatar eliminado'})
 
 
@@ -413,7 +396,7 @@ def api_update_professional_full():
         return jsonify({'error': 'No hay datos validos para actualizar'}), 400
 
     models.create_or_update_professional_profile(user_id, update_data)
-    _log_action('Perfil profesional actualizado', f'Usuario: {session["username"]}')
+    utils.log_action('Perfil profesional actualizado', f'Usuario: {session["username"]}', session)
 
     return jsonify({'status': 'success', 'message': 'Perfil profesional actualizado'})
 
@@ -458,7 +441,7 @@ def api_upload_professional_photo():
 
     photo_rel = f'uploads/avatars/{safe_filename}'
     models.create_or_update_professional_profile(user_id, {'photo_path': photo_rel})
-    _log_action('Foto profesional actualizada', f'Usuario: {session["username"]}')
+    utils.log_action('Foto profesional actualizada', f'Usuario: {session["username"]}', session)
 
     return jsonify({'status': 'success', 'photo_url': url_for('static', filename=photo_rel)})
 
@@ -474,5 +457,5 @@ def api_delete_professional_photo():
         if os.path.exists(old_file):
             os.remove(old_file)
     models.create_or_update_professional_profile(user_id, {'photo_path': ''})
-    _log_action('Foto profesional eliminada', f'Usuario: {session["username"]}')
+    utils.log_action('Foto profesional eliminada', f'Usuario: {session["username"]}', session)
     return jsonify({'status': 'success', 'message': 'Foto eliminada'})
