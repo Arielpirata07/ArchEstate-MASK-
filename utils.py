@@ -1,5 +1,6 @@
 from datetime import datetime
 import pytz
+import re
 
 import config
 
@@ -111,3 +112,26 @@ def normalize_phone_for_sms(phone):
     if not digits.startswith('+'):
         digits = '+' + digits
     return digits
+
+
+def log_action(action, target, session=None):
+    """Registra una accion en la tabla de auditoria de la base de datos."""
+    from models import get_db_connection
+
+    conn = None
+    try:
+        conn = get_db_connection()
+        safe_action = safe_text(action)[:100]
+        safe_target = safe_text(target)[:200]
+        safe_username = safe_text(session.get('username', 'sistema') if session else 'sistema')[:50]
+        user_id = session.get('user_id') if session else None
+        conn.execute(
+            'INSERT INTO audit_log (action, target, admin, user_id) VALUES (?, ?, ?, ?)',
+            (safe_action, safe_target, safe_username, user_id)
+        )
+        conn.commit()
+    except Exception as e:
+        print(f"Error al registrar auditoria: {e}")
+    finally:
+        if conn:
+            conn.close()
