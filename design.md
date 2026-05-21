@@ -4,114 +4,94 @@
 
 ### Colors
 
-| Token | Hex | Usage |
-|-------|-----|-------|
-| `midnight` | `#000410` | Primary text, dark backgrounds, buttons |
-| `midnight-light` | `#101E33` | Navbar, secondary dark surfaces |
-| `gold` | `#735A3A` | Primary accent, active states, borders, links |
-| `gold-light` | `#A68A64` | Secondary accent, subtle highlights |
-| `paper` | `#FAF9F7` | Page background |
-| `paper-dark` | `#F4F3F1` | Card headers, subtle backgrounds |
+| Token | Hex | Uso principal |
+|-------|-----|---------------|
+| `midnight` | `#000410` | Texto primario, fondos oscuros, botones primarios |
+| `midnight-light` | `#101E33` | Navbar, superficies oscuras secundarias |
+| `gold` | `#735A3A` | Acento primario, estados activos, bordes de énfasis |
+| `gold-light` | `#A68A64` | Acento secundario, highlights sutiles |
+| `paper` | `#FAF9F7` | Fondo de página |
+| `paper-dark` | `#F4F3F1` | Headers de card, fondos sutiles de sección |
 
-**Semantic colors** (Tailwind defaults, usar con moderacion):
-- `emerald-50/500/600/700` - Success states
-- `rose-50/500/600` - Error/danger states
-- `amber-50/400` - Warning/pending states
+**Colores semánticos** (Tailwind por defecto, usar con moderación):
+- `emerald-50/100/600/700` — Estados de éxito, aprobación
+- `rose-50/100/500/600/700` — Error, peligro, rechazo
+- `amber-50/100/400/700` — Advertencia, pendiente
+- `blue-50/700` — Información neutra
 
 ### Typography
 
-| Element | Font | Size | Weight | Style |
-|---------|------|------|--------|-------|
-| Page title | Newsreader | `text-4xl` | default | italic accent |
-| Section title | Newsreader | `text-lg` | default | italic |
-| Body | Manrope | `text-sm` / `text-base` | default | - |
-| Labels | Manrope | `text-[10px]` | bold | uppercase, tracking-widest |
-| Table headers | Manrope | `text-[10px]` | bold | uppercase, tracking-widest, text-gold |
-| Badges | Manrope | `text-[9px]` | bold | uppercase, tracking-widest |
-| Micro-text | Manrope | `text-[8px]` | default | - |
+| Elemento | Fuente | Tamaño | Peso | Estilo |
+|----------|--------|--------|------|--------|
+| Título de página | Newsreader | `text-4xl` | — | Cursiva en acento |
+| Subtítulo de sección | Newsreader | `text-2xl`–`text-3xl` | — | Cursiva |
+| Título de card | Newsreader | `text-lg`–`text-xl` | — | Normal o cursiva |
+| Cuerpo | Manrope | `text-sm`–`text-base` | — | — |
+| Labels de campo | Manrope | `text-[10px]` | bold | uppercase tracking-widest |
+| Headers de tabla | Manrope | `text-[10px]` | bold | uppercase tracking-widest text-gold |
+| Badges | Manrope | `text-[9px]` | bold | uppercase tracking-widest |
+| Micro-texto | Manrope | `text-[8px]`–`text-[9px]` | bold | uppercase tracking-widest |
 
-**Fonts loaded:**
-- Newsreader (200-800, italic) via Google Fonts
-- Manrope (200-800) via Google Fonts
+**Fuentes cargadas:** Newsreader (200–800, cursiva) + Manrope (200–800) via Google Fonts.
 
-### Spacing
-
-| Context | Pattern |
-|---------|---------|
-| Page container | `max-w-7xl mx-auto w-full pt-24 pb-12 px-6` |
-| Section gap | `space-y-8` |
-| Form sections | `space-y-10` |
-| Form fields | `mb-6` / `mb-8` |
-| Grid gap | `gap-4` / `gap-6` / `gap-8` |
-| Card padding | `p-6` / `p-8` / `p-10` |
-| Label margin | `mb-2` / `mb-3` |
-
-### Border Radius
-
-| Element | Value |
-|---------|-------|
-| Cards | `rounded-lg` |
-| Buttons | `rounded` |
-| Chips | `rounded-full` |
-| Badges | `rounded` |
-| Inputs | `rounded` (solo bordered style) |
-| Modals | `rounded-lg` |
-
-### Shadows
-
-| Level | Class | Usage |
-|-------|-------|-------|
-| Light | `shadow` | Subtle elevation |
-| Medium | `shadow-lg` | Cards, dropdowns |
-| Strong | `shadow-xl` | Primary cards, forms |
-| Maximum | `shadow-2xl` | Modals, toast, hero elements |
+> ⚠️ Toda clase custom de Tailwind (colores, fuentes) debe estar en `static/js/tailwind-config.js`.
 
 ---
 
-## Component Library
+## Componentes
 
-### Buttons
+### Botones
 
-**Primary:**
+**Primario (CTA principal):**
 ```
 bg-gold text-white py-4 rounded font-bold uppercase tracking-widest text-xs hover:bg-midnight transition-all duration-300
 ```
 
-**Secondary:**
+**Secundario:**
 ```
-bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all duration-300 rounded text-[10px] font-bold uppercase tracking-widest
+bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all duration-300 rounded text-[10px] font-bold uppercase tracking-widest border border-midnight/5
 ```
 
-**Danger:**
+**Peligro / Baja:**
 ```
 bg-rose-600 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all duration-300
 ```
 
-**Ghost/Table Action:**
+**Acción de tabla (ghost oscuro):**
 ```
-px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all duration-300
+inline-flex items-center gap-1.5 px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all
 ```
 
-**Icon Button:**
+**Acción de tabla (ghost dorado):**
 ```
-p-2 rounded hover:bg-paper-dark transition-all duration-200
+inline-flex items-center gap-1.5 px-3 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all
+```
+
+**Acción de tabla (ghost claro):**
+```
+inline-flex items-center gap-1.5 px-3 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-all
+```
+
+**Ícono solo:**
+```
+p-2 rounded hover:bg-paper-dark transition-all duration-200 text-midnight/30 hover:text-gold
 ```
 
 ### Cards
 
-**Standard:**
+**Estándar:**
 ```
 bg-white rounded-lg shadow-xl overflow-hidden
 ```
 
-**Interactive (hover lift):**
-```
-bg-white rounded-lg shadow-lg border border-midnight/5 card-hover
-```
-
-**KPI:**
+**Con borde lateral (KPI):**
 ```
 bg-white rounded-lg shadow p-5 border-l-4 border-{color}
+```
+
+**Interactiva con hover:**
+```
+bg-white rounded-lg shadow-lg border border-midnight/5 card-hover
 ```
 
 **Auth (login/register):**
@@ -119,22 +99,33 @@ bg-white rounded-lg shadow p-5 border-l-4 border-{color}
 bg-white p-10 rounded-lg shadow-2xl border-t-4 border-gold
 ```
 
+**Panel de estado pendiente (oscuro):**
+```
+bg-midnight rounded-lg p-8
+```
+
 ### Inputs
 
-**Border-bottom style (formularios principales):**
+**Border-bottom (formularios principales):**
 ```
-bg-transparent border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm
+bg-transparent border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm outline-none
 ```
 
-**Bordered style (filtros, admin):**
+**Con ícono prefijo (border-bottom):**
+```
+bg-transparent border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all outline-none
+```
+
+**Bordered (filtros y admin):**
 ```
 px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none transition-all
 ```
 
-**With icon prefix:**
+**Búsqueda con ícono:**
 ```
-bg-transparent border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all outline-none
+pl-8 pr-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none w-full
 ```
++ ícono `<i data-lucide="search">` absoluto a la izquierda.
 
 ### Selects
 
@@ -142,180 +133,204 @@ bg-transparent border-0 border-b border-midnight/10 focus:border-gold focus:ring
 bg-paper-dark border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 transition-all text-sm
 ```
 
-Custom chevron SVG en `user.css`.
-
-### Badges
-
-**Status:**
+Para filtros admin/profesional (bordered):
 ```
-px-2 py-1 bg-{color}-50 text-{color}-700 text-[9px] font-bold uppercase tracking-widest rounded
+px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none
 ```
-- `emerald` = approved/active
-- `rose` = rejected/error
-- `amber` = pending/warning
 
-**Role:**
+### Badges de Estado
+
 ```
 px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest
 ```
 
-**Filter tags:**
+| Estado | Clases |
+|--------|--------|
+| Aprobado / Activo | `bg-emerald-50 text-emerald-700` |
+| Rechazado / Baja | `bg-rose-50 text-rose-700` |
+| Pendiente | `bg-amber-50 text-amber-700` |
+| Cuenta baja | `bg-midnight/10 text-midnight/50` |
+| Neutro | `bg-paper-dark text-midnight/60` |
+
+### Chips de Selección (user.html / professional.html)
+
+**Horizontal (parking, orientación):**
+```
+px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all
+```
+
+**Vertical en lista (estado, antigüedad):**
+```
+w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all
+```
+
+**Redondeados (filtros de profesional):**
+```
+px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all
+```
+
+**Estados de chip:**
+- Activo: `border-midnight bg-midnight text-white`
+- Inactivo: `border-midnight/20 text-midnight hover:border-gold`
+
+> ⚠️ Al cambiar el estado de un chip, **reconstruir `className` completo** desde la cadena base — nunca usar `String.replace()` con regex sobre clases Tailwind (los `/` en `border-midnight/20` lo rompen).
+
+### Steppers +/−
+
+```html
+<div class="flex items-center gap-3">
+    <button type="button" onclick="stepNum('campo', -1)"
+        class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center
+               text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">−</button>
+    <input id="campo-input" name="campo" type="number" min="0" max="20" value="" placeholder="—"
+           class="w-12 text-center bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-1 text-sm font-semibold">
+    <button type="button" onclick="stepNum('campo', 1)"
+        class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center
+               text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">+</button>
+</div>
+```
+
+### Upload Widget (professional.html)
+
+Zona drag & drop renderizada por JS (`renderUploadWidget(containerId)`). Estados:
+1. **Dropzone** — borde punteado, ícono cloud, hover con highlight gold
+2. **Preview** — ícono por tipo (PDF rojo / imagen azul), nombre, tamaño, botón X
+3. **Progreso** — barra gold animada con porcentaje
+4. **Éxito** — banner emerald con nombre y botón de descarga + opción "Reemplazar"
+
+### Tags de Filtros Activos
+
 ```
 inline-flex items-center gap-1.5 px-2.5 py-1 bg-gold/10 text-gold border border-gold/20 rounded-full text-[9px] font-bold uppercase tracking-widest
 ```
+Con botón X interno: `hover:text-rose-500 transition-colors`.
 
-### Chips
-
-```
-border-2 rounded-full px-3 py-1.5 text-[10px] font-semibold transition-all duration-200
-```
-- Active: `border-midnight bg-midnight text-white`
-- Inactive: `border-midnight/20 text-midnight hover:border-gold`
-
-### Tables
+### Tablas
 
 ```
 w-full text-left border-collapse
 ```
-- Header: `bg-paper-dark border-b border-midnight/5`
-- Header cells: `p-4 text-[10px] uppercase tracking-widest font-bold text-gold`
-- Body rows: `border-b border-midnight/5 hover:bg-paper transition-colors`
+- Header row: `bg-paper-dark border-b border-midnight/5`
+- Header cell: `p-4 text-[10px] uppercase tracking-widest font-bold text-gold`
+- Body row: `border-b border-midnight/5 hover:bg-paper transition-colors`
+- Body cell: `p-4`
 
-### Modals
+> Las filas de cuentas inactivas usan `opacity-60` adicional.
+
+### Modales
 
 **Overlay:**
 ```
-fixed inset-0 bg-midnight/60 backdrop-blur-sm z-50
+fixed inset-0 z-50 bg-midnight/60 backdrop-blur-sm
 ```
 
-**Container:**
+**Panel:**
 ```
-bg-white rounded-lg shadow-2xl border-t-4 border-gold max-w-md w-full mx-4
+absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md
+bg-white rounded-lg shadow-2xl border-t-4 border-gold overflow-hidden
 ```
 
-**Animation:** fade-in scale-up (0.95 -> 1) 0.2s ease-out
+**Aviso interno (warning box):**
+```
+mx-8 mb-6 p-3 bg-{color}-50 border border-{color}-100 rounded flex items-start gap-3
+```
+
+> Los modales que cambian íconos dinámicamente deben reconstruir `innerHTML` completo del botón/aviso — no mutar el `<svg>` que Lucide genera.
 
 ### Toasts
 
-```
-fixed bottom-4 right-4 md:bottom-8 md:right-8 z-50
-```
-- Entry: slide-in from bottom + fade
-- Exit: fade + slide-up
-- Duration: 4000ms with progress bar
-- Colors: emerald-600 (success), rose-600 (error), midnight (info)
+Definidos en `main.js → showToast(message, type)`. Posición: `fixed bottom-8 right-8 z-[100]`.
 
----
+| Tipo | Color |
+|------|-------|
+| `'success'` | `bg-emerald-600` |
+| `'error'` | `bg-rose-600` |
+| `'info'` | `bg-midnight` |
 
-## Animation System
+### Panel de Pasos (Estado Pendiente)
 
-### Durations
-
-| Name | Duration | Usage |
-|------|----------|-------|
-| `fast` | 150ms | Hover state changes |
-| `normal` | 300ms | Card hover, button transitions |
-| `slow` | 500ms | Modal open/close, toast entry |
-| `slower` | 800ms | Scroll-triggered animations |
-
-### Easing
-
-| Name | Curve | Usage |
-|------|-------|-------|
-| `ease-out` | `cubic-bezier(0.16, 1, 0.3, 1)` | Entry animations |
-| `ease-in-out` | `cubic-bezier(0.4, 0, 0.2, 1)` | Continuous animations |
-| `spring` | `cubic-bezier(0.34, 1.56, 0.64, 1)` | Scale/bounce effects |
-
-### Keyframes
-
-| Name | Effect | Usage |
-|------|--------|-------|
-| `fadeInUp` | opacity 0->1, translateY(30px)->0 | Scroll reveal |
-| `fadeIn` | opacity 0->1 | Generic fade |
-| `slideInRight` | translateX(50px)->0 | Toast entry |
-| `scaleIn` | scale(0.95)->1, opacity 0->1 | Modal open |
-| `scaleOut` | scale(1)->0.95, opacity 1->0 | Modal close |
-| `pulse` | subtle scale oscillation | CTA buttons |
-| `float` | translateY oscillation | Decorative elements |
-| `shimmer` | background-position slide | Skeleton loading |
-| `ripple` | scale + opacity circle | Button click effect |
-
-### Scroll Animations
-
-Elements with `.animate-on-scroll` class are animated when they enter the viewport via Intersection Observer:
-- `.fade-in-up`: default scroll animation
-- `.fade-in`: simple fade
-- `.slide-in-left`: slide from left
-- `.slide-in-right`: slide from right
-- `.stagger-1` through `.stagger-5`: sequential delays
+Fondo `bg-midnight`, pasos con íconos circulares:
+- Completado: `bg-gold` con check blanco
+- Pendiente: `bg-white/10 border border-white/20` con número
+- Labels: `text-white` / `text-white/60` según estado
 
 ---
 
 ## Layout System
 
-### Breakpoints
-
-| Name | Width | Usage |
-|------|-------|-------|
-| `sm` | 640px | Mobile landscape |
-| `md` | 768px | Tablet, hamburger menu breakpoint |
-| `lg` | 1024px | Desktop |
-| `xl` | 1280px | Large desktop |
-
-### Grid Patterns
-
-**3-column (landing cards):**
+### Contenedor de página
 ```
-grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8
+max-w-7xl mx-auto w-full pt-24 pb-12 px-6
 ```
 
-**2-column (user form):**
-```
-grid-cols-1 lg:grid-cols-2
-```
+### Grids frecuentes
 
-**4-column (KPI cards):**
-```
-grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6
+| Uso | Clases |
+|-----|--------|
+| Cards de landing (3 col) | `grid-cols-1 md:grid-cols-3 gap-6` |
+| KPI cards (4 col) | `grid-cols-2 md:grid-cols-4 gap-4` |
+| Form de usuario (pending + upload) | `grid-cols-1 lg:grid-cols-5 gap-8` (2+3) |
+| Dashboard charts fila 1 | `grid-cols-1 md:grid-cols-2 gap-6` |
+| Dashboard charts fila 2 | `grid-cols-1 md:grid-cols-3 gap-6` (2+1) |
+| Form de 2 columnas | `grid-cols-2 gap-6` |
+| Admin gestión | `grid-cols-1 lg:grid-cols-3 gap-8` (2+1) |
+
+---
+
+## Sistema de Animaciones
+
+### Duraciones
+| Nombre | Duración | Uso |
+|--------|----------|-----|
+| fast | 150ms | Hover de estado |
+| normal | 300ms | Card hover, transiciones de botón |
+| slow | 500ms | Apertura de modal |
+| slower | 800ms | Animaciones scroll-triggered |
+
+### Keyframes disponibles (landing.css)
+| Nombre | Efecto |
+|--------|--------|
+| `fadeInUp` | opacity 0→1 + translateY(30px)→0 |
+| `slideInLeft` / `slideInRight` | Entrada lateral |
+| `float` | Oscilación vertical (elementos decorativos) |
+| `pulseGlow` | Box-shadow animado |
+| `typing` + `blink` | Efecto máquina de escribir |
+
+### Contadores animados (dashboard)
+```javascript
+function animateCounter(el, target) {
+    const duration = 700;
+    const start = performance.now();
+    const step = (now) => {
+        const t = Math.min((now - start) / duration, 1);
+        el.textContent = Math.round(target * (1 - Math.pow(1 - t, 3)));
+        if (t < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+}
 ```
 
 ---
 
-## Accessibility Guidelines
+## Accesibilidad
 
-### Contrast
-- All text must meet WCAG AA: 4.5:1 for normal text, 3:1 for large text
-- `text-midnight/40` on white fails AA for 10px text - use `text-midnight/50` minimum
-
-### Focus
-- All interactive elements must have visible focus state
-- Use `focus:border-gold` for inputs
-- Use `focus:ring-2 focus:ring-gold focus:ring-offset-2` for buttons
-
-### ARIA
-- Modals: `role="dialog"`, `aria-modal="true"`, `aria-labelledby`
-- Icon-only buttons: `aria-label`
-- Forms: `id`/`for` label associations
-
-### Keyboard
-- Skip-to-content link as first focusable element
-- Escape closes modals
-- Tab trap within modals
-- All interactive elements reachable via keyboard
+- Contraste mínimo WCAG AA: 4.5:1 para texto normal — `text-midnight/40` falla en fondo blanco para 10px, usar mínimo `text-midnight/50`
+- Focus en inputs: `focus:border-gold focus:outline-none`
+- Focus en botones: `focus:ring-2 focus:ring-gold focus:ring-offset-2`
+- Botones solo-ícono: `aria-label` o `title`
+- Modales: `Escape` cierra, foco atrapado dentro
 
 ---
 
 ## Anti-patterns
 
-### DO NOT
-- Use hardcoded hex colors instead of Tailwind tokens (e.g., `bg-[#735A3A]` instead of `bg-gold`)
-- Mix `rounded-3xl` cards with `rounded-lg` cards in the same page
-- Use emoji icons instead of Lucide icons
-- Create duplicate CSS rules across files
-- Add inline JS that duplicates main.js logic
-- Use `alert()` or `confirm()` for user feedback (use toast instead)
-- Skip `defer` on script tags
-- Forget `loading="lazy"` on below-fold images
-- Use `text-midnight/40` for 10px text (fails contrast)
-- Create modals without animations or ARIA attributes
-- Add new font families without updating static/js/tailwind-config.js
+| ❌ NO hacer | ✅ Hacer en cambio |
+|-------------|-------------------|
+| `bg-[#735A3A]` | `bg-gold` |
+| `alert()` / `confirm()` | `showToast()` / modal personalizado |
+| Mutating className con `.replace()` en clases Tailwind con slash | Reconstruir `className` completo desde string base |
+| `querySelector('i')` en un contenedor donde Lucide ya inicializó | Reconstruir `innerHTML` con nuevos `<i>` y llamar `lucide.createIcons()` |
+| Mezclar `rounded-3xl` y `rounded-lg` en la misma página | `rounded-lg` para todo |
+| Íconos emoji en lugar de Lucide | `<i data-lucide="nombre">` |
+| JS inline que duplica lógica de `main.js` | Importar/usar las funciones globales |
+| `text-midnight/40` en texto de 10px | `text-midnight/50` mínimo |
