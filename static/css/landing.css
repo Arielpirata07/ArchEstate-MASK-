@@ -12,6 +12,94 @@
     background: rgba(0, 4, 16, 0.2);
 }
 
+/* --- Title Reveal Animation --- */
+.title-reveal {
+    opacity: 0;
+    transform: translateY(40px);
+}
+
+.title-reveal.animate {
+    animation: titleReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes titleReveal {
+    0% {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+        filter: blur(8px);
+    }
+    60% {
+        filter: blur(0);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+}
+
+/* Split text animation for title words */
+.title-word {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(100%);
+}
+
+.title-word.animate {
+    animation: wordReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes wordReveal {
+    0% {
+        opacity: 0;
+        transform: translateY(100%) rotateX(-40deg);
+        filter: blur(4px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) rotateX(0);
+        filter: blur(0);
+    }
+}
+
+/* Title underline animation */
+.title-underline {
+    position: relative;
+    display: inline-block;
+}
+
+.title-underline::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #735A3A, #A68A64);
+    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.title-underline.animate::after {
+    width: 100%;
+}
+
+/* Subtitle fade in */
+.subtitle-reveal {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.subtitle-reveal.animate {
+    animation: subtitleReveal 1s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
+}
+
+@keyframes subtitleReveal {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
 /* --- Animations --- */
 @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(30px); }
@@ -34,13 +122,18 @@
 }
 
 @keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-15px) rotate(5deg); }
+}
+
+@keyframes floatReverse {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-12px) rotate(-5deg); }
 }
 
 @keyframes pulseGlow {
     0%, 100% { box-shadow: 0 0 20px rgba(115, 90, 58, 0.3); }
-    50% { box-shadow: 0 0 30px rgba(115, 90, 58, 0.6); }
+    50% { box-shadow: 0 0 40px rgba(115, 90, 58, 0.6), 0 8px 30px rgba(115, 90, 58, 0.2); }
 }
 
 @keyframes typing {
@@ -55,6 +148,43 @@
 @keyframes ctaPulse {
     0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(115, 90, 58, 0.4); }
     50% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(115, 90, 58, 0); }
+}
+
+/* Shimmer effect for gold elements */
+@keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+}
+
+.gold-shimmer {
+    background: linear-gradient(
+        90deg,
+        #735A3A 0%,
+        #A68A64 25%,
+        #D4B896 50%,
+        #A68A64 75%,
+        #735A3A 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: shimmer 4s linear infinite;
+}
+
+/* Scale in animation */
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.scale-in {
+    animation: scaleIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* --- Animation Classes --- */
@@ -79,11 +209,15 @@
 }
 
 .float-animation {
-    animation: float 3s ease-in-out infinite;
+    animation: float 4s ease-in-out infinite;
+}
+
+.float-animation-reverse {
+    animation: floatReverse 3.5s ease-in-out infinite;
 }
 
 .pulse-glow {
-    animation: pulseGlow 2s ease-in-out infinite;
+    animation: pulseGlow 2.5s ease-in-out infinite;
 }
 
 .typing-effect {
@@ -106,6 +240,8 @@
 .delay-3 { animation-delay: 0.6s; }
 .delay-4 { animation-delay: 0.8s; }
 .delay-5 { animation-delay: 1s; }
+.delay-6 { animation-delay: 1.2s; }
+.delay-7 { animation-delay: 1.4s; }
 
 /* --- FAQ Accordion --- */
 .faq-item {
@@ -150,10 +286,13 @@
 
 /* Respect reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
-    .fade-in-up, .fade-in, .slide-in-left, .slide-in-right, .float-animation, .pulse-glow, .typing-animated, .parallax {
+    .fade-in-up, .fade-in, .slide-in-left, .slide-in-right, .float-animation, .float-animation-reverse, .pulse-glow, .typing-animated, .parallax, .title-reveal, .title-word, .subtitle-reveal, .gold-shimmer, .scale-in {
         animation: none !important;
         transition: none !important;
         transform: none !important;
+    }
+    .title-reveal, .title-word, .subtitle-reveal, .scale-in {
+        opacity: 1 !important;
     }
 }
 

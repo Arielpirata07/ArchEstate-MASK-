@@ -158,6 +158,35 @@
     position: relative;
 }
 
+@keyframes avatar-ring-spin {
+    to { transform: rotate(360deg); }
+}
+
+.avatar-ring {
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    z-index: 0;
+    pointer-events: none;
+    background: conic-gradient(
+        var(--ac0, #735A3A),
+        var(--ac1, #A68A64),
+        var(--ac2, #C4A882),
+        var(--ac3, #D4BC9A),
+        var(--ac4, #E8D5B7),
+        var(--ac0, #735A3A)
+    );
+    animation: avatar-ring-spin 4s linear infinite;
+    -webkit-mask: radial-gradient(circle, transparent 54px, black 54px);
+    mask: radial-gradient(circle, transparent 54px, black 54px);
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.avatar-ring.visible {
+    opacity: 1;
+}
+
 .avatar-overlay {
     position: absolute;
     inset: 0;

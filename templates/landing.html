@@ -10,32 +10,32 @@
 <!-- Elementos flotantes de fondo -->
 <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
     <div class="absolute top-20 left-10 w-20 h-20 bg-gold/10 rounded-full float-animation delay-1"></div>
-    <div class="absolute top-40 right-20 w-16 h-16 bg-midnight/10 rounded-full float-animation delay-2"></div>
+    <div class="absolute top-40 right-20 w-16 h-16 bg-midnight/10 rounded-full float-animation-reverse delay-2"></div>
     <div class="absolute bottom-40 left-20 w-24 h-24 bg-paper-dark/10 rounded-full float-animation delay-3"></div>
-    <div class="absolute bottom-20 right-10 w-18 h-18 bg-gold/5 rounded-full float-animation delay-4"></div>
+    <div class="absolute bottom-20 right-10 w-18 h-18 bg-gold/5 rounded-full float-animation-reverse delay-4"></div>
 </div>
 
 <div class="flex flex-col items-center justify-center min-h-[60vh] text-center relative z-10">
     <!-- Imagen Hero con efecto editorial y parallax -->
-    <div class="relative w-full max-w-5xl h-[300px] mb-12 rounded-xl overflow-hidden shadow-2xl parallax fade-in" data-scroll>
+    <div class="relative w-full max-w-5xl h-[300px] mb-12 rounded-xl overflow-hidden shadow-2xl parallax" data-scroll>
         <img src="https://picsum.photos/seed/architecture/1200/600" alt="Arquitectura" class="w-full h-full object-cover hero-img">
         <div class="absolute inset-0 bg-midnight/40 flex items-center justify-center">
-            <div class="text-white border border-white/20 p-8 backdrop-blur-sm bg-midnight/20 fade-in-up delay-1" data-scroll>
+            <div class="text-white border border-white/20 p-8 backdrop-blur-sm bg-midnight/20 title-reveal" data-scroll>
                 <span class="text-[10px] tracking-[0.3em] uppercase font-bold text-gold-light">Establecido en 2026</span>
                 <h2 class="text-3xl font-serif italic">The Private Ledger</h2>
             </div>
         </div>
     </div>
 
-    <h1 class="text-5xl md:text-6xl font-serif mb-6 text-midnight fade-in-up delay-2" data-scroll>
+    <h1 class="text-5xl md:text-6xl font-serif mb-6 text-midnight title-reveal" data-scroll>
         Bienvenido a <span class="serif-italic typing-effect">ArchEstate</span>
     </h1>
-    <p class="text-midnight/60 max-w-2xl mb-12 text-lg fade-in-up delay-3" data-scroll>
+    <p class="text-midnight/60 max-w-2xl mb-12 text-lg subtitle-reveal" data-scroll>
         La plataforma exclusiva que conecta la demanda arquitectónica con los profesionales más capacitados del sector.
     </p>
 
     <!-- Selectores de Perfil (Login Simulado) -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl fade-in-up delay-4" data-scroll>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
         <!-- Botón Usuario -->
         <a href="{{ url_for('user_view') }}" class="bg-white p-8 rounded-lg shadow-lg border border-midnight/5 card-hover text-left group slide-in-left delay-1 magnetic-hover" data-scroll>
             <i data-lucide="users" class="text-gold mb-4 w-8 h-8 card-icon transition-transform duration-300"></i>
@@ -62,28 +62,28 @@
 <!-- Estadisticas animadas con datos reales -->
 <div class="mt-20 w-full max-w-5xl mx-auto">
     <!-- Linea decorativa superior -->
-    <div class="w-24 h-px bg-gold/30 mx-auto mb-12"></div>
+    <div class="w-24 h-px bg-gold/30 mx-auto mb-12 title-reveal" data-scroll></div>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-        <div class="p-6 group">
+        <div class="p-6 group title-reveal delay-1" data-scroll>
             <div class="text-4xl font-serif text-gold mb-2">
                     <span class="counter" data-target="0" data-suffix="" role="status" aria-live="polite">0</span>
                 </div>
             <div class="text-[10px] uppercase tracking-widest text-midnight/50 font-bold">Leads Generados</div>
         </div>
-        <div class="p-6 group">
+        <div class="p-6 group title-reveal delay-2" data-scroll>
             <div class="text-4xl font-serif text-gold mb-2">
                     <span class="counter" data-target="0" data-suffix="" role="status" aria-live="polite">0</span>
                 </div>
             <div class="text-[10px] uppercase tracking-widest text-midnight/50 font-bold">Profesionales Activos</div>
         </div>
-        <div class="p-6 group">
+        <div class="p-6 group title-reveal delay-3" data-scroll>
             <div class="text-4xl font-serif text-gold mb-2">
                     <span class="counter" data-target="0" data-suffix="" role="status" aria-live="polite">0</span>
                 </div>
             <div class="text-[10px] uppercase tracking-widest text-midnight/50 font-bold">Zonas Cubiertas</div>
         </div>
-        <div class="p-6 group">
+        <div class="p-6 group title-reveal delay-4" data-scroll>
             <div class="text-4xl font-serif text-gold mb-2">
                     <span class="counter" data-target="0" data-suffix="" role="status" aria-live="polite">0</span>
                 </div>
@@ -92,12 +92,12 @@
     </div>
 
     <!-- Linea decorativa inferior -->
-    <div class="w-24 h-px bg-gold/30 mx-auto mt-12"></div>
+    <div class="w-24 h-px bg-gold/30 mx-auto mt-12 title-reveal" data-scroll></div>
 </div>
 
 <!-- Como Funciona -->
 <div class="mt-24 w-full max-w-5xl mx-auto">
-    <div class="text-center mb-16" data-scroll>
+    <div class="text-center mb-16 title-reveal" data-scroll>
         <span class="text-[10px] uppercase tracking-widest font-bold text-gold">Proceso Simple</span>
         <h2 class="text-3xl md:text-4xl font-serif italic mt-3">Como Funciona</h2>
     </div>
@@ -140,7 +140,7 @@
 
 <!-- FAQ -->
 <div class="mt-24 w-full max-w-3xl mx-auto">
-    <div class="text-center mb-12" data-scroll>
+    <div class="text-center mb-12 title-reveal" data-scroll>
         <span class="text-[10px] uppercase tracking-widest font-bold text-gold">Preguntas Frecuentes</span>
         <h2 class="text-3xl md:text-4xl font-serif italic mt-3">FAQ</h2>
     </div>
@@ -206,6 +206,8 @@ document.addEventListener('DOMContentLoaded', function() {
     fetchAndAnimateCounters();
     initMagneticHover();
     initHeroReveal();
+    initTitleReveal();
+    initSubtitleReveal();
 
     // FAQ: make keyboard accessible and add ARIA attributes
     document.querySelectorAll('.faq-question').forEach((q, i) => {
@@ -249,6 +251,40 @@ function initScrollAnimations() {
     }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
     document.querySelectorAll('[data-scroll]').forEach(el => observer.observe(el));
+}
+
+// --- Title Reveal Animation ---
+function initTitleReveal() {
+    const titleEl = document.querySelector('h1.title-reveal');
+    if (!titleEl) return;
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.2 });
+
+    observer.observe(titleEl);
+}
+
+// --- Subtitle Reveal Animation ---
+function initSubtitleReveal() {
+    const subtitleEl = document.querySelector('.subtitle-reveal');
+    if (!subtitleEl) return;
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('animate');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.2 });
+
+    observer.observe(subtitleEl);
 }
 
 // --- Parallax ---

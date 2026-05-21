@@ -73,6 +73,7 @@
                         <!-- Avatar -->
                         <div class="flex-shrink-0 text-center">
                             <div class="avatar-upload relative mx-auto" id="avatar-container" onclick="document.getElementById('avatar-input').click()" role="button" tabindex="0" aria-label="Cambiar foto de perfil" onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
+                                <div class="avatar-ring" id="avatar-ring"></div>
                                 <img id="avatar-preview" src="{% if user and user.avatar_path %}{{ url_for('static', filename=user.avatar_path) }}{% else %}{{ url_for('static', filename='img/default-avatar.svg') }}{% endif %}" alt="Foto de perfil" class="w-full h-full rounded-full object-cover border-4" style="border-color:var(--border)">
                                 <div class="avatar-overlay">
                                     <i data-lucide="camera" class="w-6 h-6 text-white"></i>
@@ -348,6 +349,7 @@
                         <div class="space-y-6">
                             <div class="text-center">
                                 <div class="avatar-upload relative mx-auto" id="pro-photo-container" onclick="document.getElementById('pro-photo-input').click()" role="button" tabindex="0" aria-label="Cambiar foto profesional" onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
+                                    <div class="avatar-ring" id="pro-photo-ring"></div>
                                     <img id="pro-photo-preview" src="{{ url_for('static', filename='img/default-avatar.svg') }}" alt="Foto profesional" class="w-full h-full rounded-full object-cover border-4" style="border-color:var(--border)">
                                     <div class="avatar-overlay">
                                         <i data-lucide="camera" class="w-6 h-6 text-white"></i>
