@@ -51,6 +51,26 @@
                     <i data-lucide="phone" class="w-4 h-4 text-gold flex-shrink-0"></i>
                     <span>{{ lead.phone | e }}</span>
                 </div>
+                {% if lead.phone %}
+                {% set phone_digits = lead.phone | replace('+', '') | replace(' ', '') | replace('-', '') | replace('(', '') | replace(')', '') %}
+                <div class="flex gap-2 mt-3" id="lead-detail-contact-buttons">
+                    {% if phone_digits | length >= 10 and phone_digits | length <= 15 and not phone_digits.startswith('0') %}
+                    {% set wa_message = 'Hola, te contacto desde ArchEstate regarding tu solicitud de propiedad. ¿Tenés un momento para conversar?' %}
+                    <a href="https://wa.me/{{ phone_digits }}?text={{ wa_message | urlencode }}"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="inline-flex items-center gap-1.5 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-widest transition-all contact-btn contact-btn-whatsapp">
+                        <i data-lucide="message-circle" class="w-3 h-3"></i> WhatsApp
+                    </a>
+                    {% else %}
+                    {% set sms_message = 'Hola, te contacto desde ArchEstate regarding tu solicitud de propiedad.' %}
+                    <a href="sms:{{ lead.phone }}?&body={{ sms_message | urlencode }}"
+                       class="inline-flex items-center gap-1.5 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-widest transition-all contact-btn contact-btn-sms">
+                        <i data-lucide="smartphone" class="w-3 h-3"></i> SMS
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
             </div>
 
             <div class="border-t border-midnight/10 pt-5">

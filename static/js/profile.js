@@ -138,6 +138,10 @@ function uploadAvatar(input) {
         if (ok && data.avatar_url) {
             const img = document.getElementById('avatar-preview');
             if (img) img.src = data.avatar_url;
+            const ring = document.getElementById('avatar-ring');
+            if (img && ring) {
+                img.addEventListener('load', function() { extractAvatarColors(img, ring); });
+            }
             if (status) { status.textContent = 'Foto actualizada'; status.className = 'text-[9px] mt-1 text-green-600'; }
         } else {
             if (status) { status.textContent = data.error || 'Error al subir foto'; status.className = 'text-[9px] mt-1 text-rose-500'; }
@@ -162,6 +166,8 @@ function deleteAvatar() {
         if (ok) {
             const img = document.getElementById('avatar-preview');
             if (img) img.src = '/static/img/default-avatar.svg';
+            const ring = document.getElementById('avatar-ring');
+            if (ring) ring.classList.remove('visible');
             if (status) { status.textContent = 'Foto eliminada'; status.className = 'text-[9px] mt-1 text-green-600'; }
         } else {
             if (status) { status.textContent = 'Error al eliminar foto'; status.className = 'text-[9px] mt-1 text-rose-500'; }
@@ -602,7 +608,13 @@ function loadProfessionalFullProfile() {
         // Photo
         if (p.photo_path) {
             const img = document.getElementById('pro-photo-preview');
-            if (img) img.src = '/static/' + p.photo_path;
+            if (img) {
+                img.src = '/static/' + p.photo_path;
+                const ring = document.getElementById('pro-photo-ring');
+                if (ring) {
+                    img.addEventListener('load', function() { extractAvatarColors(img, ring); });
+                }
+            }
         }
 
         // Fields
@@ -729,6 +741,10 @@ function uploadProfessionalPhoto(input) {
         if (ok && data.photo_url) {
             const img = document.getElementById('pro-photo-preview');
             if (img) img.src = data.photo_url;
+            const ring = document.getElementById('pro-photo-ring');
+            if (img && ring) {
+                img.addEventListener('load', function() { extractAvatarColors(img, ring); });
+            }
             if (status) { status.textContent = 'Foto actualizada'; status.className = 'text-[9px] mt-1 text-green-600'; }
         } else {
             if (status) { status.textContent = data.error || 'Error al subir foto'; status.className = 'text-[9px] mt-1 text-rose-500'; }
@@ -753,6 +769,8 @@ function deleteProfessionalPhoto() {
         if (ok) {
             const img = document.getElementById('pro-photo-preview');
             if (img) img.src = '/static/img/default-avatar.svg';
+            const ring = document.getElementById('pro-photo-ring');
+            if (ring) ring.classList.remove('visible');
             if (status) { status.textContent = 'Foto eliminada'; status.className = 'text-[9px] mt-1 text-green-600'; }
         } else {
             if (status) { status.textContent = 'Error al eliminar foto'; status.className = 'text-[9px] mt-1 text-rose-500'; }
@@ -782,6 +800,57 @@ function escapeHtml(str) {
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// ============================================================
+// AVATAR COLOR RING
+// ============================================================
+function extractAvatarColors(img, ring) {
+    if (!img || !ring) return;
+    if (!img.complete || !img.naturalWidth || img.naturalWidth < 10) {
+        ring.classList.remove('visible');
+        return;
+    }
+    if (img.src.includes('default-avatar.svg')) {
+        ring.classList.remove('visible');
+        return;
+    }
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const size = 8;
+    canvas.width = size;
+    canvas.height = size;
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(img, 0, 0, size, size);
+    const d = ctx.getImageData(0, 0, size, size).data;
+    const colorMap = {};
+    for (let i = 0; i < d.length; i += 4) {
+        const r = Math.round(d[i] / 48) * 48;
+        const g = Math.round(d[i + 1] / 48) * 48;
+        const b = Math.round(d[i + 2] / 48) * 48;
+        const key = r + ',' + g + ',' + b;
+        colorMap[key] = (colorMap[key] || 0) + 1;
+    }
+    const sorted = Object.entries(colorMap).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 5);
+    var fallbacks = ['#735A3A', '#A68A64', '#C4A882', '#D4BC9A', '#E8D5B7'];
+    sorted.forEach(function(item, i) {
+        ring.style.setProperty('--ac' + i, 'rgb(' + item[0] + ')');
+    });
+    for (var i = sorted.length; i < 5; i++) {
+        ring.style.setProperty('--ac' + i, fallbacks[i]);
+    }
+    ring.classList.add('visible');
+}
+
+function setupAvatarRing(imgId, ringId) {
+    var img = document.getElementById(imgId);
+    var ring = document.getElementById(ringId);
+    if (!img || !ring) return;
+    if (img.complete) {
+        extractAvatarColors(img, ring);
+    } else {
+        img.addEventListener('load', function() { extractAvatarColors(img, ring); });
+    }
+}
+
 // Load data when professional tab is shown via visibility
 const observer = new MutationObserver(() => {
     const proPanel = document.getElementById('panel-profesional');
@@ -795,4 +864,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (proPanel) {
         observer.observe(proPanel, { attributes: true, attributeFilter: ['hidden'] });
     }
+    setupAvatarRing('avatar-preview', 'avatar-ring');
+    setupAvatarRing('pro-photo-preview', 'pro-photo-ring');
 });

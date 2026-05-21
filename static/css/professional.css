@@ -218,3 +218,137 @@ button[title="Reportar telefono inexistente"]:hover i[data-lucide] {
     fill: white;
     fill-opacity: 0.2;
 }
+
+/* ============================================
+   WHATSAPP / SMS CONTACT BUTTONS
+   ============================================ */
+
+.contact-buttons-container {
+    display: inline-flex;
+    gap: 0.375rem;
+    align-items: center;
+}
+
+.contact-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.7rem;
+    border-radius: 0.375rem;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+    font-family: 'Manrope', sans-serif;
+    border: 1.5px solid transparent;
+}
+
+.contact-btn:active {
+    transform: scale(0.96);
+}
+
+/* WhatsApp Button */
+.contact-btn-whatsapp {
+    background: #25D366;
+    color: #fff;
+    border-color: #25D366;
+}
+
+.contact-btn-whatsapp:hover {
+    background: #20bd5a;
+    border-color: #20bd5a;
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+}
+
+.contact-btn-whatsapp:active {
+    background: #1da851;
+}
+
+/* Dark mode WhatsApp */
+.dark .contact-btn-whatsapp {
+    background: #25D366;
+    color: #0a0e1a;
+}
+
+.dark .contact-btn-whatsapp:hover {
+    background: #20bd5a;
+    box-shadow: 0 4px 16px rgba(37, 211, 102, 0.4);
+}
+
+/* SMS Button */
+.contact-btn-sms {
+    background: transparent;
+    color: #735A3A;
+    border-color: #735A3A;
+}
+
+.contact-btn-sms:hover {
+    background: rgba(115, 90, 58, 0.08);
+    border-color: #5a4530;
+    color: #5a4530;
+}
+
+.contact-btn-sms:active {
+    background: rgba(115, 90, 58, 0.12);
+}
+
+/* Dark mode SMS */
+.dark .contact-btn-sms {
+    color: #A68A64;
+    border-color: #A68A64;
+}
+
+.dark .contact-btn-sms:hover {
+    background: rgba(166, 138, 100, 0.1);
+    border-color: #c4a87a;
+    color: #c4a87a;
+}
+
+/* Icon fill on hover */
+.contact-btn-whatsapp:hover svg {
+    fill: rgba(255, 255, 255, 0.2);
+}
+
+.contact-btn-sms:hover svg {
+    fill: currentColor;
+    fill-opacity: 0.1;
+}
+
+/* Tooltip para SMS */
+.contact-btn-sms {
+    position: relative;
+}
+
+.contact-btn-sms::after {
+    content: 'Solo en móvil';
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%) scale(0.9);
+    background: var(--bg-card, #fff);
+    color: var(--text-secondary, rgba(0, 4, 16, 0.6));
+    font-size: 8px;
+    padding: 3px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border, rgba(0, 4, 16, 0.1));
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.contact-btn-sms:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+}
+
+/* Dark mode tooltip */
+.dark .contact-btn-sms::after {
+    background: var(--bg-card, #1a2332);
+    color: var(--text-secondary, rgba(250, 249, 247, 0.6));
+    border-color: var(--border, rgba(250, 249, 247, 0.1));
+}

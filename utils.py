@@ -75,3 +75,39 @@ def safe_text(value):
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in config.ALLOWED_EXTENSIONS
+
+
+import re
+
+
+def normalize_phone_for_whatsapp(phone):
+    """
+    Normaliza un numero de telefono para usar en links de WhatsApp (wa.me).
+    WhatsApp requiere solo digitos, sin el '+' inicial.
+    """
+    if not phone:
+        return ''
+    digits = re.sub(r'\D', '', phone)
+    return digits
+
+
+def is_whatsapp_capable(phone):
+    """
+    Determina si un numero de telefono es valido para WhatsApp.
+    """
+    if not phone:
+        return False
+    digits = re.sub(r'\D', '', phone)
+    return 10 <= len(digits) <= 15 and not digits.startswith('0')
+
+
+def normalize_phone_for_sms(phone):
+    """
+    Normaliza un numero de telefono para usar en links de SMS.
+    """
+    if not phone:
+        return ''
+    digits = re.sub(r'[^\d+]', '', phone)
+    if not digits.startswith('+'):
+        digits = '+' + digits
+    return digits
