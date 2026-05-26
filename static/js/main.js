@@ -198,13 +198,20 @@ function initUserForm() {
             const amenitiesCheckboxes = document.querySelectorAll('input[name="amenities"]:checked');
             data.amenities = Array.from(amenitiesCheckboxes).map(cb => cb.value).join(', ');
 
-            // Combinar código de país con teléfono
+            // Combinar código de país + prefijo de provincia + teléfono
             const countryCodeSelect = document.getElementById('country-code-select');
+            const provinceSelect = document.getElementById('phone-province');
             const phoneInput = document.getElementById('phone-input');
             if (countryCodeSelect && phoneInput && phoneInput.value) {
                 const countryCode = countryCodeSelect.value;
                 const phone = phoneInput.value.trim();
-                data.phone = `${countryCode} ${phone}`;
+                const digits = phone.replace(/\D/g, '');
+                const provincePrefix = (countryCode === '+54' && provinceSelect && !provinceSelect.classList.contains('hidden')) ? provinceSelect.value : '';
+                if (provincePrefix && !digits.startsWith(provincePrefix)) {
+                    data.phone = `${countryCode} ${provincePrefix} ${phone}`;
+                } else {
+                    data.phone = `${countryCode} ${phone}`;
+                }
             }
 
             // Validacion de area para casas
@@ -239,7 +246,7 @@ function initUserForm() {
                 const result = await response.json();
 
                 if (response.ok) {
-                    showToast("¡Solicitud enviada! Los profesionales se contactaran contigo.");
+                    sessionStorage.setItem('submit_success', 'true');
                     setTimeout(() => {
                         window.location.href = "/";
                     }, 1500);

@@ -17,7 +17,7 @@ profile_bp = Blueprint('profile', __name__, url_prefix='')
 
 
 ALLOWED_LEAD_EDIT_FIELDS = [
-    'zone', 'budget', 'currency',
+    'zone', 'province', 'budget', 'currency',
     'floor_block', 'usable_m2', 'elevator',
     'land_area', 'built_area', 'pool',
     'architectural_style', 'bedrooms', 'bathrooms',

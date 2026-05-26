@@ -80,6 +80,36 @@
                                     class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                             </div>
                             <div>
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Provincia</label>
+                                <select id="edit-province" name="province" class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 transition-all text-sm bg-transparent">
+                                    <option value="">Seleccionar provincia</option>
+                                    <option value="Buenos Aires" {% if lead.province == 'Buenos Aires' %}selected{% endif %}>Buenos Aires</option>
+                                    <option value="CABA" {% if lead.province == 'CABA' %}selected{% endif %}>CABA</option>
+                                    <option value="Catamarca" {% if lead.province == 'Catamarca' %}selected{% endif %}>Catamarca</option>
+                                    <option value="Chaco" {% if lead.province == 'Chaco' %}selected{% endif %}>Chaco</option>
+                                    <option value="Chubut" {% if lead.province == 'Chubut' %}selected{% endif %}>Chubut</option>
+                                    <option value="Córdoba" {% if lead.province == 'Córdoba' %}selected{% endif %}>Córdoba</option>
+                                    <option value="Corrientes" {% if lead.province == 'Corrientes' %}selected{% endif %}>Corrientes</option>
+                                    <option value="Entre Ríos" {% if lead.province == 'Entre Ríos' %}selected{% endif %}>Entre Ríos</option>
+                                    <option value="Formosa" {% if lead.province == 'Formosa' %}selected{% endif %}>Formosa</option>
+                                    <option value="Jujuy" {% if lead.province == 'Jujuy' %}selected{% endif %}>Jujuy</option>
+                                    <option value="La Pampa" {% if lead.province == 'La Pampa' %}selected{% endif %}>La Pampa</option>
+                                    <option value="La Rioja" {% if lead.province == 'La Rioja' %}selected{% endif %}>La Rioja</option>
+                                    <option value="Mendoza" {% if lead.province == 'Mendoza' %}selected{% endif %}>Mendoza</option>
+                                    <option value="Misiones" {% if lead.province == 'Misiones' %}selected{% endif %}>Misiones</option>
+                                    <option value="Neuquén" {% if lead.province == 'Neuquén' %}selected{% endif %}>Neuquén</option>
+                                    <option value="Río Negro" {% if lead.province == 'Río Negro' %}selected{% endif %}>Río Negro</option>
+                                    <option value="Salta" {% if lead.province == 'Salta' %}selected{% endif %}>Salta</option>
+                                    <option value="San Juan" {% if lead.province == 'San Juan' %}selected{% endif %}>San Juan</option>
+                                    <option value="San Luis" {% if lead.province == 'San Luis' %}selected{% endif %}>San Luis</option>
+                                    <option value="Santa Cruz" {% if lead.province == 'Santa Cruz' %}selected{% endif %}>Santa Cruz</option>
+                                    <option value="Santa Fe" {% if lead.province == 'Santa Fe' %}selected{% endif %}>Santa Fe</option>
+                                    <option value="Santiago del Estero" {% if lead.province == 'Santiago del Estero' %}selected{% endif %}>Santiago del Estero</option>
+                                    <option value="Tierra del Fuego" {% if lead.province == 'Tierra del Fuego' %}selected{% endif %}>Tierra del Fuego</option>
+                                    <option value="Tucumán" {% if lead.province == 'Tucumán' %}selected{% endif %}>Tucumán</option>
+                                </select>
+                            </div>
+                            <div>
                                 <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Presupuesto</label>
                                 <div class="flex gap-2">
                                     <select id="edit-currency" name="currency"

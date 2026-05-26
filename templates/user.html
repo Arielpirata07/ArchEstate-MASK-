@@ -97,6 +97,38 @@
                             </div>
                         </div>
 
+                        <!-- Provincia -->
+                        <div>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Provincia</label>
+                            <select id="province-select" name="province" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                <option value="">Seleccionar provincia</option>
+                                <option value="Buenos Aires">Buenos Aires</option>
+                                <option value="CABA">CABA</option>
+                                <option value="Catamarca">Catamarca</option>
+                                <option value="Chaco">Chaco</option>
+                                <option value="Chubut">Chubut</option>
+                                <option value="Córdoba">Córdoba</option>
+                                <option value="Corrientes">Corrientes</option>
+                                <option value="Entre Ríos">Entre Ríos</option>
+                                <option value="Formosa">Formosa</option>
+                                <option value="Jujuy">Jujuy</option>
+                                <option value="La Pampa">La Pampa</option>
+                                <option value="La Rioja">La Rioja</option>
+                                <option value="Mendoza">Mendoza</option>
+                                <option value="Misiones">Misiones</option>
+                                <option value="Neuquén">Neuquén</option>
+                                <option value="Río Negro">Río Negro</option>
+                                <option value="Salta">Salta</option>
+                                <option value="San Juan">San Juan</option>
+                                <option value="San Luis">San Luis</option>
+                                <option value="Santa Cruz">Santa Cruz</option>
+                                <option value="Santa Fe">Santa Fe</option>
+                                <option value="Santiago del Estero">Santiago del Estero</option>
+                                <option value="Tierra del Fuego">Tierra del Fuego</option>
+                                <option value="Tucumán">Tucumán</option>
+                            </select>
+                        </div>
+
                         <!-- Estilo Arquitectónico -->
                         <div>
                             <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Estilo Arquitectónico</label>
@@ -479,7 +511,7 @@
                         <!-- Teléfono -->
                         <div>
                             <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Teléfono</label>
-                            {% if session.get('phone') %}
+                            {% if not is_first_lead %}
                             <input id="phone-input" type="tel" name="phone" value="{{ session.get('phone', '') }}" readonly class="w-full bg-white border-0 border-b-2 border-midnight/20 py-2 text-midnight/50 text-sm cursor-not-allowed">
                             <a href="{{ url_for('profile.profile_view') }}" class="inline-flex items-center gap-1 mt-2 text-[9px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors">
                                 <i data-lucide="settings" class="w-3 h-3"></i>
@@ -503,12 +535,43 @@
                                     <option value="+34">+34 (ES)</option>
                                     <option value="+1">+1 (US)</option>
                                 </select>
+                                <select id="phone-province" onchange="applyPhoneProvincePrefix()" class="w-24 bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 text-sm text-midnight hidden">
+                                    <option value="11">CABA</option>
+                                    <option value="221">La Plata</option>
+                                    <option value="223">Mar del Plata</option>
+                                    <option value="341">Rosario</option>
+                                    <option value="351">Cordoba</option>
+                                    <option value="261">Mendoza</option>
+                                    <option value="264">San Juan</option>
+                                    <option value="266">San Luis</option>
+                                    <option value="280">Tucuman</option>
+                                    <option value="291">Bahia Blanca</option>
+                                    <option value="299">Neuquen</option>
+                                    <option value="379">Corrientes</option>
+                                    <option value="381">Sgo. del Estero</option>
+                                    <option value="383">Catamarca</option>
+                                    <option value="387">Jujuy</option>
+                                    <option value="388">Salta</option>
+                                    <option value="358">Rio Cuarto</option>
+                                    <option value="342">Santa Fe</option>
+                                    <option value="343">Parana</option>
+                                    <option value="345">Concepcion del Uruguay</option>
+                                    <option value="362">Resistencia</option>
+                                    <option value="364">Formosa</option>
+                                    <option value="370">Posadas</option>
+                                    <option value="375">Goya</option>
+                                    <option value="376">Eldorado</option>
+                                    <option value="377">Puerto Iguazu</option>
+                                    <option value="378">Obera</option>
+                                    <option value="385">La Rioja</option>
+                                </select>
                                 <input
                                     id="phone-input"
                                     name="phone"
                                     type="tel"
                                     required
-                                    placeholder="9 11 1234 5678"
+                                    value="{{ session.get('phone', '') }}"
+                                    placeholder="{{ session.get('phone', '1234 5678') }}"
                                     class="flex-1 bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm"
                                 >
                             </div>
@@ -847,24 +910,96 @@ function formatPhoneWithCountry(phone, countryCode) {
 
 function updateCountryCode() {
     const countryCode = document.getElementById('country-code-select').value;
+    const provinceSelect = document.getElementById('phone-province');
     const phoneInput = document.getElementById('phone-input');
-    const currentPhone = phoneInput.value.trim();
 
+    if (countryCode === '+54') {
+        provinceSelect.classList.remove('hidden');
+    } else {
+        provinceSelect.classList.add('hidden');
+    }
+
+    const currentPhone = phoneInput.value.trim();
     if (currentPhone) {
         const fullPhone = formatPhoneWithCountry(currentPhone, countryCode);
     }
 }
 
-// Antes de enviar el formulario, combinar código de país + teléfono
+function applyPhoneProvincePrefix() {
+    const phoneInput = document.getElementById('phone-input');
+    const provinceSelect = document.getElementById('phone-province');
+    const prefix = provinceSelect.value;
+    const raw = phoneInput.value.trim().replace(/\D/g, '');
+    const prefixes = ['11','221','223','341','351','261','264','266','280','291','299','379','381','383','387','388','358','342','343','345','362','364','370','375','376','377','378','385'];
+    const hasPrefix = prefixes.some(p => raw.startsWith(p));
+    if (!hasPrefix && raw.length > 0) {
+        phoneInput.value = prefix + ' ' + raw;
+    } else if (raw.length > 0) {
+        var cleaned = raw;
+        for (var i = 0; i < prefixes.length; i++) {
+            if (cleaned.startsWith(prefixes[i])) { cleaned = cleaned.substring(prefixes[i].length).replace(/^\s+/, ''); break; }
+        }
+        phoneInput.value = prefix + ' ' + cleaned;
+    }
+}
+
+// Inicializar selector de provincia según teléfono existente
+(function() {
+    var phoneInput = document.getElementById('phone-input');
+    var countrySelect = document.getElementById('country-code-select');
+    var provinceSelect = document.getElementById('phone-province');
+    if (!phoneInput || !countrySelect || !provinceSelect) return;
+
+    var currentPhone = phoneInput.value.trim();
+    if (currentPhone) {
+        var match = currentPhone.match(/^(\+\d+)/);
+        if (match) {
+            var code = match[1];
+            var options = countrySelect.querySelectorAll('option');
+            for (var i = 0; i < options.length; i++) {
+                if (options[i].value === code) { options[i].selected = true; break; }
+            }
+            var digits = currentPhone.replace(/\D/g, '');
+            var codeDigits = code.replace('+', '');
+            var withoutCode = digits.substring(codeDigits.length);
+            if (code === '+54' && provinceSelect) {
+                provinceSelect.classList.remove('hidden');
+                var provincePrefix = '';
+                for (var i = 0; i < provinceSelect.options.length; i++) {
+                    if (withoutCode.startsWith(provinceSelect.options[i].value)) {
+                        provinceSelect.options[i].selected = true;
+                        provincePrefix = provinceSelect.options[i].value;
+                        break;
+                    }
+                }
+                phoneInput.value = provincePrefix ? withoutCode.substring(provincePrefix.length) : withoutCode;
+            } else {
+                phoneInput.value = withoutCode;
+            }
+        }
+    } else if (countrySelect.value === '+54') {
+        provinceSelect.classList.remove('hidden');
+    }
+})();
+
+// Antes de enviar el formulario, combinar código de país + prefijo de provincia + teléfono
 document.getElementById('userForm').addEventListener('submit', function(e) {
     const phoneInput = document.getElementById('phone-input');
     const countrySelect = document.getElementById('country-code-select');
+    const provinceSelect = document.getElementById('phone-province');
     const phone = phoneInput ? phoneInput.value.trim() : '';
     const countryCode = countrySelect ? countrySelect.value : '+54';
 
     if (phone && countrySelect) {
-        const fullPhone = formatPhoneWithCountry(phone, countryCode);
-        phoneInput.value = fullPhone;
+        var digits = phone.replace(/\D/g, '');
+        var provincePrefix = (countryCode === '+54' && provinceSelect && !provinceSelect.classList.contains('hidden')) ? provinceSelect.value : '';
+        var fullNumber = countryCode + ' ';
+        if (provincePrefix && !digits.startsWith(provincePrefix)) {
+            fullNumber += provincePrefix + ' ' + digits;
+        } else {
+            fullNumber += digits;
+        }
+        phoneInput.value = fullNumber.trim();
     }
 });
 </script>

@@ -16,6 +16,18 @@
 </div>
 
 <div class="flex flex-col items-center justify-center min-h-[60vh] text-center relative z-10">
+    <!-- Alerta de solicitud enviada -->
+    <div id="submit-alert" class="hidden w-full max-w-2xl mb-8 bg-emerald-600/10 border border-emerald-500/30 rounded-lg px-6 py-4 flex items-center gap-4 text-left transition-all duration-500">
+        <i data-lucide="check-circle" class="w-6 h-6 text-emerald-500 flex-shrink-0"></i>
+        <div class="flex-1">
+            <p class="text-sm font-bold text-emerald-700 dark:text-emerald-300">¡Solicitud enviada con éxito!</p>
+            <p class="text-xs text-emerald-600/80 dark:text-emerald-400/80 mt-1">Podes modificar tu solicitud en <a href="{{ url_for('profile.profile_view') }}" class="underline font-semibold hover:text-emerald-500">Configuración &gt; Solicitudes</a>.</p>
+        </div>
+        <button onclick="dismissAlert()" class="text-emerald-500/60 hover:text-emerald-500 transition-colors" aria-label="Cerrar">
+            <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+    </div>
+
     <!-- Imagen Hero con efecto editorial y parallax -->
     <div class="relative w-full max-w-5xl h-[300px] mb-12 rounded-xl overflow-hidden shadow-2xl parallax" data-scroll>
         <img src="https://picsum.photos/seed/architecture/1200/600" alt="Arquitectura" class="w-full h-full object-cover hero-img">
@@ -459,6 +471,34 @@ function toggleFaq(questionEl) {
 
     // Re-init lucide icons
     if (window.lucide) lucide.createIcons();
+}
+
+// --- Alerta de solicitud enviada (30 segundos) ---
+(function() {
+    var alertEl = document.getElementById('submit-alert');
+    if (alertEl && sessionStorage.getItem('submit_success') === 'true') {
+        sessionStorage.removeItem('submit_success');
+        alertEl.classList.remove('hidden');
+        if (window.lucide) lucide.createIcons();
+        setTimeout(function() {
+            alertEl.classList.add('opacity-0', '-translate-y-4');
+            setTimeout(function() {
+                alertEl.classList.add('hidden');
+                alertEl.classList.remove('opacity-0', '-translate-y-4');
+            }, 500);
+        }, 30000);
+    }
+})();
+
+function dismissAlert() {
+    var alertEl = document.getElementById('submit-alert');
+    if (alertEl) {
+        alertEl.classList.add('opacity-0', '-translate-y-4');
+        setTimeout(function() {
+            alertEl.classList.add('hidden');
+            alertEl.classList.remove('opacity-0', '-translate-y-4');
+        }, 500);
+    }
 }
 </script>
 {% endblock %}

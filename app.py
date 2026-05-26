@@ -162,6 +162,10 @@ def init_db():
             if column not in existing_columns:
                 cursor.execute(f"ALTER TABLE leads ADD COLUMN {column} {column_type}")
 
+        # Migración: provincia
+        if 'province' not in existing_columns:
+            cursor.execute("ALTER TABLE leads ADD COLUMN province TEXT DEFAULT ''")
+
         # Migración: agregar user_id a leads si no existe
         cursor.execute('PRAGMA table_info(leads)')
         lead_columns = [row[1] for row in cursor.fetchall()]
@@ -479,6 +483,7 @@ def user_view():
     try:
         conn = get_db_connection()
         user = conn.execute('SELECT role FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+        lead_count = conn.execute('SELECT COUNT(*) FROM leads WHERE user_id = ?', (session['user_id'],)).fetchone()[0]
     finally:
         if conn:
             conn.close()
@@ -487,7 +492,7 @@ def user_view():
         flash('Acceso denegado. Los profesionales no pueden acceder a esta sección.', 'error')
         return redirect(url_for('index'))
 
-    return render_template('user.html')
+    return render_template('user.html', is_first_lead=lead_count == 0)
 
 
 @app.route('/profesional')
@@ -813,19 +818,22 @@ def submit_lead():
         if property_type == 'casa' and built_area > land_area:
             return jsonify({"status": "error", "message": "Los metros construidos no pueden ser mayores que los metros de terreno."}), 400
 
+        province = data.get('province', '')
+
         conn.execute('''
             INSERT INTO leads (
-                type, property_type, zone, budget, currency,
+                type, property_type, zone, province, budget, currency,
                 phone, email, user_id, floor_block, usable_m2, elevator,
                 land_area, built_area, pool, architectural_style,
                 bedrooms, bathrooms, total_area, amenities,
                 ambientes, parking, orientation, property_condition, property_age
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             data.get('type'),
             property_type,
             zone,
+            province,
             budget,
             currency,
             data.get('phone'),
