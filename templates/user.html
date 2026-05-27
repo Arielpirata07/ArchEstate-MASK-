@@ -32,7 +32,7 @@
             <h2 class="text-3xl font-serif mb-2">Solicitud de Propiedad</h2>
             <p class="text-midnight/60 mb-8">Defina los parámetros de su próxima inversión con nuestra oficina privada.</p>
 
-            <form id="userForm" class="space-y-10">
+            <form id="userForm" class="space-y-10" data-user-role="{{ session.get('role', 'user') }}">
 
                 <!-- 01. PARÁMETROS PRINCIPALES -->
                 <section>
@@ -78,13 +78,73 @@
                         <!-- Presupuesto Estimado -->
                         <div>
                             <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Presupuesto Estimado</label>
-                            <div class="flex gap-2">
-                                <select id="budget-currency-select" name="currency" class="w-16 bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 text-sm">
-                                    <option value="ARG">$</option>
-                                    <option value="USD">US$</option>
-                                    <option value="EUR">€</option>
-                                </select>
-                                <input id="budget-hidden" name="budget" type="text" placeholder="1.000.000 +" class="flex-1 bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                            <button type="button" id="budget-popup-trigger"
+                                    class="w-full py-3 px-4 rounded border-2 border-midnight/20 bg-paper-dark text-midnight font-semibold transition-all hover:border-gold text-left">
+                                Presupuesto: $0 — $10.000.000.000
+                            </button>
+                            <input type="hidden" id="budget-hidden" name="budget" value="0 - 10000000000">
+                            <input type="hidden" id="currency-hidden" name="currency" value="ARG">
+
+                            <!-- Popup overlay -->
+                            <div id="budget-popup" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+                                <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+                                    <div class="flex items-center justify-between mb-6">
+                                        <h3 class="text-lg font-serif">Presupuesto</h3>
+                                        <button type="button" id="budget-popup-close"
+                                                class="w-10 h-10 rounded-full flex items-center justify-center text-midnight/40 hover:text-midnight hover:bg-midnight/5 transition-all">
+                                            <i data-lucide="x" class="w-5 h-5"></i>
+                                        </button>
+                                    </div>
+
+                                    <select id="budget-currency-select"
+                                            class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 text-sm mb-6">
+                                        <option value="ARG">$ (Pesos Argentinos)</option>
+                                        <option value="USD">US$ (Dólares)</option>
+                                        <option value="EUR">€ (Euros)</option>
+                                    </select>
+
+                                    <p id="budget-selected-range" class="text-center text-xl font-serif text-midnight mb-6">
+                                        $0 — $10.000.000.000
+                                    </p>
+
+                                    <div class="relative h-12 mb-8">
+                                        <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-2 bg-midnight/10 rounded-full"></div>
+                                        <div id="budget-slider-fill" class="absolute top-1/2 -translate-y-1/2 h-2 bg-gold rounded-full" style="left:0%;width:100%"></div>
+                                        <input type="range" id="budget-min-slider" class="budget-range-slider absolute inset-x-0" min="0" max="10000000000" value="0" step="10000000">
+                                        <input type="range" id="budget-max-slider" class="budget-range-slider absolute inset-x-0" min="0" max="10000000000" value="10000000000" step="10000000">
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-4 mb-6">
+                                        <div>
+                                            <label class="block text-[10px] uppercase tracking-widest font-medium text-midnight/40 mb-1">Mínimo</label>
+                                            <input type="number" id="budget-min-input"
+                                                   class="w-full bg-paper-dark border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 text-sm"
+                                                    min="0" max="10000000000" value="0">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] uppercase tracking-widest font-medium text-midnight/40 mb-1">Máximo</label>
+                                            <input type="number" id="budget-max-input"
+                                                   class="w-full bg-paper-dark border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 text-sm"
+                                                    min="0" max="10000000000" value="10000000000">
+                                        </div>
+                                    </div>
+
+                                    <label class="flex items-center gap-3 mb-8 cursor-pointer">
+                                        <input type="checkbox" id="budget-unlimited" class="rounded border-midnight/20 text-gold focus:ring-gold">
+                                        <span class="text-sm text-midnight/70">Sin límite máximo</span>
+                                    </label>
+
+                                    <div class="flex gap-3">
+                                        <button type="button" id="budget-reset"
+                                                class="flex-1 py-3 rounded border-2 border-midnight/20 text-midnight font-semibold transition-all hover:bg-midnight/5">
+                                            Restablecer
+                                        </button>
+                                        <button type="button" id="budget-accept"
+                                                class="flex-1 py-3 rounded bg-midnight text-white font-semibold transition-all hover:bg-midnight-light">
+                                            Aceptar
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -569,7 +629,7 @@
                                     id="phone-input"
                                     name="phone"
                                     type="tel"
-                                    required
+                                    {% if session.get('role') != 'admin' %}required{% endif %}
                                     value="{{ session.get('phone', '') }}"
                                     placeholder="{{ session.get('phone', '1234 5678') }}"
                                     class="flex-1 bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm"

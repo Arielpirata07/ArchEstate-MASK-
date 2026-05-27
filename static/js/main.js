@@ -151,6 +151,29 @@ function validateBudget(val) {
 }
 
 /**
+ * Validacion cruzada de moneda vs presupuesto
+ */
+function validateBudgetForCurrency(budget, currency) {
+    var RANGES = {
+        ARG: { min: 100000, max: 10000000000, label: 'ARS ($)' },
+        USD: { min: 10000,  max: 100000000,   label: 'USD (US$)' },
+        EUR: { min: 10000,  max: 100000000,   label: 'EUR (€)' },
+    };
+    var range = RANGES[currency];
+    if (!range) return { isValid: false, message: 'Moneda no válida.' };
+    var match = String(budget).match(/([\d.]+)/);
+    if (!match) return { isValid: false, message: 'Presupuesto no válido.' };
+    var minVal = parseFloat(match[1].replace(/\./g, ''));
+    if (minVal < range.min) {
+        return { isValid: false, message: 'El monto mínimo para ' + range.label + ' es ' + range.min.toLocaleString('es-AR') + '. Revisá la moneda seleccionada.' };
+    }
+    if (minVal > range.max) {
+        return { isValid: false, message: 'El monto máximo para ' + range.label + ' es ' + range.max.toLocaleString('es-AR') + '. Revisá la moneda seleccionada.' };
+    }
+    return { isValid: true, message: null };
+}
+
+/**
  * Validación de Zona (texto libre)
  */
 function validateZone(val) {
@@ -225,7 +248,24 @@ function initUserForm() {
             }
 
             // Validacion rapida en cliente
-            if (!validateEmail(data.email)) return;
+            if (!validateEmail(data.email)) {
+                submitBtn.innerHTML = originalBtnContent;
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-70');
+                if (window.lucide) lucide.createIcons();
+                return;
+            }
+
+            // Validacion cruzada de moneda vs presupuesto
+            var budgetValidation = validateBudgetForCurrency(data.budget, data.currency);
+            if (!budgetValidation.isValid) {
+                showToast(budgetValidation.message, 'error');
+                submitBtn.innerHTML = originalBtnContent;
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-70');
+                if (window.lucide) lucide.createIcons();
+                return;
+            }
 
             const submitBtn = form.querySelector('button[type="submit"]');
             const originalBtnContent = submitBtn.innerHTML;
@@ -503,14 +543,42 @@ function initBudgetPopup() {
 
     if (!trigger || !popup || !minSlider || !maxSlider || !currencySelect || !hiddenBudget || !hiddenCurrency || !sliderFill || !unlimitedCheckbox) return;
 
+    var CURRENCY_CONFIG = {
+        ARG: { max: 10000000000, step: 10000000, label: 'ARS ($)' },
+        USD: { max: 100000000,  step: 100000,   label: 'USD (US$)' },
+        EUR: { max: 100000000,  step: 100000,   label: 'EUR (€)' },
+    };
+
     let budgetData = {
         min: 0,
-        max: 150000000,
+        max: 10000000000,
         ranges: []
     };
 
+    const getCurrencyConfig = (code) => CURRENCY_CONFIG[code] || CURRENCY_CONFIG.ARG;
+
+    const updateSliderRange = () => {
+        var config = getCurrencyConfig(currencySelect.value);
+        budgetData.max = config.max;
+        var step = config.step;
+        var isUnlimited = unlimitedCheckbox.checked;
+        if (isUnlimited) return;
+        minSlider.max = budgetData.max;
+        maxSlider.max = budgetData.max;
+        minSlider.step = step;
+        maxSlider.step = step;
+        document.getElementById('budget-min-input').max = budgetData.max;
+        document.getElementById('budget-max-input').max = budgetData.max;
+        document.getElementById('budget-min-input').step = step;
+        document.getElementById('budget-max-input').step = step;
+        if (Number(minSlider.value) > budgetData.max) minSlider.value = budgetData.max;
+        if (Number(maxSlider.value) > budgetData.max) maxSlider.value = budgetData.max;
+        updateManualInputs();
+        updateBudgetOutput();
+    };
+
     const formatMoney = (value, currency = 'ARG') => {
-        const symbol = currency === 'USD' ? '$' : currency === 'EUR' ? '€' : '$';
+        const symbol = currency === 'USD' ? 'US$' : currency === 'EUR' ? '€' : '$';
         return `${symbol}${Number(value).toLocaleString('es-AR')}`;
     };
 
@@ -530,7 +598,7 @@ function initBudgetPopup() {
         sliderFill.style.left = `${Math.max(minPercent, 0)}%`;
         sliderFill.style.width = `${Math.max(maxPercent - minPercent, 0)}%`;
 
-        document.getElementById('budget-selected-range').textContent = `${formatMoney(minValue, currencySelect.value)} — ${isUnlimited && maxValue >= 150000000 ? 'Ilimitado' : formatMoney(maxValue, currencySelect.value)}`;
+        document.getElementById('budget-selected-range').textContent = `${formatMoney(minValue, currencySelect.value)} — ${isUnlimited && maxValue >= budgetData.max ? 'Ilimitado' : formatMoney(maxValue, currencySelect.value)}`;
         hiddenCurrency.value = currencySelect.value;
     };
 
@@ -560,7 +628,7 @@ function initBudgetPopup() {
         const isUnlimited = unlimitedCheckbox.checked;
         hiddenBudget.value = `${minValue} - ${maxValue}`;
         if (isUnlimited) {
-            trigger.textContent = "Presupuesto mayor a 150M";
+            trigger.textContent = "Presupuesto mayor a " + formatMoney(budgetData.max, currencySelect.value);
         } else {
             trigger.textContent = `Presupuesto: ${formatMoney(minValue, currencySelect.value)} — ${formatMoney(maxValue, currencySelect.value)}`;
         }
@@ -570,9 +638,7 @@ function initBudgetPopup() {
 
     const resetBudget = () => {
         minSlider.min = budgetData.min;
-        minSlider.max = budgetData.max;
         maxSlider.min = budgetData.min;
-        maxSlider.max = budgetData.max;
         minSlider.value = budgetData.min;
         maxSlider.value = budgetData.max;
         document.getElementById('budget-min-input').min = budgetData.min;
@@ -582,7 +648,7 @@ function initBudgetPopup() {
         currencySelect.value = hiddenCurrency.value || 'ARG';
         unlimitedCheckbox.checked = false;
         toggleUnlimited();
-        updateBudgetOutput();
+        updateSliderRange();
     };
 
     const fetchBudgetStats = async () => {
@@ -598,7 +664,7 @@ function initBudgetPopup() {
             resetBudget();
         } catch (error) {
             console.error('No se pudieron cargar las estadisticas de presupuesto:', error);
-            budgetData = { min: 0, max: 150000000, ranges: [] };
+            budgetData = { min: 0, max: 10000000000, ranges: [] };
             resetBudget();
         }
     };
@@ -651,7 +717,10 @@ function initBudgetPopup() {
 
     minSlider.addEventListener('input', handleSliderChange);
     maxSlider.addEventListener('input', handleSliderChange);
-    currencySelect.addEventListener('change', updateBudgetOutput);
+    currencySelect.addEventListener('change', function() {
+        updateSliderRange();
+        updateBudgetOutput();
+    });
     unlimitedCheckbox.addEventListener('change', toggleUnlimited);
     trigger.addEventListener('click', () => {
         popup.classList.remove('hidden');

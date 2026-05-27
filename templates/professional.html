@@ -861,7 +861,10 @@ function renderLeads(leads) {
                 <td class="p-4">${propBadge}</td>
                 <td class="p-4 text-sm text-midnight/70">${escapeHtml(lead.zone)}</td>
                 <td class="p-4">
-                    <div class="font-serif italic text-gold">${sym}${formatBudget(escapeHtml(lead.budget))}</div>
+                    <div class="budget-display">
+                        <span class="budget-currency-tag">${sym}</span>
+                        <span class="budget-amount" title="${escapeHtml(lead.budget)}">${formatBudget(escapeHtml(lead.budget))}</span>
+                    </div>
                     ${specLine}
                     ${extrasLine}
                 </td>

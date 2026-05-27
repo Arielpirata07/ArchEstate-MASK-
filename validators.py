@@ -75,18 +75,20 @@ def validate_phone(phone):
 def validate_budget(amount):
     """
     Validación de presupuesto.
-    Acepta números positivos.
+    Acepta números positivos o range strings "min - max".
     Retorna (is_valid, error_message)
     """
     if amount is None:
         return False, "Presupuesto es requerido"
 
     try:
-        num = float(amount)
-        if num <= 0:
-            return False, "El presupuesto debe ser positivo"
-        if num > 1000000000000:
-            return False, "Presupuesto demasiado grande"
+        parts = str(amount).split(' - ')
+        for part in parts:
+            num = float(part.strip())
+            if num <= 0:
+                return False, "El presupuesto debe ser positivo"
+            if num > 1000000000000:
+                return False, "Presupuesto demasiado grande"
         return True, None
     except (ValueError, TypeError):
         return False, "Presupuesto debe ser un número válido"

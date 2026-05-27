@@ -37,10 +37,21 @@
 
             <div>
                 <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Presupuesto</p>
-                <p class="text-base text-midnight">
-                    {% set budget_symbol = 'US$' if lead.currency == 'USD' else '€' if lead.currency == 'EUR' else '$' %}
-                    {{ budget_symbol }}{{ lead.budget }}
-                </p>
+                {% set budget_symbol = 'US$' if lead.currency == 'USD' else '€' if lead.currency == 'EUR' else '$' %}
+                {% set budget_parts = lead.budget.split(' - ') %}
+                {% if budget_parts | length == 2 and budget_parts[0] != budget_parts[1] %}
+                <div class="budget-hero">
+                    <span class="budget-hero-currency">{{ budget_symbol }}</span>
+                    <span class="budget-hero-amount">{{ "{:,.0f}".format(budget_parts[0] | float) }}</span>
+                    <span class="budget-hero-separator">—</span>
+                    <span class="budget-hero-range">{{ "{:,.0f}".format(budget_parts[1] | float) }}</span>
+                </div>
+                {% else %}
+                <div class="budget-hero">
+                    <span class="budget-hero-currency">{{ budget_symbol }}</span>
+                    <span class="budget-hero-amount">{{ "{:,.0f}".format(lead.budget | float) }}</span>
+                </div>
+                {% endif %}
             </div>
 
             <div>

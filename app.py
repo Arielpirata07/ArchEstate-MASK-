@@ -766,11 +766,14 @@ def submit_lead():
             return jsonify({"status": "error", "message": error}), 400
 
         phone = data.get('phone', '').strip()
-        if not phone:
-            return jsonify({"status": "error", "message": "Telefono es obligatorio"}), 400
-        is_valid, error = validators.validate_phone(phone)
-        if not is_valid:
-            return jsonify({"status": "error", "message": error}), 400
+
+        # Teléfono opcional para administradores
+        if session.get('role') != 'admin':
+            if not phone:
+                return jsonify({"status": "error", "message": "Telefono es obligatorio"}), 400
+            is_valid, error = validators.validate_phone(phone)
+            if not is_valid:
+                return jsonify({"status": "error", "message": error}), 400
 
         budget = data.get('budget')
         if budget:
@@ -917,6 +920,17 @@ def budget_stats():
     """Retorna estadísticas de presupuesto en formato JSON"""
     stats = get_budget_stats_from_db()
     return jsonify(stats)
+
+
+@app.route('/api/budget-stats', methods=['GET'])
+def budget_stats_for_popup():
+    """Retorna estadísticas de presupuesto para el popup de frontend"""
+    return jsonify({
+        'min': 0,
+        'max': 10000000000,
+        'ranges': [],
+        'currency_options': ['ARG', 'USD', 'EUR'],
+    })
 
 
 @app.route('/api/leads/export')

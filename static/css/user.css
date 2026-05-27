@@ -229,8 +229,8 @@
     height: 40px;
 }
 
-#budget-popup #budget-popup-trigger {
-    text-align: center;
+#budget-popup-trigger {
+    text-align: left;
 }
 
 /* --- Zone Suggestions --- */
@@ -259,17 +259,6 @@
 
 #userForm button[id^="btn-"]:active {
     transform: translateY(0);
-}
-
-/* Budget slider thumb enhanced hover */
-#budget-popup input[type=range]::-webkit-slider-thumb:hover {
-    transform: scale(1.15);
-    box-shadow: 0 0 20px rgba(115, 90, 58, 0.3);
-}
-
-#budget-popup input[type=range]::-moz-range-thumb:hover {
-    transform: scale(1.15);
-    box-shadow: 0 0 20px rgba(115, 90, 58, 0.3);
 }
 
 /* Submit button enhanced hover */
