@@ -4,11 +4,12 @@ import csv
 import io
 import os
 import re
+import secrets
 import sqlite3
 import threading
 import time
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import wraps
 from io import StringIO
 
@@ -112,8 +113,16 @@ def init_db():
             cursor.execute("ALTER TABLE users ADD COLUMN email TEXT NOT NULL DEFAULT ''")
         if 'phone' not in user_columns:
             cursor.execute("ALTER TABLE users ADD COLUMN phone TEXT NOT NULL DEFAULT ''")
+        if 'phone_format_valid' not in user_columns:
+            cursor.execute("ALTER TABLE users ADD COLUMN phone_format_valid INTEGER DEFAULT 0")
         if 'is_active' not in user_columns:
             cursor.execute("ALTER TABLE users ADD COLUMN is_active INTEGER NOT NULL DEFAULT 1")
+        if 'phone_verified' not in user_columns:
+            cursor.execute("ALTER TABLE users ADD COLUMN phone_verified INTEGER DEFAULT 0")
+        if 'verification_code' not in user_columns:
+            cursor.execute("ALTER TABLE users ADD COLUMN verification_code TEXT DEFAULT ''")
+        if 'verification_expires' not in user_columns:
+            cursor.execute("ALTER TABLE users ADD COLUMN verification_expires DATETIME")
 
         # Tabla de Leads
         cursor.execute('''
@@ -165,6 +174,10 @@ def init_db():
         # Migración: provincia
         if 'province' not in existing_columns:
             cursor.execute("ALTER TABLE leads ADD COLUMN province TEXT DEFAULT ''")
+
+        # Migración: phone_format_valid (Fase 1 — validación de formato)
+        if 'phone_format_valid' not in existing_columns:
+            cursor.execute("ALTER TABLE leads ADD COLUMN phone_format_valid INTEGER DEFAULT 0")
 
         # Migración: agregar user_id a leads si no existe
         cursor.execute('PRAGMA table_info(leads)')
@@ -448,8 +461,8 @@ def sitemap():
     """Generate XML sitemap for search engines."""
     public_urls = [
         {'loc': url_for('index', _external=True), 'changefreq': 'daily', 'priority': '1.0'},
-        {'loc': url_for('login_view', _external=True), 'changefreq': 'monthly', 'priority': '0.5'},
-        {'loc': url_for('register_view', _external=True), 'changefreq': 'monthly', 'priority': '0.5'},
+        {'loc': url_for('login_view', _external=True), 'changefreq': 'monthly', 'priority': '0.3'},
+        {'loc': url_for('register_view', _external=True), 'changefreq': 'monthly', 'priority': '0.4'},
     ]
     xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
@@ -592,6 +605,7 @@ def register():
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         email = request.form.get('email', '').strip()
+        phone = request.form.get('phone', '').strip()
         password = request.form.get('password', '').strip()
         raw_role = request.form.get('role', 'client')
         license_number = request.form.get('license', '').strip()
@@ -621,7 +635,16 @@ def register():
         if not re.search(r'[A-Za-z]', password) or not re.search(r'[0-9]', password):
             flash('La contraseña debe contener al menos una letra y un número.', 'error')
             return redirect(url_for('register'))
-        
+
+        # 📞 VALIDACIÓN DE TELÉFONO
+        if not phone:
+            flash('El teléfono es requerido.', 'error')
+            return redirect(url_for('register'))
+        is_valid_phone, phone_error = validators.validate_phone(phone)
+        if not is_valid_phone:
+            flash(phone_error, 'error')
+            return redirect(url_for('register'))
+
         # 🛡️ VALIDACIÓN DE SEGURIDAD CRÍTICA (Backend)
         # Detectar intentos de inyectar 'admin' o roles no autorizados
         if raw_role == 'admin':
@@ -650,9 +673,9 @@ def register():
 
         conn = get_db_connection()
         try:
-            # 1. Crear usuario con email separado y rol validado
-            cursor = conn.execute('INSERT INTO users (username, email, hash, role) VALUES (?, ?, ?, ?)', 
-                                 (username, email, generate_password_hash(password), role))
+            # 1. Crear usuario con email separado, rol validado y teléfono
+            cursor = conn.execute('INSERT INTO users (username, email, hash, role, phone, phone_format_valid) VALUES (?, ?, ?, ?, ?, 1)',
+                                 (username, email, generate_password_hash(password), role, phone))
             
             # 2. Si es profesional, vincular con user_id real
             if role == 'professional':
@@ -768,12 +791,14 @@ def submit_lead():
         phone = data.get('phone', '').strip()
 
         # Teléfono opcional para administradores
+        phone_format_valid = 0
         if session.get('role') != 'admin':
             if not phone:
                 return jsonify({"status": "error", "message": "Telefono es obligatorio"}), 400
             is_valid, error = validators.validate_phone(phone)
             if not is_valid:
                 return jsonify({"status": "error", "message": error}), 400
+            phone_format_valid = 1
 
         budget = data.get('budget')
         if budget:
@@ -832,9 +857,10 @@ def submit_lead():
                 phone, email, user_id, floor_block, usable_m2, elevator,
                 land_area, built_area, pool, architectural_style,
                 bedrooms, bathrooms, total_area, amenities,
-                ambientes, parking, orientation, property_condition, property_age
+                ambientes, parking, orientation, property_condition, property_age,
+                phone_format_valid
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             data.get('type'),
             property_type,
@@ -861,6 +887,7 @@ def submit_lead():
             data.get('orientation', ''),
             data.get('property_condition', ''),
             data.get('property_age', ''),
+            phone_format_valid,
         ))
         conn.commit()
 
@@ -2194,6 +2221,131 @@ def update_user_phone():
     finally:
         if conn:
             conn.close()
+
+
+@app.route('/api/phone/send-code', methods=['POST'])
+@rate_limit.check_rate_limit(limit=3, window=60)
+def send_verification_code():
+    """Envía (simula) un código SMS de verificación de 6 dígitos."""
+    if 'user_id' not in session:
+        return jsonify({"error": "No autorizado"}), 401
+
+    user_id = session['user_id']
+    conn = get_db_connection()
+    try:
+        user = conn.execute(
+            'SELECT username, phone, phone_verified FROM users WHERE id = ?',
+            (user_id,)
+        ).fetchone()
+        if not user:
+            return jsonify({"error": "Usuario no encontrado"}), 404
+
+        phone = user['phone'] or ''
+        if not phone:
+            return jsonify({"error": "No tenés teléfono registrado. Guardalo en tu perfil primero."}), 400
+
+        if user['phone_verified'] == 1:
+            return jsonify({"error": "El teléfono ya está verificado."}), 400
+
+        is_valid_phone, phone_error = validators.validate_phone(phone)
+        if not is_valid_phone:
+            return jsonify({"error": phone_error}), 400
+
+        code = f"{secrets.randbelow(1000000):06d}"
+        expires = datetime.now() + timedelta(minutes=10)
+
+        conn.execute(
+            'UPDATE users SET verification_code = ?, verification_expires = ? WHERE id = ?',
+            (code, expires.isoformat(), user_id)
+        )
+        conn.commit()
+
+        print(f"\n[SMS SIMULADO] Para {user['username']} ({phone}):")
+        print(f"[SMS SIMULADO] Código de verificación: {code}")
+        print(f"[SMS SIMULADO] Válido hasta: {expires.isoformat()}\n")
+
+        utils.log_action(
+            f"Envío código verificación teléfono",
+            f"user={user['username']}, phone={phone}",
+            session
+        )
+
+        return jsonify({"status": "success", "message": "Código enviado al {phone}"})
+
+    except Exception as e:
+        print(f"Error en send_verification_code: {e}")
+        return jsonify({"error": "Error al enviar el código."}), 500
+    finally:
+        conn.close()
+
+
+@app.route('/api/phone/verify', methods=['POST'])
+@rate_limit.check_rate_limit(limit=5, window=60)
+def verify_phone_code():
+    """Verifica el código SMS ingresado por el usuario."""
+    if 'user_id' not in session:
+        return jsonify({"error": "No autorizado"}), 401
+
+    data = request.json
+    code = (data.get('code') or '').strip()
+
+    if not code or not code.isdigit() or len(code) != 6:
+        return jsonify({"error": "Código inválido. Debe ser de 6 dígitos."}), 400
+
+    user_id = session['user_id']
+    conn = get_db_connection()
+    try:
+        user = conn.execute(
+            'SELECT username, phone, verification_code, verification_expires, phone_verified FROM users WHERE id = ?',
+            (user_id,)
+        ).fetchone()
+        if not user:
+            return jsonify({"error": "Usuario no encontrado"}), 404
+
+        if user['phone_verified'] == 1:
+            return jsonify({"error": "El teléfono ya está verificado."}), 400
+
+        stored_code = user['verification_code'] or ''
+        expires_str = user['verification_expires'] or ''
+
+        if not stored_code or not expires_str:
+            return jsonify({"error": "No hay código pendiente. Solicitá uno nuevo."}), 400
+
+        import datetime as dt_module
+        try:
+            expires = dt_module.datetime.fromisoformat(expires_str)
+            if dt_module.datetime.now() > expires:
+                return jsonify({"error": "Código expirado. Solicitá uno nuevo."}), 410
+        except ValueError:
+            return jsonify({"error": "Error de validación. Solicitá un nuevo código."}), 400
+
+        if code != stored_code:
+            utils.log_action(
+                "Intento fallido verificación teléfono",
+                f"user={user['username']}, code_ingresado={code}",
+                session
+            )
+            return jsonify({"error": "Código incorrecto."}), 400
+
+        conn.execute(
+            'UPDATE users SET phone_verified = 1, verification_code = \'\', verification_expires = NULL WHERE id = ?',
+            (user_id,)
+        )
+        conn.commit()
+
+        utils.log_action(
+            "Teléfono verificado correctamente",
+            f"user={user['username']}, phone={user['phone']}",
+            session
+        )
+
+        return jsonify({"status": "success", "message": "Teléfono verificado correctamente."})
+
+    except Exception as e:
+        print(f"Error en verify_phone_code: {e}")
+        return jsonify({"error": "Error al verificar el código."}), 500
+    finally:
+        conn.close()
 
 
 from routes_profile import profile_bp

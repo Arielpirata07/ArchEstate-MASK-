@@ -12,7 +12,7 @@ def get_db_connection():
 def get_user_by_id(user_id):
     conn = get_db_connection()
     try:
-        user = conn.execute('SELECT id, username, email, phone, hash, role, doc_path, is_active FROM users WHERE id = ?', (user_id,)).fetchone()
+        user = conn.execute('SELECT id, username, email, phone, hash, role, doc_path, is_active, phone_verified FROM users WHERE id = ?', (user_id,)).fetchone()
         return dict(user) if user else None
     finally:
         conn.close()
@@ -197,7 +197,7 @@ def get_user_profile(user_id):
     conn = get_db_connection()
     try:
         row = conn.execute(
-            'SELECT u.id, u.username, u.email, u.phone, u.role, u.is_active, '
+            'SELECT u.id, u.username, u.email, u.phone, u.role, u.is_active, u.phone_verified, '
             'up.first_name, up.last_name, up.bio, up.title, up.avatar_path, '
             'up.created_at, up.updated_at '
             'FROM users u LEFT JOIN user_profiles up ON u.id = up.user_id WHERE u.id = ?',

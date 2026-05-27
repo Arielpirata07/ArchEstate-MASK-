@@ -1,0 +1,76 @@
+import os
+import sys
+import tempfile
+import pytest
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+
+
+@pytest.fixture(scope='session')
+def test_db_path():
+    fd, path = tempfile.mkstemp(suffix='.db')
+    os.close(fd)
+    os.environ['SECRET_KEY'] = 'test-secret-key-not-for-production'
+    import config
+    config.DATABASE = path
+    yield path
+    if os.path.exists(path):
+        os.unlink(path)
+
+
+@pytest.fixture
+def app(test_db_path):
+    from app import app as flask_app
+    flask_app.config.update({
+        'TESTING': True,
+        'WTF_CSRF_ENABLED': False,
+        'SERVER_NAME': 'localhost',
+    })
+    with flask_app.app_context():
+        from app import init_db
+        init_db()
+    yield flask_app
+
+
+@pytest.fixture
+def client(app):
+    return app.test_client()
+
+
+@pytest.fixture
+def db(app):
+    from models import get_db_connection
+    conn = get_db_connection()
+    yield conn
+    conn.close()
+
+
+@pytest.fixture(autouse=True)
+def _clear_rate_limits():
+    from rate_limit import rate_limit_store
+    rate_limit_store.clear()
+
+
+@pytest.fixture
+def auth_client(client, request):
+    import uuid
+    from werkzeug.security import generate_password_hash
+    from app import get_db_connection
+    unique = uuid.uuid4().hex[:8]
+    username = f'testuser_{unique}'
+    conn = get_db_connection()
+    cursor = conn.execute(
+        'INSERT INTO users (username, email, hash, role, phone, phone_format_valid) VALUES (?, ?, ?, ?, ?, 1)',
+        (username, f'{unique}@example.com', generate_password_hash('abc123'), 'client', '+5491112345678')
+    )
+    user_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+
+    with client.session_transaction() as sess:
+        sess['user_id'] = user_id
+        sess['username'] = username
+        sess['role'] = 'client'
+
+    setattr(request.cls, '_test_username', username)
+    return client

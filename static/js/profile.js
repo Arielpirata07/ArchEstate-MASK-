@@ -866,4 +866,166 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     setupAvatarRing('avatar-preview', 'avatar-ring');
     setupAvatarRing('pro-photo-preview', 'pro-photo-ring');
+
+    // Auto-focus y navegación entre dígitos del modal
+    const digits = document.querySelectorAll('.verify-digit');
+    digits.forEach((input, i) => {
+        input.addEventListener('input', function () {
+            this.value = this.value.replace(/\D/g, '').slice(0, 1);
+            if (this.value && i < digits.length - 1) {
+                digits[i + 1].focus();
+            }
+            if (i === digits.length - 1 && this.value) {
+                submitVerificationCode();
+            }
+        });
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Backspace' && !this.value && i > 0) {
+                digits[i - 1].focus();
+            }
+            if (e.key === 'Escape') {
+                closePhoneVerifyModal();
+            }
+        });
+        input.addEventListener('focus', function () { this.select(); });
+    });
+
+    // Cerrar modal al hacer clic fuera del panel
+    const modal = document.getElementById('verify-phone-modal');
+    if (modal) {
+        modal.addEventListener('click', function (e) {
+            if (e.target === this) closePhoneVerifyModal();
+        });
+    }
 });
+
+// ================================================================
+// VERIFICACIÓN SMS
+// ================================================================
+
+function openPhoneVerifyModal() {
+    const modal = document.getElementById('verify-phone-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        // Resetear inputs
+        document.querySelectorAll('.verify-digit').forEach(inp => inp.value = '');
+        document.getElementById('verify-error').classList.add('hidden');
+        document.getElementById('verify-success').classList.add('hidden');
+        document.querySelector('.verify-digit').focus();
+    }
+}
+
+function closePhoneVerifyModal() {
+    const modal = document.getElementById('verify-phone-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+}
+
+function getVerificationCode() {
+    const digits = document.querySelectorAll('.verify-digit');
+    return Array.from(digits).map(inp => inp.value || '').join('');
+}
+
+async function submitVerificationCode() {
+    const code = getVerificationCode();
+    const errorEl = document.getElementById('verify-error');
+    const successEl = document.getElementById('verify-success');
+    const submitBtn = document.getElementById('verify-submit-btn');
+
+    errorEl.classList.add('hidden');
+    successEl.classList.add('hidden');
+
+    if (code.length !== 6) {
+        errorEl.textContent = 'Ingresá el código completo de 6 dígitos.';
+        errorEl.classList.remove('hidden');
+        return;
+    }
+
+    const originalContent = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin inline"></i> Verificando...';
+    submitBtn.disabled = true;
+    if (window.lucide) lucide.createIcons();
+
+    try {
+        const res = await fetch('/api/phone/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ code })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+            successEl.classList.remove('hidden');
+            if (typeof showToast === 'function') showToast('Teléfono verificado correctamente', 'success');
+            setTimeout(() => {
+                closePhoneVerifyModal();
+                // Actualizar badge sin recargar
+                const area = document.getElementById('phone-verification-area');
+                if (area) {
+                    area.innerHTML = '<span class="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-700 inline-flex items-center gap-1">'
+                        + '<i data-lucide="smartphone" class="w-3 h-3"></i> Verificado</span>';
+                    if (window.lucide) lucide.createIcons();
+                }
+            }, 1500);
+        } else if (res.status === 410) {
+            errorEl.textContent = data.error || 'Código expirado. Solicitá uno nuevo.';
+            errorEl.classList.remove('hidden');
+        } else {
+            errorEl.textContent = data.error || 'Código incorrecto.';
+            errorEl.classList.remove('hidden');
+        }
+    } catch (err) {
+        errorEl.textContent = 'Error de conexión. Intentá de nuevo.';
+        errorEl.classList.remove('hidden');
+    } finally {
+        submitBtn.innerHTML = originalContent;
+        submitBtn.disabled = false;
+        if (window.lucide) lucide.createIcons();
+    }
+}
+
+async function resendVerificationCode() {
+    const btn = document.getElementById('resend-code-btn');
+    const cooldown = document.getElementById('resend-cooldown');
+    const errorEl = document.getElementById('verify-error');
+
+    errorEl.classList.add('hidden');
+    btn.disabled = true;
+    btn.classList.add('opacity-50');
+
+    try {
+        const res = await fetch('/api/phone/send-code', { method: 'POST' });
+        const data = await res.json();
+
+        if (res.ok) {
+            if (typeof showToast === 'function') showToast('Código reenviado', 'info');
+            // Cooldown 60s
+            let remaining = 60;
+            cooldown.classList.remove('hidden');
+            cooldown.textContent = `(${remaining}s)`;
+            const interval = setInterval(() => {
+                remaining--;
+                cooldown.textContent = `(${remaining}s)`;
+                if (remaining <= 0) {
+                    clearInterval(interval);
+                    cooldown.classList.add('hidden');
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50');
+                }
+            }, 1000);
+        } else {
+            errorEl.textContent = data.error || 'Error al enviar el código.';
+            errorEl.classList.remove('hidden');
+            btn.disabled = false;
+            btn.classList.remove('opacity-50');
+        }
+    } catch (err) {
+        errorEl.textContent = 'Error de conexión.';
+        errorEl.classList.remove('hidden');
+        btn.disabled = false;
+        btn.classList.remove('opacity-50');
+    }
+}

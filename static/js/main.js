@@ -111,16 +111,37 @@ function validateEmail(val) {
 }
 
 /**
- * Validacion de Telefono Argentino
+ * Validacion de Telefono con deteccion de pais
  */
+const PHONE_RULES = {
+    '+54':  { min: 10, max: 15, label: 'Argentina' },
+    '+598': { min: 10, max: 13, label: 'Uruguay' },
+    '+56':  { min: 9,  max: 12, label: 'Chile' },
+    '+55':  { min: 10, max: 13, label: 'Brasil' },
+    '+595': { min: 9,  max: 12, label: 'Paraguay' },
+    '+591': { min: 8,  max: 11, label: 'Bolivia' },
+    '+57':  { min: 10, max: 12, label: 'Colombia' },
+    '+52':  { min: 10, max: 12, label: 'México' },
+    '+34':  { min: 9,  max: 11, label: 'España' },
+    '+1':   { min: 10, max: 11, label: 'EE.UU./Canadá' },
+};
+
 function validatePhone(val) {
     if (!val) return false;
     const phoneDigits = val.replace(/\D/g, '');
-    const isValid = phoneDigits.length >= 8 && phoneDigits.length <= 15;
+    const countrySelect = document.getElementById('country-code-select');
+    const cc = countrySelect ? countrySelect.value : '+54';
+    const rules = PHONE_RULES[cc] || { min: 8, max: 15, label: '' };
+
+    const isValid = phoneDigits.length >= rules.min && phoneDigits.length <= rules.max;
     const errorEl = document.getElementById('phone-error');
     const inputEl = document.getElementById('phone-input');
     if (!errorEl || !inputEl) return isValid;
+
     if (!isValid && val.length > 0) {
+        errorEl.textContent = rules.label
+            ? `Formato inválido para ${rules.label} (mín. ${rules.min} dígitos)`
+            : `Teléfono debe tener entre 8 y 15 dígitos`;
         errorEl.classList.remove('hidden');
         inputEl.classList.add('border-rose-300');
     } else {

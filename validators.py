@@ -1,5 +1,8 @@
 import re
 
+import phonenumbers
+from phonenumbers import NumberParseException
+
 
 VALID_ZONES = [
     'centro', 'norte', 'sur', 'este', 'oeste',
@@ -56,7 +59,8 @@ def validate_email(email):
 def validate_phone(phone):
     """
     Validación de teléfono con código de país.
-    Formatos aceptados: +54 9 11 XXXX XXXX, +598 XX XXXX XXXX, 11XXXXXXXX, etc.
+    Usa phonenumbers (Google libphonenumber) para validación por país.
+    Formatos aceptados: +54 9 11 XXXX XXXX, +598 XX XXXX XXXX, etc.
     Retorna (is_valid, error_message)
     """
     if not phone or not isinstance(phone, str):
@@ -64,12 +68,26 @@ def validate_phone(phone):
 
     phone = phone.strip()
 
-    phone_digits = re.sub(r'[^\d]', '', phone)
+    try:
+        parsed = phonenumbers.parse(phone, None)
 
-    if len(phone_digits) < 8 or len(phone_digits) > 15:
-        return False, "Teléfono debe tener entre 8 y 15 dígitos"
+        if not phonenumbers.is_possible_number(parsed):
+            return False, "Número imposible (cantidad de dígitos inválida)"
 
-    return True, None
+        if not phonenumbers.is_valid_number(parsed):
+            region = phonenumbers.region_code_for_number(parsed)
+            if region:
+                return False, f"Número inválido para {region}"
+            return False, "Número inválido (verificá el código de país)"
+
+        return True, None
+
+    except NumberParseException:
+        phone_digits = re.sub(r'[^\d]', '', phone)
+        if len(phone_digits) < 8 or len(phone_digits) > 15:
+            return False, "Teléfono debe tener entre 8 y 15 dígitos"
+
+        return True, None
 
 
 def validate_budget(amount):
