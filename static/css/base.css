@@ -4,11 +4,15 @@
    ============================================ */
 
 /* --- Theme Transitions --- */
-*, *::before, *::after {
-    transition: background-color 0.25s ease,
-                color 0.25s ease,
-                border-color 0.25s ease,
-                box-shadow 0.25s ease;
+html.theme-transition,
+html.theme-transition *,
+html.theme-transition *::before,
+html.theme-transition *::after {
+    transition: background-color 0.4s ease,
+                color 0.4s ease,
+                border-color 0.4s ease,
+                box-shadow 0.4s ease,
+                background-image 0.4s ease !important;
 }
 
 /* --- Theme Icons (CSS-only toggle, evita conflicto con lucide.createIcons) --- */
@@ -101,7 +105,58 @@ button:focus-visible, a:focus-visible, [tabindex]:focus-visible {
     border-color: #e11d48 !important;
 }
 
-/* --- Card Hover Lift --- */
+/* ============================================
+   HOVER UTILITY CLASSES
+   ============================================ */
+
+/* --- Hover Lift (cards, buttons, panels) --- */
+.hover-lift {
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* --- Hover Scale Subtle (icon buttons, chips) --- */
+.hover-scale {
+    transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.hover-scale:hover {
+    transform: scale(1.08);
+}
+
+.hover-scale:active {
+    transform: scale(0.95);
+}
+
+/* --- Hover Glow (gold accent elements) --- */
+.hover-glow {
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.hover-glow:hover {
+    box-shadow: 0 0 20px rgba(115, 90, 58, 0.2);
+    transform: translateY(-2px);
+}
+
+/* --- Hover Bright (buttons) --- */
+.hover-bright {
+    transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+.hover-bright:hover {
+    filter: brightness(1.1);
+}
+
+.hover-bright:active {
+    transform: scale(0.97);
+}
+
+/* --- Card Hover Lift (legacy) --- */
 .card-hover {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }

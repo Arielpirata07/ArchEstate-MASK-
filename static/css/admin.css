@@ -74,12 +74,46 @@
 
 /* --- KPI Card Hover --- */
 .kpi-card {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .kpi-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+}
+
+.kpi-card:active {
+    transform: translateY(-1px);
+}
+
+/* --- Tab Button Hover --- */
+.tab-btn {
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tab-btn:active {
+    transform: scale(0.96);
+}
+
+/* --- Period Button & Action Button Enhanced Hover --- */
+.period-btn, #refresh-btn {
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.period-btn:active, #refresh-btn:active {
+    transform: scale(0.95);
+}
+
+/* --- Table Row Enhanced Hover --- */
+#professionalsTableBody tr,
+#reportsTableBody tr {
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+#professionalsTableBody tr:hover,
+#reportsTableBody tr:hover {
+    transform: translateX(3px);
 }
 
 /* --- Table Row Stagger --- */
@@ -179,3 +213,13 @@
 .dark .hover\:bg-rose-100:hover { background: rgba(225, 29, 72, 0.2) !important; }
 .dark .hover\:bg-emerald-50:hover { background: rgba(5, 150, 105, 0.15) !important; }
 .dark .hover\:bg-emerald-100:hover { background: rgba(5, 150, 105, 0.2) !important; }
+
+/* --- Gold color in dark mode: use accent variable (lighter gold) --- */
+.dark .bg-gold { background: var(--accent) !important; }
+.dark .text-gold { color: var(--accent) !important; }
+.dark .border-gold { border-color: var(--accent) !important; }
+.dark .hover\:bg-gold:hover { background: var(--accent) !important; }
+.dark .hover\:text-gold:hover { color: var(--accent) !important; }
+
+/* --- Table row hover in dark mode: lighten instead of darken --- */
+.dark .hover\:bg-paper:hover { background: rgba(250, 249, 247, 0.04) !important; }

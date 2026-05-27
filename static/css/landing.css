@@ -136,6 +136,83 @@
     50% { box-shadow: 0 0 40px rgba(115, 90, 58, 0.6), 0 8px 30px rgba(115, 90, 58, 0.2); }
 }
 
+/* ============================================
+   ENHANCED BACKGROUND ANIMATIONS
+   ============================================ */
+
+/* Slow horizontal drift */
+@keyframes driftX {
+    0%, 100% { transform: translateX(0px); }
+    33% { transform: translateX(30px); }
+    66% { transform: translateX(-20px); }
+}
+
+/* Slow diagonal drift */
+@keyframes driftDiagonal {
+    0%, 100% { transform: translate(0px, 0px); }
+    25% { transform: translate(25px, -15px); }
+    50% { transform: translate(-15px, -25px); }
+    75% { transform: translate(-30px, 10px); }
+}
+
+/* Gentle rotation for decorative rings */
+@keyframes spinSlow {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes spinSlowReverse {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(-360deg); }
+}
+
+/* Pulsing opacity for ambient orbs */
+@keyframes ambientPulse {
+    0%, 100% { opacity: 0.4; transform: scale(1); }
+    50% { opacity: 0.7; transform: scale(1.05); }
+}
+
+/* Morphing blob animation */
+@keyframes blobMorph {
+    0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+    25% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+    50% { border-radius: 50% 50% 50% 50% / 40% 50% 60% 50%; }
+    75% { border-radius: 40% 60% 50% 50% / 60% 40% 50% 50%; }
+}
+
+/* Grain noise overlay (static, no animation to avoid flickering) */
+
+/* Enhanced animation classes */
+.drift-x { animation: driftX 20s ease-in-out infinite; }
+.drift-diagonal { animation: driftDiagonal 25s ease-in-out infinite; }
+.spin-slow { animation: spinSlow 30s linear infinite; }
+.spin-slow-reverse { animation: spinSlowReverse 35s linear infinite; }
+.ambient-pulse { animation: ambientPulse 6s ease-in-out infinite; }
+.blob-morph { animation: blobMorph 15s ease-in-out infinite; }
+
+/* Grain noise overlay */
+.grain-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 256px 256px;
+}
+
+.dark .grain-overlay {
+    opacity: 0.04;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .drift-x, .drift-diagonal, .spin-slow, .spin-slow-reverse,
+    .ambient-pulse, .blob-morph {
+        animation: none !important;
+    }
+}
+
 @keyframes typing {
     from { width: 0; }
     to { width: 100%; }
@@ -246,6 +323,11 @@
 /* --- FAQ Accordion --- */
 .faq-item {
     border-bottom: 1px solid rgba(0, 4, 16, 0.08);
+    transition: background 0.2s ease;
+}
+
+.faq-item:hover {
+    background: rgba(115, 90, 58, 0.02);
 }
 
 .faq-question {
@@ -260,7 +342,7 @@
 .faq-answer {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.3s ease, padding 0.3s ease;
+    transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s ease;
 }
 
 .faq-answer.open {
@@ -270,7 +352,7 @@
 }
 
 .faq-chevron {
-    transition: transform 0.3s ease;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .faq-item.open .faq-chevron {
@@ -400,6 +482,45 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
+/* --- Feature Card Hover --- */
+.feature-card {
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.feature-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 24px 48px rgba(0, 4, 16, 0.12);
+}
+
+.feature-card:hover .feature-icon {
+    transform: scale(1.1);
+    color: #735A3A;
+}
+
+.feature-icon {
+    transition: transform 0.3s ease, color 0.3s ease;
+}
+
+/* Dark mode feature card hover */
+.dark .feature-card:hover {
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+}
+
+/* CTA Button enhanced hover */
+.cta-btn {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cta-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(115, 90, 58, 0.3);
+}
+
+.cta-btn:active {
+    transform: scale(0.97);
+}
+
 /* --- How It Works Section --- */
 .step-connector {
     position: relative;
@@ -421,41 +542,4 @@
     }
 }
 
-/* --- FAQ Accordion Enhanced --- */
-.faq-item {
-    border-bottom: 1px solid rgba(0, 4, 16, 0.08);
-    transition: background 0.2s ease;
-}
 
-.faq-item:hover {
-    background: rgba(115, 90, 58, 0.02);
-}
-
-.faq-question {
-    cursor: pointer;
-    transition: color 0.2s ease;
-}
-
-.faq-question:hover {
-    color: #735A3A;
-}
-
-.faq-answer {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s ease;
-}
-
-.faq-answer.open {
-    max-height: 500px;
-    padding-top: 1rem;
-    padding-bottom: 1rem;
-}
-
-.faq-chevron {
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.faq-item.open .faq-chevron {
-    transform: rotate(180deg);
-}

@@ -448,6 +448,8 @@ def sitemap():
     """Generate XML sitemap for search engines."""
     public_urls = [
         {'loc': url_for('index', _external=True), 'changefreq': 'daily', 'priority': '1.0'},
+        {'loc': url_for('login_view', _external=True), 'changefreq': 'monthly', 'priority': '0.5'},
+        {'loc': url_for('register_view', _external=True), 'changefreq': 'monthly', 'priority': '0.5'},
     ]
     xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
@@ -463,7 +465,8 @@ def sitemap():
 @app.route('/robots.txt')
 def robots():
     """Serve robots.txt for search engine crawlers."""
-    content = """User-agent: *
+    sitemap_url = url_for('sitemap', _external=True)
+    content = f"""User-agent: *
 Allow: /
 Disallow: /admin/
 Disallow: /api/
@@ -471,7 +474,7 @@ Disallow: /login
 Disallow: /register
 Disallow: /usuario
 Disallow: /profesional
-Sitemap: https://archestate.com/sitemap.xml
+Sitemap: {sitemap_url}
 """
     return content, 200, {'Content-Type': 'text/plain'}
 

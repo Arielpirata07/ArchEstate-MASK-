@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es-AR" class="{% if user_theme == 'dark' %}dark{% endif %}">
+<html lang="es-AR" class="{% if user_theme == 'dark' %}dark{% endif %} theme-transition">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,6 +20,23 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ request.url }}">
     <meta property="og:locale" content="es_AR">
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "RealEstateAgent",
+        "name": "ArchEstate",
+        "description": "Plataforma de gestión inmobiliaria exclusiva para clientes y profesionales del sector.",
+        "url": "{{ request.url_root }}",
+        "areaServed": { "@type": "City", "name": "Argentina" },
+        "availableLanguage": ["es_AR"],
+        "contactPoint": {
+            "@type": "ContactPoint",
+            "contactType": "customer service"
+        }
+    }
+    </script>
 
     <!-- Anti-FOUC: aplicar dark mode antes del render -->
     <script>

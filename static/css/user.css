@@ -2,6 +2,147 @@
    ARCHESTATE - USER FORM STYLES
    ============================================ */
 
+/* ============================================
+   ARCHESTATE - USER ASIDE ANIMATIONS
+   ============================================ */
+
+/* Ambient glow: slow gradient shift */
+.aside-ambient {
+    position: relative;
+    background-size: 150% 150%;
+    animation: ambientGlow 12s ease-in-out infinite alternate;
+    overflow: hidden;
+}
+
+@keyframes ambientGlow {
+    0% { background-position: 0% 0%; }
+    25% { background-position: 100% 0%; }
+    50% { background-position: 100% 100%; }
+    75% { background-position: 0% 100%; }
+    100% { background-position: 0% 0%; }
+}
+
+/* Decorative floating dots */
+.aside-ambient::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(1.5px 1.5px at 15% 20%, rgba(166, 138, 100, 0.25), transparent),
+        radial-gradient(1px 1px at 30% 65%, rgba(166, 138, 100, 0.2), transparent),
+        radial-gradient(1.5px 1.5px at 55% 10%, rgba(166, 138, 100, 0.2), transparent),
+        radial-gradient(1px 1px at 70% 45%, rgba(166, 138, 100, 0.15), transparent),
+        radial-gradient(1.5px 1.5px at 90% 75%, rgba(166, 138, 100, 0.2), transparent),
+        radial-gradient(1px 1px at 45% 85%, rgba(166, 138, 100, 0.15), transparent),
+        radial-gradient(1.5px 1.5px at 10% 55%, rgba(166, 138, 100, 0.2), transparent),
+        radial-gradient(1px 1px at 75% 90%, rgba(166, 138, 100, 0.15), transparent);
+    pointer-events: none;
+    z-index: 0;
+    animation: dotFloat 20s ease-in-out infinite alternate;
+}
+
+@keyframes dotFloat {
+    0% { opacity: 0.6; transform: translateY(0); }
+    50% { opacity: 1; transform: translateY(-8px); }
+    100% { opacity: 0.6; transform: translateY(0); }
+}
+
+/* Subtle golden line decoration */
+.aside-ambient::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(166, 138, 100, 0.3), rgba(166, 138, 100, 0.6), rgba(166, 138, 100, 0.3), transparent);
+    z-index: 1;
+    animation: linePulse 4s ease-in-out infinite;
+}
+
+@keyframes linePulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+}
+
+/* Bring content above decorative layers */
+.aside-ambient > * {
+    position: relative;
+    z-index: 2;
+}
+
+/* Gold shimmer for "CURATED ASSETS" */
+.gold-shimmer-text {
+    background: linear-gradient(
+        90deg,
+        #A68A64 0%,
+        #D4B896 30%,
+        #C4A882 50%,
+        #D4B896 70%,
+        #A68A64 100%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmerSweep 6s ease-in-out infinite;
+}
+
+@keyframes shimmerSweep {
+    0% { background-position: 200% center; }
+    100% { background-position: -200% center; }
+}
+
+/* Entrance animations */
+.aside-title {
+    opacity: 0;
+    transform: translateY(30px);
+    animation: entranceSlide 1s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+}
+
+.aside-subtitle {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: entranceSlide 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+}
+
+.aside-footer {
+    opacity: 0;
+    animation: entranceFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.9s forwards;
+}
+
+@keyframes entranceSlide {
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes entranceFade {
+    to { opacity: 1; }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .aside-ambient {
+        animation: none;
+        background-position: 0% 0%;
+    }
+    .aside-ambient::before {
+        animation: none;
+    }
+    .aside-ambient::after {
+        animation: none;
+    }
+    .gold-shimmer-text {
+        -webkit-text-fill-color: #A68A64;
+        background: none;
+        animation: none;
+    }
+    .aside-title, .aside-subtitle, .aside-footer {
+        opacity: 1;
+        transform: none;
+        animation: none;
+    }
+}
+
 /* --- Input Placeholders --- */
 #userForm input::placeholder {
     color: rgba(0, 4, 16, 0.3);
@@ -99,6 +240,61 @@
 
 #zone-suggestions li:hover {
     background-color: rgba(115, 90, 58, 0.08);
+}
+
+/* ============================================
+   HOVER & INTERACTION ENHANCEMENTS
+   ============================================ */
+
+/* Property type chip hover lift */
+#userForm button[id^="btn-"] {
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#userForm button[id^="btn-"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(115, 90, 58, 0.12);
+    border-color: #735A3A;
+}
+
+#userForm button[id^="btn-"]:active {
+    transform: translateY(0);
+}
+
+/* Budget slider thumb enhanced hover */
+#budget-popup input[type=range]::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 0 20px rgba(115, 90, 58, 0.3);
+}
+
+#budget-popup input[type=range]::-moz-range-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 0 20px rgba(115, 90, 58, 0.3);
+}
+
+/* Submit button enhanced hover */
+#userForm button[type="submit"],
+#userForm .submit-btn {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#userForm button[type="submit"]:hover,
+#userForm .submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(115, 90, 58, 0.25);
+}
+
+#userForm button[type="submit"]:active,
+#userForm .submit-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(115, 90, 58, 0.2);
+}
+
+/* Input focus glow */
+#userForm input:focus,
+#userForm select:focus,
+#userForm textarea:focus {
+    box-shadow: 0 4px 12px rgba(115, 90, 58, 0.06);
 }
 
 /* --- Form Section Progress --- */
