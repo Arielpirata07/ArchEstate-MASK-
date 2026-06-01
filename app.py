@@ -93,6 +93,64 @@ def assign_request_id():
     g.request_id = uuid.uuid4().hex[:12]
 
 
+@app.before_request
+def restore_session_from_remember_cookie():
+    """
+    Si no hay sesión activa pero la cookie remember_token es válida y vigente,
+    restaura la sesión del usuario y la marca como permanente.
+    Rutas exentas: /login, /register, /logout, /api/auth/* y assets.
+    """
+    from flask import g
+
+    if session.get('user_id'):
+        return None
+
+    path = request.path or ''
+    exempt_prefixes = ('/static/', '/login', '/register', '/logout', '/api/auth/', '/sitemap.xml', '/robots.txt')
+    if any(path == p or path.startswith(p) for p in exempt_prefixes):
+        return None
+
+    raw_cookie = request.cookies.get(config.REMEMBER_COOKIE_NAME)
+    if not raw_cookie or ':' not in raw_cookie:
+        return None
+
+    selector, _, validator = raw_cookie.partition(':')
+    if not selector or not validator:
+        return None
+
+    user_id = utils.validate_remember_token(selector, validator)
+    if not user_id:
+        return None
+
+    conn = None
+    try:
+        conn = get_db_connection()
+        user = conn.execute(
+            'SELECT id, username, email, role, is_active FROM users WHERE id = ?',
+            (user_id,)
+        ).fetchone()
+        if not user or not user['is_active']:
+            utils.revoke_remember_token(selector)
+            return None
+
+        session.permanent = True
+        session['user_id'] = user['id']
+        session['username'] = user['username']
+        session['email'] = user['email']
+        session['role'] = user['role']
+        g.restored_from_remember = True
+        utils.log_event(
+            user_id=user['id'], event='remember_session_restored',
+            props={'selector_prefix': selector[:8]}
+        )
+    except Exception as e:
+        print(f"Error al restaurar sesión desde remember token: {e}")
+    finally:
+        if conn:
+            conn.close()
+    return None
+
+
 @app.context_processor
 def inject_request_id():
     """Hace request_id disponible en todas las templates."""
@@ -411,6 +469,22 @@ def init_db():
                 ts DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         ''')
+
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS remember_tokens (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                selector TEXT NOT NULL UNIQUE,
+                validator_hash TEXT NOT NULL,
+                expires_at DATETIME NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                ip_address TEXT DEFAULT '',
+                user_agent TEXT DEFAULT '',
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        ''')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_remember_tokens_selector ON remember_tokens(selector)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_remember_tokens_expires ON remember_tokens(expires_at)')
 
         # Migración: preferred_channel en user_preferences
         cursor.execute('PRAGMA table_info(user_preferences)')
@@ -856,12 +930,59 @@ def login():
             except Exception:
                 pass
 
+            # Remember-me: si el form lo pidió, generar token + cookie firmada
+            remember_response = None
+            if request.form.get('remember') == 'on':
+                try:
+                    selector, validator, validator_hash = utils.generate_remember_token()
+                    conn3 = get_db_connection()
+                    conn3.execute(
+                        'INSERT INTO remember_tokens (user_id, selector, validator_hash, expires_at, ip_address, user_agent) '
+                        'VALUES (?, ?, ?, ?, ?, ?)',
+                        (
+                            user['id'],
+                            selector,
+                            validator_hash,
+                            utils.remember_expires_at().isoformat(),
+                            request.remote_addr or '',
+                            request.user_agent.string[:255] if request.user_agent else '',
+                        )
+                    )
+                    conn3.commit()
+                    conn3.close()
+                    remember_response = redirect(url_for(
+                        'admin_view' if user['role'] == 'admin' else
+                        'professional_view' if user['role'] == 'professional' else
+                        'user_view'
+                    ))
+                    remember_response.set_cookie(
+                        config.REMEMBER_COOKIE_NAME,
+                        f'{selector}:{validator}',
+                        max_age=utils.remember_cookie_max_age(),
+                        httponly=True,
+                        secure=config.REMEMBER_COOKIE_SECURE,
+                        samesite='Lax',
+                        path='/',
+                    )
+                    utils.log_action(
+                        "Remember me activado",
+                        f"user_id={user['id']}, selector={selector[:8]}...",
+                        session
+                    )
+                except Exception as e:
+                    print(f"Error al crear remember token: {e}")
+                    remember_response = None
+
             if user['role'] == 'admin':
-                return redirect(url_for('admin_view'))
+                target = url_for('admin_view')
             elif user['role'] == 'professional':
-                return redirect(url_for('professional_view'))
+                target = url_for('professional_view')
             else:
-                return redirect(url_for('user_view'))
+                target = url_for('user_view')
+
+            if remember_response is not None:
+                return remember_response
+            return redirect(target)
 
         flash('Credenciales inválidas. Intente de nuevo.', 'error')
         return redirect(url_for('login'))
@@ -871,8 +992,47 @@ def login():
 # --- RUTA DE LOGOUT ---
 @app.route('/logout')
 def logout():
+    raw_cookie = request.cookies.get(config.REMEMBER_COOKIE_NAME)
+    if raw_cookie and ':' in raw_cookie:
+        selector = raw_cookie.split(':', 1)[0]
+        if selector:
+            utils.revoke_remember_token(selector)
     session.clear()
-    return redirect(url_for('index'))
+    response = redirect(url_for('index'))
+    response.delete_cookie(config.REMEMBER_COOKIE_NAME, path='/')
+    return response
+
+
+# --- CHECK USERNAME AVAILABILITY (rate-limited, 200 siempre) ---
+@app.route('/api/auth/check-username', methods=['GET'])
+@rate_limit.check_rate_limit(limit=10, window=60)
+def api_check_username():
+    """
+    Indica si un username está disponible. Devuelve siempre 200 (no permite
+    enumeración por status code). Rate-limited a 10/min por IP.
+    Respuesta: {available: bool, reason: 'ok'|'taken'|'invalid'}
+    """
+    import random
+    q = (request.args.get('q') or '').strip()
+    # Latencia constante para no exponer timing
+    if not (3 <= len(q) <= 30) or not re.match(r'^[a-zA-Z0-9_]+$', q):
+        result = {"available": False, "reason": "invalid"}
+    else:
+        conn = None
+        try:
+            conn = get_db_connection()
+            row = conn.execute('SELECT 1 FROM users WHERE username = ?', (q,)).fetchone()
+            result = {"available": row is None, "reason": "ok" if row is None else "taken"}
+        except Exception as e:
+            print(f"Error en check-username: {e}")
+            result = {"available": False, "reason": "invalid"}
+        finally:
+            if conn:
+                conn.close()
+
+    import time as _t
+    _t.sleep(random.uniform(0.02, 0.08))
+    return jsonify(result)
 
 
 @app.route('/api/submit', methods=['POST'])

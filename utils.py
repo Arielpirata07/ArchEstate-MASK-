@@ -297,3 +297,111 @@ def log_event(user_id=None, lead_id=None, event='', props=None, ip=None, conn=No
     finally:
         if own_conn and conn:
             conn.close()
+
+
+# --- Remember-me tokens (cookie firmada) -----------------------------------
+
+import secrets
+from datetime import timedelta
+
+
+def generate_remember_token():
+    """
+    Genera un par (selector, validator) para cookie de remember-me.
+    - selector: 16 bytes url-safe (24 chars), se guarda plano en BD para lookup.
+    - validator: 32 bytes url-safe (~43 chars), se hashea con sha256 y se guarda el hash.
+      El validator NUNCA se persiste en claro.
+    Devuelve: (selector_str, validator_str, validator_hash_hex)
+    """
+    selector = secrets.token_urlsafe(16)
+    validator = secrets.token_urlsafe(32)
+    validator_hash = hashlib.sha256(validator.encode('utf-8')).hexdigest()
+    return selector, validator, validator_hash
+
+
+def validate_remember_token(selector, validator):
+    """
+    Valida un par (selector, validator). Devuelve user_id si es válido y vigente,
+    None en caso contrario. NO valida la sesión actual: esa responsabilidad es del caller.
+    """
+    if not selector or not validator:
+        return None
+    from models import get_db_connection
+    conn = None
+    try:
+        conn = get_db_connection()
+        row = conn.execute(
+            'SELECT user_id, validator_hash, expires_at FROM remember_tokens WHERE selector = ?',
+            (selector,)
+        ).fetchone()
+        if not row:
+            return None
+        try:
+            expires_at = datetime.fromisoformat(row['expires_at'])
+        except (ValueError, TypeError):
+            return None
+        if datetime.now() >= expires_at:
+            conn.execute('DELETE FROM remember_tokens WHERE selector = ?', (selector,))
+            conn.commit()
+            return None
+        validator_hash = hashlib.sha256(validator.encode('utf-8')).hexdigest()
+        if not secrets.compare_digest(validator_hash, row['validator_hash']):
+            conn.execute('DELETE FROM remember_tokens WHERE selector = ?', (selector,))
+            conn.commit()
+            return None
+        return row['user_id']
+    except Exception as e:
+        print(f"Error al validar remember token: {e}")
+        return None
+    finally:
+        if conn:
+            conn.close()
+
+
+def revoke_remember_token(selector):
+    """Elimina un único token por selector. No falla si no existe."""
+    if not selector:
+        return False
+    from models import get_db_connection
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.execute('DELETE FROM remember_tokens WHERE selector = ?', (selector,))
+        conn.commit()
+        return cursor.rowcount > 0
+    except Exception as e:
+        print(f"Error al revocar remember token: {e}")
+        return False
+    finally:
+        if conn:
+            conn.close()
+
+
+def purge_expired_remember_tokens():
+    """Elimina todos los tokens expirados. Idempotente, llamar en before_request."""
+    from models import get_db_connection
+    conn = None
+    try:
+        conn = get_db_connection()
+        cursor = conn.execute(
+            'DELETE FROM remember_tokens WHERE expires_at < ?',
+            (datetime.now().isoformat(),)
+        )
+        conn.commit()
+        return cursor.rowcount
+    except Exception as e:
+        print(f"Error al purgar remember tokens: {e}")
+        return 0
+    finally:
+        if conn:
+            conn.close()
+
+
+def remember_cookie_max_age():
+    """Devuelve el max_age en segundos para la cookie remember_token."""
+    return config.REMEMBER_TOKEN_DAYS * 24 * 3600
+
+
+def remember_expires_at():
+    """Devuelve el datetime de expiración para guardar en BD."""
+    return datetime.now() + timedelta(days=config.REMEMBER_TOKEN_DAYS)

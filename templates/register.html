@@ -4,83 +4,187 @@
 
 {% block content %}
 <div class="max-w-md mx-auto mt-12">
-    <div class="bg-white p-10 rounded-lg shadow-2xl border-t-4 border-gold">
+    <div class="bg-white dark:bg-midnight-light p-10 rounded-lg shadow-2xl border-t-4 border-gold transition-colors">
+
         <div class="text-center mb-8">
-            <h2 class="text-3xl font-serif">Solicitar <span class="serif-italic">Acceso</span></h2>
-            <p class="text-[10px] uppercase tracking-widest text-midnight/40 mt-2 font-bold">The Private Ledger</p>
+            <h1 class="text-3xl font-serif">Solicitar <span class="serif-italic">Acceso</span></h1>
+            <p class="text-[10px] uppercase tracking-widest text-midnight/40 dark:text-white/40 mt-2 font-bold">The Private Ledger</p>
         </div>
 
-        {% with messages = get_flashed_messages() %}
-          {% if messages %}
-            {% for message in messages %}
-              <div class="bg-rose-50 text-rose-700 text-[10px] uppercase tracking-widest font-bold p-3 mb-6 border border-rose-100 rounded text-center">
-                {{ message }}
-              </div>
-            {% endfor %}
-          {% endif %}
-        {% endwith %}
+        <form id="registerForm"
+              data-auth-form="register"
+              action="{{ url_for('register') }}"
+              method="POST"
+              novalidate
+              autocomplete="on"
+              aria-describedby="register-form-desc">
+            <p id="register-form-desc" class="visually-hidden">
+                Todos los campos son obligatorios. La contraseña debe tener al menos 6 caracteres, una letra y un número.
+            </p>
 
-        <form action="{{ url_for('register') }}" method="POST" class="space-y-6">
-            <div>
-                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Tipo de Cuenta</label>
-                <select name="role" required class="w-full bg-paper-dark border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 transition-all text-sm">
+            <div class="field space-y-2">
+                <label for="role" class="block text-[10px] uppercase tracking-widest font-bold text-gold">
+                    Tipo de Cuenta
+                </label>
+                <select id="role"
+                        name="role"
+                        required
+                        aria-describedby="err-role"
+                        data-auth-rules='{"required": true, "messages": {"required": "Elegí un tipo de cuenta."}}'
+                        class="w-full bg-paper-dark dark:bg-midnight border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 transition-all text-sm">
                     <option value="client">Soy Cliente (Busco construir/comprar)</option>
                     <option value="professional">Soy Profesional (Arquitecto/Agente)</option>
                 </select>
-            </div>
-            
-            <div id="license-container" class="hidden animate-fade-in">
-                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Número de Matrícula / ID Profesional *</label>
-                <div class="relative">
-                    <i data-lucide="award" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5"></i>
-                    <input id="license-input" name="license" type="text" placeholder="Ej: COAM-12345" class="w-full bg-transparent border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all">
-                </div>
+                <div id="err-role" class="field-error" data-for="role" aria-live="polite"></div>
             </div>
 
-            <div>
-                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Usuario</label>
+            <div data-license-container id="license-container" class="field space-y-2 mt-6 hidden animate-fade-in">
+                <label for="license" class="block text-[10px] uppercase tracking-widest font-bold text-gold">
+                    Número de Matrícula / ID Profesional
+                </label>
                 <div class="relative">
-                    <i data-lucide="user" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5"></i>
-                    <input name="username" required type="text" class="w-full bg-transparent border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all">
+                    <i data-lucide="award" class="absolute left-0 bottom-3 text-midnight/30 dark:text-white/30 w-5 h-5" aria-hidden="true"></i>
+                    <input id="license"
+                           name="license"
+                           type="text"
+                           placeholder="Ej: COAM-12345"
+                           aria-describedby="err-license"
+                           class="w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all">
                 </div>
+                <div id="err-license" class="field-error" data-for="license" aria-live="polite"></div>
             </div>
 
-            <div>
-                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Email</label>
+            <div class="field space-y-2 mt-6">
+                <label for="username" class="block text-[10px] uppercase tracking-widest font-bold text-gold">
+                    Usuario
+                </label>
                 <div class="relative">
-                    <i data-lucide="mail" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5"></i>
-                    <input name="email" required type="email" class="w-full bg-transparent border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all" placeholder="usuario@ejemplo.com">
+                    <i data-lucide="user" class="absolute left-0 bottom-3 text-midnight/30 dark:text-white/30 w-5 h-5" aria-hidden="true"></i>
+                    <input id="username"
+                           name="username"
+                           type="text"
+                           required
+                           autocomplete="username"
+                           data-async-check="true"
+                           placeholder="3-30 caracteres, letras, números y _"
+                           aria-describedby="err-username username-hint"
+                           data-auth-rules='{"required": true, "usernameFormat": true, "messages": {"required": "Elegí un nombre de usuario.", "usernameFormat": "3-30 caracteres, solo letras, números y guión bajo."}}'
+                           class="w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all">
                 </div>
+                <div id="err-username" class="field-error" data-for="username" aria-live="polite"></div>
+                <div id="username-hint" class="username-hint" data-username-hint></div>
             </div>
 
-            <div>
-                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Teléfono</label>
+            <div class="field space-y-2 mt-6">
+                <label for="email" class="block text-[10px] uppercase tracking-widest font-bold text-gold">
+                    Email
+                </label>
                 <div class="relative">
-                    <i data-lucide="phone" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5"></i>
-                    <input name="phone" type="tel" required placeholder="+54 9 11 1234 5678"
-                           class="w-full bg-transparent border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all">
+                    <i data-lucide="mail" class="absolute left-0 bottom-3 text-midnight/30 dark:text-white/30 w-5 h-5" aria-hidden="true"></i>
+                    <input id="email"
+                           name="email"
+                           type="email"
+                           required
+                           autocomplete="email"
+                           placeholder="usuario@ejemplo.com"
+                           aria-describedby="err-email"
+                           data-auth-rules='{"required": true, "email": true, "messages": {"required": "Ingresá tu email.", "email": "Formato de email inválido."}}'
+                           class="w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all">
                 </div>
+                <div id="err-email" class="field-error" data-for="email" aria-live="polite"></div>
             </div>
 
-            <div>
-                <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Contraseña</label>
+            <div class="field space-y-2 mt-6">
+                <label for="phone" class="block text-[10px] uppercase tracking-widest font-bold text-gold">
+                    Teléfono
+                </label>
                 <div class="relative">
-                    <i data-lucide="lock" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5"></i>
-                    <input name="password" required type="password" minlength="6" class="w-full bg-transparent border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all">
+                    <i data-lucide="phone" class="absolute left-0 bottom-3 text-midnight/30 dark:text-white/30 w-5 h-5" aria-hidden="true"></i>
+                    <input id="phone"
+                           name="phone"
+                           type="tel"
+                           required
+                           autocomplete="tel"
+                           placeholder="+54 9 11 1234 5678"
+                           aria-describedby="err-phone"
+                           data-auth-rules='{"required": true, "phone": true, "messages": {"required": "Ingresá tu teléfono.", "phone": "Formato internacional inválido. Usá +código país + número."}}'
+                           class="w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all">
                 </div>
+                <div id="err-phone" class="field-error" data-for="phone" aria-live="polite"></div>
             </div>
 
-            <button type="submit" class="w-full bg-midnight text-white py-4 rounded font-bold uppercase tracking-widest text-xs hover:bg-gold transition-all mt-8 flex items-center justify-center gap-2 group">
-                Crear Cuenta
-                <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+            <div class="field space-y-2 mt-6">
+                <label for="password" class="block text-[10px] uppercase tracking-widest font-bold text-gold">
+                    Contraseña
+                </label>
+                <div class="relative">
+                    <i data-lucide="lock" class="absolute left-0 bottom-3 text-midnight/30 dark:text-white/30 w-5 h-5" aria-hidden="true"></i>
+                    <input id="password"
+                           name="password"
+                           type="password"
+                           required
+                           autocomplete="new-password"
+                           data-strength="true"
+                           aria-describedby="err-password password-strength password-rules"
+                           data-auth-rules='{"required": true, "minLength": 6, "hasLetter": true, "hasNumber": true, "messages": {"required": "Elegí una contraseña.", "minLength": "Mínimo 6 caracteres.", "hasLetter": "Debe contener al menos una letra.", "hasNumber": "Debe contener al menos un número."}}'
+                           class="w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 pr-10 transition-all">
+                    <button type="button"
+                            data-toggle-pass="password"
+                            class="toggle-pass"
+                            aria-label="Mostrar contraseña">
+                        <i data-pass-icon data-lucide="eye" class="w-5 h-5" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div id="err-password" class="field-error" data-for="password" aria-live="polite"></div>
+                <div id="password-strength" class="password-strength" data-strength-meter aria-hidden="true">
+                    <div class="password-strength__bar" data-strength-bar></div>
+                    <div class="password-strength__label" data-strength-label>vacía</div>
+                </div>
+                <ul id="password-rules" class="password-rules" aria-label="Requisitos de contraseña">
+                    <li data-password-rule="length">
+                        <i data-rule-icon data-lucide="circle" class="w-3 h-3" aria-hidden="true"></i>
+                        <span>6+ caracteres</span>
+                    </li>
+                    <li data-password-rule="letter">
+                        <i data-rule-icon data-lucide="circle" class="w-3 h-3" aria-hidden="true"></i>
+                        <span>Una letra</span>
+                    </li>
+                    <li data-password-rule="number">
+                        <i data-rule-icon data-lucide="circle" class="w-3 h-3" aria-hidden="true"></i>
+                        <span>Un número</span>
+                    </li>
+                    <li data-password-rule="upper">
+                        <i data-rule-icon data-lucide="circle" class="w-3 h-3" aria-hidden="true"></i>
+                        <span>Una mayúscula (recomendado)</span>
+                    </li>
+                    <li data-password-rule="symbol">
+                        <i data-rule-icon data-lucide="circle" class="w-3 h-3" aria-hidden="true"></i>
+                        <span>Un símbolo (recomendado)</span>
+                    </li>
+                </ul>
+            </div>
+
+            <button type="submit"
+                    class="btn-submit w-full bg-midnight dark:bg-gold text-white dark:text-midnight py-4 rounded font-bold uppercase tracking-widest text-xs hover:bg-gold dark:hover:bg-midnight dark:hover:text-gold transition-all mt-8 flex items-center justify-center gap-2 group">
+                <span data-label class="flex items-center gap-2">
+                    Crear Cuenta
+                    <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform" aria-hidden="true"></i>
+                </span>
+                <i data-spinner data-lucide="loader-2" class="spinner hidden" aria-hidden="true"></i>
+                <span data-spinner-label class="hidden">Creando…</span>
             </button>
         </form>
-        
+
         <div class="mt-6 text-center">
-            <a href="{{ url_for('login') }}" class="text-[10px] uppercase tracking-widest font-bold text-midnight/40 hover:text-gold transition-colors">
+            <a href="{{ url_for('login') }}" class="text-[10px] uppercase tracking-widest font-bold text-midnight/40 dark:text-white/40 hover:text-gold transition-colors">
                 ¿Ya tienes cuenta? Iniciar Sesión
             </a>
         </div>
+
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/auth.js') }}" defer></script>
 {% endblock %}

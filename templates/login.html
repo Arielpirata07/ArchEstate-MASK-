@@ -5,64 +5,109 @@
 {% block content %}
 <div class="flex items-center justify-center min-h-[70vh]">
     <div class="max-w-md w-full">
-        <div class="bg-white p-10 rounded-lg shadow-2xl border-t-4 border-gold">
-            
+        <div class="bg-white dark:bg-midnight-light p-10 rounded-lg shadow-2xl border-t-4 border-gold transition-colors">
+
             <div class="text-center mb-8">
-                <i data-lucide="key-round" class="w-10 h-10 text-gold mx-auto mb-4"></i>
-                <h2 class="text-3xl font-serif">Acceso <span class="serif-italic">Exclusivo</span></h2>
-                <p class="text-midnight/50 mt-2 text-sm">Ingresa tus credenciales para continuar.</p>
+                <i data-lucide="key-round" class="w-10 h-10 text-gold mx-auto mb-4" aria-hidden="true"></i>
+                <h1 class="text-3xl font-serif">Acceso <span class="serif-italic">Exclusivo</span></h1>
+                <p class="text-midnight/50 dark:text-white/40 mt-2 text-sm">Ingresa tus credenciales para continuar.</p>
             </div>
 
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="mb-6 p-4 rounded text-xs font-bold uppercase tracking-widest flex items-center gap-3 
-                            {% if category == 'error' %} bg-rose-50 text-rose-700 border border-rose-200 
-                            {% else %} bg-emerald-50 text-emerald-700 border border-emerald-200 {% endif %}">
-                            <i data-lucide="alert-circle" class="w-4 h-4"></i>
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
+            <form id="loginForm"
+                  data-auth-form="login"
+                  action="{{ url_for('login') }}"
+                  method="POST"
+                  novalidate
+                  autocomplete="on"
+                  aria-describedby="login-form-desc">
+                <p id="login-form-desc" class="visually-hidden">
+                    Los campos marcados con error impiden el envío hasta corregirse.
+                </p>
 
-            <form action="{{ url_for('login') }}" method="POST" class="space-y-6">
-                
-                <div>
-                    <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Usuario</label>
+                <div class="field space-y-2">
+                    <label for="username" class="block text-[10px] uppercase tracking-widest font-bold text-gold">
+                        Usuario
+                    </label>
                     <div class="relative">
-                        <i data-lucide="user" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5"></i>
-                        <input type="text" name="username" required placeholder="Tu nombre de usuario" 
-                               class="w-full bg-transparent border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all outline-none">
+                        <i data-lucide="user" class="absolute left-0 bottom-3 text-midnight/30 dark:text-white/30 w-5 h-5" aria-hidden="true"></i>
+                        <input id="username"
+                               name="username"
+                               type="text"
+                               required
+                               autocomplete="username"
+                               placeholder="Tu nombre de usuario"
+                               aria-describedby="err-username"
+                               data-auth-rules='{"required": true, "messages": {"required": "Ingresá tu nombre de usuario."}}'
+                               class="w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 pr-8 transition-all outline-none">
                     </div>
+                    <div id="err-username" class="field-error" data-for="username" aria-live="polite"></div>
                 </div>
 
-                <div>
-                    <div class="flex justify-between items-end mb-2">
-                        <label class="block text-[10px] uppercase tracking-widest font-bold text-gold">Contraseña</label>
-                        <a href="#" class="text-[10px] font-bold text-midnight/40 hover:text-gold transition-colors">¿Olvidaste tu clave?</a>
+                <div class="field space-y-2">
+                    <div class="flex justify-between items-end">
+                        <label for="password" class="block text-[10px] uppercase tracking-widest font-bold text-gold">
+                            Contraseña
+                        </label>
+                        <a href="#" class="text-[10px] font-bold text-midnight/40 dark:text-white/40 hover:text-gold transition-colors" aria-label="Recuperar contraseña (próximamente)">
+                            ¿Olvidaste tu clave?
+                        </a>
                     </div>
                     <div class="relative">
-                        <i data-lucide="lock" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5"></i>
-                        <input type="password" name="password" required placeholder="••••••••" 
-                               class="w-full bg-transparent border-0 border-b border-midnight/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all outline-none">
+                        <i data-lucide="lock" class="absolute left-0 bottom-3 text-midnight/30 dark:text-white/30 w-5 h-5" aria-hidden="true"></i>
+                        <input id="password"
+                               name="password"
+                               type="password"
+                               required
+                               autocomplete="current-password"
+                               placeholder="••••••••"
+                               aria-describedby="err-password"
+                               data-auth-rules='{"required": true, "messages": {"required": "Ingresá tu contraseña."}}'
+                               class="w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 pr-10 transition-all outline-none">
+                        <button type="button"
+                                data-toggle-pass="password"
+                                class="toggle-pass"
+                                aria-label="Mostrar contraseña">
+                            <i data-pass-icon data-lucide="eye" class="w-5 h-5" aria-hidden="true"></i>
+                        </button>
                     </div>
+                    <div id="err-password" class="field-error" data-for="password" aria-live="polite"></div>
                 </div>
 
-                <button type="submit" class="w-full bg-gold text-white py-4 rounded font-bold uppercase tracking-widest text-xs hover:bg-midnight transition-all mt-8 flex items-center justify-center gap-2 group">
-                    Entrar al Ledger
-                    <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                <label class="remember-me mt-6">
+                    <input type="checkbox" name="remember" value="on" aria-describedby="remember-hint">
+                    <span>Recordarme por 30 días</span>
+                    <i id="remember-hint"
+                       data-lucide="info"
+                       class="remember-me__tooltip w-3.5 h-3.5"
+                       aria-label="Te mantendremos la sesión iniciada en este navegador por 30 días."
+                       role="img"></i>
+                </label>
+
+                <button type="submit"
+                        class="btn-submit w-full bg-gold text-white py-4 rounded font-bold uppercase tracking-widest text-xs hover:bg-midnight dark:hover:bg-gold-dark transition-all mt-8 flex items-center justify-center gap-2 group">
+                    <span data-label class="flex items-center gap-2">
+                        Entrar al Ledger
+                        <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform" aria-hidden="true"></i>
+                    </span>
+                    <i data-spinner data-lucide="loader-2" class="spinner hidden" aria-hidden="true"></i>
+                    <span data-spinner-label class="hidden">Enviando…</span>
                 </button>
             </form>
 
-            <div class="mt-8 text-center border-t border-midnight/5 pt-6">
-                <p class="text-xs text-midnight/60">
-                    ¿Aún no eres miembro? 
-                    <a href="{{ url_for('register') }}" class="text-gold font-bold hover:text-midnight transition-colors ml-1">Solicitar Acceso</a>
+            <div class="mt-8 text-center border-t border-midnight/5 dark:border-white/5 pt-6">
+                <p class="text-xs text-midnight/60 dark:text-white/60">
+                    ¿Aún no eres miembro?
+                    <a href="{{ url_for('register') }}" class="text-gold font-bold hover:text-midnight dark:hover:text-gold-dark transition-colors ml-1">
+                        Solicitar Acceso
+                    </a>
                 </p>
             </div>
 
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/auth.js') }}" defer></script>
 {% endblock %}
