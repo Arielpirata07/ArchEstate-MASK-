@@ -245,8 +245,9 @@ def api_update_settings():
     user_id = session['user_id']
     data = request.json
 
-    allowed = {'theme', 'language', 'email_notifications', 'sms_notifications', 'lead_alerts'}
+    allowed = {'theme', 'language', 'email_notifications', 'sms_notifications', 'lead_alerts', 'preferred_channel'}
     update_data = {}
+
     for key in allowed:
         if key in data:
             update_data[key] = data[key]
@@ -259,6 +260,9 @@ def api_update_settings():
 
     if 'language' in update_data and update_data['language'] not in ('es', 'en'):
         return jsonify({'error': 'Idioma no valido'}), 400
+
+    if 'preferred_channel' in update_data and update_data['preferred_channel'] not in ('sms', 'whatsapp', 'auto'):
+        return jsonify({'error': 'Canal no valido. Usa sms, whatsapp o auto.'}), 400
 
     models.update_user_preferences(user_id, update_data)
     utils.log_action('Actualizacion de Preferencias', f'Usuario: {session["username"]}', session)

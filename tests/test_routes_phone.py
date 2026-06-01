@@ -1,7 +1,16 @@
-import pytest
+"""
+Tests para los endpoints /api/phone/send-code y /api/phone/verify.
+Refactorizado en Fase C para usar VerifierRouter. Se mantiene compatibilidad
+con el contrato externo (status, error, formato de respuesta).
+"""
+
 import json
-from unittest.mock import patch
 from datetime import datetime, timedelta
+
+import pytest
+from freezegun import freeze_time
+
+from services.verifier import reset_default_router
 
 
 def _user_id(auth_client, db):
@@ -9,6 +18,13 @@ def _user_id(auth_client, db):
         username = sess.get('username')
     user = db.execute('SELECT id FROM users WHERE username = ?', (username,)).fetchone()
     return user['id'] if user else None
+
+
+@pytest.fixture(autouse=True)
+def _reset_router_singleton():
+    reset_default_router()
+    yield
+    reset_default_router()
 
 
 class TestSendCode:
@@ -23,6 +39,7 @@ class TestSendCode:
         assert resp.status_code == 200
         data = resp.get_json()
         assert data['status'] == 'success'
+        assert 'channel' in data
 
     def test_stores_code_in_database(self, auth_client, db):
         uid = _user_id(auth_client, db)
@@ -80,6 +97,20 @@ class TestSendCode:
         code2 = user2['verification_code']
 
         assert code1 != code2
+
+    def test_logs_consent(self, auth_client, db):
+        resp = auth_client.post('/api/phone/send-code', content_type='application/json')
+        assert resp.status_code == 200
+        row = db.execute('SELECT * FROM consent_log ORDER BY id DESC LIMIT 1').fetchone()
+        assert row is not None
+        assert row['channel'] in ('sms', 'whatsapp')
+        assert row['user_id'] is not None
+
+    def test_logs_event(self, auth_client, db):
+        resp = auth_client.post('/api/phone/send-code', content_type='application/json')
+        assert resp.status_code == 200
+        row = db.execute("SELECT * FROM events WHERE event = 'otp_sent' ORDER BY id DESC LIMIT 1").fetchone()
+        assert row is not None
 
 
 class TestVerifyCode:
@@ -187,3 +218,61 @@ class TestVerifyCode:
         user = db.execute('SELECT verification_code, verification_expires FROM users WHERE id = ?', (uid,)).fetchone()
         assert user['verification_code'] == ''
         assert user['verification_expires'] is None
+
+
+class TestUpdatePhone:
+    def test_requires_authentication(self, client):
+        resp = client.post('/api/user/update-phone',
+                           data=json.dumps({'phone': '+5491144445555'}),
+                           content_type='application/json')
+        assert resp.status_code == 401
+
+    def test_updates_phone_with_e164(self, auth_client, db):
+        uid = _user_id(auth_client, db)
+        resp = auth_client.post('/api/user/update-phone',
+                                data=json.dumps({'phone': '+5491144449999'}),
+                                content_type='application/json')
+        assert resp.status_code == 200
+        user = db.execute('SELECT phone, phone_e164, phone_number_type FROM users WHERE id = ?', (uid,)).fetchone()
+        assert user['phone'] == '+5491144449999'
+        assert user['phone_e164'] == '+5491144449999'
+        assert user['phone_number_type'] in ('mobile', 'fixed_or_mobile')
+
+    def test_invalidates_otp_when_phone_changes(self, auth_client, db):
+        uid = _user_id(auth_client, db)
+        auth_client.post('/api/phone/send-code', content_type='application/json')
+
+        resp = auth_client.post('/api/user/update-phone',
+                                data=json.dumps({'phone': '+5491144440000'}),
+                                content_type='application/json')
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data['phone_verified'] == 0
+        user = db.execute('SELECT verification_code, phone_verified FROM users WHERE id = ?', (uid,)).fetchone()
+        assert user['verification_code'] == ''
+        assert user['phone_verified'] == 0
+
+    def test_keeps_verification_when_phone_unchanged(self, auth_client, db):
+        uid = _user_id(auth_client, db)
+        db.execute('UPDATE users SET phone_verified = 1, phone = ? WHERE id = ?',
+                   ('+5491144445555', uid))
+        db.commit()
+
+        resp = auth_client.post('/api/user/update-phone',
+                                data=json.dumps({'phone': '+5491144445555'}),
+                                content_type='application/json')
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data['phone_verified'] == 1
+
+    def test_rejects_empty(self, auth_client):
+        resp = auth_client.post('/api/user/update-phone',
+                                data=json.dumps({'phone': ''}),
+                                content_type='application/json')
+        assert resp.status_code == 400
+
+    def test_rejects_invalid_format(self, auth_client):
+        resp = auth_client.post('/api/user/update-phone',
+                                data=json.dumps({'phone': 'abc'}),
+                                content_type='application/json')
+        assert resp.status_code == 400

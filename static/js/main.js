@@ -819,52 +819,16 @@ async function togglePhone(btn, leadId) {
 }
 
 /**
- * Muestra botones de WhatsApp o SMS segun validez del numero
+ * DEPRECATED en Fase D: el botón WhatsApp es ahora estático en cada fila
+ * y apunta a /api/lead/<id>/r/whatsapp (server-side 302).
+ * showContactButtons y hideContactButtons se mantienen como no-ops
+ * para retrocompatibilidad con llamadas existentes.
  */
 function showContactButtons(leadId, phone) {
-    const existing = document.getElementById(`contact-buttons-${leadId}`);
-    if (existing) existing.remove();
-
-    const container = document.createElement('div');
-    container.id = `contact-buttons-${leadId}`;
-    container.className = 'contact-buttons-container';
-
-    const digits = phone.replace(/\D/g, '');
-    const hasWhatsapp = digits.length >= 10 && digits.length <= 15 && !digits.startsWith('0');
-
-    if (hasWhatsapp) {
-        const message = encodeURIComponent('Hola, te contacto desde ArchEstate regarding tu solicitud de propiedad. ¿Tenés un momento para conversar?');
-        const waLink = document.createElement('a');
-        waLink.href = `https://wa.me/${digits}?text=${message}`;
-        waLink.target = '_blank';
-        waLink.rel = 'noopener noreferrer';
-        waLink.className = 'contact-btn contact-btn-whatsapp';
-        waLink.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/><path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1Zm0 0a5 5 0 0 0 5 5m0 0a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1v1a.5.5 0 0 0 1 0v-1a.5.5 0 0 0-1 0Z"/><path d="M17 8a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2"/><path d="M12 12h.01"/></svg> WhatsApp`;
-        waLink.title = 'Abrir chat de WhatsApp';
-        container.appendChild(waLink);
-    } else {
-        const smsPhone = phone.startsWith('+') ? phone : '+' + digits;
-        const message = encodeURIComponent('Hola, te contacto desde ArchEstate regarding tu solicitud de propiedad.');
-        const smsLink = document.createElement('a');
-        smsLink.href = `sms:${smsPhone}?&body=${message}`;
-        smsLink.className = 'contact-btn contact-btn-sms';
-        smsLink.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg> SMS`;
-        smsLink.title = 'Enviar SMS (solo en móvil)';
-        container.appendChild(smsLink);
-    }
-
-    const phoneBtn = document.querySelector(`button[onclick="togglePhone(this,'${leadId}')"]`);
-    if (phoneBtn) {
-        phoneBtn.parentNode.insertBefore(container, phoneBtn.nextSibling);
-    }
+    // No-op: el botón WhatsApp ya está renderizado en la fila.
 }
-
-/**
- * Ocultar botones de contacto cuando se oculta el telefono
- */
 function hideContactButtons(leadId) {
-    const existing = document.getElementById(`contact-buttons-${leadId}`);
-    if (existing) existing.remove();
+    // No-op: el botón WhatsApp es permanente en la fila.
 }
 
 /**

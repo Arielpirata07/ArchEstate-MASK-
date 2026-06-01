@@ -14,6 +14,8 @@ from functools import wraps
 from io import StringIO
 
 import openpyxl
+import phonenumbers
+from phonenumbers import PhoneNumberType
 import pytz
 
 from flask import Flask, render_template, jsonify, request, session, redirect, url_for, Response, send_file, flash, send_from_directory
@@ -83,6 +85,55 @@ def security_headers(response):
     return rate_limit.add_rate_limit_headers(response)
 
 
+@app.before_request
+def assign_request_id():
+    """Asigna un request_id por request para trazabilidad en errores."""
+    import uuid
+    from flask import g
+    g.request_id = uuid.uuid4().hex[:12]
+
+
+@app.context_processor
+def inject_request_id():
+    """Hace request_id disponible en todas las templates."""
+    from flask import g
+    return dict(request_id=getattr(g, 'request_id', None))
+
+
+def _err_response(status, message, code=None):
+    """Helper para construir respuestas de error con request_id."""
+    from flask import g, jsonify
+    body = {
+        "error": message,
+        "code": code or str(status),
+        "request_id": getattr(g, 'request_id', None),
+    }
+    return jsonify(body), status
+
+
+@app.errorhandler(400)
+def _h_400(e): return _err_response(400, "Solicitud malformada.", "BAD_REQUEST")
+
+@app.errorhandler(404)
+def _h_404(e): return _err_response(404, "Recurso no encontrado.", "NOT_FOUND")
+
+@app.errorhandler(409)
+def _h_409(e): return _err_response(409, "Conflicto con el estado actual.", "CONFLICT")
+
+@app.errorhandler(410)
+def _h_410(e): return _err_response(410, "Recurso expirado.", "GONE")
+
+@app.errorhandler(429)
+def _h_429(e): return _err_response(429, "Demasiadas solicitudes.", "RATE_LIMITED")
+
+@app.errorhandler(500)
+def _h_500(e):
+    from flask import g
+    rid = getattr(g, 'request_id', None)
+    print(f"[500] request_id={rid}: {e}")
+    return _err_response(500, "Error interno del servidor.", "INTERNAL")
+
+
 def get_db_connection():
     return models.get_db_connection()
 
@@ -123,6 +174,10 @@ def init_db():
             cursor.execute("ALTER TABLE users ADD COLUMN verification_code TEXT DEFAULT ''")
         if 'verification_expires' not in user_columns:
             cursor.execute("ALTER TABLE users ADD COLUMN verification_expires DATETIME")
+        if 'phone_e164' not in user_columns:
+            cursor.execute("ALTER TABLE users ADD COLUMN phone_e164 TEXT DEFAULT ''")
+        if 'phone_number_type' not in user_columns:
+            cursor.execute("ALTER TABLE users ADD COLUMN phone_number_type TEXT DEFAULT ''")
 
         # Tabla de Leads
         cursor.execute('''
@@ -332,6 +387,60 @@ def init_db():
             )
         ''')
 
+        # Tabla de consentimiento de canales (Ley 25.326 / AAIP)
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS consent_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL REFERENCES users(id),
+                channel TEXT NOT NULL,
+                ip TEXT DEFAULT '',
+                user_agent TEXT DEFAULT '',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        # Tabla genérica de eventos (telemetría)
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER REFERENCES users(id),
+                lead_id INTEGER REFERENCES leads(id),
+                event TEXT NOT NULL,
+                props_json TEXT DEFAULT '',
+                ip TEXT DEFAULT '',
+                ts DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        # Migración: preferred_channel en user_preferences
+        cursor.execute('PRAGMA table_info(user_preferences)')
+        up_prefs_cols = [r[1] for r in cursor.fetchall()]
+        if 'preferred_channel' not in up_prefs_cols:
+            cursor.execute("ALTER TABLE user_preferences ADD COLUMN preferred_channel TEXT NOT NULL DEFAULT 'auto'")
+
+        # Backfill: derivar phone_e164 y phone_number_type para users existentes
+        cursor.execute('''
+            SELECT id, phone FROM users
+            WHERE (phone_e164 IS NULL OR phone_e164 = '')
+              AND phone IS NOT NULL AND phone != ''
+        ''')
+        pending = cursor.fetchall()
+        for row in pending:
+            e164 = utils.normalize_phone_to_e164(row['phone'])
+            ntype = ''
+            if e164 and utils.is_mobile_number(e164):
+                parsed = utils._parse_phone(e164)
+                if parsed is not None:
+                    t = phonenumbers.number_type(parsed)
+                    ntype = 'mobile' if t == PhoneNumberType.MOBILE else (
+                        'fixed_or_mobile' if t == PhoneNumberType.FIXED_LINE_OR_MOBILE else 'fixed')
+            cursor.execute(
+                'UPDATE users SET phone_e164 = ?, phone_number_type = ? WHERE id = ?',
+                (e164, ntype, row['id'])
+            )
+        if pending:
+            print(f"[init_db] Backfill phone_e164 para {len(pending)} usuarios")
+
         # Migraciones adicionales en tablas existentes
         cursor.execute('PRAGMA table_info(user_profiles)')
         up_cols = [r[1] for r in cursor.fetchall()]
@@ -364,6 +473,10 @@ def init_db():
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_lead_reports_status ON lead_reports(status)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_audit_log_user ON audit_log(user_id)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_login_history_user ON user_login_history(user_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_events_user ON events(user_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_events_lead ON events(lead_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_events_event ON events(event)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_events_ts ON events(ts)')
 
         # CREAMOS EL ADMIN POR DEFECTO (Ahora con su rol)
         cursor.execute('SELECT COUNT(*) FROM users')
@@ -461,8 +574,8 @@ def sitemap():
     """Generate XML sitemap for search engines."""
     public_urls = [
         {'loc': url_for('index', _external=True), 'changefreq': 'daily', 'priority': '1.0'},
-        {'loc': url_for('login_view', _external=True), 'changefreq': 'monthly', 'priority': '0.3'},
-        {'loc': url_for('register_view', _external=True), 'changefreq': 'monthly', 'priority': '0.4'},
+        {'loc': url_for('login', _external=True), 'changefreq': 'monthly', 'priority': '0.3'},
+        {'loc': url_for('register', _external=True), 'changefreq': 'monthly', 'priority': '0.4'},
     ]
     xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
@@ -556,6 +669,9 @@ def lead_detail(lead_id):
 
     lead_dict = dict(lead)
     lead_dict['timestamp'] = convert_to_argentina_time(lead_dict['timestamp'])
+    phone_raw = lead_dict.get('phone') or ''
+    lead_dict['phone_e164'] = utils.normalize_phone_to_e164(phone_raw)
+    lead_dict['phone_is_mobile'] = bool(lead_dict['phone_e164'] and utils.is_whatsapp_capable(lead_dict['phone_e164']))
     return render_template('lead_detail.html', lead=lead_dict)
 
 
@@ -1057,32 +1173,7 @@ def export_leads_xlsx():
     )
 
 
-@app.route('/api/lead/<int:lead_id>/phone')
-@rate_limit.check_rate_limit(limit=20, window=60)
-@professional_required
-def get_lead_phone(lead_id):
-    """Entrega el teléfono de un lead específico y audita la consulta."""
-    conn = None
-    try:
-        conn = get_db_connection()
-        user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
-        if not user:
-            return jsonify({"status": "error", "message": "Acceso denegado"}), 403
-
-        professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
-        if not professional or professional['status'] != 'approved':
-            return jsonify({"status": "error", "message": "Cuenta pendiente de aprobación"}), 403
-
-        lead = conn.execute('SELECT phone, type FROM leads WHERE id = ?', (lead_id,)).fetchone()
-
-        if lead:
-            utils.log_action("Consulta Teléfono", f"Lead ID: {lead_id} ({lead['type']})", session)
-            return jsonify({"status": "success", "phone": lead['phone']})
-
-        return jsonify({"status": "error", "message": "Lead no encontrado"}), 404
-    finally:
-        if conn:
-            conn.close()
+# /api/lead/<id>/phone ahora vive en routes.lead_bp (Fase D)
 
 
 @app.route('/api/lead/<int:lead_id>/download')
@@ -1491,6 +1582,10 @@ def get_leads_api():
         for lead in leads:
             lead_dict = dict(lead)
             lead_dict['timestamp'] = convert_to_argentina_time(lead_dict['timestamp'])
+            phone_raw = lead_dict.get('phone') or ''
+            phone_e164 = utils.normalize_phone_to_e164(phone_raw)
+            lead_dict['phone_e164'] = phone_e164
+            lead_dict['phone_is_mobile'] = bool(phone_e164 and utils.is_whatsapp_capable(phone_e164))
             leads_list.append(lead_dict)
 
         # Obtener tracking del profesional actual para estos leads
@@ -1780,6 +1875,76 @@ def get_lead_reports():
         })
     except Exception as e:
         print(f"Error en get_lead_reports: {e}")
+        return jsonify({'error': 'Error interno'}), 500
+    finally:
+        if conn:
+            conn.close()
+
+
+@app.route('/api/admin/telemetry', methods=['GET'])
+@admin_required
+def get_telemetry():
+    """Resumen de eventos de telemetría WhatsApp/SMS para el dashboard admin (Fase F)."""
+    conn = None
+    try:
+        conn = get_db_connection()
+
+        period = request.args.get('period', '30d')
+        days = {'7d': 7, '30d': 30, '90d': 90, '1y': 365}.get(period, 30)
+        since_clause = f"datetime('now', '-{days} days')"
+
+        event_counts = {}
+        for row in conn.execute(
+            f"SELECT event, COUNT(*) as c FROM events "
+            f"WHERE ts >= {since_clause} GROUP BY event ORDER BY c DESC"
+        ).fetchall():
+            event_counts[row['event']] = row['c']
+
+        wa_clicks = event_counts.get('wa_button_clicked', 0)
+        wa_opens = event_counts.get('wa_link_generated', 0)
+        wa_invalid = event_counts.get('wa_invalid_number', 0)
+        sms_fallbacks = event_counts.get('sms_fallback_used', 0)
+        otp_sent = event_counts.get('otp_sent', 0)
+        otp_verified = event_counts.get('otp_verified', 0)
+        otp_failed = event_counts.get('otp_verify_failed', 0)
+        ctr = round(100 * wa_opens / wa_clicks, 1) if wa_clicks else 0.0
+
+        consent_by_channel = {}
+        for row in conn.execute(
+            f"SELECT channel, COUNT(*) as c FROM consent_log "
+            f"WHERE created_at >= {since_clause} GROUP BY channel"
+        ).fetchall():
+            consent_by_channel[row['channel']] = row['c']
+
+        top_pros = []
+        for row in conn.execute(
+            f"SELECT u.username, COUNT(*) as clicks FROM events e "
+            f"JOIN users u ON e.user_id = u.id "
+            f"WHERE e.event = 'wa_link_generated' AND e.ts >= {since_clause} "
+            f"GROUP BY u.username ORDER BY clicks DESC LIMIT 5"
+        ).fetchall():
+            top_pros.append({'username': row['username'], 'clicks': row['clicks']})
+
+        return jsonify({
+            'success': True,
+            'period': period,
+            'event_counts': event_counts,
+            'metrics': {
+                'wa_button_clicks': wa_clicks,
+                'wa_links_generated': wa_opens,
+                'wa_invalid_numbers': wa_invalid,
+                'sms_fallbacks': sms_fallbacks,
+                'wa_click_through_rate_pct': ctr,
+                'otp_sent': otp_sent,
+                'otp_verified': otp_verified,
+                'otp_failed': otp_failed,
+                'otp_success_rate_pct': round(100 * otp_verified / otp_sent, 1) if otp_sent else 0.0,
+            },
+            'consent_by_channel': consent_by_channel,
+            'top_professionals': top_pros,
+        })
+    except Exception as e:
+        print(f"Error en get_telemetry: {e}")
         return jsonify({'error': 'Error interno'}), 500
     finally:
         if conn:
@@ -2195,7 +2360,7 @@ def admin_set_user_active(user_id):
 @app.route('/api/user/update-phone', methods=['POST'])
 @rate_limit.check_rate_limit(limit=10, window=60)
 def update_user_phone():
-    """Actualiza el teléfono del usuario logueado."""
+    """Actualiza el teléfono del usuario logueado. Invalida OTP pendiente si el teléfono cambia."""
     if 'user_id' not in session:
         return jsonify({"error": "No autorizado"}), 401
 
@@ -2212,9 +2377,49 @@ def update_user_phone():
     conn = None
     try:
         conn = get_db_connection()
-        conn.execute('UPDATE users SET phone = ? WHERE id = ?', (phone, session['user_id']))
+        current = conn.execute('SELECT phone, phone_verified FROM users WHERE id = ?',
+                               (session['user_id'],)).fetchone()
+        old_phone = current['phone'] if current else ''
+
+        e164 = utils.normalize_phone_to_e164(phone)
+        ntype = ''
+        if e164:
+            parsed = utils._parse_phone(e164)
+            if parsed is not None:
+                t = phonenumbers.number_type(parsed)
+                ntype = ('mobile' if t == PhoneNumberType.MOBILE
+                         else 'fixed_or_mobile' if t == PhoneNumberType.FIXED_LINE_OR_MOBILE
+                         else 'fixed' if t == PhoneNumberType.FIXED_LINE
+                         else 'other')
+
+        invalidate_otp = (old_phone != phone)
+
+        if invalidate_otp:
+            conn.execute(
+                'UPDATE users SET phone = ?, phone_e164 = ?, phone_number_type = ?, '
+                'phone_format_valid = 1, phone_verified = 0, verification_code = \'\', verification_expires = NULL '
+                'WHERE id = ?',
+                (phone, e164, ntype, session['user_id'])
+            )
+            utils.log_event(user_id=session['user_id'], event='phone_changed',
+                            props={'old_hash': utils.hash_phone_digits(old_phone),
+                                   'new_hash': utils.hash_phone_digits(phone),
+                                   'e164': bool(e164)}, conn=conn)
+        else:
+            conn.execute(
+                'UPDATE users SET phone_e164 = ?, phone_number_type = ? WHERE id = ?',
+                (e164, ntype, session['user_id'])
+            )
         conn.commit()
-        return jsonify({"status": "success", "message": "Teléfono actualizado correctamente.", "phone": phone})
+
+        return jsonify({
+            "status": "success",
+            "message": "Teléfono actualizado correctamente." if not invalidate_otp
+                       else "Teléfono actualizado. Vuelve a verificarlo.",
+            "phone": phone,
+            "phone_e164": e164,
+            "phone_verified": 0 if invalidate_otp else (current['phone_verified'] if current else 0),
+        })
     except Exception as e:
         print(f"Error en update_user_phone: {e}")
         return jsonify({"error": "Error al actualizar el teléfono."}), 500
@@ -2226,7 +2431,10 @@ def update_user_phone():
 @app.route('/api/phone/send-code', methods=['POST'])
 @rate_limit.check_rate_limit(limit=3, window=60)
 def send_verification_code():
-    """Envía (simula) un código SMS de verificación de 6 dígitos."""
+    """
+    Envía un código de verificación de 6 dígitos por el canal preferido del usuario
+    (sms | whatsapp | auto). Refactorizado en Fase C para usar VerifierRouter.
+    """
     if 'user_id' not in session:
         return jsonify({"error": "No autorizado"}), 401
 
@@ -2234,7 +2442,7 @@ def send_verification_code():
     conn = get_db_connection()
     try:
         user = conn.execute(
-            'SELECT username, phone, phone_verified FROM users WHERE id = ?',
+            'SELECT username, phone, phone_e164, phone_verified FROM users WHERE id = ?',
             (user_id,)
         ).fetchone()
         if not user:
@@ -2251,6 +2459,13 @@ def send_verification_code():
         if not is_valid_phone:
             return jsonify({"error": phone_error}), 400
 
+        phone_e164 = user['phone_e164'] or utils.normalize_phone_to_e164(phone)
+        if not phone_e164:
+            return jsonify({"error": "No se pudo normalizar el teléfono a E.164."}), 400
+
+        prefs = models.get_user_preferences(user_id)
+        preferred_channel = (prefs.get('preferred_channel') or 'auto').lower()
+
         code = f"{secrets.randbelow(1000000):06d}"
         expires = datetime.now() + timedelta(minutes=10)
 
@@ -2260,29 +2475,46 @@ def send_verification_code():
         )
         conn.commit()
 
-        print(f"\n[SMS SIMULADO] Para {user['username']} ({phone}):")
-        print(f"[SMS SIMULADO] Código de verificación: {code}")
-        print(f"[SMS SIMULADO] Válido hasta: {expires.isoformat()}\n")
+        from services.verifier import get_default_router
+        router = get_default_router()
+        result = router.send_otp(phone_e164, code, preferred_channel=preferred_channel, ttl_minutes=10)
+
+        conn.execute(
+            'INSERT INTO consent_log (user_id, channel, ip, user_agent) VALUES (?, ?, ?, ?)',
+            (user_id, result.channel, rate_limit.get_client_ip(), request.headers.get('User-Agent', '')[:255])
+        )
+        conn.commit()
 
         utils.log_action(
-            f"Envío código verificación teléfono",
-            f"user={user['username']}, phone={phone}",
-            session
+            f"Envío código verificación teléfono ({result.channel})",
+            f"user={user['username']}, channel={result.channel}, phone_hash={utils.hash_phone_digits(phone_e164)}",
+            session,
+            conn=conn
         )
+        utils.log_event(user_id=user_id, event='otp_sent',
+                        props={'channel': result.channel, 'preferred': preferred_channel,
+                               'phone_hash': utils.hash_phone_digits(phone_e164)},
+                        conn=conn)
 
-        return jsonify({"status": "success", "message": "Código enviado al {phone}"})
-
+        return jsonify({
+            "status": "success" if result.ok else "error",
+            "message": result.message,
+            "channel": result.channel,
+            "phone_e164": phone_e164,
+            "deep_link": (result.meta or {}).get('deep_link') if result.ok else None,
+        })
     except Exception as e:
         print(f"Error en send_verification_code: {e}")
         return jsonify({"error": "Error al enviar el código."}), 500
     finally:
-        conn.close()
+        if conn:
+            conn.close()
 
 
 @app.route('/api/phone/verify', methods=['POST'])
 @rate_limit.check_rate_limit(limit=5, window=60)
 def verify_phone_code():
-    """Verifica el código SMS ingresado por el usuario."""
+    """Verifica el código OTP ingresado por el usuario."""
     if 'user_id' not in session:
         return jsonify({"error": "No autorizado"}), 401
 
@@ -2315,6 +2547,7 @@ def verify_phone_code():
         try:
             expires = dt_module.datetime.fromisoformat(expires_str)
             if dt_module.datetime.now() > expires:
+                utils.log_event(user_id=user_id, event='otp_expired', conn=conn)
                 return jsonify({"error": "Código expirado. Solicitá uno nuevo."}), 410
         except ValueError:
             return jsonify({"error": "Error de validación. Solicitá un nuevo código."}), 400
@@ -2323,8 +2556,10 @@ def verify_phone_code():
             utils.log_action(
                 "Intento fallido verificación teléfono",
                 f"user={user['username']}, code_ingresado={code}",
-                session
+                session,
+                conn=conn
             )
+            utils.log_event(user_id=user_id, event='otp_verify_failed', conn=conn)
             return jsonify({"error": "Código incorrecto."}), 400
 
         conn.execute(
@@ -2334,10 +2569,12 @@ def verify_phone_code():
         conn.commit()
 
         utils.log_action(
-            "Teléfono verificado correctamente",
-            f"user={user['username']}, phone={user['phone']}",
-            session
+            "Telefono verificado correctamente",
+            f"user={user['username']}, phone_hash={utils.hash_phone_digits(user['phone'] or '')}",
+            session,
+            conn=conn
         )
+        utils.log_event(user_id=user_id, event='otp_verified', conn=conn)
 
         return jsonify({"status": "success", "message": "Teléfono verificado correctamente."})
 
@@ -2345,11 +2582,15 @@ def verify_phone_code():
         print(f"Error en verify_phone_code: {e}")
         return jsonify({"error": "Error al verificar el código."}), 500
     finally:
-        conn.close()
+        if conn:
+            conn.close()
 
 
 from routes_profile import profile_bp
 app.register_blueprint(profile_bp)
+
+from routes.lead_bp import lead_bp
+app.register_blueprint(lead_bp)
 
 # Inicializar la base de datos al arrancar
 init_db()

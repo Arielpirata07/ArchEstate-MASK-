@@ -1,0 +1,223 @@
+{#-
+  Modal accesible para verificar el código OTP de teléfono.
+  Usa el patrón de <dialog> nativo cuando es soportado, con fallback
+  a role="dialog" + aria-modal. Cumple WCAG 2.4.7 (focus visible),
+  4.1.3 (aria-live para errores), 2.1.1 (focus trap por teclado).
+
+  Variables esperadas:
+    phone_masked: el teléfono enmascarado, ej "+54 9 11 ****-****" (opcional)
+-#}
+
+<dialog id="otp-modal" class="otp-modal" role="dialog" aria-modal="true"
+        aria-labelledby="otp-modal-title" aria-describedby="otp-modal-desc">
+  <div class="otp-modal__backdrop" data-otp-close></div>
+  <div class="otp-modal__panel">
+    <header class="otp-modal__header">
+      <h2 id="otp-modal-title" class="otp-modal__title">Verifica tu teléfono</h2>
+      <button type="button" class="otp-modal__close" data-otp-close aria-label="Cerrar modal">
+        <i data-lucide="x" class="w-4 h-4" aria-hidden="true"></i>
+      </button>
+    </header>
+
+    <p id="otp-modal-desc" class="otp-modal__desc">
+      Te enviamos un código de 6 dígitos a tu teléfono
+      {% if phone_masked %}<strong>{{ phone_masked }}</strong>{% endif %}.
+      Ingresá el código para confirmar que es tuyo.
+    </p>
+
+    <form id="otp-form" class="otp-modal__form" novalidate>
+      <label for="otp-input" class="otp-modal__label">Código de verificación</label>
+      <input id="otp-input" name="code" type="text" inputmode="numeric"
+             pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code"
+             required aria-describedby="otp-error otp-help"
+             class="otp-modal__input" />
+
+      <p id="otp-help" class="otp-modal__help">
+        El código vence en 10 minutos.
+      </p>
+
+      <div id="otp-error" class="otp-modal__error" role="alert" aria-live="polite"></div>
+
+      <div class="otp-modal__actions">
+        <button type="button" class="otp-modal__btn otp-modal__btn--ghost" data-otp-close>
+          Cancelar
+        </button>
+        <button type="submit" class="otp-modal__btn otp-modal__btn--primary">
+          Verificar
+        </button>
+      </div>
+
+      <div class="otp-modal__resend">
+        <button type="button" id="otp-resend" class="otp-modal__resend-btn">
+          Reenviar código
+        </button>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<style>
+.otp-modal { border: 0; padding: 0; background: transparent; }
+.otp-modal::backdrop { background: rgba(0,4,16,0.6); }
+.otp-modal__backdrop { position: fixed; inset: 0; z-index: 0; }
+.otp-modal__panel {
+  position: relative; z-index: 1;
+  background: #fff; border-radius: 12px; padding: 1.5rem;
+  max-width: 28rem; width: 92vw; margin: 5vh auto;
+  box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4);
+  border-top: 4px solid #735A3A;
+}
+.otp-modal__header { display: flex; justify-content: space-between; align-items: center; }
+.otp-modal__title { font-family: 'Newsreader', serif; font-size: 1.5rem; color: #000410; }
+.otp-modal__close { background: transparent; border: 0; padding: 0.5rem; cursor: pointer; }
+.otp-modal__close:focus-visible { outline: 2px solid #735A3A; outline-offset: 2px; border-radius: 4px; }
+.otp-modal__desc { font-size: 0.875rem; color: #00041099; margin: 0.75rem 0 1rem; }
+.otp-modal__label { display: block; font-size: 0.625rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em; color: #735A3A; margin-bottom: 0.25rem; }
+.otp-modal__input {
+  width: 100%; padding: 0.75rem; font-size: 1.5rem; letter-spacing: 0.4em;
+  text-align: center; border: 1px solid #00041033; border-radius: 6px;
+  font-family: 'Manrope', monospace;
+}
+.otp-modal__input:focus-visible { outline: 2px solid #735A3A; outline-offset: 2px; }
+.otp-modal__input[aria-invalid="true"] { border-color: #b91c1c; }
+.otp-modal__help { font-size: 0.75rem; color: #00041066; margin-top: 0.5rem; }
+.otp-modal__error:empty { display: none; }
+.otp-modal__error { font-size: 0.875rem; color: #b91c1c; margin-top: 0.75rem; padding: 0.5rem 0.75rem;
+  background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; }
+.otp-modal__actions { display: flex; gap: 0.5rem; margin-top: 1rem; }
+.otp-modal__btn {
+  flex: 1; padding: 0.75rem; border-radius: 6px; font-size: 0.625rem;
+  font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+  border: 0; cursor: pointer; min-height: 44px;
+}
+.otp-modal__btn:focus-visible { outline: 2px solid #735A3A; outline-offset: 2px; }
+.otp-modal__btn--ghost { background: transparent; color: #000410; border: 1px solid #00041033; }
+.otp-modal__btn--primary { background: #000410; color: #fff; }
+.otp-modal__btn--primary:hover { background: #735A3A; }
+.otp-modal__resend { text-align: center; margin-top: 1rem; }
+.otp-modal__resend-btn {
+  background: transparent; border: 0; font-size: 0.75rem;
+  color: #735A3A; text-decoration: underline; cursor: pointer;
+  padding: 0.5rem; min-height: 32px;
+}
+.otp-modal__resend-btn:focus-visible { outline: 2px solid #735A3A; outline-offset: 2px; border-radius: 4px; }
+.otp-modal__resend-btn:disabled { color: #00041066; cursor: not-allowed; text-decoration: none; }
+</style>
+
+<script>
+(function() {
+  const modal = document.getElementById('otp-modal');
+  if (!modal) return;
+  const input = document.getElementById('otp-input');
+  const form = document.getElementById('otp-form');
+  const errorBox = document.getElementById('otp-error');
+  const resendBtn = document.getElementById('otp-resend');
+  const trigger = document.getElementById('open-otp-modal');
+  let lastTrigger = null;
+
+  function openModal() {
+    lastTrigger = document.activeElement;
+    if (typeof modal.showModal === 'function') {
+      modal.showModal();
+    } else {
+      modal.setAttribute('open', '');
+    }
+    setTimeout(() => input.focus(), 50);
+  }
+
+  function closeModal() {
+    if (typeof modal.close === 'function') {
+      modal.close();
+    } else {
+      modal.removeAttribute('open');
+    }
+    if (lastTrigger) lastTrigger.focus();
+    form.reset();
+    errorBox.textContent = '';
+    input.removeAttribute('aria-invalid');
+  }
+
+  modal.addEventListener('click', (e) => {
+    if (e.target.matches('[data-otp-close]')) closeModal();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.open) {
+      e.preventDefault();
+      closeModal();
+    }
+  });
+
+  if (trigger) {
+    trigger.addEventListener('click', openModal);
+  }
+
+  input.addEventListener('input', () => {
+    input.value = input.value.replace(/\D/g, '').slice(0, 6);
+    if (errorBox.textContent) {
+      errorBox.textContent = '';
+      input.removeAttribute('aria-invalid');
+    }
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const code = input.value;
+    if (!/^[0-9]{6}$/.test(code)) {
+      errorBox.textContent = 'El código debe tener 6 dígitos.';
+      input.setAttribute('aria-invalid', 'true');
+      return;
+    }
+    try {
+      const res = await fetch('/api/phone/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+      const data = await res.json();
+      if (res.ok && data.status === 'success') {
+        errorBox.style.background = '#ecfdf5';
+        errorBox.style.borderColor = '#a7f3d0';
+        errorBox.style.color = '#065f46';
+        errorBox.textContent = data.message;
+        setTimeout(() => { closeModal(); location.reload(); }, 800);
+      } else {
+        errorBox.style = '';
+        errorBox.textContent = data.error || 'Error al verificar.';
+        input.setAttribute('aria-invalid', 'true');
+      }
+    } catch (err) {
+      errorBox.style = '';
+      errorBox.textContent = 'Error de conexión.';
+      input.setAttribute('aria-invalid', 'true');
+    }
+  });
+
+  resendBtn.addEventListener('click', async () => {
+    resendBtn.disabled = true;
+    resendBtn.textContent = 'Enviando...';
+    try {
+      const res = await fetch('/api/phone/send-code', { method: 'POST' });
+      const data = await res.json();
+      if (res.ok) {
+        errorBox.style = '';
+        errorBox.textContent = 'Código reenviado. Revisá tu ' + (data.channel || 'canal preferido') + '.';
+      } else {
+        errorBox.style = '';
+        errorBox.textContent = data.error || 'Error al reenviar.';
+      }
+    } catch (err) {
+      errorBox.style = '';
+      errorBox.textContent = 'Error de conexión.';
+    } finally {
+      setTimeout(() => {
+        resendBtn.disabled = false;
+        resendBtn.textContent = 'Reenviar código';
+      }, 3000);
+    }
+  });
+
+  window.openOtpModal = openModal;
+})();
+</script>

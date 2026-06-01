@@ -1,0 +1,60 @@
+{#-
+  Botones de contacto con un lead.
+
+  Variables esperadas en el contexto:
+    lead: dict con phone (requerido), phone_e164 (opcional), phone_is_mobile (bool, opcional),
+          phone_format_valid (0/1), type, zone, id
+    pro_name: nombre del profesional (opcional; cae a 'el equipo')
+
+  Genera:
+    - Botón WhatsApp (primario) si phone_is_mobile
+    - Botón SMS (secundario) si hay teléfono con formato válido
+    - Link tel: (terciario) si hay teléfono
+-#}
+
+{% set phone_raw = lead.phone or '' %}
+{% set phone_e164 = lead.phone_e164 or '' %}
+{% set phone_for_tel = phone_e164 if phone_e164 else phone_raw %}
+{% set is_mobile = lead.phone_is_mobile if lead.phone_is_mobile is defined else False %}
+{% set format_valid = (lead.phone_format_valid == 1) if lead.phone_format_valid is defined else bool(phone_e164) %}
+{% set operation = lead.type or '' %}
+{% set zone = lead.zone or '' %}
+{% set lead_id = lead.id %}
+
+{% if phone_raw %}
+  {% set wa_message = 'Hola, soy ' ~ (pro_name or 'el equipo') ~ ' de ArchEstate. Te escribo por tu consulta de ' ~ (operation or 'una propiedad') ~ ((' en ' ~ zone) if zone else '') ~ '. ¿Tenés un momento para hablar?' %}
+
+  <div class="flex flex-wrap items-center gap-2 mt-3" id="contact-buttons-{{ lead_id }}">
+
+    {% if is_mobile %}
+      <a href="/api/lead/{{ lead_id }}/r/whatsapp"
+         data-wa-link
+         data-lead-id="{{ lead_id }}"
+         class="contact-btn contact-btn-whatsapp inline-flex items-center gap-1.5 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-widest transition-all"
+         aria-label="Contactar por WhatsApp">
+        <i data-lucide="message-circle" class="w-3 h-3" aria-hidden="true"></i>
+        WhatsApp
+      </a>
+    {% endif %}
+
+    {% if format_valid %}
+      <a href="sms:{{ phone_for_tel }}?&body={{ wa_message | urlencode }}"
+         data-sms-link
+         data-lead-id="{{ lead_id }}"
+         class="contact-btn contact-btn-sms inline-flex items-center gap-1.5 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-widest transition-all"
+         aria-label="Enviar mensaje SMS">
+        <i data-lucide="smartphone" class="w-3 h-3" aria-hidden="true"></i>
+        SMS
+      </a>
+    {% endif %}
+
+    <a href="tel:{{ phone_for_tel }}"
+       data-tel-link
+       data-lead-id="{{ lead_id }}"
+       class="contact-btn contact-btn-tel text-[10px] font-bold uppercase tracking-widest underline-offset-2 hover:underline"
+       aria-label="Llamar por teléfono">
+      Llamar
+    </a>
+
+  </div>
+{% endif %}

@@ -881,12 +881,26 @@ function renderLeads(leads) {
                                </span>`
                             : ''
                         }
-                        <button type="button" onclick="openWhatsApp(${lead.id}, this)"
-                            class="inline-flex items-center gap-1.5 px-3 py-2 bg-green-600 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-green-700 transition-all"
-                            title="Abrir chat de WhatsApp con el usuario">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/><path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1Zm0 0a5 5 0 0 0 5 5m0 0a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1v1a.5.5 0 0 0 1 0v-1a.5.5 0 0 0-1 0Z"/><path d="M17 8a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2"/><path d="M12 12h.01"/></svg> WhatsApp
-                        </button>
-                        <div id="contact-buttons-${lead.id}" class="inline-flex gap-1.5"></div>
+                        ${lead.phone_is_mobile
+                            ? `<a href="/api/lead/${lead.id}/r/whatsapp"
+                                 data-wa-link
+                                 data-lead-id="${lead.id}"
+                                 class="contact-btn contact-btn-whatsapp inline-flex items-center gap-1.5 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-widest transition-all"
+                                 title="Abrir chat de WhatsApp con el usuario"
+                                 aria-label="Abrir chat de WhatsApp">
+                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/><path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1Zm0 0a5 5 0 0 0 5 5m0 0a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1v1a.5.5 0 0 0 1 0v-1a.5.5 0 0 0-1 0Z"/><path d="M17 8a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2"/><path d="M12 12h.01"/></svg> WhatsApp
+                               </a>`
+                            : (lead.phone_format_valid == 1
+                                ? `<a href="sms:${lead.phone_e164 || lead.phone}?&body=${encodeURIComponent('Hola, te contacto desde ArchEstate. Vi tu consulta y me interesa conversar.')}"
+                                     data-sms-link
+                                     data-lead-id="${lead.id}"
+                                     class="contact-btn contact-btn-sms inline-flex items-center gap-1.5 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-widest transition-all"
+                                     title="Enviar SMS al cliente (número no es WhatsApp)"
+                                     aria-label="Enviar SMS">
+                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg> SMS
+                                   </a>`
+                                : '')
+                        }
                         <a href="/profesional/lead/${lead.id}"
                             class="inline-flex items-center gap-1.5 px-3 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
                             <i data-lucide="arrow-right" class="w-3 h-3"></i> Ver más
@@ -1070,39 +1084,34 @@ async function confirmReport() {
 }
 
 /**
- * Abre WhatsApp directamente con el número del lead sin revelar el teléfono en la UI
+ * Refactor Fase D: el link es server-side (/r/whatsapp/<id>) y genera 302 a wa.me.
+ * Esta función sólo emite eventos de telemetría (click/popup_blocked) y
+ * muestra feedback si la redirección falla.
  */
-async function openWhatsApp(leadId, btn) {
-    if (btn.disabled) return;
-
-    const originalHTML = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-3 h-3 animate-spin"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>`;
-
-    try {
-        const response = await fetch(`/api/lead/${leadId}/phone`);
-        const data = await response.json();
-
-        if (data.phone) {
-            const digits = data.phone.replace(/\D/g, '');
-            if (digits.length >= 10 && digits.length <= 15 && !digits.startsWith('0')) {
-                const message = encodeURIComponent('Hola, te contacto desde ArchEstate regarding tu solicitud de propiedad. ¿Tenés un momento para conversar?');
-                window.open(`https://wa.me/${digits}?text=${message}`, '_blank');
-            } else {
-                showToast('El número no es válido para WhatsApp', 'error');
-            }
-        } else {
-            showToast('No se pudo obtener el teléfono', 'error');
-        }
-    } catch (error) {
-        console.error('Error opening WhatsApp:', error);
-        showToast('Error de conexión', 'error');
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = originalHTML;
-        if (window.lucide) lucide.createIcons();
-    }
+function trackWhatsAppClick(link, e) {
+    const leadId = link.dataset.leadId;
+    fetch(`/api/lead/${leadId}/whatsapp-event`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event: 'wa_button_clicked', props: { source: 'professional_table' } })
+    }).catch(() => {});
 }
+
+function trackSmsClick(link) {
+    const leadId = link.dataset.leadId;
+    fetch(`/api/lead/${leadId}/whatsapp-event`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ event: 'sms_button_clicked', props: { source: 'professional_table' } })
+    }).catch(() => {});
+}
+
+document.addEventListener('click', (e) => {
+    const waLink = e.target.closest('[data-wa-link]');
+    if (waLink) trackWhatsAppClick(waLink, e);
+    const smsLink = e.target.closest('[data-sms-link]');
+    if (smsLink) trackSmsClick(smsLink);
+});
 
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeReportModal();

@@ -1,6 +1,11 @@
 from datetime import datetime
-import pytz
+import hashlib
+import urllib.parse
 import re
+
+import phonenumbers
+from phonenumbers import NumberParseException, PhoneNumberType
+import pytz
 
 import config
 
@@ -11,8 +16,11 @@ MIME_MAGIC_BYTES = {
     'jpeg': [b'\xff\xd8\xff'],
     'png':  [b'\x89PNG\r\n\x1a\n'],
     'gif':  [b'GIF87a', b'GIF89a'],
-    'webp': [b'RIFF'],  # se valida RIFF + WEBP en validate_mime_type
+    'webp': [b'RIFF'],
 }
+
+
+DEFAULT_REGION = 'AR'
 
 
 def validate_mime_type(file_stream, filename):
@@ -78,49 +86,165 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in config.ALLOWED_EXTENSIONS
 
 
-import re
+def _parse_phone(phone, region=DEFAULT_REGION):
+    """
+    Parsea un número con phonenumbers. Retorna el objeto PhoneNumber o None.
+    region: código de país por defecto (sólo se usa si el número no incluye '+').
+    """
+    if not phone or not isinstance(phone, str):
+        return None
+    try:
+        return phonenumbers.parse(phone.strip(), region)
+    except NumberParseException:
+        return None
 
 
-def normalize_phone_for_whatsapp(phone):
+def normalize_phone_to_e164(phone, region=DEFAULT_REGION):
     """
-    Normaliza un numero de telefono para usar en links de WhatsApp (wa.me).
-    WhatsApp requiere solo digitos, sin el '+' inicial.
+    Normaliza un teléfono a formato E.164 (con +), ej: +5491144445555.
+    Retorna string vacío si no se puede parsear.
     """
-    if not phone:
+    parsed = _parse_phone(phone, region)
+    if parsed is None:
         return ''
-    digits = re.sub(r'\D', '', phone)
-    return digits
+    if not phonenumbers.is_possible_number(parsed):
+        return ''
+    try:
+        return phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)
+    except Exception:
+        return ''
 
 
-def is_whatsapp_capable(phone):
+def is_mobile_number(phone, region=DEFAULT_REGION):
     """
-    Determina si un numero de telefono es valido para WhatsApp.
+    Determina si un teléfono es móvil (o posiblemente móvil) usando
+    metadata de Google libphonenumber. Distingue móvil de fijo.
     """
-    if not phone:
+    parsed = _parse_phone(phone, region)
+    if parsed is None:
         return False
-    digits = re.sub(r'\D', '', phone)
-    return 10 <= len(digits) <= 15 and not digits.startswith('0')
+    if not phonenumbers.is_valid_number(parsed):
+        return False
+    t = phonenumbers.number_type(parsed)
+    return t in (PhoneNumberType.MOBILE, PhoneNumberType.FIXED_LINE_OR_MOBILE)
 
 
-def normalize_phone_for_sms(phone):
+def is_whatsapp_capable(phone, region=DEFAULT_REGION):
     """
-    Normaliza un numero de telefono para usar en links de SMS.
+    Determina si un número es candidato a link wa.me.
+    Reglas: (1) parseable, (2) número válido, (3) tipo móvil (o ambiguo).
+    Reemplaza la heurística anterior de longitud.
     """
-    if not phone:
+    return is_mobile_number(phone, region)
+
+
+def normalize_phone_for_whatsapp(phone, region=DEFAULT_REGION):
+    """
+    Devuelve los dígitos E.164 sin el '+', listos para wa.me/{digits}.
+    Retorna string vacío si no se puede parsear.
+    """
+    e164 = normalize_phone_to_e164(phone, region)
+    if not e164:
         return ''
-    digits = re.sub(r'[^\d+]', '', phone)
-    if not digits.startswith('+'):
-        digits = '+' + digits
-    return digits
+    return e164.lstrip('+')
 
 
-def log_action(action, target, session=None):
-    """Registra una accion en la tabla de auditoria de la base de datos."""
+def normalize_phone_for_sms(phone, region=DEFAULT_REGION):
+    """
+    Normaliza un teléfono para links sms: usa E.164 con '+'.
+    """
+    e164 = normalize_phone_to_e164(phone, region)
+    if not e164:
+        return ''
+    if not e164.startswith('+'):
+        e164 = '+' + e164
+    return e164
+
+
+def build_whatsapp_message(pro_name=None, operation=None, zone=None, lead_id=None):
+    """
+    Construye el mensaje de primer contacto para WhatsApp en español rioplatense.
+    Si faltan datos relevantes, degrada a un mensaje genérico profesional.
+    """
+    pro = (pro_name or '').strip() or 'el equipo'
+    op = (operation or '').strip()
+    zn = (zone or '').strip()
+
+    if op and zn:
+        body = f"Hola, soy {pro} de ArchEstate. Te escribo por tu consulta de {op} en {zn}."
+    elif op:
+        body = f"Hola, soy {pro} de ArchEstate. Te escribo por tu consulta de {op}."
+    elif zn:
+        body = f"Hola, soy {pro} de ArchEstate. Te escribo por tu consulta en {zn}."
+    else:
+        body = f"Hola, soy {pro} de ArchEstate. Vi tu consulta en la plataforma y me interesa conversar."
+
+    body += " ¿Tenés un momento para hablar?"
+    return body[:500]
+
+
+def build_whatsapp_url(phone, pro_name=None, operation=None, zone=None, lead_id=None, region=DEFAULT_REGION):
+    """
+    Construye una URL completa wa.me/{digits}?text={msg}, lista para usar en
+    redirección server-side o link directo. Retorna string vacío si el
+    teléfono no es WhatsApp-capable (no parseable, inválido, o no es móvil).
+    """
+    e164 = normalize_phone_to_e164(phone, region)
+    if not e164:
+        return ''
+    if not is_whatsapp_capable(e164):
+        return ''
+    digits = e164.lstrip('+')
+    msg = build_whatsapp_message(pro_name, operation, zone, lead_id)
+    quoted = urllib.parse.quote_plus(msg)
+    return f"https://wa.me/{digits}?text={quoted}"
+
+
+def build_sms_url(phone, pro_name=None, operation=None, zone=None, region=DEFAULT_REGION):
+    """
+    Construye un link sms: para fallback cuando el número no es WhatsApp-capable.
+    """
+    e164 = normalize_phone_for_sms(phone, region)
+    if not e164:
+        return ''
+    msg = build_whatsapp_message(pro_name, operation, zone)
+    quoted = urllib.parse.quote_plus(msg[:160])
+    return f"sms:{e164}?body={quoted}"
+
+
+def build_tel_url(phone, region=DEFAULT_REGION):
+    """
+    Construye un link tel: básico (sin cuerpo).
+    """
+    e164 = normalize_phone_for_sms(phone, region)
+    if not e164:
+        return ''
+    return f"tel:{e164}"
+
+
+def hash_phone_digits(digits, length=16):
+    """
+    Hashea los dígitos de un teléfono con SHA-256 para no exponer PII en logs.
+    Retorna los primeros `length` caracteres hex.
+    """
+    if not digits:
+        return ''
+    return hashlib.sha256(digits.encode('utf-8')).hexdigest()[:length]
+
+
+def log_action(action, target, session=None, conn=None):
+    """
+    Registra una accion en la tabla de auditoria.
+    Si se pasa `conn`, lo usa (recomendado para evitar 'database is locked' en SQLite
+    cuando el route ya tiene una conexion abierta). Si no, abre y cierra una propia.
+    Siempre hace commit() al final (es idempotente si ya estaba commiteado).
+    """
     from models import get_db_connection
 
-    conn = None
+    own_conn = conn is None
     try:
-        conn = get_db_connection()
+        if own_conn:
+            conn = get_db_connection()
         safe_action = safe_text(action)[:100]
         safe_target = safe_text(target)[:200]
         safe_username = safe_text(session.get('username', 'sistema') if session else 'sistema')[:50]
@@ -133,5 +257,43 @@ def log_action(action, target, session=None):
     except Exception as e:
         print(f"Error al registrar auditoria: {e}")
     finally:
-        if conn:
+        if own_conn and conn:
+            conn.close()
+
+
+def log_event(user_id=None, lead_id=None, event='', props=None, ip=None, conn=None):
+    """
+    Registra un evento en la tabla events (telemetría).
+    props: dict serializable a JSON. Si no es serializable, se coerce a str.
+    Si se pasa `conn`, lo usa (recomendado para SQLite). Si no, abre y cierra uno propio.
+    Siempre hace commit() al final (es idempotente si ya estaba commiteado).
+    """
+    import json
+    from models import get_db_connection
+
+    if not event:
+        return False
+
+    own_conn = conn is None
+    props_json = ''
+    if props:
+        try:
+            props_json = json.dumps(props, ensure_ascii=False, default=str)[:2000]
+        except Exception:
+            props_json = json.dumps({'raw': str(props)[:500]}, ensure_ascii=False)
+
+    try:
+        if own_conn:
+            conn = get_db_connection()
+        conn.execute(
+            'INSERT INTO events (user_id, lead_id, event, props_json, ip) VALUES (?, ?, ?, ?, ?)',
+            (user_id, lead_id, event[:64], props_json, (ip or '')[:64])
+        )
+        conn.commit()
+        return True
+    except Exception as e:
+        print(f"Error al registrar evento: {e}")
+        return False
+    finally:
+        if own_conn and conn:
             conn.close()
