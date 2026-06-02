@@ -179,3 +179,47 @@ class TestWhatsappEvent:
                            data=json.dumps({'event': 'wa_button_clicked', 'props': {}}),
                            content_type='application/json')
         assert resp.status_code in (302, 403)
+
+
+class TestReportLead:
+    def test_report_lead_does_not_log_full_phone(self, auth_professional, db):
+        """Fase 1: el audit_log NO debe contener el teléfono completo, sólo el hash."""
+        from utils import hash_phone_digits
+        client, _, lead_id = auth_professional
+        resp = client.post(f'/api/lead/{lead_id}/report',
+                           data=json.dumps({'notes': 'no contesta'}),
+                           content_type='application/json')
+        assert resp.status_code == 200
+        row = db.execute(
+            "SELECT * FROM audit_log WHERE action = 'Reporte de Lead' ORDER BY id DESC LIMIT 1"
+        ).fetchone()
+        assert row is not None
+        target = row['target']
+        assert '+5491144445555' not in target, f"El audit log filtró el teléfono: {target}"
+        assert '445555' not in target, f"El audit log filtró los últimos 6 dígitos: {target}"
+        expected_hash = hash_phone_digits('+5491144445555')
+        assert f'phone_hash={expected_hash}' in target
+
+    def test_report_lead_creates_report_record(self, auth_professional, db):
+        client, _, lead_id = auth_professional
+        resp = client.post(f'/api/lead/{lead_id}/report',
+                           data=json.dumps({'notes': 'fuera de servicio'}),
+                           content_type='application/json')
+        assert resp.status_code == 200
+        row = db.execute(
+            'SELECT * FROM lead_reports WHERE lead_id = ?', (lead_id,)
+        ).fetchone()
+        assert row is not None
+        assert row['reason'] == 'telefono_inexistente'
+        assert row['status'] == 'pending'
+
+    def test_report_lead_duplicate_rejected(self, auth_professional, db):
+        client, _, lead_id = auth_professional
+        client.post(f'/api/lead/{lead_id}/report',
+                    data=json.dumps({'notes': 'primera vez'}),
+                    content_type='application/json')
+        resp = client.post(f'/api/lead/{lead_id}/report',
+                           data=json.dumps({'notes': 'segunda vez'}),
+                           content_type='application/json')
+        assert resp.status_code == 400
+        assert 'anteriormente' in resp.get_json()['error'].lower()

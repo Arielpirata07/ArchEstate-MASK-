@@ -62,6 +62,23 @@ class TestSendCode:
         assert len(code) == 6
         assert code.isdigit()
 
+    def test_code_never_equals_zero_string(self, auth_client, db):
+        """Fase 3.1: el código OTP nunca debe ser '000000' (colisión con 'no hay código')."""
+        uid = _user_id(auth_client, db)
+        for _ in range(20):
+            auth_client.post('/api/phone/send-code', content_type='application/json')
+            user = db.execute('SELECT verification_code FROM users WHERE id = ?', (uid,)).fetchone()
+            assert user['verification_code'] != '000000'
+
+    def test_code_is_in_range_1_to_999999(self, auth_client, db):
+        """Fase 3.1: el código debe estar en el rango 1..999999."""
+        uid = _user_id(auth_client, db)
+        for _ in range(20):
+            auth_client.post('/api/phone/send-code', content_type='application/json')
+            user = db.execute('SELECT verification_code FROM users WHERE id = ?', (uid,)).fetchone()
+            value = int(user['verification_code'])
+            assert 1 <= value <= 999999
+
     def test_rejects_when_already_verified(self, auth_client, db):
         uid = _user_id(auth_client, db)
         db.execute('UPDATE users SET phone_verified = 1 WHERE id = ?', (uid,))
@@ -111,6 +128,22 @@ class TestSendCode:
         assert resp.status_code == 200
         row = db.execute("SELECT * FROM events WHERE event = 'otp_sent' ORDER BY id DESC LIMIT 1").fetchone()
         assert row is not None
+
+    def test_graceful_degradation_when_prefs_fail(self, auth_client, db, monkeypatch):
+        """Fase 3.2: si get_user_preferences falla, el endpoint debe
+        degradar a 'auto' en vez de 500."""
+        from app import models
+
+        def boom(_uid):
+            raise RuntimeError("DB corrupted")
+
+        monkeypatch.setattr(models, 'get_user_preferences', boom)
+        resp = auth_client.post('/api/phone/send-code', content_type='application/json')
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data['status'] == 'success'
+        # No debe haber crasheado; el canal debe caer al default (sms o whatsapp)
+        assert data['channel'] in ('sms', 'whatsapp')
 
 
 class TestVerifyCode:
@@ -276,3 +309,74 @@ class TestUpdatePhone:
                                 data=json.dumps({'phone': 'abc'}),
                                 content_type='application/json')
         assert resp.status_code == 400
+
+    def test_does_not_invalidate_otp_for_format_only_change(self, auth_client, db):
+        """Fase 2.3: si el E.164 no cambia (cambia solo formato/whitespace), no invalidar OTP."""
+        uid = _user_id(auth_client, db)
+        # Estado inicial: phone = +5491144445555, verified = 1
+        db.execute('UPDATE users SET phone = ?, phone_e164 = ?, phone_verified = 1, '
+                   'verification_code = ?, verification_expires = ? WHERE id = ?',
+                   ('+5491144445555', '+5491144445555', '123456',
+                    (datetime.now() + timedelta(minutes=10)).isoformat(), uid))
+        db.commit()
+
+        # Mismo número, distinto formato (con espacios)
+        resp = auth_client.post('/api/user/update-phone',
+                                data=json.dumps({'phone': '+54 9 11 4444 5555'}),
+                                content_type='application/json')
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data['phone_verified'] == 1, "OTP no debe invalidarse si E.164 no cambia"
+
+
+class TestVerifyRejectsInvalidFormat:
+    """Fase 2.5: verify_phone_code debe exigir phone_format_valid=1."""
+
+    def test_rejects_when_phone_format_invalid(self, auth_client, db):
+        uid = _user_id(auth_client, db)
+        # Forzar formato inválido y código pendiente
+        db.execute('UPDATE users SET phone_format_valid = 0, phone_e164 = \'\', '
+                   'verification_code = ?, verification_expires = ? WHERE id = ?',
+                   ('123456', (datetime.now() + timedelta(minutes=10)).isoformat(), uid))
+        db.commit()
+
+        resp = auth_client.post('/api/phone/verify',
+                                data=json.dumps({'code': '123456'}),
+                                content_type='application/json')
+        assert resp.status_code == 400
+        assert 'formato' in resp.get_json()['error'].lower()
+
+    def test_sets_phone_format_valid_on_success(self, auth_client, db):
+        uid = _user_id(auth_client, db)
+        # Pre-condición: el usuario tiene un código válido y formato válido
+        resp = auth_client.post('/api/phone/send-code', content_type='application/json')
+        assert resp.status_code == 200
+        # Forzar formato inválido después de generar el código (simula estado inconsistente)
+        db.execute('UPDATE users SET phone_format_valid = 0 WHERE id = ?', (uid,))
+        db.commit()
+
+        # El verify debe rechazar antes de comparar el código
+        resp = auth_client.post('/api/phone/verify',
+                                data=json.dumps({'code': '000000'}),
+                                content_type='application/json')
+        assert resp.status_code == 400
+        # No debe haber marcado phone_verified
+        user = db.execute('SELECT phone_verified, phone_format_valid FROM users WHERE id = ?', (uid,)).fetchone()
+        assert user['phone_verified'] == 0
+
+
+class TestVerifyKeepsFormatValid:
+    """Fase 2.5: la verificación exitosa debe preservar phone_format_valid=1."""
+
+    def test_format_valid_remains_one_after_success(self, auth_client, db):
+        uid = _user_id(auth_client, db)
+        auth_client.post('/api/phone/send-code', content_type='application/json')
+        user = db.execute('SELECT verification_code FROM users WHERE id = ?', (uid,)).fetchone()
+        code = user['verification_code']
+
+        resp = auth_client.post('/api/phone/verify',
+                                data=json.dumps({'code': code}),
+                                content_type='application/json')
+        assert resp.status_code == 200
+        user = db.execute('SELECT phone_format_valid FROM users WHERE id = ?', (uid,)).fetchone()
+        assert user['phone_format_valid'] == 1

@@ -14,8 +14,6 @@ from functools import wraps
 from io import StringIO
 
 import openpyxl
-import phonenumbers
-from phonenumbers import PhoneNumberType
 import pytz
 
 from flask import Flask, render_template, jsonify, request, session, redirect, url_for, Response, send_file, flash, send_from_directory
@@ -38,6 +36,9 @@ app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, config.UPLOAD_FOLDER)
 app.config['AVATAR_FOLDER'] = os.path.join(app.root_path, config.AVATAR_FOLDER)
 app.config['PERMANENT_SESSION_LIFETIME'] = config.PERMANENT_SESSION_LIFETIME
 app.jinja_env.autoescape = True
+
+
+OTP_TTL_MINUTES = 10
 
 
 class FilterOptionsCache:
@@ -501,16 +502,10 @@ def init_db():
         pending = cursor.fetchall()
         for row in pending:
             e164 = utils.normalize_phone_to_e164(row['phone'])
-            ntype = ''
-            if e164 and utils.is_mobile_number(e164):
-                parsed = utils._parse_phone(e164)
-                if parsed is not None:
-                    t = phonenumbers.number_type(parsed)
-                    ntype = 'mobile' if t == PhoneNumberType.MOBILE else (
-                        'fixed_or_mobile' if t == PhoneNumberType.FIXED_LINE_OR_MOBILE else 'fixed')
+            ntype = utils.classify_phone_type(e164) if e164 else ''
             cursor.execute(
-                'UPDATE users SET phone_e164 = ?, phone_number_type = ? WHERE id = ?',
-                (e164, ntype, row['id'])
+                'UPDATE users SET phone_e164 = ?, phone_number_type = ?, phone_format_valid = ? WHERE id = ?',
+                (e164, ntype, 1 if e164 else 0, row['id'])
             )
         if pending:
             print(f"[init_db] Backfill phone_e164 para {len(pending)} usuarios")
@@ -1070,7 +1065,7 @@ def submit_lead():
         phone_format_valid = 0
         if session.get('role') != 'admin':
             if not phone:
-                return jsonify({"status": "error", "message": "Telefono es obligatorio"}), 400
+                return jsonify({"status": "error", "message": "Teléfono es obligatorio"}), 400
             is_valid, error = validators.validate_phone(phone)
             if not is_valid:
                 return jsonify({"status": "error", "message": error}), 400
@@ -1633,7 +1628,11 @@ def report_lead(lead_id):
         )
         conn.commit()
 
-        utils.log_action("Reporte de Lead", f"Lead ID: {lead_id} (Telefono: {lead['phone']}) reportado por {user['username']}", session)
+        utils.log_action(
+            "Reporte de Lead",
+            f"Lead ID: {lead_id} (phone_hash={utils.hash_phone_digits(lead['phone'] or '')}) reportado por {user['username']}",
+            session
+        )
 
         return jsonify({
             'success': True,
@@ -2542,17 +2541,10 @@ def update_user_phone():
         old_phone = current['phone'] if current else ''
 
         e164 = utils.normalize_phone_to_e164(phone)
-        ntype = ''
-        if e164:
-            parsed = utils._parse_phone(e164)
-            if parsed is not None:
-                t = phonenumbers.number_type(parsed)
-                ntype = ('mobile' if t == PhoneNumberType.MOBILE
-                         else 'fixed_or_mobile' if t == PhoneNumberType.FIXED_LINE_OR_MOBILE
-                         else 'fixed' if t == PhoneNumberType.FIXED_LINE
-                         else 'other')
+        ntype = utils.classify_phone_type(e164) if e164 else ''
 
-        invalidate_otp = (old_phone != phone)
+        old_e164 = utils.normalize_phone_to_e164(old_phone) if old_phone else ''
+        invalidate_otp = bool(e164) and (old_e164 != e164)
 
         if invalidate_otp:
             conn.execute(
@@ -2623,11 +2615,14 @@ def send_verification_code():
         if not phone_e164:
             return jsonify({"error": "No se pudo normalizar el teléfono a E.164."}), 400
 
-        prefs = models.get_user_preferences(user_id)
-        preferred_channel = (prefs.get('preferred_channel') or 'auto').lower()
+        try:
+            prefs = models.get_user_preferences(user_id)
+            preferred_channel = (prefs.get('preferred_channel') or 'auto').lower()
+        except Exception:
+            preferred_channel = 'auto'
 
-        code = f"{secrets.randbelow(1000000):06d}"
-        expires = datetime.now() + timedelta(minutes=10)
+        code = f"{secrets.randbelow(999999) + 1:06d}"
+        expires = datetime.now() + timedelta(minutes=OTP_TTL_MINUTES)
 
         conn.execute(
             'UPDATE users SET verification_code = ?, verification_expires = ? WHERE id = ?',
@@ -2637,7 +2632,7 @@ def send_verification_code():
 
         from services.verifier import get_default_router
         router = get_default_router()
-        result = router.send_otp(phone_e164, code, preferred_channel=preferred_channel, ttl_minutes=10)
+        result = router.send_otp(phone_e164, code, preferred_channel=preferred_channel, ttl_minutes=OTP_TTL_MINUTES)
 
         conn.execute(
             'INSERT INTO consent_log (user_id, channel, ip, user_agent) VALUES (?, ?, ?, ?)',
@@ -2688,7 +2683,7 @@ def verify_phone_code():
     conn = get_db_connection()
     try:
         user = conn.execute(
-            'SELECT username, phone, verification_code, verification_expires, phone_verified FROM users WHERE id = ?',
+            'SELECT username, phone, phone_format_valid, verification_code, verification_expires, phone_verified FROM users WHERE id = ?',
             (user_id,)
         ).fetchone()
         if not user:
@@ -2696,6 +2691,9 @@ def verify_phone_code():
 
         if user['phone_verified'] == 1:
             return jsonify({"error": "El teléfono ya está verificado."}), 400
+
+        if user['phone_format_valid'] != 1:
+            return jsonify({"error": "El teléfono no tiene un formato válido. Actualizá tu perfil."}), 400
 
         stored_code = user['verification_code'] or ''
         expires_str = user['verification_expires'] or ''
@@ -2723,7 +2721,7 @@ def verify_phone_code():
             return jsonify({"error": "Código incorrecto."}), 400
 
         conn.execute(
-            'UPDATE users SET phone_verified = 1, verification_code = \'\', verification_expires = NULL WHERE id = ?',
+            'UPDATE users SET phone_verified = 1, phone_format_valid = 1, verification_code = \'\', verification_expires = NULL WHERE id = ?',
             (user_id,)
         )
         conn.commit()

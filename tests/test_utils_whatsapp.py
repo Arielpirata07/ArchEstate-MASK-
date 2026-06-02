@@ -138,3 +138,22 @@ def test_hash_phone_digits_consistent_and_short():
     assert h1 != h3
     assert len(h1) == 16
     assert utils.hash_phone_digits("") == ""
+
+
+@pytest.mark.parametrize("phone,expected_type", [
+    ("+5491144445555", "mobile"),
+    ("+541144444555", "fixed"),
+    ("+59899123456", "mobile"),
+    ("+12125551234", "other"),  # US, type may be fixed_or_mobile or other
+    ("", ""),
+    (None, ""),
+    ("abc", ""),
+])
+def test_classify_phone_type(phone, expected_type):
+    result = utils.classify_phone_type(phone)
+    # Solo verificamos que para mobile y fixed sea exacto; para 'other'
+    # aceptamos cualquier clasificación que phonenumbers devuelva.
+    if expected_type in ("mobile", "fixed", ""):
+        assert result == expected_type
+    else:
+        assert result in ("mobile", "fixed", "fixed_or_mobile", "other")

@@ -61,33 +61,38 @@ def validate_phone(phone):
     Validación de teléfono con código de país.
     Usa phonenumbers (Google libphonenumber) para validación por país.
     Formatos aceptados: +54 9 11 XXXX XXXX, +598 XX XXXX XXXX, etc.
-    Retorna (is_valid, error_message)
+    Retorna (is_valid, error_message).
+
+    Si el parse con región None falla (sin '+'), intenta como número argentino
+    (region='AR') para preservar compatibilidad con usuarios legacy.
     """
     if not phone or not isinstance(phone, str):
         return False, "Teléfono es requerido"
 
     phone = phone.strip()
 
+    parsed = None
     try:
         parsed = phonenumbers.parse(phone, None)
-
-        if not phonenumbers.is_possible_number(parsed):
-            return False, "Número imposible (cantidad de dígitos inválida)"
-
-        if not phonenumbers.is_valid_number(parsed):
-            region = phonenumbers.region_code_for_number(parsed)
-            if region:
-                return False, f"Número inválido para {region}"
-            return False, "Número inválido (verificá el código de país)"
-
-        return True, None
-
     except NumberParseException:
-        phone_digits = re.sub(r'[^\d]', '', phone)
-        if len(phone_digits) < 8 or len(phone_digits) > 15:
-            return False, "Teléfono debe tener entre 8 y 15 dígitos"
+        try:
+            parsed = phonenumbers.parse(phone, "AR")
+        except NumberParseException:
+            return False, "Número inválido. Incluí el código de país (ej: +54 9 11 1234 5678)"
 
-        return True, None
+    if parsed is None:
+        return False, "Número inválido. Incluí el código de país (ej: +54 9 11 1234 5678)"
+
+    if not phonenumbers.is_possible_number(parsed):
+        return False, "Número imposible (cantidad de dígitos inválida)"
+
+    if not phonenumbers.is_valid_number(parsed):
+        region = phonenumbers.region_code_for_number(parsed)
+        if region:
+            return False, f"Número inválido para {region}"
+        return False, "Número inválido (verificá el código de país)"
+
+    return True, None
 
 
 def validate_budget(amount):

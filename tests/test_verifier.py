@@ -44,7 +44,7 @@ def test_sms_simulated_prints_to_console(capsys):
 
 def test_whatsapp_simulated_returns_ok_with_deep_link():
     audit = MagicMock()
-    v = WhatsAppSimulatedVerifier(audit_fn=audit)
+    v = WhatsAppSimulatedVerifier(audit_fn=audit, include_deep_link=True)
     res = v.send("+5491144445555", "654321", ttl_minutes=10)
     assert res.ok is True
     assert res.channel == "whatsapp"
@@ -54,8 +54,28 @@ def test_whatsapp_simulated_returns_ok_with_deep_link():
     audit.assert_called_once()
 
 
+def test_whatsapp_simulated_omits_deep_link_by_default():
+    """Fase 4.4: en producción, deep_link NO debe exponerse al cliente."""
+    audit = MagicMock()
+    v = WhatsAppSimulatedVerifier(audit_fn=audit)
+    res = v.send("+5491144445555", "654321", ttl_minutes=10)
+    assert res.ok is True
+    assert res.meta is None, f"En producción, meta debe ser None para no exponer el código OTP. Got: {res.meta}"
+    assert "654321" not in str(res.__dict__), "El código OTP no debe filtrarse en la respuesta"
+
+
+def test_whatsapp_simulated_does_not_leak_otp_in_meta():
+    """Fase 4.4: aún con deep_link activo, verificar que no hay leak fuera de meta."""
+    v = WhatsAppSimulatedVerifier(include_deep_link=True)
+    res = v.send("+5491144445555", "999888")
+    assert res.meta is not None
+    # El código sólo debe aparecer en deep_link (debug-only)
+    assert res.message == "Codigo enviado por WhatsApp"
+    assert "999888" not in res.message
+
+
 def test_whatsapp_simulated_url_encodes_otp():
-    v = WhatsAppSimulatedVerifier()
+    v = WhatsAppSimulatedVerifier(include_deep_link=True)
     res = v.send("+5491144445555", "111222")
     from urllib.parse import urlparse, parse_qs
     parsed = urlparse(res.meta["deep_link"])
@@ -150,3 +170,33 @@ def test_default_router_uses_real_phonenumbers_for_fallback():
     from utils import is_whatsapp_capable
     router = get_default_router()
     assert router._is_wa is is_whatsapp_capable
+
+
+def test_sms_audit_message_uses_real_hash_not_digits():
+    """El audit_fn NO debe recibir los últimos 6 dígitos del teléfono.
+    Debe recibir un hash SHA-256 de 16 chars hex."""
+    from utils import hash_phone_digits
+    audit = MagicMock()
+    v = SmsSimulatedVerifier(audit_fn=audit)
+    v.send("+5491144445555", "123456", ttl_minutes=10)
+    args = audit.call_args[0]
+    target = args[1]
+    assert "phone_hash=" in target
+    assert "445555" not in target, f"El audit log filtró los últimos 6 dígitos: {target}"
+    expected_hash = hash_phone_digits("+5491144445555")
+    assert expected_hash in target
+    assert len(expected_hash) == 16
+
+
+def test_whatsapp_audit_message_uses_real_hash_not_digits():
+    """Idem para WhatsAppSimulatedVerifier."""
+    from utils import hash_phone_digits
+    audit = MagicMock()
+    v = WhatsAppSimulatedVerifier(audit_fn=audit)
+    v.send("+5491144445555", "123456", ttl_minutes=10)
+    args = audit.call_args[0]
+    target = args[1]
+    assert "phone_hash=" in target
+    assert "445555" not in target, f"El audit log filtró los últimos 6 dígitos: {target}"
+    expected_hash = hash_phone_digits("+5491144445555")
+    assert expected_hash in target

@@ -3,7 +3,6 @@ Blueprint para endpoints relacionados con leads: revelación server-side de
 contacto WhatsApp/SMS, telemetría de eventos, y reporte de teléfonos inválidos.
 """
 
-import hashlib
 import urllib.parse
 
 from flask import Blueprint, redirect, request, session, jsonify, current_app
@@ -31,12 +30,6 @@ def _check_rate(key, limit, window=3600):
         return False
     bucket.append(now)
     return True
-
-
-def _digits_hash(phone: str) -> str:
-    if not phone:
-        return ''
-    return hashlib.sha256(phone.encode('utf-8')).hexdigest()[:16]
 
 
 @lead_bp.route('/<int:lead_id>/r/whatsapp')
@@ -110,13 +103,13 @@ def redirect_whatsapp(lead_id):
 
         utils.log_action(
             "WhatsApp link generated",
-            f"lead_id={lead_id} phone_hash={_digits_hash(phone_e164)}",
+            f"lead_id={lead_id} phone_hash={utils.hash_phone_digits(phone_e164)}",
             session,
             conn=conn
         )
         utils.log_event(
             user_id=user_id, lead_id=lead_id, event='wa_link_generated',
-            props={'phone_hash': _digits_hash(phone_e164), 'channel': 'whatsapp'},
+            props={'phone_hash': utils.hash_phone_digits(phone_e164), 'channel': 'whatsapp'},
             ip=ip,
             conn=conn
         )
@@ -158,13 +151,13 @@ def reveal_phone(lead_id):
         phone_to_return = lead['phone'] or ''
         utils.log_action(
             "Consulta Telefono",
-            f"Lead ID: {lead_id} ({lead['type']}) phone_hash={_digits_hash(phone_to_return or '')}",
+            f"Lead ID: {lead_id} ({lead['type']}) phone_hash={utils.hash_phone_digits(phone_to_return or '')}",
             session,
             conn=conn
         )
         utils.log_event(
             user_id=user_id, lead_id=lead_id, event='phone_revealed',
-            props={'phone_hash': _digits_hash(phone_to_return or '')},
+            props={'phone_hash': utils.hash_phone_digits(phone_to_return or '')},
             conn=conn
         )
         return jsonify({"status": "success", "phone": phone_to_return})

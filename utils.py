@@ -129,6 +129,28 @@ def is_mobile_number(phone, region=DEFAULT_REGION):
     return t in (PhoneNumberType.MOBILE, PhoneNumberType.FIXED_LINE_OR_MOBILE)
 
 
+def classify_phone_type(phone, region=DEFAULT_REGION):
+    """
+    Clasifica un teléfono como 'mobile' | 'fixed_or_mobile' | 'fixed' | 'other' | ''.
+    Retorna string vacío si no se puede parsear.
+    Usado por update_user_phone y init_db backfill para mantener coherencia.
+    """
+    parsed = _parse_phone(phone, region)
+    if parsed is None:
+        return ''
+    try:
+        t = phonenumbers.number_type(parsed)
+    except Exception:
+        return ''
+    if t == PhoneNumberType.MOBILE:
+        return 'mobile'
+    if t == PhoneNumberType.FIXED_LINE_OR_MOBILE:
+        return 'fixed_or_mobile'
+    if t == PhoneNumberType.FIXED_LINE:
+        return 'fixed'
+    return 'other'
+
+
 def is_whatsapp_capable(phone, region=DEFAULT_REGION):
     """
     Determina si un número es candidato a link wa.me.

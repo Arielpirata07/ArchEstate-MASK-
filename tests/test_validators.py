@@ -68,9 +68,24 @@ class TestValidatePhone:
         is_valid, error = validators.validate_phone('+54911111')
         assert is_valid is False
 
-    def test_phone_fallback_no_country_code(self):
-        is_valid, error = validators.validate_phone('12345678')
+    def test_phone_legacy_argentina_without_plus_accepted(self):
+        """Fase 2: soft-migration. Un número AR sin '+' debe aceptarse
+        para preservar compatibilidad con usuarios legacy."""
+        is_valid, error = validators.validate_phone('1144445555')
         assert is_valid is True
+        assert error is None
+
+    def test_phone_garbage_without_country_rejected(self):
+        """Fase 2: un número claramente inválido (muy corto) debe rechazarse."""
+        is_valid, error = validators.validate_phone('12345')
+        assert is_valid is False
+        assert error is not None
+
+    def test_phone_letters_rejected(self):
+        """Fase 2: letras no son un número, ni internacional ni AR."""
+        is_valid, error = validators.validate_phone('abc')
+        assert is_valid is False
+        assert error is not None
 
 
 class TestValidateBudget:
