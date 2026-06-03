@@ -31,7 +31,7 @@ ALLOWED_LEAD_EDIT_FIELDS = [
 @decorators.login_required
 def profile_view():
     if session.get('role') == 'admin':
-        return redirect(url_for('admin_view'))
+        return redirect(url_for('admin.admin_view'))
     user = models.get_user_profile(session['user_id'])
     return render_template('profile.html', user=user)
 

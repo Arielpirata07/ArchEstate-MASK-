@@ -13,7 +13,7 @@
             <h1 class="text-3xl font-serif italic" style="color:var(--text-primary)">Configuracion</h1>
             <p class="text-sm mt-1" style="color:var(--text-secondary)">Administra tu cuenta y preferencias</p>
         </div>
-        <a href="{{ url_for('index') }}" class="text-[10px] uppercase tracking-widest font-bold" style="color:var(--accent);" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--accent)'">
+        <a href="{{ url_for('public.index') }}" class="text-[10px] uppercase tracking-widest font-bold" style="color:var(--accent);" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--accent)'">
             <i data-lucide="arrow-left" class="w-4 h-4 inline -mt-0.5"></i>
             Volver al sitio
         </a>
@@ -349,7 +349,7 @@
                     <div id="no-leads-msg" class="hidden p-8 text-center">
                         <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4" style="color:var(--text-secondary)"></i>
                         <p class="text-sm hint-text">No tenes solicitudes registradas aun.</p>
-                        <a href="{{ url_for('user_view') }}" class="inline-block mt-4 text-[10px] uppercase tracking-widest font-bold" style="color:var(--accent)">
+                        <a href="{{ url_for('client.user_view') }}" class="inline-block mt-4 text-[10px] uppercase tracking-widest font-bold" style="color:var(--accent)">
                             Crear una solicitud
                         </a>
                     </div>

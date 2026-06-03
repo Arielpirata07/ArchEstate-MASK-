@@ -15,7 +15,7 @@
 
             <form id="loginForm"
                   data-auth-form="login"
-                  action="{{ url_for('login') }}"
+                  action="{{ url_for('auth.login') }}"
                   method="POST"
                   novalidate
                   autocomplete="on"
@@ -97,7 +97,7 @@
             <div class="mt-8 text-center border-t border-midnight/5 dark:border-white/5 pt-6">
                 <p class="text-xs text-midnight/60 dark:text-white/60">
                     ¿Aún no eres miembro?
-                    <a href="{{ url_for('register') }}" class="text-gold font-bold hover:text-midnight dark:hover:text-gold-dark transition-colors ml-1">
+                    <a href="{{ url_for('auth.register') }}" class="text-gold font-bold hover:text-midnight dark:hover:text-gold-dark transition-colors ml-1">
                         Solicitar Acceso
                     </a>
                 </p>

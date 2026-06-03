@@ -78,21 +78,21 @@
     <!-- Selectores de Perfil (Login Simulado) -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl">
         <!-- Botón Usuario -->
-        <a href="{{ url_for('user_view') }}" class="bg-white p-8 rounded-lg shadow-lg border border-midnight/5 card-hover text-left group slide-in-left delay-1 magnetic-hover" data-scroll>
+        <a href="{{ url_for('client.user_view') }}" class="bg-white p-8 rounded-lg shadow-lg border border-midnight/5 card-hover text-left group slide-in-left delay-1 magnetic-hover" data-scroll>
             <i data-lucide="users" class="text-gold mb-4 w-8 h-8 card-icon transition-transform duration-300"></i>
             <h3 class="text-xl font-serif mb-2 group-hover:text-gold transition-colors">Entrar como Usuario</h3>
             <p class="text-sm text-midnight/50">Busco comprar o construir mi próxima propiedad.</p>
         </a>
 
         <!-- Botón Profesional -->
-        <a href="{{ url_for('professional_view') }}" class="bg-midnight text-white p-8 rounded-lg shadow-lg border border-transparent card-hover text-left group fade-in-up delay-2 pulse-glow magnetic-hover" data-scroll>
+        <a href="{{ url_for('professional.professional_view') }}" class="bg-midnight text-white p-8 rounded-lg shadow-lg border border-transparent card-hover text-left group fade-in-up delay-2 pulse-glow magnetic-hover" data-scroll>
             <i data-lucide="building-2" class="text-gold mb-4 w-8 h-8 card-icon transition-transform duration-300"></i>
             <h3 class="text-xl font-serif mb-2 group-hover:text-gold transition-colors">Entrar como Profesional</h3>
             <p class="text-sm text-white/70">Soy arquitecto o agente inmobiliario buscando leads.</p>
         </a>
 
         <!-- Botón Administrador -->
-        <a href="{{ url_for('admin_view') }}" class="bg-paper-dark text-midnight p-8 rounded-lg shadow-lg border border-midnight/10 card-hover text-left group slide-in-right delay-3 magnetic-hover" data-scroll>
+        <a href="{{ url_for('admin.admin_view') }}" class="bg-paper-dark text-midnight p-8 rounded-lg shadow-lg border border-midnight/10 card-hover text-left group slide-in-right delay-3 magnetic-hover" data-scroll>
             <i data-lucide="shield-check" class="text-midnight mb-4 w-8 h-8 card-icon transition-transform duration-300"></i>
             <h3 class="text-xl font-serif mb-2 group-hover:text-gold transition-colors">Entrar como Administrador</h3>
             <p class="text-sm text-midnight/50">Gestión de plataforma y validación de profesionales.</p>

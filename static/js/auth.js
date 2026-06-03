@@ -99,10 +99,21 @@
             return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val || '');
         },
         phone: function (val) {
-            // Validación cliente liviana. Server-side usa phonenumbers estricto.
-            var digits = (val || '').replace(/[^\d]/g, '');
-            if (digits.length < 8 || digits.length > 15) return false;
-            return /^\+?[\d\s\-\(\)]{8,20}$/.test(val || '');
+            // Validación cliente alineada con utils.normalize_phone_to_e164 (server-side).
+            // Server hace soft-migration con AR, así que también permitimos números
+            // AR legacy (10-13 dígitos sin '+') que se asumirán como +54.
+            var v = (val || '').trim();
+            if (!v) return false;
+            // Caso 1: internacional explícito (+código país)
+            if (v.charAt(0) === '+') {
+                // replace(/[^\d]/g,'') ya elimina el '+' (no es un dígito).
+                var digits = v.replace(/[^\d]/g, '');
+                if (digits.length < 8 || digits.length > 15) return false;
+                return /^\+[\d\s\-\(\)]+$/.test(v);
+            }
+            // Caso 2: legacy AR (10-13 dígitos sin '+' — server-side intentará con AR)
+            var digitsOnly = v.replace(/[^\d]/g, '');
+            return digitsOnly.length >= 10 && digitsOnly.length <= 13;
         },
         minLength: function (val, n) {
             return (val || '').length >= (n || 0);
@@ -154,6 +165,88 @@
     }
 
     // -------------------------------------------------------- password meter
+
+    // --------------------------------------------------------- phone preview
+
+    /**
+     * Normaliza un teléfono a E.164 (alineado con utils.normalize_phone_to_e164).
+     * Sin librerías: heurística liviana que coincide con el server-side.
+     *   - Si empieza con '+', toma los dígitos (sin contar el '+') y los antepone con '+'.
+     *   - Si no, asume AR legacy y antepone +54.
+     *   - Si no se puede normalizar, retorna null.
+     */
+    function normalizePhoneClient(val) {
+        var v = (val || '').trim();
+        if (!v) return null;
+        if (v.charAt(0) === '+') {
+            // replace(/[^\d]/g,'') ya elimina el '+' (no es un dígito).
+            var digits = v.replace(/[^\d]/g, '');
+            if (digits.length < 8 || digits.length > 15) return null;
+            return '+' + digits;
+        }
+        var digitsOnly = v.replace(/[^\d]/g, '');
+        if (digitsOnly.length < 10 || digitsOnly.length > 13) return null;
+        // Asumimos AR legacy → +54 + últimos 10 dígitos
+        return '+54' + digitsOnly.slice(-10);
+    }
+
+    function renderPhonePreview(form) {
+        var input = $('input[name="phone"]', form);
+        var preview = $('[data-phone-preview]', form);
+        var status = $('[data-phone-status]', form);
+        var statusIcon = status ? $('[data-phone-status-icon]', status) : null;
+        if (!input || !preview) return;
+        var raw = input.value;
+        if (!raw.trim()) {
+            preview.textContent = '';
+            preview.classList.add('hidden');
+            if (status) {
+                status.classList.add('hidden');
+                // Resetear el icono a estado neutral para evitar "fantasma"
+                // si el status se re-mostrara antes de un nuevo render.
+                if (statusIcon) {
+                    statusIcon.setAttribute('data-lucide', 'circle');
+                    statusIcon.className = 'w-5 h-5 text-midnight/30 dark:text-white/30';
+                }
+            }
+            return;
+        }
+        var e164 = normalizePhoneClient(raw);
+        if (e164) {
+            preview.textContent = '✓ Se enviará como ' + e164;
+            preview.className = 'phone-preview phone-preview--ok text-[10px] font-mono text-green-600 dark:text-green-400';
+            preview.classList.remove('hidden');
+            if (status && statusIcon) {
+                statusIcon.setAttribute('data-lucide', 'check-circle-2');
+                statusIcon.className = 'w-5 h-5 text-green-600 dark:text-green-400';
+                status.classList.remove('hidden');
+            }
+        } else {
+            preview.textContent = '✗ No se pudo normalizar. Incluí el código de país con + (ej: +54 9 11 1234 5678)';
+            preview.className = 'phone-preview phone-preview--err text-[10px] font-mono text-rose-600 dark:text-rose-400';
+            preview.classList.remove('hidden');
+            if (status && statusIcon) {
+                statusIcon.setAttribute('data-lucide', 'alert-circle');
+                statusIcon.className = 'w-5 h-5 text-rose-600 dark:text-rose-400';
+                status.classList.remove('hidden');
+            }
+        }
+        if (window.lucide) lucide.createIcons();
+    }
+
+    function bindPhoneExampleButtons(form) {
+        $$('[data-phone-example]', form).forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var input = $('input[name="phone"]', form);
+                if (!input) return;
+                input.value = btn.getAttribute('data-phone-example') || '';
+                input.focus();
+                renderPhonePreview(form);
+                // Disparar blur para que aparezca el field-error si corresponde
+                input.dispatchEvent(new Event('blur'));
+            });
+        });
+    }
 
     function passwordStrength(val) {
         var v = val || '';
@@ -306,8 +399,9 @@
         if (spinner) spinner.classList.remove('hidden');
     }
 
-    function validateForm(form) {
+    function validateForm(form, options) {
         clearAllErrors(form);
+        options = options || {};
         var inputs = $$('input[data-auth-rules], select[data-auth-rules], textarea[data-auth-rules]', form);
         var firstInvalid = null;
         var ok = true;
@@ -321,10 +415,12 @@
                 ok = false;
             }
         });
-        // Check async username: si el formato es válido, bloqueamos hasta que termine
+        // Check async username: SOLO en register. En login, el usuario conoce su
+        // username y el check devolvería 'taken' bloqueando el submit. Bug histórico
+        // (2024-Q2) donde admin no podía loguearse.
         var usernameInput = $('input[name="username"]', form);
         var usernamePromise = Promise.resolve(true);
-        if (usernameInput && validators.usernameFormat(usernameInput.value)) {
+        if (options.mode === 'register' && usernameInput && validators.usernameFormat(usernameInput.value)) {
             usernamePromise = new Promise(function (resolve) {
                 checkUsernameAvailable(usernameInput.value, function (data) {
                     if (data.available === false && data.reason === 'taken') {
@@ -381,6 +477,9 @@
     function attach(form, options) {
         if (!form) return;
         options = options || {};
+        // Solo register hace check async de disponibilidad de username.
+        // En login, el usuario conoce su username y el check es contraproducente.
+        var isRegister = options.mode === 'register';
 
         // Para cada input con data-auth-rules, conectar blur
         $$('input[data-auth-rules], select[data-auth-rules], textarea[data-auth-rules]', form).forEach(function (input) {
@@ -388,8 +487,8 @@
                 var r = runFieldRules(input);
                 showFieldError(input, r.ok ? null : r.msg);
             });
-            // Si es username y tiene data-async-check, disparar fetch con debounce
-            if (input.name === 'username' && input.getAttribute('data-async-check') !== 'false') {
+            // Si es username y está en register, disparar fetch con debounce
+            if (isRegister && input.name === 'username' && input.getAttribute('data-async-check') !== 'false') {
                 var debouncedCheck = debounce(function () {
                     if (!validators.usernameFormat(input.value)) {
                         renderUsernameHint(input, { reason: 'invalid' });
@@ -400,6 +499,10 @@
                     });
                 }, USERNAME_DEBOUNCE_MS);
                 input.addEventListener('input', debouncedCheck);
+            }
+            // Si es phone, actualizar preview en vivo
+            if (input.name === 'phone') {
+                input.addEventListener('input', function () { renderPhonePreview(form); });
             }
             // Si tiene data-strength, actualizar medidor
             if (input.getAttribute('data-strength') === 'true') {
@@ -413,10 +516,14 @@
         // Role gate
         bindRoleLicenseGate(form);
 
+        // Phone example buttons + preview inicial
+        bindPhoneExampleButtons(form);
+        renderPhonePreview(form);
+
         // Submit
         form.addEventListener('submit', function (ev) {
             ev.preventDefault();
-            validateForm(form).then(function (valid) {
+            validateForm(form, options).then(function (valid) {
                 if (!valid) return;
                 startSubmitting(form);
                 // Submit nativo

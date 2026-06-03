@@ -289,6 +289,39 @@ button, [role="button"], a {
 .dark .username-hint--ok { color: #34d399; }
 .dark .username-hint--taken { color: #fb7185; }
 
+/* --- Phone preview (live E.164 normalizer) --- */
+.phone-preview {
+    font-size: 0.7rem;
+    line-height: 1.4;
+    margin-top: 0.35rem;
+    padding-left: 2rem;
+    min-height: 1px;
+    transition: opacity 0.15s ease;
+}
+.phone-preview--ok {
+    color: #059669;
+}
+.phone-preview--err {
+    color: #e11d48;
+}
+.dark .phone-preview--ok { color: #34d399; }
+.dark .phone-preview--err { color: #fb7185; }
+
+.phone-example {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.7rem;
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    color: inherit;
+    text-decoration: none;
+}
+.phone-example:hover,
+.phone-example:focus {
+    text-decoration: underline;
+}
+
 /* --- Remember me checkbox (custom) --- */
 .remember-me {
     display: flex;

@@ -13,7 +13,7 @@
 
         <form id="registerForm"
               data-auth-form="register"
-              action="{{ url_for('register') }}"
+              action="{{ url_for('auth.register') }}"
               method="POST"
               novalidate
               autocomplete="on"
@@ -106,10 +106,21 @@
                            required
                            autocomplete="tel"
                            placeholder="+54 9 11 1234 5678"
-                           aria-describedby="err-phone"
-                           data-auth-rules='{"required": true, "phone": true, "messages": {"required": "Ingresá tu teléfono.", "phone": "Formato internacional inválido. Usá +código país + número."}}'
-                           class="w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all">
+                           aria-describedby="err-phone phone-hint phone-preview"
+                           data-auth-rules='{"required": true, "phone": true, "messages": {"required": "Ingresá tu teléfono.", "phone": "Formato inválido. Ejemplo: +54 9 11 1234 5678"}}'
+                           class="w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 pr-8 transition-all">
+                    <span id="phone-status" data-phone-status class="absolute right-0 bottom-3 hidden" aria-hidden="true">
+                        <i data-phone-status-icon data-lucide="circle" class="w-5 h-5 text-midnight/30 dark:text-white/30"></i>
+                    </span>
                 </div>
+                <p id="phone-hint" class="text-[10px] text-midnight/50 dark:text-white/40 leading-relaxed">
+                    Formato internacional con código de país (ej:
+                    <button type="button" data-phone-example="+54 9 11 1234 5678" class="phone-example text-gold hover:underline focus:outline-none focus:underline">+54 9 11 1234 5678</button>,
+                    <button type="button" data-phone-example="+598 99 123 456" class="phone-example text-gold hover:underline focus:outline-none focus:underline">+598 99 123 456</button>,
+                    <button type="button" data-phone-example="+34 612 345 678" class="phone-example text-gold hover:underline focus:outline-none focus:underline">+34 612 345 678</button>).
+                    Tocá un ejemplo para usarlo.
+                </p>
+                <p id="phone-preview" class="phone-preview text-[10px] font-mono hidden" data-phone-preview aria-live="polite"></p>
                 <div id="err-phone" class="field-error" data-for="phone" aria-live="polite"></div>
             </div>
 
@@ -176,7 +187,7 @@
         </form>
 
         <div class="mt-6 text-center">
-            <a href="{{ url_for('login') }}" class="text-[10px] uppercase tracking-widest font-bold text-midnight/40 dark:text-white/40 hover:text-gold transition-colors">
+            <a href="{{ url_for('auth.login') }}" class="text-[10px] uppercase tracking-widest font-bold text-midnight/40 dark:text-white/40 hover:text-gold transition-colors">
                 ¿Ya tienes cuenta? Iniciar Sesión
             </a>
         </div>
