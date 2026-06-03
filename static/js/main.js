@@ -9,6 +9,36 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
+function showConfirm(message) {
+    return new Promise(function (resolve) {
+        var overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 z-50 bg-midnight/60 backdrop-blur-sm flex items-center justify-center';
+
+        var modal = document.createElement('div');
+        modal.className = 'bg-white rounded-lg shadow-2xl border-t-4 border-gold overflow-hidden w-full max-w-md mx-4';
+
+        modal.innerHTML =
+            '<div class="p-6"><p class="text-sm text-midnight leading-relaxed">' +
+            escapeHtml(message) +
+            '</p></div>' +
+            '<div class="flex border-t border-midnight/10">' +
+            '<button class="confirm-cancel flex-1 p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/60 hover:text-midnight transition-colors">Cancelar</button>' +
+            '<button class="confirm-ok flex-1 p-4 text-[10px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors border-l border-midnight/10">Confirmar</button>' +
+            '</div>';
+
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        function cleanup() { overlay.remove(); }
+
+        modal.querySelector('.confirm-cancel').onclick = function () { cleanup(); resolve(false); };
+        modal.querySelector('.confirm-ok').onclick = function () { cleanup(); resolve(true); };
+        overlay.onclick = function (e) {
+            if (e.target === overlay) { cleanup(); resolve(false); }
+        };
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     // Inicializar iconos de Lucide al cargar la pagina
     if (window.lucide) {
@@ -456,7 +486,7 @@ function initZoneAutocomplete() {
 
     const renderSuggestions = (items, query) => {
         if (!items.length && query.length > 0) {
-            suggestions.innerHTML = `<li class="cursor-pointer px-4 py-3 border-b border-slate-100 hover:bg-slate-50" data-value="${query}">
+            suggestions.innerHTML = `<li role="option" class="cursor-pointer px-4 py-3 border-b border-slate-100 hover:bg-slate-50" data-value="${query}">
                         <strong class="text-midnight">Usar: ${query}</strong><span class="ml-2 text-[11px] text-midnight/60">(texto libre)</span>
                     </li>`;
             suggestions.classList.remove('hidden');
@@ -464,13 +494,13 @@ function initZoneAutocomplete() {
         }
 
         if (!items.length) {
-            suggestions.innerHTML = '<li class="px-4 py-3 text-sm text-midnight/60">Escribe una zona</li>';
+            suggestions.innerHTML = '<li role="status" class="px-4 py-3 text-sm text-midnight/60">Escribe una zona</li>';
             suggestions.classList.remove('hidden');
             return;
         }
 
         suggestions.innerHTML = items.map(item => {
-            return `<li class="cursor-pointer px-4 py-3 border-b border-slate-100 hover:bg-slate-50" data-value="${item.city}, ${item.country}">
+            return `<li role="option" class="cursor-pointer px-4 py-3 border-b border-slate-100 hover:bg-slate-50" data-value="${item.city}, ${item.country}">
                         <strong class="text-midnight">${item.city}</strong><span class="ml-2 text-[11px] text-midnight/60">${item.country}</span>
                     </li>`;
         }).join('');
@@ -510,13 +540,13 @@ function initArchitecturalStyleAutocomplete() {
 
     const renderSuggestions = (items) => {
         if (!items.length) {
-            suggestions.innerHTML = '<li class="px-4 py-3 text-sm text-midnight/60">Sin coincidencias</li>';
+            suggestions.innerHTML = '<li role="status" class="px-4 py-3 text-sm text-midnight/60">Sin coincidencias</li>';
             suggestions.classList.remove('hidden');
             return;
         }
 
         suggestions.innerHTML = items.map(item => {
-            return `<li class="cursor-pointer px-4 py-3 border-b border-slate-100 hover:bg-slate-50" data-value="${item}">
+            return `<li role="option" class="cursor-pointer px-4 py-3 border-b border-slate-100 hover:bg-slate-50" data-value="${item}">
                         <strong class="text-midnight">${item}</strong>
                     </li>`;
         }).join('');
@@ -771,7 +801,6 @@ async function togglePhone(btn, leadId) {
         btn.setAttribute('data-revealed', 'false');
         btn.classList.remove('bg-gold');
         btn.classList.add('bg-midnight');
-        hideContactButtons(leadId);
     } else {
         const cachedPhone = btn.getAttribute('data-phone');
 
@@ -780,7 +809,6 @@ async function togglePhone(btn, leadId) {
             btn.setAttribute('data-revealed', 'true');
             btn.classList.remove('bg-midnight');
             btn.classList.add('bg-gold');
-            showContactButtons(leadId, cachedPhone);
         } else {
             const originalContent = btn.innerHTML;
             btn.innerHTML = `<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> Cargando...`;
@@ -797,7 +825,6 @@ async function togglePhone(btn, leadId) {
                     btn.setAttribute('data-revealed', 'true');
                     btn.classList.remove('bg-midnight');
                     btn.classList.add('bg-gold');
-                    showContactButtons(leadId, data.phone);
                 } else {
                     btn.innerHTML = originalContent;
                     showToast("No se pudo obtener el telefono", 'error');
@@ -819,33 +846,21 @@ async function togglePhone(btn, leadId) {
 }
 
 /**
- * DEPRECATED en Fase D: el botón WhatsApp es ahora estático en cada fila
- * y apunta a /api/lead/<id>/r/whatsapp (server-side 302).
- * showContactButtons y hideContactButtons se mantienen como no-ops
- * para retrocompatibilidad con llamadas existentes.
- */
-function showContactButtons(leadId, phone) {
-    // No-op: el botón WhatsApp ya está renderizado en la fila.
-}
-function hideContactButtons(leadId) {
-    // No-op: el botón WhatsApp es permanente en la fila.
-}
-
-/**
  * Actualizar estado de un profesional (Aprobar/Rechazar)
  */
 async function updateProStatus(proId, status, btn) {
-    const isRejection = status === 'rejected';
-    const message = isRejection
+    var isRejection = status === 'rejected';
+    var confirmMsg = isRejection
         ? "¡ADVERTENCIA! Esta a punto de RECHAZAR a este profesional. Esta accion quedara registrada permanentemente. ¿Esta completamente seguro?"
         : "¿Desea aprobar a este profesional para que pueda acceder a la plataforma?";
 
-    if (!confirm(message)) {
+    if (!(await showConfirm(confirmMsg))) {
         return;
     }
 
     const originalContent = btn.innerHTML;
     btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>`;
+    if (window.lucide) lucide.createIcons();
     btn.disabled = true;
     btn.classList.add('opacity-50');
 

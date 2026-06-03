@@ -114,7 +114,7 @@
                             <div>
                                 <label for="profile-phone" class="input-label">Telefono</label>
                                 <div class="flex gap-2">
-                                    <select id="profile-country-code" onchange="updateProfilePhoneFormat()" class="input-field w-20 flex-shrink-0">
+                                    <select id="profile-country-code" onchange="updateProfilePhoneFormat()" class="px-2 py-2 border border-midnight/20 rounded text-sm bg-white text-midnight w-14 flex-shrink-0">
                                         <option value="+54">+54</option>
                                         <option value="+598">+598</option>
                                         <option value="+56">+56</option>
@@ -126,7 +126,7 @@
                                         <option value="+34">+34</option>
                                         <option value="+1">+1</option>
                                     </select>
-                                    <select id="profile-province" onchange="applyProvincePrefix()" class="input-field w-24 flex-shrink-0 hidden">
+                                    <select id="profile-province" onchange="applyProvincePrefix()" class="px-2 py-2 border border-midnight/20 rounded text-sm bg-white text-midnight w-16 flex-shrink-0 hidden">
                                         <option value="11">CABA</option>
                                         <option value="221">La Plata</option>
                                         <option value="223">Mar del Plata</option>
@@ -146,17 +146,17 @@
                                         <option value="358">Rio Cuarto</option>
                                         <option value="342">Santa Fe</option>
                                         <option value="343">Parana</option>
-                                        <option value="345">Concepcion del Uruguay</option>
+                                        <option value="345">Concep. del Uruguay</option>
                                         <option value="362">Resistencia</option>
                                         <option value="364">Formosa</option>
                                         <option value="370">Posadas</option>
                                         <option value="375">Goya</option>
                                         <option value="376">Eldorado</option>
-                                        <option value="377">Puerto Iguazu</option>
+                                        <option value="377">Pto. Iguazu</option>
                                         <option value="378">Obera</option>
                                         <option value="385">La Rioja</option>
                                     </select>
-                                    <input id="profile-phone" type="tel" value="{{ user.phone if user and user.phone else '' }}" class="input-field flex-1" placeholder="9 11 1234 5678">
+                                    <input id="profile-phone" type="tel" value="{{ user.phone if user and user.phone else '' }}" class="input-field flex-1" placeholder="9 11 1234 5678" maxlength="16">
                                 </div>
                                 <div class="flex items-center justify-between mt-1">
                                     <p id="profile-phone-hint" class="text-[9px] hint-text">El codigo de pais se incluira automaticamente</p>

@@ -132,7 +132,7 @@ class TestSendCode:
     def test_graceful_degradation_when_prefs_fail(self, auth_client, db, monkeypatch):
         """Fase 3.2: si get_user_preferences falla, el endpoint debe
         degradar a 'auto' en vez de 500."""
-        from app import models
+        import models
 
         def boom(_uid):
             raise RuntimeError("DB corrupted")

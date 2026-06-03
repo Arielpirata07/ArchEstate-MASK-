@@ -103,6 +103,18 @@
 }
 .otp-modal__resend-btn:focus-visible { outline: 2px solid #735A3A; outline-offset: 2px; border-radius: 4px; }
 .otp-modal__resend-btn:disabled { color: #00041066; cursor: not-allowed; text-decoration: none; }
+
+/* Dark mode */
+.dark .otp-modal__panel { background: var(--bg-card); }
+.dark .otp-modal__title { color: var(--text-primary); }
+.dark .otp-modal__desc { color: rgba(250, 249, 247, 0.6); }
+.dark .otp-modal__input { background: var(--bg-primary); border-color: var(--border); color: var(--text-primary); }
+.dark .otp-modal__help { color: rgba(250, 249, 247, 0.4); }
+.dark .otp-modal__error { background: rgba(185, 28, 28, 0.15); border-color: rgba(185, 28, 28, 0.3); }
+.dark .otp-modal__btn--ghost { color: var(--text-primary); border-color: var(--border); }
+.dark .otp-modal__btn--primary { background: var(--text-primary); color: var(--bg-primary); }
+.dark .otp-modal__btn--primary:hover { background: #735A3A; color: #fff; }
+.dark .otp-modal__resend-btn:disabled { color: rgba(250, 249, 247, 0.3); }
 </style>
 
 <script>

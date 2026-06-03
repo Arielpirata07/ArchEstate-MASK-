@@ -36,15 +36,6 @@ body {
     font-style: italic;
 }
 
-/* --- SPA Utilities (legacy) --- */
-.view-section {
-    display: none;
-}
-
-.view-section.active {
-    display: block;
-}
-
 /* --- Skip to Content (Accessibility) --- */
 .skip-link {
     position: absolute;
@@ -816,7 +807,10 @@ html {
 .dark .text-midnight\/50 { color: rgba(250, 249, 247, 0.5) !important; }
 .dark .border-midnight { border-color: rgba(250, 249, 247, 0.3) !important; }
 .dark .border-midnight\/5 { border-color: rgba(250, 249, 247, 0.04) !important; }
+.dark .border-slate-100 { border-color: var(--border) !important; }
 .dark .border-slate-200 { border-color: var(--border) !important; }
+.dark .bg-slate-50 { background: var(--bg-secondary) !important; }
+.dark .hover\:bg-slate-50:hover { background: var(--bg-secondary) !important; }
 .dark .bg-slate-200 { background: var(--bg-secondary) !important; }
 .dark .shadow-sm { box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important; }
 .dark .shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.4) !important; }

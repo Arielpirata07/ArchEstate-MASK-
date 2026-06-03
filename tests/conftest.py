@@ -20,15 +20,16 @@ def test_db_path():
 
 @pytest.fixture
 def app(test_db_path):
-    from app import app as flask_app
+    from factory import create_app
+    flask_app = create_app()
     flask_app.config.update({
         'TESTING': True,
         'WTF_CSRF_ENABLED': False,
         'SERVER_NAME': 'localhost',
     })
     with flask_app.app_context():
-        from app import init_db
-        init_db()
+        from app_setup import init_db
+        init_db(flask_app)
     yield flask_app
 
 
@@ -55,7 +56,7 @@ def _clear_rate_limits():
 def auth_client(client, request):
     import uuid
     from werkzeug.security import generate_password_hash
-    from app import get_db_connection
+    from models import get_db_connection
     unique = uuid.uuid4().hex[:8]
     username = f'testuser_{unique}'
     conn = get_db_connection()

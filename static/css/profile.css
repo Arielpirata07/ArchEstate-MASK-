@@ -280,6 +280,10 @@
     transform: translateX(20px);
 }
 
+.dark .toggle-slider::after {
+    background: var(--bg-card);
+}
+
 .toggle-input:focus-visible + .toggle-slider {
     outline: 2px solid #735A3A;
     outline-offset: 2px;

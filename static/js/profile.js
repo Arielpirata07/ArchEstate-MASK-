@@ -76,6 +76,7 @@ function saveUserProfile() {
 
     btn.disabled = true;
     btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Guardando...';
+    if (window.lucide) lucide.createIcons();
     if (msg) msg.classList.add('hidden');
     if (err) err.classList.add('hidden');
 
@@ -155,26 +156,27 @@ function uploadAvatar(input) {
 }
 
 function deleteAvatar() {
-    if (!confirm('¿Eliminar foto de perfil?')) return;
-
-    const status = document.getElementById('avatar-status');
-    if (status) { status.textContent = 'Eliminando...'; status.className = 'text-[9px] mt-1 text-amber-500'; }
-
-    fetch('/api/profile/user/avatar', { method: 'DELETE' })
-    .then(r => r.json().then(data => ({ ok: r.ok, data })))
-    .then(({ ok }) => {
-        if (ok) {
-            const img = document.getElementById('avatar-preview');
-            if (img) img.src = '/static/img/default-avatar.svg';
-            const ring = document.getElementById('avatar-ring');
-            if (ring) ring.classList.remove('visible');
-            if (status) { status.textContent = 'Foto eliminada'; status.className = 'text-[9px] mt-1 text-green-600'; }
-        } else {
-            if (status) { status.textContent = 'Error al eliminar foto'; status.className = 'text-[9px] mt-1 text-rose-500'; }
-        }
-    })
-    .catch(() => {
-        if (status) { status.textContent = 'Error de conexion'; status.className = 'text-[9px] mt-1 text-rose-500'; }
+    var promise = typeof showConfirm === 'function' ? showConfirm('Eliminar foto de perfil?') : Promise.resolve(true);
+    promise.then(function (ok) {
+        if (!ok) return;
+        var status = document.getElementById('avatar-status');
+        if (status) { status.textContent = 'Eliminando...'; status.className = 'text-[9px] mt-1 text-amber-500'; }
+        fetch('/api/profile/user/avatar', { method: 'DELETE' })
+        .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+        .then(function (res) {
+            if (res.ok) {
+                var img = document.getElementById('avatar-preview');
+                if (img) img.src = '/static/img/default-avatar.svg';
+                var ring = document.getElementById('avatar-ring');
+                if (ring) ring.classList.remove('visible');
+                if (status) { status.textContent = 'Foto eliminada'; status.className = 'text-[9px] mt-1 text-green-600'; }
+            } else {
+                if (status) { status.textContent = 'Error al eliminar foto'; status.className = 'text-[9px] mt-1 text-rose-500'; }
+            }
+        })
+        .catch(function () {
+            if (status) { status.textContent = 'Error de conexion'; status.className = 'text-[9px] mt-1 text-rose-500'; }
+        });
     });
 }
 
@@ -398,6 +400,7 @@ function changePassword() {
 
     btn.disabled = true;
     btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Actualizando...';
+    if (window.lucide) lucide.createIcons();
     if (msg) msg.classList.add('hidden');
     if (err) err.classList.add('hidden');
 
@@ -483,13 +486,16 @@ function loadUserSessions() {
 }
 
 function terminateSession(entryId) {
-    if (!confirm('¿Cerrar esta sesion?')) return;
-    fetch(`/api/profile/sessions/${entryId}`, { method: 'DELETE' })
-    .then(r => r.json())
-    .then(result => {
-        if (result.status === 'success') loadUserSessions();
-    })
-    .catch(() => {});
+    var promise = typeof showConfirm === 'function' ? showConfirm('Cerrar esta sesion?') : Promise.resolve(true);
+    promise.then(function (ok) {
+        if (!ok) return;
+        fetch('/api/profile/sessions/' + entryId, { method: 'DELETE' })
+        .then(function (r) { return r.json(); })
+        .then(function (result) {
+            if (result.status === 'success') loadUserSessions();
+        })
+        .catch(function () {});
+    });
 }
 
 // ============================================================
@@ -662,6 +668,7 @@ function saveProfessionalFullProfile() {
 
     btn.disabled = true;
     btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Guardando...';
+    if (window.lucide) lucide.createIcons();
     if (msg) msg.classList.add('hidden');
     if (err) err.classList.add('hidden');
 
@@ -758,26 +765,27 @@ function uploadProfessionalPhoto(input) {
 }
 
 function deleteProfessionalPhoto() {
-    if (!confirm('¿Eliminar foto profesional?')) return;
-
-    const status = document.getElementById('pro-photo-status');
-    if (status) { status.textContent = 'Eliminando...'; status.className = 'text-[9px] mt-1 text-amber-500'; }
-
-    fetch('/api/profile/professional/photo', { method: 'DELETE' })
-    .then(r => r.json().then(data => ({ ok: r.ok, data })))
-    .then(({ ok }) => {
-        if (ok) {
-            const img = document.getElementById('pro-photo-preview');
-            if (img) img.src = '/static/img/default-avatar.svg';
-            const ring = document.getElementById('pro-photo-ring');
-            if (ring) ring.classList.remove('visible');
-            if (status) { status.textContent = 'Foto eliminada'; status.className = 'text-[9px] mt-1 text-green-600'; }
-        } else {
-            if (status) { status.textContent = 'Error al eliminar foto'; status.className = 'text-[9px] mt-1 text-rose-500'; }
-        }
-    })
-    .catch(() => {
-        if (status) { status.textContent = 'Error de conexion'; status.className = 'text-[9px] mt-1 text-rose-500'; }
+    var promise = typeof showConfirm === 'function' ? showConfirm('Eliminar foto profesional?') : Promise.resolve(true);
+    promise.then(function (ok) {
+        if (!ok) return;
+        var status = document.getElementById('pro-photo-status');
+        if (status) { status.textContent = 'Eliminando...'; status.className = 'text-[9px] mt-1 text-amber-500'; }
+        fetch('/api/profile/professional/photo', { method: 'DELETE' })
+        .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+        .then(function (res) {
+            if (res.ok) {
+                var img = document.getElementById('pro-photo-preview');
+                if (img) img.src = '/static/img/default-avatar.svg';
+                var ring = document.getElementById('pro-photo-ring');
+                if (ring) ring.classList.remove('visible');
+                if (status) { status.textContent = 'Foto eliminada'; status.className = 'text-[9px] mt-1 text-green-600'; }
+            } else {
+                if (status) { status.textContent = 'Error al eliminar foto'; status.className = 'text-[9px] mt-1 text-rose-500'; }
+            }
+        })
+        .catch(function () {
+            if (status) { status.textContent = 'Error de conexion'; status.className = 'text-[9px] mt-1 text-rose-500'; }
+        });
     });
 }
 
@@ -795,10 +803,6 @@ function updateAvailability() {
 // ============================================================
 // HELPERS
 // ============================================================
-function escapeHtml(str) {
-    if (!str) return '';
-    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
 
 // ============================================================
 // AVATAR COLOR RING
