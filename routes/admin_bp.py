@@ -584,7 +584,11 @@ def admin_set_user_active(user_id):
             conn.close()
 
     action = "Reactivación de Cuenta" if new_state else "Baja de Cuenta"
+    reason = (data.get('reason') or '').strip()
     message = f"Usuario '{user['username']}' {'reactivado' if new_state else 'dado de baja'} correctamente."
-    utils.log_action(action, f"Usuario: {user['username']} (ID: {user_id})", session)
+    log_detail = f"Usuario: {user['username']} (ID: {user_id})"
+    if not new_state and reason:
+        log_detail += f" — Motivo: {reason}"
+    utils.log_action(action, log_detail, session)
 
     return jsonify({"status": "success", "message": message, "is_active": new_state})

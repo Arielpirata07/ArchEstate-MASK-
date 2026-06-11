@@ -9,6 +9,7 @@
 - Endpoint naming: blueprint-prefixed (`public.index`, `auth.login`, `professional.professional_view`, etc.).
 - Templates use `url_for('public.index')`, `url_for('auth.login')`, etc. — do NOT use bare endpoints.
 - DB: raw SQLite via `models.get_db_connection()`. Schema auto-created/migrated on startup via `app_setup.init_db(app)`.
+- All decorators (`@login_required`, `@admin_required`, `@professional_required`) check `is_active` — disabled users get session cleared and redirected.
 
 ## Key files
 
@@ -16,10 +17,12 @@
 |---|---|
 | `factory.py` | Wires app: config + middleware + errors + blueprints |
 | `config.py` | Reads `.env`, defines constants |
-| `models.py` | `get_db_connection()`, `get_user_by_id()` |
-| `app_setup.py` | `init_db(app)`, `FilterOptionsCache`, `get_budget_stats_from_db()` |
-| `decorators.py` | `@login_required`, `@admin_required`, `@professional_required` |
-| `routes/` | 6 blueprints; `routes_profile.py` also at root |
+| `models.py` | `get_db_connection()`, `get_user_by_id()`, `update_user_credentials()`, `update_user_profile()` |
+| `app_setup.py` | `init_db(app)`, `FilterOptionsCache`, schema migrations (ALTER TABLE) |
+| `decorators.py` | `@login_required`, `@admin_required`, `@professional_required` — all enforce `is_active` |
+| `rate_limit.py` | File-backed rate limiting (JSON + atomic writes) |
+| `routes_profile.py` | Profile, lead editing, avatar upload (at root, not in `routes/`) |
+| `routes/` | 6 blueprints: `auth_bp`, `public_bp`, `client_bp`, `professional_bp`, `admin_bp`, `phone_bp`, `lead_bp` |
 | `services/` | OTP verifier router (WhatsApp/SMS) |
 
 ## Commands
@@ -27,7 +30,7 @@
 ```bash
 python app.py                          # Run dev server (reads .env DEBUG)
 FLASK_DEBUG=true python app.py         # Dev mode with debug
-python -m pytest tests/ -q            # Run all tests (263 total)
+python -m pytest tests/ -q            # Run all tests (276 total)
 python -m pytest tests/ -x -v         # Stop on first failure, verbose
 python -m pytest tests/test_file.py   # Single file
 ```
@@ -39,6 +42,7 @@ python -m pytest tests/test_file.py   # Single file
 - **Tailwind custom colors** (`midnight`, `gold`, `paper`, etc.) defined in `static/js/tailwind-config.js` — use class names, never raw hex in templates.
 - **Design tokens** in `design.md` — follow button/card/modal patterns from there.
 - **Single quotes** for all strings in Python code.
+- **SQL allowlist** for profile updates: `ALLOWED_PROFILE_FIELDS` in `models.py`, `ALLOWED_LEAD_EDIT_FIELDS` in `routes_profile.py`.
 
 ## Test notes
 
@@ -56,6 +60,9 @@ python -m pytest tests/test_file.py   # Single file
 | `/usuario` | `client.user_view` |
 | `/profesional` | `professional.professional_view` |
 | `/admin` | `admin.admin_view` |
+| `/admin/usuarios` | `admin.user_management_view` |
 | `/mi-perfil` | `profile.profile_view` |
 | `/api/phone/send-code` | `phone.send_verification_code` |
 | `/api/phone/verify` | `phone.verify_phone_code` |
+| `/api/admin/user/<id>/set-active` | `admin.admin_set_user_active` |
+| `/api/admin/user/<id>/reset-password` | `admin.admin_reset_password` |

@@ -23,7 +23,7 @@ ALLOWED_LEAD_EDIT_FIELDS = [
     'architectural_style', 'bedrooms', 'bathrooms',
     'total_area', 'amenities', 'ambientes',
     'parking', 'orientation', 'property_condition',
-    'property_age'
+    'property_age', 'community_pool', 'additional_features'
 ]
 
 

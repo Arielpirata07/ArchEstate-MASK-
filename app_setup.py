@@ -153,6 +153,12 @@ def init_db(app):
         if 'phone_format_valid' not in existing_columns:
             cursor.execute("ALTER TABLE leads ADD COLUMN phone_format_valid INTEGER DEFAULT 0")
 
+        if 'community_pool' not in existing_columns:
+            cursor.execute("ALTER TABLE leads ADD COLUMN community_pool TEXT DEFAULT ''")
+
+        if 'additional_features' not in existing_columns:
+            cursor.execute("ALTER TABLE leads ADD COLUMN additional_features TEXT DEFAULT ''")
+
         cursor.execute('PRAGMA table_info(leads)')
         lead_columns = [row[1] for row in cursor.fetchall()]
         if 'user_id' not in lead_columns:
@@ -371,6 +377,7 @@ def init_db(app):
 
         os.makedirs(config.AVATAR_FOLDER, exist_ok=True)
         os.makedirs(os.path.join('static', 'uploads', 'portfolio'), exist_ok=True)
+        os.makedirs(config.UPLOAD_FOLDER, exist_ok=True)
 
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_leads_user_id ON leads(user_id)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_leads_timestamp ON leads(timestamp)')

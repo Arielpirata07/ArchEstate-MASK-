@@ -1,6 +1,10 @@
 // ---- Estado ----
 let targetUserId   = null;
 let targetUsername = null;
+let disableTargetId   = null;
+let disableTargetName = null;
+let enableTargetId    = null;
+let enableTargetName  = null;
 let searchTimeout  = null;
 
 // ---- Carga y render de usuarios ----
@@ -51,7 +55,7 @@ function renderUsers(users) {
     if (!users.length) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="6" class="p-8 text-center text-midnight/40">
+                <td colspan="7" class="p-8 text-center text-midnight/40">
                     <i data-lucide="search" class="w-8 h-8 mx-auto mb-2 opacity-30"></i>
                     <p>No se encontraron usuarios.</p>
                 </td>
@@ -66,8 +70,6 @@ function renderUsers(users) {
             ? escapeHtml(u.phone)
             : '<span class="text-midnight/25 italic">Sin teléfono</span>';
 
-        // El admin no puede resetear su propia cuenta desde aquí
-        // ni resetear a otros admins (protegido también en el backend)
         const isAdmin = u.role === 'admin';
         const resetBtn = isAdmin
             ? `<span class="text-[10px] text-midnight/20 font-bold uppercase tracking-widest">Protegida</span>`
@@ -76,6 +78,23 @@ function renderUsers(users) {
                 class="inline-flex items-center gap-2 px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">
                     <i data-lucide="key-round" class="w-3 h-3"></i> Reset Pass
                </button>`;
+
+        const isActive = u.is_active === 1;
+        const statusBadge = isActive
+            ? '<span class="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-700 inline-flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i> Activo</span>'
+            : '<span class="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest bg-rose-50 text-rose-700 inline-flex items-center gap-1"><i data-lucide="x" class="w-3 h-3"></i> Baja</span>';
+
+        const toggleBtn = isAdmin
+            ? '<span class="text-[10px] text-midnight/20 font-bold uppercase tracking-widest">Protegida</span>'
+            : (isActive
+                ? `<button onclick="openDisableModal(${u.id}, '${escapeHtml(u.username)}')"
+                    class="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-rose-50 text-rose-600 rounded text-[9px] font-bold uppercase tracking-widest hover:bg-rose-600 hover:text-white transition-all">
+                    <i data-lucide="user-x" class="w-3 h-3"></i> Bajar
+                   </button>`
+                : `<button onclick="openEnableModal(${u.id}, '${escapeHtml(u.username)}')"
+                    class="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-50 text-emerald-600 rounded text-[9px] font-bold uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all">
+                    <i data-lucide="user-check" class="w-3 h-3"></i> Activar
+                   </button>`);
 
         return `
             <tr class="border-b border-midnight/5 hover:bg-paper transition-colors">
@@ -89,6 +108,12 @@ function renderUsers(users) {
                     <span class="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest ${badge.cls}">
                         ${badge.text}
                     </span>
+                </td>
+                <td class="p-4">
+                    <div class="flex flex-col gap-1.5">
+                        ${statusBadge}
+                        ${toggleBtn}
+                    </div>
                 </td>
                 <td class="p-4 text-right">${resetBtn}</td>
             </tr>`;
@@ -269,4 +294,110 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Filtro por rol
     document.getElementById('roleFilter').addEventListener('change', loadUsers);
+});
+
+// ---- Disable Modal ----
+
+function openDisableModal(userId, username) {
+    disableTargetId   = userId;
+    disableTargetName = username;
+    document.getElementById('disable-username').textContent = username;
+    document.getElementById('disableReason').value = '';
+    document.getElementById('disableModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => document.getElementById('disableReason').focus(), 100);
+}
+
+function closeDisableModal() {
+    document.getElementById('disableModal').classList.add('hidden');
+    document.body.style.overflow = '';
+    disableTargetId   = null;
+    disableTargetName = null;
+}
+
+async function confirmDisable() {
+    if (!disableTargetId) return;
+    const btn = document.getElementById('confirmDisableBtn');
+    const original = btn.innerHTML;
+    btn.innerHTML = '<div class="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div> Procesando...';
+    btn.disabled = true;
+
+    try {
+        const res  = await fetch(`/api/admin/user/${disableTargetId}/set-active`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ is_active: false })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+            closeDisableModal();
+            if (typeof showToast === 'function') showToast(data.message);
+            loadUsers();
+        } else {
+            if (typeof showToast === 'function') showToast(data.error || 'Error al dar de baja.', 'error');
+        }
+    } catch (err) {
+        if (typeof showToast === 'function') showToast('Error de conexión.', 'error');
+    } finally {
+        btn.innerHTML = original;
+        btn.disabled = false;
+    }
+}
+
+// ---- Enable Modal ----
+
+function openEnableModal(userId, username) {
+    enableTargetId   = userId;
+    enableTargetName = username;
+    document.getElementById('enable-username').textContent = username;
+    document.getElementById('enableModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeEnableModal() {
+    document.getElementById('enableModal').classList.add('hidden');
+    document.body.style.overflow = '';
+    enableTargetId   = null;
+    enableTargetName = null;
+}
+
+async function confirmEnable() {
+    if (!enableTargetId) return;
+    const btn = document.getElementById('confirmEnableBtn');
+    const original = btn.innerHTML;
+    btn.innerHTML = '<div class="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div> Procesando...';
+    btn.disabled = true;
+
+    try {
+        const res  = await fetch(`/api/admin/user/${enableTargetId}/set-active`, {
+            method:  'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body:    JSON.stringify({ is_active: true })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+            closeEnableModal();
+            if (typeof showToast === 'function') showToast(data.message);
+            loadUsers();
+        } else {
+            if (typeof showToast === 'function') showToast(data.error || 'Error al reactivar.', 'error');
+        }
+    } catch (err) {
+        if (typeof showToast === 'function') showToast('Error de conexión.', 'error');
+    } finally {
+        btn.innerHTML = original;
+        btn.disabled = false;
+    }
+}
+
+// Cerrar modales con Escape
+document.addEventListener('keydown', function(e) {
+    if (e.key !== 'Escape') return;
+    if (!document.getElementById('disableModal').classList.contains('hidden')) {
+        closeDisableModal();
+    } else if (!document.getElementById('enableModal').classList.contains('hidden')) {
+        closeEnableModal();
+    }
 });

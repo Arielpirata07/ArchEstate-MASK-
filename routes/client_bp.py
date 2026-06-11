@@ -121,9 +121,9 @@ def submit_lead():
                 land_area, built_area, pool, architectural_style,
                 bedrooms, bathrooms, total_area, amenities,
                 ambientes, parking, orientation, property_condition, property_age,
-                phone_format_valid
+                phone_format_valid, community_pool, additional_features
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             data.get('type'),
             property_type,
@@ -151,6 +151,8 @@ def submit_lead():
             data.get('property_condition', ''),
             data.get('property_age', ''),
             phone_format_valid,
+            data.get('community_pool', ''),
+            data.get('additional_features', ''),
         ))
         conn.commit()
 
