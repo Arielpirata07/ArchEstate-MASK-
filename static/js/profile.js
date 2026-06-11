@@ -5,9 +5,6 @@
 function initSettingsPage() {
     loadUserLeads();
     loadUserSettings();
-    if (document.getElementById('panel-profesional')) {
-        loadProfessionalFullProfile();
-    }
     initPhoneFromServer();
     validateProfileEmail();
     validateProfilePhone();
@@ -48,7 +45,7 @@ document.addEventListener('keydown', function(e) {
     const tabs = document.querySelectorAll('[role="tab"]');
     if (!tabs.length) return;
     const current = document.activeElement;
-    if (!current || !current.getAttribute('role') === 'tab') return;
+    if (!current || current.getAttribute('role') !== 'tab') return;
 
     const idx = Array.from(tabs).indexOf(current);
     if (idx < 0) return;
@@ -629,9 +626,14 @@ function loadProfessionalFullProfile() {
         setVal('pro-address', p.professional_address);
         setVal('pro-fee-min', p.fee_range_min);
         setVal('pro-fee-max', p.fee_range_max);
-        setVal('pro-linkedin', p.social_links ? JSON.parse(p.social_links).linkedin || '' : '');
-        setVal('pro-instagram', p.social_links ? JSON.parse(p.social_links).instagram || '' : '');
-        setVal('pro-website', p.social_links ? JSON.parse(p.social_links).website || '' : '');
+
+        var social = {};
+        if (p.social_links) {
+            try { social = JSON.parse(p.social_links); } catch(e) {}
+        }
+        setVal('pro-linkedin', social.linkedin || '');
+        setVal('pro-instagram', social.instagram || '');
+        setVal('pro-website', social.website || '');
 
         // Services
         if (p.services_offered) {
@@ -1001,7 +1003,11 @@ async function resendVerificationCode() {
     btn.classList.add('opacity-50');
 
     try {
-        const res = await fetch('/api/phone/send-code', { method: 'POST' });
+        const res = await fetch('/api/phone/send-code', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: '{}'
+        });
         const data = await res.json();
 
         if (res.ok) {

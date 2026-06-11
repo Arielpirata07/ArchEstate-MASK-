@@ -1,11 +1,14 @@
 import sqlite3
 
 import config
+import utils
 
 
 def get_db_connection():
     conn = sqlite3.connect(config.DATABASE)
     conn.row_factory = sqlite3.Row
+    conn.execute('PRAGMA journal_mode=WAL')
+    conn.execute('PRAGMA busy_timeout=5000')
     return conn
 
 
@@ -208,19 +211,26 @@ def get_user_profile(user_id):
         conn.close()
 
 
+ALLOWED_PROFILE_FIELDS = {'first_name', 'last_name', 'bio', 'title', 'avatar_path'}
+
+
 def update_user_profile(user_id, data):
     conn = get_db_connection()
     try:
+        filtered = {k: v for k, v in data.items() if k in ALLOWED_PROFILE_FIELDS}
+        if not filtered:
+            return False
+
         existing = conn.execute('SELECT id FROM user_profiles WHERE user_id = ?', (user_id,)).fetchone()
         if existing:
-            set_clause = ', '.join(f'{k} = ?' for k in data.keys())
-            values = list(data.values()) + [user_id]
+            set_clause = ', '.join(f'{k} = ?' for k in filtered.keys())
+            values = list(filtered.values()) + [user_id]
             conn.execute(f'UPDATE user_profiles SET {set_clause}, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?', values)
         else:
-            data['user_id'] = user_id
-            columns = ', '.join(data.keys())
-            placeholders = ', '.join('?' for _ in data)
-            values = list(data.values())
+            filtered['user_id'] = user_id
+            columns = ', '.join(filtered.keys())
+            placeholders = ', '.join('?' for _ in filtered)
+            values = list(filtered.values())
             conn.execute(f'INSERT INTO user_profiles ({columns}) VALUES ({placeholders})', values)
         conn.commit()
         return True
@@ -233,7 +243,36 @@ def update_user_profile(user_id, data):
 def update_user_credentials(user_id, email, phone):
     conn = get_db_connection()
     try:
-        conn.execute('UPDATE users SET email = ?, phone = ? WHERE id = ?', (email, phone, user_id))
+        current = conn.execute('SELECT phone, phone_e164, phone_verified FROM users WHERE id = ?',
+                               (user_id,)).fetchone()
+
+        if phone and current:
+            old_phone = current['phone'] or ''
+            e164 = utils.normalize_phone_to_e164(phone)
+            ntype = utils.classify_phone_type(e164) if e164 else ''
+            old_e164 = utils.normalize_phone_to_e164(old_phone) if old_phone else ''
+            phone_changed = bool(e164) and (old_e164 != e164)
+
+            if phone_changed:
+                conn.execute(
+                    'UPDATE users SET email = ?, phone = ?, phone_e164 = ?, phone_number_type = ?, '
+                    'phone_format_valid = 1, phone_verified = 0, verification_code = \'\', verification_expires = NULL '
+                    'WHERE id = ?',
+                    (email, phone, e164, ntype, user_id)
+                )
+            else:
+                conn.execute(
+                    'UPDATE users SET email = ?, phone = ?, phone_e164 = ?, phone_number_type = ?, '
+                    'phone_format_valid = 1 WHERE id = ?',
+                    (email, phone, e164, ntype, user_id)
+                )
+        else:
+            conn.execute(
+                'UPDATE users SET email = ?, phone = ?, phone_e164 = \'\', phone_number_type = \'\', '
+                'phone_format_valid = 0, phone_verified = 0 WHERE id = ?',
+                (email, phone, user_id)
+            )
+
         conn.commit()
         return True
     except Exception:
@@ -271,6 +310,7 @@ def get_user_preferences(user_id):
             'email_notifications': 1,
             'sms_notifications': 1,
             'lead_alerts': 1,
+            'preferred_channel': 'auto',
         }
     finally:
         conn.close()

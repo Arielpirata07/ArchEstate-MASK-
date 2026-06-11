@@ -134,8 +134,28 @@ function closeModal() {
     targetUsername = null;
 }
 
-// Cerrar con Escape
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+// Cerrar con Escape + focus trap con Tab
+document.addEventListener('keydown', function(e) {
+    var modal = document.getElementById('resetModal');
+    if (modal.classList.contains('hidden')) return;
+
+    if (e.key === 'Escape') {
+        closeModal();
+        return;
+    }
+
+    if (e.key === 'Tab') {
+        var focusable = modal.querySelectorAll('button, [href], input:not([type="hidden"]), select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (!focusable.length) return;
+        var first = focusable[0];
+        var last = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+            if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+        } else {
+            if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+    }
+});
 
 // ---- Validación en tiempo real ----
 

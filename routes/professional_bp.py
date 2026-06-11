@@ -55,7 +55,7 @@ def lead_detail(lead_id):
 
         professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
         if not professional or professional['status'] != 'approved':
-            return render_template('professional.html', leads=[], pending=True)
+            return render_template('professional.html', pending=True)
 
         lead = conn.execute('SELECT * FROM leads WHERE id = ?', (lead_id,)).fetchone()
     finally:
@@ -629,7 +629,7 @@ def report_lead(lead_id):
 
 
 @professional_bp.route('/api/professional/doc-status', methods=['GET'])
-@login_required
+@professional_required
 def get_doc_status():
     conn = None
     try:
@@ -752,7 +752,8 @@ def download_own_doc():
         return send_from_directory(directory, filename, as_attachment=True)
 
     except Exception as e:
-        flash(f'Error interno: {str(e)}', 'error')
+        print(f"Error en download_professional_doc: {e}")
+        flash('Error interno del servidor.', 'error')
         return redirect(url_for('professional.professional_view'))
     finally:
         if conn:

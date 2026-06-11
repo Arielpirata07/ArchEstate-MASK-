@@ -134,6 +134,7 @@ def login():
             session['username'] = user['username']
             session['email'] = user['email']
             session['role'] = user['role']
+            session['phone'] = user['phone'] or ''
 
             try:
                 conn2 = models.get_db_connection()

@@ -99,6 +99,8 @@ def init_db(app):
             cursor.execute("ALTER TABLE users ADD COLUMN phone_e164 TEXT DEFAULT ''")
         if 'phone_number_type' not in user_columns:
             cursor.execute("ALTER TABLE users ADD COLUMN phone_number_type TEXT DEFAULT ''")
+        if 'failed_attempts' not in user_columns:
+            cursor.execute("ALTER TABLE users ADD COLUMN failed_attempts INTEGER DEFAULT 0")
 
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS leads (

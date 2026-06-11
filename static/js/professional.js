@@ -67,7 +67,7 @@ function renderUploadWidget(cid) {
                         <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-700">Documento cargado</p>
                         <p id="docStatusName-${cid}" class="text-xs text-emerald-600 mt-0.5 truncate font-medium"></p>
                     </div>
-                    <a href="${document.getElementById('docApproved').dataset.downloadUrl}"
+                    <a href="${(document.getElementById('docApproved') || {}).dataset ? document.getElementById('docApproved').dataset.downloadUrl : '#'}"
                        class="flex-shrink-0 flex items-center gap-1 px-2 py-1 bg-emerald-100 text-emerald-700 rounded text-[9px] font-bold uppercase tracking-widest hover:bg-emerald-200 transition-colors">
                         <i data-lucide="download" class="w-3 h-3"></i> Descargar
                     </a>
@@ -709,11 +709,11 @@ function closeReportModal() {
     document.getElementById('reportModal').classList.add('hidden');
 }
 
-async function confirmReport() {
+async function confirmReport(e) {
     if (!currentReportLeadId) return;
 
     const notes = document.getElementById('reportNotes').value.trim();
-    const btn = event.target;
+    const btn = e ? e.target : document.getElementById('confirmReportBtn');
     const originalText = btn.textContent;
     btn.disabled = true;
     btn.textContent = 'Enviando...';

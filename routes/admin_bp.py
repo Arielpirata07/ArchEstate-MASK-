@@ -136,7 +136,7 @@ def update_pro_status(pro_id):
 
 
 @admin_bp.route('/api/admin/stats')
-@login_required
+@admin_required
 def admin_stats():
     conn = None
     try:
@@ -463,7 +463,8 @@ def download_professional_doc(user_id):
         return send_from_directory(directory, filename, as_attachment=True)
 
     except Exception as e:
-        return f"Error interno: {str(e)}", 500
+        print(f"Error en download_professional_doc: {e}")
+        return jsonify({"error": "Error interno del servidor"}), 500
     finally:
         if conn:
             conn.close()

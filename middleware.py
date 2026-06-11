@@ -48,7 +48,7 @@ def restore_session_from_remember_cookie():
     try:
         conn = models.get_db_connection()
         user = conn.execute(
-            'SELECT id, username, email, role, is_active FROM users WHERE id = ?',
+            'SELECT id, username, email, phone, role, is_active FROM users WHERE id = ?',
             (user_id,)
         ).fetchone()
         if not user or not user['is_active']:
@@ -60,6 +60,7 @@ def restore_session_from_remember_cookie():
         session['username'] = user['username']
         session['email'] = user['email']
         session['role'] = user['role']
+        session['phone'] = user['phone'] or ''
         g.restored_from_remember = True
         utils.log_event(
             user_id=user['id'], event='remember_session_restored',

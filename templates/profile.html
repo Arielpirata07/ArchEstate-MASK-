@@ -280,19 +280,19 @@
                         <div class="space-y-4 max-w-md">
                             <div>
                                 <label for="current-password" class="input-label">Contrasena Actual</label>
-                                <input id="current-password" type="password" class="input-field">
+                                <input id="current-password" type="password" autocomplete="current-password" class="input-field">
                             </div>
                             <div>
                                 <label for="new-password" class="input-label">Nueva Contrasena</label>
-                                <input id="new-password" type="password" class="input-field">
+                                <input id="new-password" type="password" autocomplete="new-password" class="input-field">
                                 <p class="text-[9px] mt-1 hint-text">Minimo 6 caracteres, al menos una letra y un numero</p>
                             </div>
                             <div>
                                 <label for="confirm-password" class="input-label">Confirmar Nueva Contrasena</label>
-                                <input id="confirm-password" type="password" class="input-field">
+                                <input id="confirm-password" type="password" autocomplete="new-password" class="input-field">
                             </div>
                             <div class="flex items-center gap-4">
-                                <button onclick="changePassword()" class="btn-primary">
+                                <button id="save-password-btn" onclick="changePassword()" class="btn-primary">
                                     <i data-lucide="lock" class="w-4 h-4" aria-hidden="true"></i>
                                     Cambiar Contrasena
                                 </button>

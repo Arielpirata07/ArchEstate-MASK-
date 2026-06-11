@@ -48,8 +48,9 @@ def db(app):
 
 @pytest.fixture(autouse=True)
 def _clear_rate_limits():
-    from rate_limit import rate_limit_store
-    rate_limit_store.clear()
+    import rate_limit
+    with rate_limit._rate_lock:
+        rate_limit._save_store({})
 
 
 @pytest.fixture

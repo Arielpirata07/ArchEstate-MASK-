@@ -1,6 +1,7 @@
 import secrets
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+import datetime as dt_module
 
 from flask import Blueprint, jsonify, request, session
 
@@ -18,6 +19,9 @@ phone_bp = Blueprint('phone', __name__, url_prefix='')
 def update_user_phone():
     if 'user_id' not in session:
         return jsonify({"error": "No autorizado"}), 401
+
+    if not request.is_json:
+        return jsonify({"error": "Content-Type debe ser application/json"}), 415
 
     data = request.json
     phone = (data.get('phone') or '').strip()
@@ -55,10 +59,12 @@ def update_user_phone():
                                    'e164': bool(e164)}, conn=conn)
         else:
             conn.execute(
-                'UPDATE users SET phone_e164 = ?, phone_number_type = ? WHERE id = ?',
-                (e164, ntype, session['user_id'])
+                'UPDATE users SET phone = ?, phone_e164 = ?, phone_number_type = ? WHERE id = ?',
+                (phone, e164, ntype, session['user_id'])
             )
         conn.commit()
+
+        session['phone'] = phone
 
         return jsonify({
             "status": "success",
@@ -82,11 +88,14 @@ def send_verification_code():
     if 'user_id' not in session:
         return jsonify({"error": "No autorizado"}), 401
 
+    if not request.is_json:
+        return jsonify({"error": "Content-Type debe ser application/json"}), 415
+
     user_id = session['user_id']
     conn = models.get_db_connection()
     try:
         user = conn.execute(
-            'SELECT username, phone, phone_e164, phone_verified FROM users WHERE id = ?',
+            'SELECT username, phone, phone_e164, phone_verified, phone_format_valid FROM users WHERE id = ?',
             (user_id,)
         ).fetchone()
         if not user:
@@ -99,9 +108,10 @@ def send_verification_code():
         if user['phone_verified'] == 1:
             return jsonify({"error": "El teléfono ya está verificado."}), 400
 
-        is_valid_phone, phone_error = validators.validate_phone(phone)
-        if not is_valid_phone:
-            return jsonify({"error": phone_error}), 400
+        if user['phone_format_valid'] != 1:
+            is_valid_phone, phone_error = validators.validate_phone(phone)
+            if not is_valid_phone:
+                return jsonify({"error": phone_error}), 400
 
         phone_e164 = user['phone_e164'] or utils.normalize_phone_to_e164(phone)
         if not phone_e164:
@@ -114,17 +124,20 @@ def send_verification_code():
             preferred_channel = 'auto'
 
         code = f"{secrets.randbelow(999999) + 1:06d}"
-        expires = datetime.now() + timedelta(minutes=config.OTP_TTL_MINUTES)
-
-        conn.execute(
-            'UPDATE users SET verification_code = ?, verification_expires = ? WHERE id = ?',
-            (code, expires.isoformat(), user_id)
-        )
-        conn.commit()
+        expires = datetime.now(timezone.utc) + timedelta(minutes=config.OTP_TTL_MINUTES)
 
         from services.verifier import get_default_router
         router = get_default_router()
         result = router.send_otp(phone_e164, code, preferred_channel=preferred_channel, ttl_minutes=config.OTP_TTL_MINUTES)
+
+        if not result.ok:
+            return jsonify({"status": "error", "message": result.message, "channel": result.channel}), 502
+
+        conn.execute(
+            'UPDATE users SET verification_code = ?, verification_expires = ?, failed_attempts = 0, '
+            'phone_format_valid = 1 WHERE id = ?',
+            (code, expires.isoformat(), user_id)
+        )
 
         conn.execute(
             'INSERT INTO consent_log (user_id, channel, ip, user_agent) VALUES (?, ?, ?, ?)',
@@ -144,11 +157,11 @@ def send_verification_code():
                         conn=conn)
 
         return jsonify({
-            "status": "success" if result.ok else "error",
+            "status": "success",
             "message": result.message,
             "channel": result.channel,
             "phone_e164": phone_e164,
-            "deep_link": (result.meta or {}).get('deep_link') if result.ok else None,
+            "deep_link": (result.meta or {}).get('deep_link'),
         })
     except Exception as e:
         print(f"Error en send_verification_code: {e}")
@@ -159,10 +172,13 @@ def send_verification_code():
 
 
 @phone_bp.route('/api/phone/verify', methods=['POST'])
-@rate_limit.check_rate_limit(limit=5, window=60)
+@rate_limit.check_rate_limit(limit=6, window=60)
 def verify_phone_code():
     if 'user_id' not in session:
         return jsonify({"error": "No autorizado"}), 401
+
+    if not request.is_json:
+        return jsonify({"error": "Content-Type debe ser application/json"}), 415
 
     data = request.json
     code = (data.get('code') or '').strip()
@@ -174,7 +190,8 @@ def verify_phone_code():
     conn = models.get_db_connection()
     try:
         user = conn.execute(
-            'SELECT username, phone, phone_format_valid, verification_code, verification_expires, phone_verified FROM users WHERE id = ?',
+            'SELECT username, phone, phone_format_valid, verification_code, verification_expires, phone_verified, '
+            'failed_attempts FROM users WHERE id = ?',
             (user_id,)
         ).fetchone()
         if not user:
@@ -186,33 +203,59 @@ def verify_phone_code():
         if user['phone_format_valid'] != 1:
             return jsonify({"error": "El teléfono no tiene un formato válido. Actualizá tu perfil."}), 400
 
+        failed_attempts = user['failed_attempts'] or 0
+        if failed_attempts >= config.OTP_MAX_ATTEMPTS:
+            return jsonify({"error": "Demasiados intentos fallidos. Solicitá un nuevo código."}), 429
+
         stored_code = user['verification_code'] or ''
         expires_str = user['verification_expires'] or ''
 
         if not stored_code or not expires_str:
             return jsonify({"error": "No hay código pendiente. Solicitá uno nuevo."}), 400
 
-        import datetime as dt_module
         try:
             expires = dt_module.datetime.fromisoformat(expires_str)
-            if dt_module.datetime.now() > expires:
+            now = dt_module.datetime.now(dt_module.timezone.utc) if expires.tzinfo else dt_module.datetime.now()
+            if now > expires:
                 utils.log_event(user_id=user_id, event='otp_expired', conn=conn)
                 return jsonify({"error": "Código expirado. Solicitá uno nuevo."}), 410
         except ValueError:
             return jsonify({"error": "Error de validación. Solicitá un nuevo código."}), 400
 
-        if code != stored_code:
+        if not secrets.compare_digest(code, stored_code):
+            new_attempts = failed_attempts + 1
+            if new_attempts >= config.OTP_MAX_ATTEMPTS:
+                conn.execute(
+                    "UPDATE users SET failed_attempts = ?, verification_code = '', verification_expires = NULL WHERE id = ?",
+                    (new_attempts, user_id)
+                )
+                conn.commit()
+                utils.log_action(
+                    "OTP bloqueado por intentos fallidos",
+                    f"user={user['username']}, attempts={new_attempts}",
+                    session,
+                    conn=conn
+                )
+                utils.log_event(user_id=user_id, event='otp_locked_out',
+                                props={'attempts': new_attempts}, conn=conn)
+                return jsonify({"error": "Código bloqueado por demasiados intentos. Solicitá uno nuevo."}), 429
+            else:
+                conn.execute('UPDATE users SET failed_attempts = ? WHERE id = ?', (new_attempts, user_id))
+                conn.commit()
+
             utils.log_action(
                 "Intento fallido verificación teléfono",
-                f"user={user['username']}, code_ingresado={code}",
+                f"user={user['username']}, attempt=otp_code, attempts_left={config.OTP_MAX_ATTEMPTS - new_attempts}",
                 session,
                 conn=conn
             )
-            utils.log_event(user_id=user_id, event='otp_verify_failed', conn=conn)
+            utils.log_event(user_id=user_id, event='otp_verify_failed',
+                            props={'attempts': new_attempts}, conn=conn)
             return jsonify({"error": "Código incorrecto."}), 400
 
         conn.execute(
-            'UPDATE users SET phone_verified = 1, phone_format_valid = 1, verification_code = \'\', verification_expires = NULL WHERE id = ?',
+            'UPDATE users SET phone_verified = 1, phone_format_valid = 1, verification_code = \'\', '
+            'verification_expires = NULL, failed_attempts = 0 WHERE id = ?',
             (user_id,)
         )
         conn.commit()

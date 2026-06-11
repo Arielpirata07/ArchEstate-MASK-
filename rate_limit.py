@@ -1,13 +1,40 @@
-from functools import wraps
-from flask import jsonify, request
+import json
+import os
+import tempfile
+import threading
 import time
+from functools import wraps
+
+from flask import jsonify, request
 
 
-rate_limit_store = {}
+_rate_lock = threading.Lock()
+_rate_file = os.path.join(tempfile.gettempdir(), 'archestate_rate_limits.json')
+
+
+def _load_store():
+    try:
+        with open(_rate_file, 'r') as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+
+def _save_store(store):
+    dir_name = os.path.dirname(_rate_file)
+    fd, tmp_path = tempfile.mkstemp(dir=dir_name, suffix='.json')
+    try:
+        with os.fdopen(fd, 'w') as f:
+            json.dump(store, f)
+        os.replace(tmp_path, _rate_file)
+    except Exception:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
 
 
 def get_client_ip():
-    """Obtiene la IP del cliente considerando proxies"""
     if request.headers.get('X-Forwarded-For'):
         return request.headers.get('X-Forwarded-For').split(',')[0].strip()
     return request.remote_addr or '127.0.0.1'
@@ -60,7 +87,7 @@ def _rate_limit_html_response(endpoint_name):
 
 def check_rate_limit(limit=10, window=60):
     """
-    Decorador para aplicar rate limiting.
+    Decorador para aplicar rate limiting con store persistente entre workers.
     limit: número máximo de requests permitidos
     window: ventana de tiempo en segundos
     """
@@ -70,27 +97,30 @@ def check_rate_limit(limit=10, window=60):
             client_ip = get_client_ip()
             current_time = time.time()
 
-            if client_ip not in rate_limit_store:
-                rate_limit_store[client_ip] = []
+            with _rate_lock:
+                store = _load_store()
+                requests = store.get(client_ip, [])
+                requests = [t for t in requests if current_time - t < window]
+                store[client_ip] = requests
 
-            requests = rate_limit_store[client_ip]
-            requests = [t for t in requests if current_time - t < window]
-            rate_limit_store[client_ip] = requests
+                if len(requests) >= limit:
+                    _save_store(store)
+                    accept = request.headers.get('Accept', '')
+                    if 'application/json' in accept or request.is_json:
+                        return jsonify({
+                            "status": "error",
+                            "message": "Demasiadas solicitudes. Espera unos minutos antes de intentar nuevamente.",
+                            "retry_after": int(window - (current_time - (requests[0] if requests else current_time)))
+                        }), 429
+                    else:
+                        endpoint = f.__name__
+                        html, status = _rate_limit_html_response(endpoint)
+                        return html, status
 
-            if len(requests) >= limit:
-                accept = request.headers.get('Accept', '')
-                if 'application/json' in accept or request.is_json:
-                    return jsonify({
-                        "status": "error",
-                        "message": "Demasiadas solicitudes. Espera unos minutos antes de intentar nuevamente.",
-                        "retry_after": int(window - (current_time - (requests[0] if requests else current_time)))
-                    }), 429
-                else:
-                    endpoint = f.__name__
-                    html, status = _rate_limit_html_response(endpoint)
-                    return html, status
+                requests.append(current_time)
+                store[client_ip] = requests
+                _save_store(store)
 
-            requests.append(current_time)
             return f(*args, **kwargs)
         return decorated_function
     return decorator
@@ -101,11 +131,13 @@ def add_rate_limit_headers(response, limit=10, window=60):
     client_ip = get_client_ip()
     current_time = time.time()
 
-    if client_ip in rate_limit_store:
-        requests = [t for t in rate_limit_store[client_ip] if current_time - t < window]
-        remaining = max(0, limit - len(requests))
-    else:
-        remaining = limit
+    with _rate_lock:
+        store = _load_store()
+        if client_ip in store:
+            requests = [t for t in store[client_ip] if current_time - t < window]
+            remaining = max(0, limit - len(requests))
+        else:
+            remaining = limit
 
     response.headers['X-RateLimit-Limit'] = str(limit)
     response.headers['X-RateLimit-Remaining'] = str(remaining)

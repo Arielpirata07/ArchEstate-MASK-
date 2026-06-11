@@ -42,7 +42,7 @@ def edit_lead_view(lead_id):
     user_id = session['user_id']
     lead = models.get_lead_by_id_and_user(lead_id, user_id)
     if not lead:
-        return redirect(url_for('profile_view'))
+        return redirect(url_for('profile.profile_view'))
     versions = models.get_lead_versions(lead_id)
     return render_template('edit_lead.html', lead=lead, versions=versions)
 

@@ -432,13 +432,13 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/profile.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/edit_lead.js') }}" defer></script>
 <script>
 window.__leadData = {
-    parking: '{{ lead.parking if lead.parking else '' }}',
-    orientation: '{{ lead.orientation if lead.orientation else '' }}',
-    property_condition: '{{ lead.property_condition if lead.property_condition else '' }}',
-    property_age: '{{ lead.property_age if lead.property_age else '' }}'
+    parking: {{ lead.parking | tojson }},
+    orientation: {{ lead.orientation | tojson }},
+    property_condition: {{ lead.property_condition | tojson }},
+    property_age: {{ lead.property_age | tojson }}
 };
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -447,9 +447,9 @@ document.addEventListener('DOMContentLoaded', function() {
     initEditChips();
 
     {% if lead.amenities %}
-    const existingAmenities = '{{ lead.amenities }}'.split(',').map(a => a.trim());
-    document.querySelectorAll('.amenity-checkbox').forEach(cb => {
-        if (existingAmenities.includes(cb.value)) {
+    var existingAmenities = {{ lead.amenities | tojson }}.split(',').map(function(a) { return a.trim(); });
+    document.querySelectorAll('.amenity-checkbox').forEach(function(cb) {
+        if (existingAmenities.indexOf(cb.value) !== -1) {
             cb.checked = true;
         }
     });

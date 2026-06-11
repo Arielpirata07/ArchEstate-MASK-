@@ -380,3 +380,212 @@ class TestVerifyKeepsFormatValid:
         assert resp.status_code == 200
         user = db.execute('SELECT phone_format_valid FROM users WHERE id = ?', (uid,)).fetchone()
         assert user['phone_format_valid'] == 1
+
+
+class TestBruteForceProtection:
+    """Tests para la protección contra fuerza bruta en verificación OTP."""
+
+    def test_increments_failed_attempts_on_wrong_code(self, auth_client, db):
+        uid = _user_id(auth_client, db)
+        auth_client.post('/api/phone/send-code', content_type='application/json')
+
+        auth_client.post('/api/phone/verify',
+                         data=json.dumps({'code': '000001'}),
+                         content_type='application/json')
+        user = db.execute('SELECT failed_attempts FROM users WHERE id = ?', (uid,)).fetchone()
+        assert user['failed_attempts'] == 1
+
+    def test_increments_on_each_wrong_attempt(self, auth_client, db):
+        uid = _user_id(auth_client, db)
+        auth_client.post('/api/phone/send-code', content_type='application/json')
+
+        for i in range(1, 4):
+            auth_client.post('/api/phone/verify',
+                             data=json.dumps({'code': f'{i:06d}'}),
+                             content_type='application/json')
+        user = db.execute('SELECT failed_attempts FROM users WHERE id = ?', (uid,)).fetchone()
+        assert user['failed_attempts'] == 3
+
+    def test_locks_out_after_max_attempts(self, auth_client, db):
+        uid = _user_id(auth_client, db)
+        auth_client.post('/api/phone/send-code', content_type='application/json')
+
+        for i in range(1, 6):
+            resp = auth_client.post('/api/phone/verify',
+                                    data=json.dumps({'code': f'{i:06d}'}),
+                                    content_type='application/json')
+        assert resp.status_code == 429
+        assert 'bloqueado' in resp.get_json()['error'].lower()
+
+    def test_invalidates_otp_on_lockout(self, auth_client, db):
+        uid = _user_id(auth_client, db)
+        auth_client.post('/api/phone/send-code', content_type='application/json')
+
+        for i in range(1, 6):
+            auth_client.post('/api/phone/verify',
+                             data=json.dumps({'code': f'{i:06d}'}),
+                             content_type='application/json')
+
+        user = db.execute(
+            'SELECT verification_code, verification_expires, failed_attempts FROM users WHERE id = ?',
+            (uid,)).fetchone()
+        assert user['verification_code'] == ''
+        assert user['verification_expires'] is None
+        assert user['failed_attempts'] == 5
+
+    def test_rejects_after_lockout_even_with_correct_code(self, auth_client, db):
+        uid = _user_id(auth_client, db)
+        auth_client.post('/api/phone/send-code', content_type='application/json')
+        user = db.execute('SELECT verification_code FROM users WHERE id = ?', (uid,)).fetchone()
+        real_code = user['verification_code']
+
+        for i in range(1, 6):
+            auth_client.post('/api/phone/verify',
+                             data=json.dumps({'code': f'{i:06d}'}),
+                             content_type='application/json')
+
+        resp = auth_client.post('/api/phone/verify',
+                                data=json.dumps({'code': real_code}),
+                                content_type='application/json')
+        assert resp.status_code == 429
+
+    def test_resets_failed_attempts_on_new_code(self, auth_client, db):
+        import rate_limit
+        uid = _user_id(auth_client, db)
+        auth_client.post('/api/phone/send-code', content_type='application/json')
+
+        for i in range(1, 4):
+            auth_client.post('/api/phone/verify',
+                             data=json.dumps({'code': f'{i:06d}'}),
+                             content_type='application/json')
+        user = db.execute('SELECT failed_attempts FROM users WHERE id = ?', (uid,)).fetchone()
+        assert user['failed_attempts'] == 3
+
+        with rate_limit._rate_lock:
+            rate_limit._save_store({})
+        auth_client.post('/api/phone/send-code', content_type='application/json')
+        user = db.execute('SELECT failed_attempts FROM users WHERE id = ?', (uid,)).fetchone()
+        assert user['failed_attempts'] == 0
+
+    def test_resets_failed_attempts_on_success(self, auth_client, db):
+        uid = _user_id(auth_client, db)
+        auth_client.post('/api/phone/send-code', content_type='application/json')
+
+        auth_client.post('/api/phone/verify',
+                         data=json.dumps({'code': '000001'}),
+                         content_type='application/json')
+        user = db.execute('SELECT failed_attempts FROM users WHERE id = ?', (uid,)).fetchone()
+        assert user['failed_attempts'] == 1
+
+        auth_client.post('/api/phone/send-code', content_type='application/json')
+        user = db.execute('SELECT verification_code FROM users WHERE id = ?', (uid,)).fetchone()
+        real_code = user['verification_code']
+
+        resp = auth_client.post('/api/phone/verify',
+                                data=json.dumps({'code': real_code}),
+                                content_type='application/json')
+        assert resp.status_code == 200
+        user = db.execute('SELECT failed_attempts FROM users WHERE id = ?', (uid,)).fetchone()
+        assert user['failed_attempts'] == 0
+
+    def test_logs_lockout_event(self, auth_client, db):
+        uid = _user_id(auth_client, db)
+        auth_client.post('/api/phone/send-code', content_type='application/json')
+
+        for i in range(1, 6):
+            auth_client.post('/api/phone/verify',
+                             data=json.dumps({'code': f'{i:06d}'}),
+                             content_type='application/json')
+
+        row = db.execute("SELECT * FROM events WHERE event = 'otp_locked_out' ORDER BY id DESC LIMIT 1").fetchone()
+        assert row is not None
+
+
+class TestSendCodeFormatValid:
+    """Tests para la validación de phone_format_valid en send-code."""
+
+    def test_rejects_when_phone_format_invalid(self, auth_client, db):
+        uid = _user_id(auth_client, db)
+        db.execute('UPDATE users SET phone_format_valid = 0, phone = ? WHERE id = ?', ('123', uid))
+        db.commit()
+
+        resp = auth_client.post('/api/phone/send-code', content_type='application/json')
+        assert resp.status_code == 400
+
+    def test_allows_send_when_format_valid(self, auth_client, db):
+        uid = _user_id(auth_client, db)
+        db.execute('UPDATE users SET phone_format_valid = 1 WHERE id = ?', (uid,))
+        db.commit()
+
+        resp = auth_client.post('/api/phone/send-code', content_type='application/json')
+        assert resp.status_code == 200
+
+
+class TestProfilePhoneUpdate:
+    """Tests para el fix de doble ruta: update_user_credentials con cambio de teléfono."""
+
+    def test_resets_verification_when_phone_changes_via_profile(self, auth_client, db):
+        uid = _user_id(auth_client, db)
+        db.execute(
+            'UPDATE users SET phone = ?, phone_e164 = ?, phone_verified = 1, '
+            'verification_code = ?, verification_expires = ? WHERE id = ?',
+            ('+5491144445555', '+5491144445555', '123456',
+             (datetime.now() + timedelta(minutes=10)).isoformat(), uid)
+        )
+        db.commit()
+
+        resp = auth_client.put('/api/profile/user',
+                               data=json.dumps({
+                                   'email': 'test@example.com',
+                                   'phone': '+5491144440000',
+                                   'first_name': '', 'last_name': '', 'bio': '',
+                               }),
+                               content_type='application/json')
+        assert resp.status_code == 200
+
+        user = db.execute(
+            'SELECT phone, phone_e164, phone_verified, verification_code, phone_number_type '
+            'FROM users WHERE id = ?', (uid,)).fetchone()
+        assert user['phone'] == '+5491144440000'
+        assert user['phone_e164'] == '+5491144440000'
+        assert user['phone_verified'] == 0
+        assert user['verification_code'] == ''
+        assert user['phone_number_type'] in ('mobile', 'fixed_or_mobile')
+
+    def test_preserves_verification_when_phone_unchanged_via_profile(self, auth_client, db):
+        uid = _user_id(auth_client, db)
+        db.execute(
+            'UPDATE users SET phone = ?, phone_e164 = ?, phone_verified = 1 WHERE id = ?',
+            ('+5491144445555', '+5491144445555', uid)
+        )
+        db.commit()
+
+        resp = auth_client.put('/api/profile/user',
+                               data=json.dumps({
+                                   'email': 'test@example.com',
+                                   'phone': '+5491144445555',
+                                   'first_name': '', 'last_name': '', 'bio': '',
+                               }),
+                               content_type='application/json')
+        assert resp.status_code == 200
+
+        user = db.execute('SELECT phone_verified FROM users WHERE id = ?', (uid,)).fetchone()
+        assert user['phone_verified'] == 1
+
+    def test_updates_phone_e164_even_when_unchanged(self, auth_client, db):
+        uid = _user_id(auth_client, db)
+        db.execute("UPDATE users SET phone_e164 = '' WHERE id = ?", (uid,))
+        db.commit()
+
+        resp = auth_client.put('/api/profile/user',
+                               data=json.dumps({
+                                   'email': 'test@example.com',
+                                   'phone': '+5491144445555',
+                                   'first_name': '', 'last_name': '', 'bio': '',
+                               }),
+                               content_type='application/json')
+        assert resp.status_code == 200
+
+        user = db.execute('SELECT phone_e164, phone_number_type FROM users WHERE id = ?', (uid,)).fetchone()
+        assert user['phone_e164'] == '+5491144445555'
+        assert user['phone_number_type'] in ('mobile', 'fixed_or_mobile')
