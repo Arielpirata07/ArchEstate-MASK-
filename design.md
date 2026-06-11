@@ -38,6 +38,34 @@
 
 ---
 
+## Dark Mode
+
+Activado con clase `dark` en `<html>`. Toggle en `dark-mode.js`. La preferencia se guarda en `user_preferences.theme`.
+
+### Variables CSS
+
+| Variable | Light | Dark |
+|----------|-------|------|
+| `--bg-primary` | `#FAF9F7` | `#0a0e1a` |
+| `--bg-secondary` | `#F4F3F1` | `#101E33` |
+| `--bg-card` | `#FFFFFF` | `#1a2332` |
+| `--text-primary` | `#000410` | `#FAF9F7` |
+| `--text-secondary` | `rgba(0,4,16,0.5)` | `rgba(250,249,247,0.6)` |
+| `--accent` | `#735A3A` | `#A68A64` |
+| `--border` | `rgba(0,4,16,0.1)` | `rgba(250,249,247,0.1)` |
+
+### Overrides de Tailwind
+
+Clases como `bg-white`, `bg-paper`, `text-midnight`, `border-midnight/20` se mapean automáticamente a valores dark via CSS en `base.css`. No usar colores hardcodeados — usar las clases Tailwind estándar que ya tienen override.
+
+Ejemplo: `.dark .bg-white { background: var(--bg-card) }` convierte cualquier `bg-white` a color oscuro.
+
+### Transición
+
+`<html class="theme-transition">` aplica `transition: background-color 0.4s` a todos los elementos durante el cambio de tema. Se remueve después de 400ms.
+
+---
+
 ## Componentes
 
 ### Botones
@@ -198,6 +226,53 @@ Zona drag & drop renderizada por JS (`renderUploadWidget(containerId)`). Estados
 3. **Progreso** — barra gold animada con porcentaje
 4. **Éxito** — banner emerald con nombre y botón de descarga + opción "Reemplazar"
 
+### Status Buttons (Visto/Contactado)
+
+Componente CSS custom en `professional.css` (no Tailwind puro).
+
+- Base: `.status-btn`
+- Activo Visto: `.status-btn.status-active.status-btn-seen` → gold (`#735A3A`)
+- Activo Contactado: `.status-btn.status-active.status-btn-contacted` → emerald (`#059669`)
+- Animación toggle: `.status-btn.status-toggling` → pulse scale 1→1.06→1
+
+Uso en JS: toggle manual de clases CSS. El ícono Lucide usa `fill: currentColor; fill-opacity: 0.15` cuando está activo.
+
+### Budget Popup
+
+Overlay `fixed inset-0 z-50` con slider dual range + inputs numéricos. Componente en `main.js`.
+
+- Trigger: `#budget-popup-trigger`
+- Panel: `bg-white rounded-2xl shadow-2xl p-8 w-full max-w-lg mx-4`
+- Currency select: ARG / USD / EUR
+- Slider: dos `input[type=range]` superpuestos con fill gold (`#budget-slider-fill`)
+- Inputs numéricos: min/max inline
+- Checkbox "Sin límite máximo"
+- Botones: "Restablecer" (border) + "Aceptar" (bg-midnight)
+- Cierra con `#budget-popup-close` o click fuera del panel
+
+### OTP Modal (Verificación Telefónica)
+
+Modal inline en `profile.html` (no usa `showToast()`).
+
+- Overlay: `bg-midnight/60 backdrop-blur-sm`
+- Panel: `bg-white rounded-lg shadow-2xl border-t-4 border-gold`
+- Input de 6 dígitos con auto-focus y espaciado amplio
+- Timer de reenvío con countdown (botón deshabilitado)
+- Botón "Verificar" con estado de carga
+- Estados: enviado / verificado / error / expirado
+
+### Flash Messages
+
+Renderizadas en `base.html` vía `get_flashed_messages(with_categories=true)`.
+
+| Categoría | Estilo |
+|-----------|--------|
+| `success` | `bg-emerald-50 border border-emerald-200 text-emerald-700` |
+| `error` | `bg-rose-50 border border-rose-200 text-rose-700` |
+| `info` | `bg-blue-50 border border-blue-200 text-blue-700` |
+
+Se auto-ocultan después de 5s con `setTimeout` y `fadeOut`.
+
 ### Tags de Filtros Activos
 
 ```
@@ -254,9 +329,20 @@ Fondo `bg-midnight`, pasos con íconos circulares:
 - Pendiente: `bg-white/10 border border-white/20` con número
 - Labels: `text-white` / `text-white/60` según estado
 
----
+### Form Validation States
 
-## Layout System
+Clases CSS en `base.css` para validación en tiempo real:
+
+| Clase | Efecto |
+|-------|--------|
+| `.input-valid` | Borde emerald (`#059669`) |
+| `.input-invalid` | Borde rose (`#e11d48`) |
+| `.field-error` | Texto error inline (oculto por defecto, `opacity: 0`) |
+| `.field-error--visible` | Muestra el error (`opacity: 1`) |
+
+Validación en tiempo real: `main.js` → `validateEmail()`, `validateBudgetForCurrency()`. El campo `.input-animated` tiene una línea gold que crece desde el centro al hacer focus.
+
+---
 
 ### Contenedor de página
 ```
@@ -316,9 +402,15 @@ function animateCounter(el, target) {
 
 - Contraste mínimo WCAG AA: 4.5:1 para texto normal — `text-midnight/40` falla en fondo blanco para 10px, usar mínimo `text-midnight/50`
 - Focus en inputs: `focus:border-gold focus:outline-none`
+- Focus visible global: `outline: 2px solid #735A3A; outline-offset: 2px` en todos los interactivos via `base.css`
 - Focus en botones: `focus:ring-2 focus:ring-gold focus:ring-offset-2`
 - Botones solo-ícono: `aria-label` o `title`
-- Modales: `Escape` cierra, foco atrapado dentro
+- **Skip link**: `.skip-link` — aparece al hacer Tab desde el top, lleva al contenido principal
+- **Visually hidden**: `.visually-hidden` — contenido solo para screen readers (1px clip)
+- **Target size**: botones y links tienen `min-width/min-height: 24px` (WCAG 2.5.8)
+- **`:target` offset**: `scroll-margin-top: 80px` para headers sticky
+- Modales: `Escape` cierra, foco atrapado dentro con Tab cycle
+- ARIA en modales: `role="dialog"`, `aria-modal="true"`, `aria-labelledby` apuntando al título
 
 ---
 
@@ -330,6 +422,8 @@ function animateCounter(el, target) {
 | `alert()` / `confirm()` | `showToast()` / modal personalizado |
 | Mutating className con `.replace()` en clases Tailwind con slash | Reconstruir `className` completo desde string base |
 | `querySelector('i')` en un contenedor donde Lucide ya inicializó | Reconstruir `innerHTML` con nuevos `<i>` y llamar `lucide.createIcons()` |
+| Mutar `<svg>` que Lucide ya generó | Reconstruir `<innerHTML>` con `<i data-lucide>` y llamar `lucide.createIcons()` |
+| Usar `window.event` implícito | Pasar `event` como parámetro explícito en handlers inline |
 | Mezclar `rounded-3xl` y `rounded-lg` en la misma página | `rounded-lg` para todo |
 | Íconos emoji en lugar de Lucide | `<i data-lucide="nombre">` |
 | JS inline que duplica lógica de `main.js` | Importar/usar las funciones globales |

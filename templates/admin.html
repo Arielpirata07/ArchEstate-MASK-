@@ -120,7 +120,7 @@
                             class="px-2 py-1 text-[9px] font-bold uppercase tracking-widest rounded bg-midnight/5 text-midnight/50 hover:bg-gold hover:text-white transition-all">
                             Donut / Barra
                         </button>
-                        <button onclick="exportChart('chart-type', 'leads-tipo')" class="p-1 text-midnight/30 hover:text-gold transition-colors" title="Exportar PNG">
+                        <button onclick="exportChart('chart-type', 'leads-tipo')" class="p-1 text-midnight/30 hover:text-gold transition-colors" title="Exportar PNG" aria-label="Exportar gráfico de tipo como PNG">
                             <i data-lucide="download" class="w-3 h-3"></i>
                         </button>
                     </div>
@@ -138,7 +138,7 @@
                         <input id="zone-filter-input" type="text" placeholder="Filtrar zona..."
                                oninput="filterZoneChart()"
                                class="px-2 py-1 text-[10px] border border-midnight/20 rounded focus:border-gold focus:outline-none w-28">
-                        <button onclick="exportChart('chart-zone', 'leads-zonas')" class="p-1 text-midnight/30 hover:text-gold transition-colors" title="Exportar PNG">
+                        <button onclick="exportChart('chart-zone', 'leads-zonas')" class="p-1 text-midnight/30 hover:text-gold transition-colors" title="Exportar PNG" aria-label="Exportar gráfico de zonas como PNG">
                             <i data-lucide="download" class="w-3 h-3"></i>
                         </button>
                     </div>
@@ -167,7 +167,7 @@
                                 Barras
                             </button>
                         </div>
-                        <button onclick="exportChart('chart-month', 'actividad-mensual')" class="p-1 text-midnight/30 hover:text-gold transition-colors" title="Exportar PNG">
+                        <button onclick="exportChart('chart-month', 'actividad-mensual')" class="p-1 text-midnight/30 hover:text-gold transition-colors" title="Exportar PNG" aria-label="Exportar gráfico de actividad mensual como PNG">
                             <i data-lucide="download" class="w-3 h-3"></i>
                         </button>
                     </div>
@@ -181,7 +181,7 @@
             <div class="bg-white rounded-lg shadow-xl overflow-hidden">
                 <div class="p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between">
                     <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Por Presupuesto</h3>
-                    <button onclick="exportChart('chart-budget', 'leads-presupuesto')" class="p-1 text-midnight/30 hover:text-gold transition-colors" title="Exportar PNG">
+                    <button onclick="exportChart('chart-budget', 'leads-presupuesto')" class="p-1 text-midnight/30 hover:text-gold transition-colors" title="Exportar PNG" aria-label="Exportar gráfico de presupuesto como PNG">
                         <i data-lucide="download" class="w-3 h-3"></i>
                     </button>
                 </div>
@@ -407,7 +407,7 @@
                     <p class="text-[10px] uppercase tracking-widest font-bold text-gold mb-1">Detalle del Pedido</p>
                     <h3 class="text-2xl font-serif">Lead <span id="leadDetailId" class="serif-italic text-gold"></span></h3>
                 </div>
-                <button onclick="closeLeadDetailModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded">
+                <button onclick="closeLeadDetailModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="Cerrar">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -423,7 +423,7 @@
 </div>
 
 <!-- ===== MODAL: DAR DE BAJA / REACTIVAR ===== -->
-<div id="deactivateModal" class="fixed inset-0 z-50 hidden">
+<div id="deactivateModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="deactivateModalTitle">
     <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeDeactivateModal()"></div>
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
         <div class="bg-white rounded-lg shadow-2xl overflow-hidden" id="deactivateModalBox">
@@ -438,7 +438,7 @@
                             Usuario: <strong id="deactivateModalUsername" class="text-midnight font-bold"></strong>
                         </p>
                     </div>
-                    <button onclick="closeDeactivateModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded">
+                    <button onclick="closeDeactivateModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="Cerrar">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>

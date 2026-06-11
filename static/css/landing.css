@@ -542,4 +542,17 @@
     }
 }
 
+/* --- Dark Mode Overrides --- */
+.dark .title-underline::after {
+    background: linear-gradient(90deg, var(--accent), var(--accent-light));
+}
+
+.dark .carousel-dot.active {
+    background: var(--accent);
+}
+
+.dark .step-connector::after {
+    background: linear-gradient(to right, var(--accent), transparent);
+}
+
 

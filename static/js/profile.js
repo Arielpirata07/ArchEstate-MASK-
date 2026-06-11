@@ -478,7 +478,7 @@ function loadUserSessions() {
         container.innerHTML = html;
     })
     .catch(() => {
-        container.innerHTML = '<p class="text-sm" style="color:#e11d48">Error al cargar sesiones</p>';
+        container.innerHTML = '<p class="text-sm text-rose-600">Error al cargar sesiones</p>';
     });
 }
 
@@ -522,7 +522,7 @@ function loadUserActivity() {
         container.innerHTML = html;
     })
     .catch(() => {
-        container.innerHTML = '<p class="text-sm" style="color:#e11d48">Error al cargar actividad</p>';
+        container.innerHTML = '<p class="text-sm text-rose-600">Error al cargar actividad</p>';
     });
 }
 
@@ -564,7 +564,7 @@ function loadUserLeads() {
         if (window.lucide) lucide.createIcons();
     })
     .catch(() => {
-        tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center" style="color:#e11d48">Error al cargar solicitudes</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-rose-600">Error al cargar solicitudes</td></tr>';
     });
 }
 
@@ -585,16 +585,15 @@ function loadProfessionalFullProfile() {
             if (statusEl) {
                 const labels = { pending: 'Pendiente', approved: 'Aprobado', rejected: 'Rechazado' };
                 statusEl.textContent = labels[p.status] || p.status;
-                const colors = { pending: '#d97706', approved: '#059669', rejected: '#e11d48' };
-                statusEl.style.color = colors[p.status] || 'var(--text-secondary)';
+                statusEl.className = 'text-sm font-medium ' + ({ pending: 'text-amber-600', approved: 'text-emerald-600', rejected: 'text-rose-600' }[p.status] || 'text-midnight/60');
             }
             if (licenseStatusEl) {
                 if (p.license_verified) {
                     licenseStatusEl.textContent = '✓ Verificada';
-                    licenseStatusEl.style.color = '#059669';
+                    licenseStatusEl.className = 'text-sm font-medium text-emerald-600';
                 } else {
                     licenseStatusEl.textContent = 'No verificada';
-                    licenseStatusEl.style.color = '#d97706';
+                    licenseStatusEl.className = 'text-sm font-medium text-amber-600';
                 }
             }
         }
@@ -836,7 +835,7 @@ function extractAvatarColors(img, ring) {
         colorMap[key] = (colorMap[key] || 0) + 1;
     }
     const sorted = Object.entries(colorMap).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 5);
-    var fallbacks = ['#735A3A', '#A68A64', '#C4A882', '#D4BC9A', '#E8D5B7'];
+    var fallbacks = ['#3D2B1F', '#735A3A', '#A68A64', '#D4AF37', '#E8D5B7'];
     sorted.forEach(function(item, i) {
         ring.style.setProperty('--ac' + i, 'rgb(' + item[0] + ')');
     });

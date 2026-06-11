@@ -223,3 +223,8 @@
 
 /* --- Table row hover in dark mode: lighten instead of darken --- */
 .dark .hover\:bg-paper:hover { background: rgba(250, 249, 247, 0.04) !important; }
+
+/* --- Timeline dots in dark mode --- */
+.dark .timeline-item.approved::before { background: #34d399; }
+.dark .timeline-item.rejected::before { background: #fb7185; }
+.dark .timeline-item.other::before { background: var(--accent); }

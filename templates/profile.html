@@ -107,7 +107,7 @@
                                 <input id="profile-email" type="email" value="{{ user.email if user else '' }}" class="input-field" oninput="validateProfileEmail()">
                                 <div class="flex items-center justify-between mt-1">
                                     <p id="profile-email-hint" class="text-[9px] hint-text">Ingresa un email valido</p>
-                                    <p id="profile-email-valid" class="hidden text-[9px] font-medium text-green-600">Email valido</p>
+                                    <p id="profile-email-valid" class="hidden text-[9px] font-medium text-emerald-600">Email valido</p>
                                     <p id="profile-email-invalid" class="hidden text-[9px] font-medium text-rose-600">Email invalido</p>
                                 </div>
                             </div>
@@ -160,7 +160,7 @@
                                 </div>
                                 <div class="flex items-center justify-between mt-1">
                                     <p id="profile-phone-hint" class="text-[9px] hint-text">El codigo de pais se incluira automaticamente</p>
-                                    <p id="profile-phone-valid" class="hidden text-[9px] font-medium text-green-600">Formato valido</p>
+                                    <p id="profile-phone-valid" class="hidden text-[9px] font-medium text-emerald-600">Formato valido</p>
                                     <p id="profile-phone-invalid" class="hidden text-[9px] font-medium text-rose-600">Formato invalido</p>
                                 </div>
                                 <div class="flex items-center gap-3 mt-2" id="phone-verification-area">
@@ -194,7 +194,7 @@
                             <i data-lucide="save" class="w-4 h-4" aria-hidden="true"></i>
                             Guardar Cambios
                         </button>
-                        <span id="profile-save-msg" class="hidden text-sm font-medium text-green-600" aria-live="polite">Guardado correctamente</span>
+                        <span id="profile-save-msg" class="hidden text-sm font-medium text-emerald-600" aria-live="polite">Guardado correctamente</span>
                         <span id="profile-error-msg" class="hidden text-sm font-medium text-rose-600" role="alert"></span>
                     </div>
                 </div>
@@ -234,7 +234,7 @@
                             <i data-lucide="save" class="w-4 h-4" aria-hidden="true"></i>
                             Guardar Preferencias
                         </button>
-                        <span id="settings-save-msg" class="hidden text-sm font-medium text-green-600" aria-live="polite">Preferencias guardadas</span>
+                        <span id="settings-save-msg" class="hidden text-sm font-medium text-emerald-600" aria-live="polite">Preferencias guardadas</span>
                         <span id="settings-error-msg" class="hidden text-sm font-medium text-rose-600" role="alert"></span>
                     </div>
                 </div>
@@ -264,7 +264,7 @@
                     </div>
 
                     <div class="flex items-center gap-4 pt-6 mt-6 border-t" style="border-color:var(--border)">
-                        <span id="notif-save-msg" class="text-sm font-medium text-green-600" aria-live="polite">Se guarda automaticamente</span>
+                        <span id="notif-save-msg" class="text-sm font-medium text-emerald-600" aria-live="polite">Se guarda automaticamente</span>
                     </div>
                 </div>
             </div>
@@ -296,7 +296,7 @@
                                     <i data-lucide="lock" class="w-4 h-4" aria-hidden="true"></i>
                                     Cambiar Contrasena
                                 </button>
-                                <span id="password-save-msg" class="hidden text-sm font-medium text-green-600" aria-live="polite">Contrasena actualizada</span>
+                                <span id="password-save-msg" class="hidden text-sm font-medium text-emerald-600" aria-live="polite">Contrasena actualizada</span>
                                 <span id="password-error-msg" class="hidden text-sm font-medium text-rose-600" role="alert"></span>
                             </div>
                         </div>
@@ -512,7 +512,7 @@
                             <i data-lucide="save" class="w-4 h-4" aria-hidden="true"></i>
                             Guardar Perfil Profesional
                         </button>
-                        <span id="pro-full-save-msg" class="hidden text-sm font-medium text-green-600" aria-live="polite">Guardado correctamente</span>
+                        <span id="pro-full-save-msg" class="hidden text-sm font-medium text-emerald-600" aria-live="polite">Guardado correctamente</span>
                         <span id="pro-full-error-msg" class="hidden text-sm font-medium text-rose-600" role="alert"></span>
                     </div>
                 </div>
@@ -522,17 +522,17 @@
     </div>
 </div>
     <!-- Modal de verificación de teléfono -->
-    <div id="verify-phone-modal" class="fixed inset-0 z-50 bg-midnight/60 backdrop-blur-sm hidden items-center justify-center">
+    <div id="verify-phone-modal" class="fixed inset-0 z-50 bg-midnight/60 backdrop-blur-sm hidden items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="verify-phone-title">
         <div class="bg-white rounded-lg shadow-2xl border-t-4 border-gold overflow-hidden w-full max-w-md mx-4 animate-fadeInUp">
             <div class="relative p-8">
                 <button type="button" id="close-verify-modal" aria-label="Cerrar"
                     class="absolute top-4 right-4 p-2 rounded hover:bg-paper-dark transition-all duration-200 text-midnight/30 hover:text-gold"
-                    onclick="closePhoneVerifyModal()">
+                    onclick="closePhoneVerifyModal()" aria-label="Cerrar">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
 
                 <i data-lucide="shield" class="w-8 h-8 text-gold mb-4"></i>
-                <h3 class="text-xl font-serif text-midnight mb-1">Verificar Teléfono</h3>
+                <h3 id="verify-phone-title" class="text-xl font-serif text-midnight mb-1">Verificar Teléfono</h3>
                 <p class="text-[10px] uppercase tracking-widest font-bold text-gold mb-6">
                     Ingresá el código de 6 dígitos
                 </p>

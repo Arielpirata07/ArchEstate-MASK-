@@ -470,3 +470,14 @@
         padding: 1.25rem;
     }
 }
+
+/* --- Dark Mode Overrides --- */
+.dark .btn-primary {
+    background: var(--accent);
+}
+
+.dark .btn-primary:hover {
+    background: var(--accent-light);
+    color: var(--text-primary);
+}
+

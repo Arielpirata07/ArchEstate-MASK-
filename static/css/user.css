@@ -309,6 +309,12 @@
     color: #fff !important;
 }
 
+.dark .chip-active {
+    border-color: var(--accent) !important;
+    background: var(--accent) !important;
+    color: var(--text-primary) !important;
+}
+
 /* --- Form Validation --- */
 .field-error {
     color: #e11d48;

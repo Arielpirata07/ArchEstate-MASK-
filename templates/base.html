@@ -234,15 +234,15 @@
     <div class="pt-24 px-6 max-w-7xl mx-auto w-full" role="alert" aria-live="polite">
         {% for category, message in messages %}
             {% if category == 'success' %}
-        <div class="mb-4 rounded-lg border px-4 py-3 text-sm shadow-sm" style="border-color:rgba(5,150,105,0.3);background:var(--bg-card);color:var(--text-primary)">
+        <div class="mb-4 rounded-lg border border-emerald-200 dark:border-emerald-800 px-4 py-3 text-sm shadow-sm bg-white dark:bg-slate-800 text-midnight dark:text-white">
             {{ message }}
         </div>
             {% elif category == 'error' %}
-        <div class="mb-4 rounded-lg border px-4 py-3 text-sm shadow-sm" style="border-color:rgba(225,29,72,0.3);background:var(--bg-card);color:var(--text-primary)">
+        <div class="mb-4 rounded-lg border border-rose-200 dark:border-rose-800 px-4 py-3 text-sm shadow-sm bg-white dark:bg-slate-800 text-midnight dark:text-white">
             {{ message }}
         </div>
             {% else %}
-        <div class="mb-4 rounded-lg border px-4 py-3 text-sm shadow-sm" style="border-color:rgba(59,130,246,0.3);background:var(--bg-card);color:var(--text-primary)">
+        <div class="mb-4 rounded-lg border border-blue-200 dark:border-blue-800 px-4 py-3 text-sm shadow-sm bg-white dark:bg-slate-800 text-midnight dark:text-white">
             {{ message }}
         </div>
             {% endif %}

@@ -664,8 +664,8 @@ function clearFilters() {
     };
     setPropType('');
     setBudgetRange('');
-    const icon = document.querySelector('#sortOrder i');
-    if (icon) { icon.setAttribute('data-lucide', 'arrow-down'); if (window.lucide) lucide.createIcons(); }
+    const sortBtn = document.getElementById('sortOrder');
+    if (sortBtn) { sortBtn.innerHTML = '<i data-lucide="arrow-down" class="w-3 h-3"></i>'; if (window.lucide) lucide.createIcons(); }
     loadLeads();
 }
 
@@ -676,9 +676,11 @@ function updateSort() {
 
 function toggleSortOrder() {
     currentFilters.order = currentFilters.order === 'desc' ? 'asc' : 'desc';
-    const icon = document.querySelector('#sortOrder i');
-    icon.setAttribute('data-lucide', currentFilters.order === 'desc' ? 'arrow-down' : 'arrow-up');
-    if (window.lucide) lucide.createIcons();
+    const sortBtn = document.getElementById('sortOrder');
+    if (sortBtn) {
+        sortBtn.innerHTML = '<i data-lucide="' + (currentFilters.order === 'desc' ? 'arrow-down' : 'arrow-up') + '" class="w-3 h-3"></i>';
+        if (window.lucide) lucide.createIcons();
+    }
     loadLeads();
 }
 

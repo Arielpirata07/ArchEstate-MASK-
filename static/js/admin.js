@@ -516,8 +516,8 @@ function clearProFilters() {
     if (sortSelect) sortSelect.value = 'id';
     
     // Resetear ícono de orden
-    const icon = document.querySelector('#proSortOrder i');
-    if (icon) { icon.setAttribute('data-lucide', 'arrow-down'); if (window.lucide) lucide.createIcons(); }
+    const proSortBtn = document.getElementById('proSortOrder');
+    if (proSortBtn) { proSortBtn.innerHTML = '<i data-lucide="arrow-down" class="w-3 h-3"></i>'; if (window.lucide) lucide.createIcons(); }
 
     currentProFilters = {
         search: '',
@@ -539,17 +539,11 @@ function updateProSort() {
 
 // Cambiar dirección del ordenamiento de profesionales
 function toggleProSortOrder() {
-    const icon = document.querySelector('#proSortOrder i');
     currentProFilters.order = currentProFilters.order === 'desc' ? 'asc' : 'desc';
-    
-    if (currentProFilters.order === 'desc') {
-        if (icon) icon.setAttribute('data-lucide', 'arrow-down');
-    } else {
-        if (icon) icon.setAttribute('data-lucide', 'arrow-up');
-    }
-    
-    if (window.lucide) {
-        lucide.createIcons();
+    const proSortBtn = document.getElementById('proSortOrder');
+    if (proSortBtn) {
+        proSortBtn.innerHTML = '<i data-lucide="' + (currentProFilters.order === 'desc' ? 'arrow-down' : 'arrow-up') + '" class="w-3 h-3"></i>';
+        if (window.lucide) lucide.createIcons();
     }
     
     loadProfessionals();
