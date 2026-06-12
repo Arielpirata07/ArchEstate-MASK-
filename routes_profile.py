@@ -129,7 +129,7 @@ def api_update_user():
     data = request.json
 
     email = utils.safe_text(data.get('email', '')).strip()
-    phone = utils.safe_text(data.get('phone', '')).strip()
+    phone = (data.get('phone', '') or '').strip()
     first_name = utils.safe_text(data.get('first_name', '')).strip()
     last_name = utils.safe_text(data.get('last_name', '')).strip()
     bio = utils.safe_text(data.get('bio', '')).strip()

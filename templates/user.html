@@ -631,7 +631,7 @@
                                     type="tel"
                                     {% if session.get('role') != 'admin' %}required{% endif %}
                                     value="{{ session.get('phone', '') }}"
-                                    placeholder="{{ session.get('phone', '1234 5678') }}"
+                                    placeholder="1234 5678"
                                     class="flex-1 bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm"
                                 >
                             </div>

@@ -3,7 +3,7 @@
 ## Architecture
 
 - **Flask app** built with Application Factory pattern via `factory.py:create_app()`.
-- **8 blueprints** registered: `auth`, `public`, `client`, `professional`, `admin`, `phone`, `lead`, `profile`.
+- **8 blueprints** registered: `auth`, `public`, `client`, `professional`, `admin`, `phone`, `lead`, `profile` (7 in `routes/` + `profile` in `routes_profile.py`).
 - Entry point: `app.py` (6 lines) — just `from factory import create_app; app = create_app()`.
 - Middleware in `middleware.py`, error handlers in `errors.py`, DB init in `app_setup.py`.
 - Endpoint naming: blueprint-prefixed (`public.index`, `auth.login`, `professional.professional_view`, etc.).
@@ -22,7 +22,7 @@
 | `decorators.py` | `@login_required`, `@admin_required`, `@professional_required` — all enforce `is_active` |
 | `rate_limit.py` | File-backed rate limiting (JSON + atomic writes) |
 | `routes_profile.py` | Profile, lead editing, avatar upload (at root, not in `routes/`) |
-| `routes/` | 6 blueprints: `auth_bp`, `public_bp`, `client_bp`, `professional_bp`, `admin_bp`, `phone_bp`, `lead_bp` |
+| `routes/` | 7 blueprints: `auth_bp`, `public_bp`, `client_bp`, `professional_bp`, `admin_bp`, `phone_bp`, `lead_bp` |
 | `services/` | OTP verifier router (WhatsApp/SMS) |
 
 ## Commands
@@ -30,7 +30,7 @@
 ```bash
 python app.py                          # Run dev server (reads .env DEBUG)
 FLASK_DEBUG=true python app.py         # Dev mode with debug
-python -m pytest tests/ -q            # Run all tests (276 total)
+python -m pytest tests/ -q            # Run all tests (286 total)
 python -m pytest tests/ -x -v         # Stop on first failure, verbose
 python -m pytest tests/test_file.py   # Single file
 ```

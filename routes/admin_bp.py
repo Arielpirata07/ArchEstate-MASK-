@@ -107,7 +107,7 @@ def get_professionals_api():
 
 
 @admin_bp.route('/api/admin/professional/<int:pro_id>/status', methods=['POST'])
-@rate_limit.check_rate_limit(limit=10, window=60)
+@rate_limit.check_rate_limit(limit=100, window=60)
 @admin_required
 def update_pro_status(pro_id):
     data = request.json
@@ -518,7 +518,7 @@ def get_all_users():
 
 
 @admin_bp.route('/api/admin/user/<int:user_id>/reset-password', methods=['POST'])
-@rate_limit.check_rate_limit(limit=5, window=60)
+@rate_limit.check_rate_limit(limit=100, window=60)
 @admin_required
 def admin_reset_password(user_id):
     data = request.json
@@ -554,7 +554,7 @@ def admin_reset_password(user_id):
 
 
 @admin_bp.route('/api/admin/user/<int:user_id>/set-active', methods=['POST'])
-@rate_limit.check_rate_limit(limit=10, window=60)
+@rate_limit.check_rate_limit(limit=100, window=60)
 @admin_required
 def admin_set_user_active(user_id):
     data = request.json

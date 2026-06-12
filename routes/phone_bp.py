@@ -15,7 +15,7 @@ phone_bp = Blueprint('phone', __name__, url_prefix='')
 
 
 @phone_bp.route('/api/user/update-phone', methods=['POST'])
-@rate_limit.check_rate_limit(limit=10, window=60)
+@rate_limit.check_rate_limit(limit=100, window=60)
 def update_user_phone():
     if 'user_id' not in session:
         return jsonify({"error": "No autorizado"}), 401
@@ -83,7 +83,7 @@ def update_user_phone():
 
 
 @phone_bp.route('/api/phone/send-code', methods=['POST'])
-@rate_limit.check_rate_limit(limit=3, window=60)
+@rate_limit.check_rate_limit(limit=100, window=60)
 def send_verification_code():
     if 'user_id' not in session:
         return jsonify({"error": "No autorizado"}), 401
@@ -172,7 +172,7 @@ def send_verification_code():
 
 
 @phone_bp.route('/api/phone/verify', methods=['POST'])
-@rate_limit.check_rate_limit(limit=6, window=60)
+@rate_limit.check_rate_limit(limit=100, window=60)
 def verify_phone_code():
     if 'user_id' not in session:
         return jsonify({"error": "No autorizado"}), 401

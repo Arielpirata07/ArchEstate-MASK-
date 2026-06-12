@@ -52,6 +52,11 @@ def _clear_rate_limits():
     with rate_limit._rate_lock:
         rate_limit._save_store({})
 
+    # Limpiar también el store de rate limits de lead_bp (usa archivo propio)
+    import routes.lead_bp as lead_bp
+    with lead_bp._rate_lock:
+        lead_bp._save_rate_store({})
+
 
 @pytest.fixture
 def auth_client(client, request):

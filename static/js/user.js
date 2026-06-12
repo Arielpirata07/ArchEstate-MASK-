@@ -283,8 +283,8 @@ function formatPhoneWithCountry(phone, countryCode) {
         formatted = countryCode + ' (' + digits.substring(0, 3) + ') ' + digits.substring(3, 6) + '-' + digits.substring(6);
     } else if (countryCode === '+34' && digits.length >= 9) {
         formatted += digits.substring(0, 2) + ' ' + digits.substring(2, 5) + ' ' + digits.substring(5, 7) + ' ' + digits.substring(7);
-    } else if (digits.length > codeLen) {
-        formatted += digits.substring(codeLen).replace(/(\d{2,4})/g, '$1 ').trim();
+    } else if (digits.length > 0) {
+        formatted += digits.replace(/(\d{2,4})/g, '$1 ').trim();
     } else {
         formatted += digits;
     }
@@ -314,16 +314,20 @@ function applyPhoneProvincePrefix() {
     const provinceSelect = document.getElementById('phone-province');
     const prefix = provinceSelect.value;
     const raw = phoneInput.value.trim().replace(/\D/g, '');
-    const prefixes = ['11','221','223','341','351','261','264','266','280','291','299','379','381','383','387','388','358','342','343','345','362','364','370','375','376','377','378','385'];
-    const hasPrefix = prefixes.some(p => raw.startsWith(p));
+    const prefixes = ['221','223','341','351','261','264','266','280','291','299','379','381','383','387','388','358','342','343','345','362','364','370','375','376','377','378','385','11'];
+    var searchRaw = raw;
+    var mobilePrefix = '';
+    if (raw.startsWith('15')) { searchRaw = raw.substring(2); mobilePrefix = '15'; }
+    else if (raw.startsWith('9')) { searchRaw = raw.substring(1); mobilePrefix = '9'; }
+    const hasPrefix = prefixes.some(p => searchRaw.startsWith(p));
     if (!hasPrefix && raw.length > 0) {
-        phoneInput.value = prefix + ' ' + raw;
+        phoneInput.value = prefix + ' ' + (mobilePrefix ? mobilePrefix + ' ' : '') + searchRaw;
     } else if (raw.length > 0) {
-        var cleaned = raw;
+        var cleaned = searchRaw;
         for (var i = 0; i < prefixes.length; i++) {
             if (cleaned.startsWith(prefixes[i])) { cleaned = cleaned.substring(prefixes[i].length).replace(/^\s+/, ''); break; }
         }
-        phoneInput.value = prefix + ' ' + cleaned;
+        phoneInput.value = prefix + ' ' + (mobilePrefix ? mobilePrefix + ' ' : '') + cleaned;
     }
 }
 
@@ -348,15 +352,24 @@ function applyPhoneProvincePrefix() {
             var withoutCode = digits.substring(codeDigits.length);
             if (code === '+54' && provinceSelect) {
                 provinceSelect.classList.remove('hidden');
+                var searchDigits = withoutCode;
+                var mobilePrefix = '';
+                if (searchDigits.startsWith('15')) { mobilePrefix = '15'; searchDigits = searchDigits.substring(2); }
+                else if (searchDigits.startsWith('9')) { mobilePrefix = '9'; searchDigits = searchDigits.substring(1); }
                 var provincePrefix = '';
                 for (var i = 0; i < provinceSelect.options.length; i++) {
-                    if (withoutCode.startsWith(provinceSelect.options[i].value)) {
+                    if (searchDigits.startsWith(provinceSelect.options[i].value)) {
                         provinceSelect.options[i].selected = true;
                         provincePrefix = provinceSelect.options[i].value;
                         break;
                     }
                 }
-                phoneInput.value = provincePrefix ? withoutCode.substring(provincePrefix.length) : withoutCode;
+                if (provincePrefix) {
+                    var rest = searchDigits.substring(provincePrefix.length).replace(/^\s+/, '');
+                    phoneInput.value = (mobilePrefix ? mobilePrefix + ' ' : '') + rest;
+                } else {
+                    phoneInput.value = withoutCode;
+                }
             } else {
                 phoneInput.value = withoutCode;
             }
@@ -366,23 +379,4 @@ function applyPhoneProvincePrefix() {
     }
 })();
 
-// Antes de enviar el formulario, combinar código de país + prefijo de provincia + teléfono
-document.getElementById('userForm').addEventListener('submit', function(e) {
-    const phoneInput = document.getElementById('phone-input');
-    const countrySelect = document.getElementById('country-code-select');
-    const provinceSelect = document.getElementById('phone-province');
-    const phone = phoneInput ? phoneInput.value.trim() : '';
-    const countryCode = countrySelect ? countrySelect.value : '+54';
-
-    if (phone && countrySelect) {
-        var digits = phone.replace(/\D/g, '');
-        var provincePrefix = (countryCode === '+54' && provinceSelect && !provinceSelect.classList.contains('hidden')) ? provinceSelect.value : '';
-        var fullNumber = countryCode + ' ';
-        if (provincePrefix && !digits.startsWith(provincePrefix)) {
-            fullNumber += provincePrefix + ' ' + digits;
-        } else {
-            fullNumber += digits;
-        }
-        phoneInput.value = fullNumber.trim();
-    }
-});
+// (submit handler lives in main.js:DOMContentLoaded -> initUserForm)

@@ -127,7 +127,6 @@
                                         <option value="+1">+1</option>
                                     </select>
                                     <select id="profile-province" onchange="applyProvincePrefix()" class="px-2 py-2 border border-midnight/20 rounded text-sm bg-white text-midnight w-16 flex-shrink-0 hidden">
-                                        <option value="11">CABA</option>
                                         <option value="221">La Plata</option>
                                         <option value="223">Mar del Plata</option>
                                         <option value="341">Rosario</option>
@@ -155,6 +154,7 @@
                                         <option value="377">Pto. Iguazu</option>
                                         <option value="378">Obera</option>
                                         <option value="385">La Rioja</option>
+                                        <option value="11">CABA</option>
                                     </select>
                                     <input id="profile-phone" type="tel" value="{{ user.phone if user and user.phone else '' }}" class="input-field flex-1" placeholder="9 11 1234 5678" maxlength="16">
                                 </div>
@@ -527,7 +527,7 @@
             <div class="relative p-8">
                 <button type="button" id="close-verify-modal" aria-label="Cerrar"
                     class="absolute top-4 right-4 p-2 rounded hover:bg-paper-dark transition-all duration-200 text-midnight/30 hover:text-gold"
-                    onclick="closePhoneVerifyModal()" aria-label="Cerrar">
+                    onclick="closePhoneVerifyModal()">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
 

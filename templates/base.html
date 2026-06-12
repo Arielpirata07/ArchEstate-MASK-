@@ -94,7 +94,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Manrope:wght@200..800&display=swap" rel="stylesheet">
 
     <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.468.0" defer></script>
 
     <!-- Estilos y Configuración Externos -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
@@ -154,9 +154,6 @@
                 <a href="{{ url_for('auth.logout') }}" class="hidden sm:flex items-center gap-2 text-rose-400 hover:text-rose-300 transition-colors text-[10px] font-bold uppercase tracking-widest">
                     <i data-lucide="log-out" class="w-4 h-4" aria-hidden="true"></i>
                     <span class="hidden lg:inline">Cerrar Sesion</span>
-                </a>
-                <a href="{{ url_for('auth.logout') }}" class="sm:hidden p-2 text-rose-400 hover:text-rose-300 transition-colors" aria-label="Cerrar Sesion">
-                    <i data-lucide="log-out" class="w-4 h-4" aria-hidden="true"></i>
                 </a>
             {% else %}
                 {% if request.path != '/login' %}
@@ -238,7 +235,7 @@
             {{ message }}
         </div>
             {% elif category == 'error' %}
-        <div class="mb-4 rounded-lg border border-rose-200 dark:border-rose-800 px-4 py-3 text-sm shadow-sm bg-white dark:bg-slate-800 text-midnight dark:text-white">
+        <div class="mb-4 rounded-lg border border-rose-200 px-4 py-3 text-sm shadow-sm bg-rose-50 text-rose-700">
             {{ message }}
         </div>
             {% else %}

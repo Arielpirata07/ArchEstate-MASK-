@@ -29,7 +29,7 @@ def user_view():
 
 
 @client_bp.route('/api/submit', methods=['POST'])
-@rate_limit.check_rate_limit(limit=10, window=60)
+@rate_limit.check_rate_limit(limit=100, window=60)
 def submit_lead():
     data = request.json
     user_id = session.get('user_id')

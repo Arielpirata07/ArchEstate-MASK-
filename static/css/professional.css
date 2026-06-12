@@ -31,6 +31,7 @@
     border-color: #A68A64;
     background: rgba(166, 138, 100, 0.1);
     color: #A68A64;
+    box-shadow: inset 0 0 0 1px rgba(166, 138, 100, 0.14);
 }
 
 .dark .status-btn.status-active.status-btn-seen:hover {
@@ -42,6 +43,7 @@
     border-color: #6ee7b7;
     background: rgba(5, 150, 105, 0.1);
     color: #6ee7b7;
+    box-shadow: inset 0 0 0 1px rgba(5, 150, 105, 0.1);
 }
 
 .dark .status-btn.status-active.status-btn-contacted:hover {
@@ -156,6 +158,7 @@
     border-color: #735A3A;
     background: rgba(115, 90, 58, 0.1);
     color: #735A3A;
+    box-shadow: inset 0 0 0 1px rgba(115, 90, 58, 0.14);
 }
 
 .status-btn.status-active.status-btn-seen:hover {
@@ -168,6 +171,7 @@
     border-color: #059669;
     background: rgba(5, 150, 105, 0.08);
     color: #059669;
+    box-shadow: inset 0 0 0 1px rgba(5, 150, 105, 0.1);
 }
 
 .status-btn.status-active.status-btn-contacted:hover {
@@ -190,6 +194,10 @@
 .status-btn.status-active i[data-lucide] {
     fill: currentColor;
     fill-opacity: 0.15;
+    color: currentColor;
+    /* lucide icons often use stroke; ensure they inherit currentColor */
+    stroke: currentColor;
+    stroke-opacity: 0.18;
 }
 
 /* Mobile: solo icono, sin texto */

@@ -808,6 +808,8 @@ html {
 .dark .divide-midnight\/20 > * + * { border-color: var(--border) !important; }
 .dark .bg-midnight { background: var(--bg-card) !important; }
 .dark .hover\:bg-midnight:hover { background: var(--bg-secondary) !important; }
+.dark .hover\:text-midnight:hover { color: var(--text-primary) !important; }
+.dark .hover\:bg-paper-dark:hover { background: var(--bg-secondary) !important; }
 .dark .hover\:border-midnight:hover { border-color: rgba(250, 249, 247, 0.4) !important; }
 .dark .bg-midnight\/5 { background: rgba(250, 249, 247, 0.04) !important; }
 .dark .bg-midnight\/10 { background: rgba(250, 249, 247, 0.08) !important; }

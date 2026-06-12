@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Inicializar logica especifica de la vista de Usuario
-    initUserForm();
+    if (document.getElementById('userForm')) initUserForm();
 
     // Inicializar menu mobile
     initMobileMenu();
@@ -212,13 +212,20 @@ function validateBudgetForCurrency(budget, currency) {
     };
     var range = RANGES[currency];
     if (!range) return { isValid: false, message: 'Moneda no válida.' };
-    var match = String(budget).match(/([\d.]+)/);
-    if (!match) return { isValid: false, message: 'Presupuesto no válido.' };
-    var minVal = parseFloat(match[1].replace(/\./g, ''));
+    var parts = String(budget).split(' - ');
+    var minVal = parseFloat((parts[0] || '').replace(/\./g, ''));
+    var maxVal = parts[1] ? parseFloat(parts[1].replace(/\./g, '')) : minVal;
+    if (!Number.isFinite(minVal) || !Number.isFinite(maxVal)) {
+        return { isValid: false, message: 'Presupuesto no válido.' };
+    }
+    if (minVal === 0) return { isValid: true, message: null };
     if (minVal < range.min) {
         return { isValid: false, message: 'El monto mínimo para ' + range.label + ' es ' + range.min.toLocaleString('es-AR') + '. Revisá la moneda seleccionada.' };
     }
     if (minVal > range.max) {
+        return { isValid: false, message: 'El monto máximo para ' + range.label + ' es ' + range.max.toLocaleString('es-AR') + '. Revisá la moneda seleccionada.' };
+    }
+    if (maxVal > range.max) {
         return { isValid: false, message: 'El monto máximo para ' + range.label + ' es ' + range.max.toLocaleString('es-AR') + '. Revisá la moneda seleccionada.' };
     }
     return { isValid: true, message: null };
@@ -278,11 +285,26 @@ function initUserForm() {
             const phoneInput = document.getElementById('phone-input');
             if (countryCodeSelect && phoneInput && phoneInput.value) {
                 const countryCode = countryCodeSelect.value;
+                const codeDigits = countryCode.replace('+', '');
                 const phone = phoneInput.value.trim();
                 const digits = phone.replace(/\D/g, '');
                 const provincePrefix = (countryCode === '+54' && provinceSelect && !provinceSelect.classList.contains('hidden')) ? provinceSelect.value : '';
-                if (provincePrefix && !digits.startsWith(provincePrefix)) {
-                    data.phone = `${countryCode} ${provincePrefix} ${phone}`;
+                let localDigits = digits;
+                if (localDigits.startsWith(codeDigits)) {
+                    localDigits = localDigits.substring(codeDigits.length);
+                }
+                if (provincePrefix && localDigits) {
+                    let mobilePrefix = '';
+                    if (localDigits.startsWith('15')) { mobilePrefix = '15'; localDigits = localDigits.substring(2); }
+                    else if (localDigits.startsWith('9')) { mobilePrefix = '9'; localDigits = localDigits.substring(1); }
+                    if (localDigits.startsWith(provincePrefix)) {
+                        localDigits = localDigits.substring(provincePrefix.length);
+                    }
+                    if (mobilePrefix) {
+                        data.phone = `${countryCode} ${mobilePrefix} ${provincePrefix} ${localDigits}`;
+                    } else {
+                        data.phone = `${countryCode} ${provincePrefix} ${localDigits}`;
+                    }
                 } else {
                     data.phone = `${countryCode} ${phone}`;
                 }
@@ -613,7 +635,6 @@ function initBudgetPopup() {
         budgetData.max = config.max;
         var step = config.step;
         var isUnlimited = unlimitedCheckbox.checked;
-        if (isUnlimited) return;
         minSlider.max = budgetData.max;
         maxSlider.max = budgetData.max;
         minSlider.step = step;
@@ -622,6 +643,11 @@ function initBudgetPopup() {
         document.getElementById('budget-max-input').max = budgetData.max;
         document.getElementById('budget-min-input').step = step;
         document.getElementById('budget-max-input').step = step;
+        if (isUnlimited) {
+            updateManualInputs();
+            updateBudgetOutput();
+            return;
+        }
         if (Number(minSlider.value) > budgetData.max) minSlider.value = budgetData.max;
         if (Number(maxSlider.value) > budgetData.max) maxSlider.value = budgetData.max;
         updateManualInputs();
@@ -671,6 +697,7 @@ function initBudgetPopup() {
             document.getElementById('budget-min-input').max = budgetData.max;
             document.getElementById('budget-max-input').max = budgetData.max;
         }
+        updateBudgetOutput();
     };
 
     const updateBudgetOutput = () => {
@@ -749,7 +776,7 @@ function initBudgetPopup() {
         minInputElement.addEventListener('input', () => {
             const value = Number(minInputElement.value);
             const isUnlimited = unlimitedCheckbox.checked;
-            if (Number.isFinite(value) && value >= budgetData.min && (isUnlimited || value <= Number(maxSlider.value))) {
+            if (Number.isFinite(value) && value >= budgetData.min && (isUnlimited || value <= budgetData.max) && (isUnlimited || value <= Number(maxSlider.value))) {
                 minSlider.value = value;
                 updateBudgetOutput();
             }
@@ -759,7 +786,7 @@ function initBudgetPopup() {
         maxInputElement.addEventListener('input', () => {
             const value = Number(maxInputElement.value);
             const isUnlimited = unlimitedCheckbox.checked;
-            if (Number.isFinite(value) && (isUnlimited || value >= Number(minSlider.value))) {
+            if (Number.isFinite(value) && value >= budgetData.min && (isUnlimited || value <= budgetData.max) && (isUnlimited || value >= Number(minSlider.value))) {
                 maxSlider.value = value;
                 updateBudgetOutput();
             }

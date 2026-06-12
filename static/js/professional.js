@@ -100,7 +100,7 @@ async function loadDocStatus(cid) {
         const res  = await fetch('/api/professional/doc-status');
         const data = await res.json();
         if (data.has_doc) markDocLoaded(cid, data.display_name);
-    } catch (e) { /* silencioso */ }
+    } catch (e) { console.warn('loadDocStatus fetch failed:', e); }
 }
 
 function markDocLoaded(cid, name) {
@@ -585,20 +585,14 @@ function renderLeads(leads) {
  */
 async function toggleLeadStatus(leadId, statusType, btn) {
     if (btn.disabled) return;
-
     const isActive = btn.classList.contains('status-active');
     const label = btn.querySelector('span');
+    const originalText = label ? label.textContent : '';
+    const pendingText = isActive ? (statusType === 'seen' ? 'Ver' : 'Contactar') : (statusType === 'seen' ? 'Visto' : 'Contactado');
 
-    // UI optimista: toggle inmediato
     btn.disabled = true;
-    btn.classList.toggle('status-active');
     btn.classList.add('status-toggling');
-
-    if (!isActive) {
-        if (label) label.textContent = statusType === 'seen' ? 'Visto' : 'Contactado';
-    } else {
-        if (label) label.textContent = statusType === 'seen' ? 'Ver' : 'Contactar';
-    }
+    if (label) label.textContent = pendingText;
 
     try {
         const response = await fetch(`/api/lead/${leadId}/toggle-status`, {
@@ -610,8 +604,9 @@ async function toggleLeadStatus(leadId, statusType, btn) {
         const data = await response.json();
 
         if (response.ok && data.success) {
-            // Confirmar estado desde servidor
-            if (data.value === 1) {
+            // Confirmar estado desde servidor (coerce to number for safety)
+            const serverValue = Number(data.value);
+            if (serverValue === 1) {
                 btn.classList.add('status-active');
             } else {
                 btn.classList.remove('status-active');
@@ -621,21 +616,20 @@ async function toggleLeadStatus(leadId, statusType, btn) {
             // Actualizar data attributes del row para filtrado
             const row = document.querySelector(`tr[data-lead-id="${leadId}"]`);
             if (row) {
-                row.dataset[statusType] = data.value === 1 ? 'true' : 'false';
+                row.dataset[statusType] = serverValue === 1 ? 'true' : 'false';
             }
         } else {
             // Revertir en caso de error
-            btn.classList.toggle('status-active');
+            btn.classList.remove('status-active');
             btn.classList.remove('status-toggling');
-            if (label) label.textContent = isActive
-                ? (statusType === 'seen' ? 'Visto' : 'Contactado')
-                : (statusType === 'seen' ? 'Ver' : 'Contactar');
+            if (label) label.textContent = originalText;
             showToast(data.error || 'Error al actualizar estado', 'error');
         }
     } catch (error) {
         console.error('Error toggling lead status:', error);
         // Revertir en caso de error de red
-        btn.classList.toggle('status-active');
+        if (isActive) btn.classList.add('status-active');
+        else btn.classList.remove('status-active');
         btn.classList.remove('status-toggling');
         if (label) label.textContent = isActive
             ? (statusType === 'seen' ? 'Visto' : 'Contactado')
@@ -776,5 +770,4 @@ document.addEventListener('click', (e) => {
 
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeReportModal();
-});
-}
+})};

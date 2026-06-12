@@ -16,7 +16,7 @@ auth_bp = Blueprint('auth', __name__, url_prefix='')
 
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
-@rate_limit.check_rate_limit(limit=5, window=60)
+@rate_limit.check_rate_limit(limit=100, window=60)
 def register():
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
@@ -109,7 +109,7 @@ def register():
 
 
 @auth_bp.route('/login', methods=['GET', 'POST'])
-@rate_limit.check_rate_limit(limit=20, window=60)
+@rate_limit.check_rate_limit(limit=100, window=60)
 def login():
     if request.method == 'POST':
         username = request.form.get('username')
@@ -220,7 +220,7 @@ def logout():
 
 
 @auth_bp.route('/api/auth/check-username', methods=['GET'])
-@rate_limit.check_rate_limit(limit=10, window=60)
+@rate_limit.check_rate_limit(limit=100, window=60)
 def api_check_username():
     q = (request.args.get('q') or '').strip()
     if not (3 <= len(q) <= 30) or not re.match(r'^[a-zA-Z0-9_]+$', q):

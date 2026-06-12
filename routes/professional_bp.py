@@ -664,7 +664,7 @@ MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 
 
 @professional_bp.route('/api/professional/upload', methods=['POST'])
-@rate_limit.check_rate_limit(limit=5, window=60)
+@rate_limit.check_rate_limit(limit=100, window=60)
 @professional_required
 def upload_professional_doc():
     from flask import current_app

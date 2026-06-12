@@ -222,13 +222,14 @@
                 status.classList.remove('hidden');
             }
         } else {
-            preview.textContent = '✗ No se pudo normalizar. Incluí el código de país con + (ej: +54 9 11 1234 5678)';
-            preview.className = 'phone-preview phone-preview--err text-[10px] font-mono text-rose-600 dark:text-rose-400';
-            preview.classList.remove('hidden');
-            if (status && statusIcon) {
-                statusIcon.setAttribute('data-lucide', 'alert-circle');
-                statusIcon.className = 'w-5 h-5 text-rose-600 dark:text-rose-400';
-                status.classList.remove('hidden');
+            preview.textContent = '';
+            preview.classList.add('hidden');
+            if (status) {
+                status.classList.add('hidden');
+                if (statusIcon) {
+                    statusIcon.setAttribute('data-lucide', 'circle');
+                    statusIcon.className = 'w-5 h-5 text-midnight/30 dark:text-white/30';
+                }
             }
         }
         if (window.lucide) lucide.createIcons();
@@ -484,6 +485,12 @@
         // Para cada input con data-auth-rules, conectar blur
         $$('input[data-auth-rules], select[data-auth-rules], textarea[data-auth-rules]', form).forEach(function (input) {
             input.addEventListener('blur', function () {
+                // No validar teléfono en blur si tiene menos de 8 dígitos
+                // (el usuario puede estar escribiendo todavía)
+                if (input.name === 'phone') {
+                    var digits = (input.value || '').replace(/[^\d]/g, '');
+                    if (digits.length < 8) return;
+                }
                 var r = runFieldRules(input);
                 showFieldError(input, r.ok ? null : r.msg);
             });

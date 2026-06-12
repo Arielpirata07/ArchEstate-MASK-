@@ -102,6 +102,7 @@ function saveUserProfile() {
         } else {
             if (msg) msg.classList.remove('hidden');
             setTimeout(() => msg.classList.add('hidden'), 3000);
+            updatePhoneVerificationArea(fullPhone);
         }
     })
     .catch(() => {
@@ -112,6 +113,17 @@ function saveUserProfile() {
         btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Guardar Cambios';
         if (window.lucide) lucide.createIcons();
     });
+}
+
+function updatePhoneVerificationArea(phone) {
+    const area = document.getElementById('phone-verification-area');
+    if (!area) return;
+    area.innerHTML = '<span class="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/60 inline-flex items-center gap-1">'
+        + '<i data-lucide="phone-off" class="w-3 h-3"></i> No verificado</span>'
+        + '<button type="button" id="verify-phone-btn"'
+        + ' class="text-[10px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors"'
+        + ' onclick="openPhoneVerifyModal()">Verificar</button>';
+    if (window.lucide) lucide.createIcons();
 }
 
 // ============================================================
@@ -185,8 +197,12 @@ function formatProfilePhone(phone, countryCode) {
     const provinceSelect = document.getElementById('profile-province');
     const prefix = provinceSelect && !provinceSelect.classList.contains('hidden') ? provinceSelect.value : '';
     let fullNumber = countryCode + ' ';
-    if (prefix && !digits.startsWith(prefix)) {
-        fullNumber += prefix + ' ' + digits;
+    if (prefix) {
+        let local = digits;
+        if (local.startsWith(prefix)) {
+            local = local.substring(prefix.length);
+        }
+        fullNumber += prefix + ' ' + local;
     } else {
         fullNumber += digits;
     }
@@ -213,10 +229,20 @@ function initPhoneFromServer() {
             const withoutCode = digits.substring(codeDigits.length);
             if (code === '+54' && provinceSelect) {
                 provinceSelect.classList.remove('hidden');
+                let searchDigits = withoutCode;
+                let mobilePrefix = '';
+                if (searchDigits.startsWith('15')) { mobilePrefix = '15'; searchDigits = searchDigits.substring(2); }
+                else if (searchDigits.startsWith('9')) { mobilePrefix = '9'; searchDigits = searchDigits.substring(1); }
+                let displayDigits = withoutCode;
                 for (const opt of provinceSelect.options) {
-                    if (withoutCode.startsWith(opt.value)) { opt.selected = true; break; }
+                    if (searchDigits.startsWith(opt.value)) {
+                        opt.selected = true;
+                        const rest = searchDigits.substring(opt.value.length).replace(/^\s+/, '');
+                        displayDigits = (mobilePrefix ? mobilePrefix + ' ' : '') + rest;
+                        break;
+                    }
                 }
-                phoneInput.value = withoutCode;
+                phoneInput.value = displayDigits;
             } else {
                 phoneInput.value = withoutCode;
             }
@@ -242,16 +268,20 @@ function applyProvincePrefix() {
     const provinceSelect = document.getElementById('profile-province');
     const prefix = provinceSelect.value;
     const raw = phoneInput.value.trim().replace(/\D/g, '');
-    const prefixes = ['11','221','223','341','351','261','264','266','280','291','299','379','381','383','387','388','358','342','343','345','362','364','370','375','376','377','378','385'];
-    const hasPrefix = prefixes.some(p => raw.startsWith(p));
+    const prefixes = ['221','223','341','351','261','264','266','280','291','299','379','381','383','387','388','358','342','343','345','362','364','370','375','376','377','378','385','11'];
+    let searchRaw = raw;
+    let mobilePrefix = '';
+    if (raw.startsWith('15')) { searchRaw = raw.substring(2); mobilePrefix = '15'; }
+    else if (raw.startsWith('9')) { searchRaw = raw.substring(1); mobilePrefix = '9'; }
+    const hasPrefix = prefixes.some(p => searchRaw.startsWith(p));
     if (!hasPrefix && raw.length > 0) {
-        phoneInput.value = prefix + ' ' + raw;
+        phoneInput.value = prefix + ' ' + (mobilePrefix ? mobilePrefix + ' ' : '') + searchRaw;
     } else if (raw.length > 0) {
-        let cleaned = raw;
+        let cleaned = searchRaw;
         for (const p of prefixes) {
             if (cleaned.startsWith(p)) { cleaned = cleaned.substring(p.length).replace(/^\s+/, ''); break; }
         }
-        phoneInput.value = prefix + ' ' + cleaned;
+        phoneInput.value = prefix + ' ' + (mobilePrefix ? mobilePrefix + ' ' : '') + cleaned;
     }
     validateProfilePhone();
 }

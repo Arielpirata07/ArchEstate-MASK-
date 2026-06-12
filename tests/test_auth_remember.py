@@ -174,13 +174,13 @@ class TestCheckUsername:
         assert body['reason'] == expected_reason
 
     def test_check_username_rate_limited(self, client):
-        # 10/min. La 11ª debe recibir 429.
+        # 100/min. La 101ª debe recibir 429.
         unique = uuid.uuid4().hex[:8]
-        for i in range(10):
+        for i in range(100):
             r = client.get(f'/api/auth/check-username?q={unique}{i}')
             assert r.status_code == 200
-        r11 = client.get(f'/api/auth/check-username?q={unique}x')
-        assert r11.status_code == 429
+        r101 = client.get(f'/api/auth/check-username?q={unique}x')
+        assert r101.status_code == 429
 
 
 class TestPurgeRememberTokens:
