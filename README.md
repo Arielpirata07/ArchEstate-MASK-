@@ -125,7 +125,7 @@ Foco del MVP: captura limpia de oportunidades (leads) con especificaciones técn
 | **Frontend** | HTML5 + Vanilla JS | - |
 | **Estilos** | Tailwind CSS (CDN) | 3.4 |
 | **Gráficas** | Chart.js | 4.4.0 (CDN) |
-| **Icons** | Lucide Icons | latest (CDN) |
+| **Icons** | Lucide Icons | 0.468.0 (CDN) |
 | **Phone validation** | phonenumbers (libphonenumber) | 8.13+ |
 
 ---
@@ -134,7 +134,7 @@ Foco del MVP: captura limpia de oportunidades (leads) con especificaciones técn
 
 ```
 archestate/
-├── app.py                    # Entry point (9 líneas)
+├── app.py                    # Entry point (6 líneas)
 ├── factory.py                # Application Factory: config + middleware + errors + blueprints
 ├── config.py                 # Reads .env, constants (UPLOAD_FOLDER, OTP settings, etc.)
 ├── models.py                 # DB access, user CRUD, lead CRUD, preferences
@@ -164,7 +164,7 @@ archestate/
 ├── templates/                # 11 Jinja2 templates (base, landing, login, register,
 │                             #   user, professional, admin, user_management,
 │                             #   edit_lead, lead_detail, profile)
-├── tests/                    # 276 tests (pytest + freezegun + monkeypatch)
+├── tests/                    # 286 tests (pytest + freezegun + monkeypatch)
 ├── design.md                 # Design system tokens and patterns
 ├── AGENTS.md                 # AI agent guide
 └── requirements.txt
@@ -405,7 +405,7 @@ Acceder en `http://127.0.0.1:5000`
 ### Ejecutar Tests
 
 ```bash
-python -m pytest tests/ -q            # Todos (276)
+python -m pytest tests/ -q            # Todos (286)
 python -m pytest tests/ -x -v         # Parar en primera falla, verbose
 python -m pytest tests/test_file.py   # Archivo individual
 ```
@@ -414,7 +414,7 @@ python -m pytest tests/test_file.py   # Archivo individual
 
 ## 📈 Roadmap
 
-- [x] Tests automatizados (276 tests)
+- [x] Tests automatizados (286 tests)
 - [x] Verificación telefónica con OTP
 - [x] Edición de leads con versionado
 - [x] Tracking Visto/Contactado

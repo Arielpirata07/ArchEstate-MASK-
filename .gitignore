@@ -10,8 +10,5 @@ __pycache__/
 .idea/
 .vscode/
 *.log
-.agents/
-skills-lock.json
 .opencode/
-.plans/
 uploads/

@@ -66,3 +66,16 @@ python -m pytest tests/test_file.py   # Single file
 | `/api/phone/verify` | `phone.verify_phone_code` |
 | `/api/admin/user/<id>/set-active` | `admin.admin_set_user_active` |
 | `/api/admin/user/<id>/reset-password` | `admin.admin_reset_password` |
+
+## Skills
+
+Specialized instructions and workflows for specific tasks. Load via the `skill` tool.
+
+| Skill | Description |
+|---|---|
+| `accessibility` | WCAG 2.2 audit and improvement — POUR principles, contrast, keyboard nav, ARIA, screen readers |
+| `flask-api-development` | Flask API patterns — blueprints, SQLAlchemy, JWT, request validation, error handling |
+| `frontend-design` | Distinctive, production-grade UI — typography, color, motion, spatial composition |
+| `python-executor` | Sandboxed Python execution via inference.sh — data processing, scraping, image/video |
+| `python-testing-patterns` | pytest strategies — fixtures, mocking, parameterized tests, coverage, freezegun |
+| `seo` | Search engine visibility — technical SEO, structured data, mobile, hreflang |
