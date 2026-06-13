@@ -249,7 +249,7 @@
     {% endwith %}
 
     <!-- CONTENIDO DINÁMICO (Aquí se inyectan las vistas) -->
-    <main id="main-content" class="flex-grow pt-24 pb-12 px-6 max-w-7xl mx-auto w-full" role="main">
+    <main id="main-content" class="flex-grow pt-24 pb-12 px-6 max-w-7xl mx-auto w-full page-entrance" role="main">
         {% block content %}{% endblock %}
     </main>
 
@@ -268,6 +268,9 @@
     <button id="back-to-top" class="back-to-top" aria-label="Volver arriba">
         <i data-lucide="chevron-up" class="w-5 h-5" aria-hidden="true"></i>
     </button>
+
+    <!-- Cursor spotlight (dark mode) -->
+    <div class="cursor-spotlight" aria-hidden="true"></div>
 
     <!-- Scripts Globales -->
     <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>

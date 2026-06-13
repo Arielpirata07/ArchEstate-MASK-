@@ -65,6 +65,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Inicializar back to top
     initBackToTop();
+
+    // Page entrance fade
+    initPageEntrance();
+
+    // Table row stagger
+    initTableStagger();
 });
 
 /**
@@ -1261,3 +1267,77 @@ function initBackToTop() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 }
+
+/**
+ * Page Entrance Fade
+ */
+function initPageEntrance() {
+    var main = document.querySelector('.page-entrance');
+    if (!main) return;
+    requestAnimationFrame(function() {
+        main.classList.add('page-loaded');
+    });
+}
+
+/**
+ * Table Row Stagger
+ * Adds staggered animation to rows inside containers with class "stagger-rows".
+ * Automatically applies animation-delay to each row for a cascade effect.
+ * Call with a specific container to animate its rows, or without args for all.
+ */
+function initTableStagger(container) {
+    var targets = container ? [container] : document.querySelectorAll('.stagger-rows');
+    targets.forEach(function(el) {
+        var rows = el.querySelectorAll('tr');
+        rows.forEach(function(row, index) {
+            if (!row.classList.contains('table-row-animate')) {
+                row.classList.add('table-row-animate');
+            }
+            row.style.animationDelay = (index * 0.06) + 's';
+        });
+    });
+}
+
+/**
+ * Button Loading State Helper
+ * Usage: setLoading(buttonElement, true/false, 'Guardando...')
+ */
+function setLoading(btn, loading, loadingText) {
+    if (!btn) return;
+    if (loading) {
+        btn.setAttribute('data-original-content', btn.innerHTML);
+        var text = loadingText || btn.getAttribute('data-loading-text') || 'Procesando...';
+        btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin inline-block align-middle"></i> ' + text;
+        btn.disabled = true;
+        btn.classList.add('is-submitting');
+        if (window.lucide) lucide.createIcons();
+    } else {
+        var original = btn.getAttribute('data-original-content');
+        if (original) btn.innerHTML = original;
+        btn.disabled = false;
+        btn.classList.remove('is-submitting');
+        if (window.lucide) lucide.createIcons();
+    }
+}
+
+(function() {
+    var spotlight = document.querySelector('.cursor-spotlight');
+    if (!spotlight) return;
+    var ticking = false;
+    document.addEventListener('mousemove', function(e) {
+        if (!ticking) {
+            requestAnimationFrame(function() {
+                spotlight.style.left = e.clientX + 'px';
+                spotlight.style.top = e.clientY + 'px';
+                ticking = false;
+            });
+            ticking = true;
+        }
+    });
+    document.addEventListener('mouseleave', function() {
+        spotlight.style.opacity = '0';
+    });
+    document.addEventListener('mouseenter', function() {
+        spotlight.style.opacity = '1';
+    });
+})();

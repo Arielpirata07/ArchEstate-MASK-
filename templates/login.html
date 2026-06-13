@@ -7,7 +7,7 @@
     <div class="max-w-md w-full">
         <div class="bg-white dark:bg-midnight-light p-10 rounded-lg shadow-2xl border-t-4 border-gold transition-colors">
 
-            <div class="text-center mb-8">
+            <div class="text-center mb-8 header-entrance">
                 <i data-lucide="key-round" class="w-10 h-10 text-gold mx-auto mb-4" aria-hidden="true"></i>
                 <h1 class="text-3xl font-serif">Acceso <span class="serif-italic">Exclusivo</span></h1>
                 <p class="text-midnight/50 dark:text-white/40 mt-2 text-sm">Ingresa tus credenciales para continuar.</p>
@@ -74,14 +74,12 @@
                 </div>
 
                 <label class="remember-me mt-6">
-                    <input type="checkbox" name="remember" value="on" aria-describedby="remember-hint">
+                    <input type="checkbox" name="remember" value="on" aria-describedby="remember-hint-text">
                     <span>Recordarme por 30 días</span>
-                    <i id="remember-hint"
-                       data-lucide="info"
-                       class="remember-me__tooltip w-3.5 h-3.5"
-                       aria-label="Te mantendremos la sesión iniciada en este navegador por 30 días."
-                       role="img"></i>
                 </label>
+                <p id="remember-hint-text" class="text-[10px] text-midnight/40 dark:text-white/40 mt-1 ml-7 leading-relaxed">
+                    Tu sesión permanecerá activa en este navegador por 30 días. No uses esta opción en dispositivos compartidos.
+                </p>
 
                 <button type="submit"
                         class="btn-submit w-full bg-gold text-white py-4 rounded font-bold uppercase tracking-widest text-xs hover:bg-midnight dark:hover:bg-gold-dark transition-all mt-8 flex items-center justify-center gap-2 group">

@@ -487,6 +487,7 @@ function renderProfessionals(pros) {
         `;
     }).join('');
 
+    initTableStagger(tbody);
     if (window.lucide) lucide.createIcons();
 }
 
@@ -793,6 +794,7 @@ function renderReports(reports) {
             </tr>`;
     }).join('');
 
+    initTableStagger(tbody);
     if (window.lucide) lucide.createIcons();
 }
 

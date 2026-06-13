@@ -85,6 +85,22 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
     outline-color: var(--accent);
 }
 
+/* --- Focus Glow (decorative gold glow on focus) --- */
+input:not([type="checkbox"]):not([type="radio"]):focus,
+select:focus,
+textarea:focus {
+    box-shadow: 0 0 0 3px rgba(115, 90, 58, 0.12);
+    border-color: #735A3A;
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.dark input:not([type="checkbox"]):not([type="radio"]):focus,
+.dark select:focus,
+.dark textarea:focus {
+    box-shadow: 0 0 0 3px rgba(166, 138, 100, 0.15);
+    border-color: #A68A64;
+}
+
 /* --- Sticky Header Offset for In-Page Navigation --- */
 :target {
     scroll-margin-top: 80px;
@@ -411,11 +427,14 @@ button, [role="button"], a {
 /* --- Submit button spinner --- */
 .btn-submit {
     position: relative;
+    overflow: hidden;
 }
 
 .btn-submit.is-submitting {
-    opacity: 0.7;
+    opacity: 0.85;
     cursor: wait;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
 }
 
 .btn-submit .spinner {
@@ -522,11 +541,6 @@ button, [role="button"], a {
 }
 
 /* --- Global Keyframes --- */
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -538,78 +552,9 @@ button, [role="button"], a {
     }
 }
 
-@keyframes fadeInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(50px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes slideInLeft {
-    from {
-        opacity: 0;
-        transform: translateX(-50px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-@keyframes scaleIn {
-    from {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-@keyframes scaleOut {
-    from {
-        opacity: 1;
-        transform: scale(1);
-    }
-    to {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-}
-
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-}
-
-@keyframes float {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
-}
-
 @keyframes shimmer {
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
 }
 
 /* --- Scroll Animation Classes --- */
@@ -649,6 +594,35 @@ button, [role="button"], a {
 
 .animate-on-scroll.slide-in-right.animate-in {
     transform: translateX(0);
+}
+
+/* --- Page Entrance Fade --- */
+@keyframes pageEntrance {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.page-entrance {
+    opacity: 0;
+}
+
+.page-entrance.page-loaded {
+    animation: pageEntrance 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* --- Header Entrance (staggered per view) --- */
+.page-entrance.page-loaded .header-entrance {
+    animation: pageEntrance 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.15s forwards;
+}
+
+.header-entrance {
+    opacity: 0;
 }
 
 /* Stagger delays */
@@ -691,6 +665,33 @@ button, [role="button"], a {
     width: 2.5rem;
     height: 2.5rem;
     border-radius: 50%;
+}
+
+/* --- Table Row Stagger --- */
+.stagger-rows tr.table-row-animate {
+    opacity: 0;
+    animation: fadeInUp 0.35s ease-out forwards;
+}
+
+@keyframes staggerFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- Empty State Pulse --- */
+.empty-pulse {
+    animation: emptyPulse 3s ease-in-out infinite;
+}
+
+@keyframes emptyPulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.01); }
 }
 
 /* --- Modal Animations --- */
@@ -757,16 +758,6 @@ html {
 .drag-drop-zone.drag-over {
     border-color: #735A3A !important;
     background-color: rgba(115, 90, 58, 0.05) !important;
-}
-
-/* --- Reduced Motion --- */
-@media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-        transition: none !important;
-    }
 }
 
 /* --- Dark Mode Variables --- */
@@ -945,4 +936,46 @@ html {
     .back-to-top.visible {
         opacity: 1;
     }
+
+    .page-entrance,
+    .page-entrance.page-loaded {
+        opacity: 1 !important;
+        transform: none !important;
+        animation: none !important;
+    }
+
+    .header-entrance {
+        opacity: 1 !important;
+        animation: none !important;
+    }
+
+    .empty-pulse {
+        animation: none !important;
+        opacity: 1;
+    }
+
+    .stagger-rows tr.table-row-animate {
+        animation: none !important;
+        opacity: 1;
+    }
+
+    .cursor-spotlight {
+        display: none !important;
+    }
+}
+
+/* --- Cursor Spotlight (dark mode only) --- */
+.dark .cursor-spotlight {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    background: radial-gradient(circle, rgba(115, 90, 58, 0.07) 0%, rgba(115, 90, 58, 0.03) 30%, transparent 70%);
+    transform: translate(-50%, -50%);
+    transition: opacity 0.3s ease;
+    will-change: left, top;
 }

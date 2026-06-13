@@ -8,7 +8,7 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto pt-8">
-    <div class="flex items-center justify-between mb-8">
+    <div class="flex items-center justify-between mb-8 header-entrance">
         <div>
             <h1 class="text-3xl font-serif italic" style="color:var(--text-primary)">Configuracion</h1>
             <p class="text-sm mt-1" style="color:var(--text-secondary)">Administra tu cuenta y preferencias</p>
@@ -339,14 +339,14 @@
                                     <th class="p-4 text-[10px] uppercase tracking-widest font-bold" style="color:var(--accent)">Accion</th>
                                 </tr>
                             </thead>
-                            <tbody id="leads-tbody">
+                            <tbody id="leads-tbody" class="stagger-rows">
                                 <tr>
                                     <td colspan="6" class="p-8 text-center text-sm hint-text">Cargando solicitudes...</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
-                    <div id="no-leads-msg" class="hidden p-8 text-center">
+                    <div id="no-leads-msg" class="hidden p-8 text-center empty-pulse">
                         <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4" style="color:var(--text-secondary)"></i>
                         <p class="text-sm hint-text">No tenes solicitudes registradas aun.</p>
                         <a href="{{ url_for('client.user_view') }}" class="inline-block mt-4 text-[10px] uppercase tracking-widest font-bold" style="color:var(--accent)">

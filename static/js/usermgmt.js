@@ -119,6 +119,7 @@ function renderUsers(users) {
             </tr>`;
     }).join('');
 
+    initTableStagger(tbody);
     if (window.lucide) lucide.createIcons();
 }
 

@@ -10,7 +10,7 @@
 <div class="space-y-8">
 
     <!-- Header -->
-    <div class="flex justify-between items-end border-b border-midnight/10 pb-6">
+    <div class="flex justify-between items-end border-b border-midnight/10 pb-6 header-entrance">
         <div>
             <div class="flex items-center gap-3 mb-1">
                 <a href="{{ url_for('admin.admin_view') }}"
@@ -63,7 +63,7 @@
                     <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold text-right">Acciones</th>
                 </tr>
             </thead>
-            <tbody id="usersTableBody">
+            <tbody id="usersTableBody" class="stagger-rows">
                 <tr>
                     <td colspan="7" class="p-8 text-center text-midnight/40">
                         <div class="flex justify-center items-center gap-2">

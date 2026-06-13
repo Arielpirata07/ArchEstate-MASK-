@@ -10,7 +10,7 @@
 <div class="space-y-8" data-pending="{{ 'true' if pending else 'false' }}">
 
     <!-- ===== HEADER ===== -->
-    <div class="flex justify-between items-end border-b border-midnight/10 pb-6">
+    <div class="flex justify-between items-end border-b border-midnight/10 pb-6 header-entrance">
         <div>
             <h2 class="text-4xl font-serif">Panel de <span class="serif-italic">Leads</span></h2>
             <p class="text-midnight/50 mt-2">Gestiona tus oportunidades de negocio exclusivas.</p>
@@ -254,7 +254,7 @@
                         <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold text-right">Acción</th>
                     </tr>
                 </thead>
-                <tbody id="leadsTableBody">
+                <tbody id="leadsTableBody" class="stagger-rows">
                     <tr>
                         <td colspan="8" class="p-8 text-center text-midnight/60">
                             <div class="flex justify-center items-center gap-2">

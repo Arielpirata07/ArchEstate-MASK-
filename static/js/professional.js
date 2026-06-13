@@ -577,6 +577,7 @@ function renderLeads(leads) {
                 </td>
             </tr>`;
     }).join('');
+    initTableStagger(tbody);
     if (window.lucide) lucide.createIcons();
 }
 

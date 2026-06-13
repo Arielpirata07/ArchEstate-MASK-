@@ -591,6 +591,7 @@ function loadUserLeads() {
                 </td>
             </tr>`;
         }).join('');
+        initTableStagger(tbody);
         if (window.lucide) lucide.createIcons();
     })
     .catch(() => {

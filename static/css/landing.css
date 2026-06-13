@@ -101,11 +101,6 @@
 }
 
 /* --- Animations --- */
-@keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -225,12 +220,6 @@
 @keyframes ctaPulse {
     0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(115, 90, 58, 0.4); }
     50% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(115, 90, 58, 0); }
-}
-
-/* Shimmer effect for gold elements */
-@keyframes shimmer {
-    0% { background-position: -200% center; }
-    100% { background-position: 200% center; }
 }
 
 .gold-shimmer {
@@ -368,13 +357,36 @@
 
 /* Respect reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
-    .fade-in-up, .fade-in, .slide-in-left, .slide-in-right, .float-animation, .float-animation-reverse, .pulse-glow, .typing-animated, .parallax, .title-reveal, .title-word, .subtitle-reveal, .gold-shimmer, .scale-in {
+    .fade-in-up, .fade-in, .slide-in-left, .slide-in-right, .float-animation, .float-animation-reverse, .pulse-glow, .typing-animated, .parallax, .title-reveal, .title-word, .subtitle-reveal, .gold-shimmer, .scale-in, .hero-img {
         animation: none !important;
         transition: none !important;
         transform: none !important;
     }
     .title-reveal, .title-word, .subtitle-reveal, .scale-in {
         opacity: 1 !important;
+    }
+    .hero-img {
+        opacity: 1 !important;
+        transform: none !important;
+        filter: grayscale(0%) !important;
+        transition: none !important;
+    }
+    .step-line-svg {
+        stroke-dashoffset: 0 !important;
+        transition: none !important;
+    }
+    .step-connector::after {
+        transform: scaleX(1) !important;
+        transition: none !important;
+    }
+    .counter-glow-flash {
+        animation: none !important;
+    }
+    #main-navbar {
+        transition: none !important;
+    }
+    .cursor-spotlight {
+        display: none !important;
     }
 }
 
@@ -455,6 +467,44 @@
     animation: countUp 0.3s ease-out;
 }
 
+/* --- Counter Completion Glow --- */
+@keyframes counterCompleteGlow {
+    0% { text-shadow: 0 0 0 rgba(115, 90, 58, 0); }
+    30% { text-shadow: 0 0 18px rgba(115, 90, 58, 0.4), 0 0 40px rgba(115, 90, 58, 0.15); }
+    100% { text-shadow: 0 0 0 rgba(115, 90, 58, 0); }
+}
+
+.counter-glow-flash {
+    animation: counterCompleteGlow 0.8s ease-out;
+}
+
+/* --- Step Connector SVG Draw --- */
+.step-line-svg {
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+    transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.step-line-svg.drawn {
+    stroke-dashoffset: 0;
+}
+
+/* --- Navbar Shrink on Scroll --- */
+#main-navbar {
+    transition: height 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                background-color 0.35s ease,
+                backdrop-filter 0.35s ease,
+                box-shadow 0.35s ease;
+    height: 4rem;
+}
+
+#main-navbar.navbar-shrunk {
+    height: 2.75rem;
+    background-color: rgba(16, 30, 51, 0.92);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
 /* --- Decorative Line Pulse --- */
 @keyframes lineGlow {
     0%, 100% { opacity: 0.3; }
@@ -465,14 +515,17 @@
     animation: lineGlow 3s ease-in-out infinite;
 }
 
-/* --- Hero Image Grayscale Reveal --- */
+/* --- Hero Image Reveal --- */
 .hero-img {
-    filter: grayscale(100%);
-    transition: filter 1.5s ease-out, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    opacity: 0;
+    transform: scale(1.06);
+    transition: opacity 1.8s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 2s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .hero-img.revealed {
-    filter: grayscale(0%);
+    opacity: 1;
+    transform: scale(1);
 }
 
 /* --- Navbar Scroll Effect --- */
@@ -534,6 +587,13 @@
     width: 4rem;
     height: 1px;
     background: linear-gradient(to right, #735A3A, transparent);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.step-connector.drawn::after {
+    transform: scaleX(1);
 }
 
 @media (max-width: 768px) {

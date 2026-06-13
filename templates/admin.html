@@ -10,7 +10,7 @@
 <div class="space-y-8">
 
     <!-- Header -->
-    <div class="flex justify-between items-end border-b border-midnight/10 pb-6">
+    <div class="flex justify-between items-end border-b border-midnight/10 pb-6 header-entrance">
         <div>
             <h2 class="text-4xl font-serif">Control de <span class="serif-italic">Plataforma</span></h2>
             <p class="text-midnight/50 mt-2">Validación de profesionales, auditoría y estadísticas del sistema.</p>
@@ -273,7 +273,7 @@
                                     <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold text-right">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody id="professionalsTableBody">
+                            <tbody id="professionalsTableBody" class="stagger-rows">
                                 <!-- Los profesionales se cargarán dinámicamente aquí -->
                                 <tr>
                                     <td colspan="5" class="p-8 text-center text-midnight/60">
@@ -379,7 +379,7 @@
                             <th class="p-4 text-[10px] uppercase tracking-widest font-bold text-gold text-right">Acciones</th>
                         </tr>
                     </thead>
-                    <tbody id="reportsTableBody">
+                    <tbody id="reportsTableBody" class="stagger-rows">
                         <tr>
                             <td colspan="8" class="p-8 text-center text-midnight/60">
                                 <div class="flex justify-center items-center gap-2">

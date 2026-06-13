@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initHeroReveal();
     initTitleReveal();
     initSubtitleReveal();
+    initStepConnectorDraw();
+    initNavbarShrink();
 
     // FAQ: make keyboard accessible and add ARIA attributes
     document.querySelectorAll('.faq-question').forEach((q, i) => {
@@ -185,6 +187,8 @@ function animateCounter(element, target, duration) {
 
         if (progress < 1) {
             requestAnimationFrame(update);
+        } else {
+            element.classList.add('counter-glow-flash');
         }
     };
 
@@ -217,13 +221,15 @@ function initHeroReveal() {
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
-                setTimeout(() => {
-                    heroImg.classList.add('revealed');
-                }, 300);
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        heroImg.classList.add('revealed');
+                    });
+                });
                 observer.unobserve(entry.target);
             }
         });
-    }, { threshold: 0.3 });
+    }, { threshold: 0.1 });
 
     observer.observe(heroImg);
 }
@@ -289,4 +295,49 @@ function dismissAlert() {
             alertEl.classList.remove('opacity-0', '-translate-y-4');
         }, 500);
     }
+}
+
+// --- Step Connector Draw on Scroll ---
+function initStepConnectorDraw() {
+    if (!('IntersectionObserver' in window)) return;
+
+    var connectors = document.querySelectorAll('.step-connector');
+    if (!connectors.length) return;
+
+    var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+                var delay = Array.from(connectors).indexOf(entry.target) * 200;
+                setTimeout(function() {
+                    entry.target.classList.add('drawn');
+                }, delay);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1 });
+
+    connectors.forEach(function(el) {
+        observer.observe(el);
+    });
+}
+
+// --- Navbar Shrink on Scroll ---
+function initNavbarShrink() {
+    var navbar = document.getElementById('main-navbar');
+    if (!navbar) return;
+
+    var ticking = false;
+    window.addEventListener('scroll', function() {
+        if (!ticking) {
+            window.requestAnimationFrame(function() {
+                if (window.pageYOffset > 80) {
+                    navbar.classList.add('navbar-shrunk');
+                } else {
+                    navbar.classList.remove('navbar-shrunk');
+                }
+                ticking = false;
+            });
+            ticking = true;
+        }
+    });
 }
