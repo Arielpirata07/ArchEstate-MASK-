@@ -113,6 +113,42 @@ Foco del MVP: captura limpia de oportunidades (leads) con especificaciones técn
 - Brute-force protection en OTP (5 intentos, lockout)
 - SQL allowlist para updates de perfil y leads
 - Auditoría de: teléfonos revelados, uploads, aprobaciones, bajas, resets, reportes
+- Session cookie flags: `HttpOnly`, `SameSite=Lax`, `Secure` (producción)
+- Content-Security-Policy header con allowlists para CDN
+- Admin seed con password aleatorio en producción (no más `admin123`)
+- Session regeneration post-login (prevención session fixation)
+- Error handlers con respuesta HTML para navegadores (400/404/409/410/429/500)
+- `.env` excluido de `.gitignore` para proteger `SECRET_KEY`
+
+### 🔹 Rendimiento
+- Cache de usuario en `g` via `before_request` (evita queries repetidas por request)
+- Audit log con `LIMIT 200` (evita carga de registros ilimitados)
+- `PRAGMA journal_mode=WAL` + `busy_timeout=5000` en cada conexión SQLite
+
+### 🔹 Accesibilidad (WCAG 2.2)
+- `aria-current="page"` en navegación mobile (4 links activos)
+- Skip link para saltar al contenido principal
+- Focus visible global con `outline: 2px solid var(--accent)`
+- Target size mínimo 24×24px en interactivos
+- `role="dialog"` + `aria-modal="true"` en todos los modales
+- `aria-label` en botones solo-ícono
+- `prefers-reduced-motion` coverage completo (base.css + landing.css)
+- Labels programáticamente asociados a inputs
+
+### 🔹 SEO
+- `robots.txt` — bloquea `/admin/`, `/api/`, `/mi-perfil`
+- `sitemap.xml` — páginas públicas indexables
+- JSON-LD `Organization` schema en landing page
+- `<link rel="canonical">` dinámico
+- Títulos únicos por página (50-60 chars)
+- Open Graph + Twitter Cards completos
+- `<html lang="es-AR">` declarado
+
+### 🔹 Frontend/UX
+- Dark mode completo en `admin.css` y `user.css` (overrides para cards, tablas, inputs, sliders)
+- `escapeHtml` consolidado (auth.js usa fallback a global de main.js)
+- Animaciones: hero reveal, navbar shrink, step connector draw, counter glow, cursor spotlight, header entrance, page entrance, table row stagger, form focus glow, button spinner, empty state pulse
+- 286 tests pasando
 
 ---
 
@@ -160,10 +196,14 @@ archestate/
 │   ├── css/                  # base, landing, user, professional, admin, profile
 │   ├── js/                   # main, user, professional, admin, profile, edit_lead,
 │   │                         # usermgmt, auth, landing, dark-mode, tailwind-config
+│   ├── robots.txt            # SEO — bloquea admin/api
+│   ├── sitemap.xml           # SEO — páginas públicas
 │   └── uploads/docs/         # Professional document uploads
-├── templates/                # 11 Jinja2 templates (base, landing, login, register,
+├── templates/                # 17 templates (base, landing, login, register,
 │                             #   user, professional, admin, user_management,
-│                             #   edit_lead, lead_detail, profile)
+│                             #   edit_lead, lead_detail, profile,
+│                             #   errors/400, errors/404, errors/409,
+│                             #   errors/410, errors/429, errors/500)
 ├── tests/                    # 286 tests (pytest + freezegun + monkeypatch)
 ├── design.md                 # Design system tokens and patterns
 ├── AGENTS.md                 # AI agent guide
@@ -382,10 +422,10 @@ archestate/
 
 | Rol | Usuario | Contraseña |
 |-----|---------|------------|
-| **Admin** | `admin` | `admin123` |
+| **Admin** | `admin` | `admin123` (solo dev/test) |
 | **Profesional** | `pro` | `pro123` |
 
-> ⚠️ Cambiar en producción
+> ⚠️ En producción, el admin se crea con password aleatorio (impreso en consola al arrancar). Cambiar credenciales después del primer login.
 
 ---
 
@@ -421,9 +461,17 @@ python -m pytest tests/test_file.py   # Archivo individual
 - [x] Integración WhatsApp (server-side redirect)
 - [x] Perfil profesional extendido
 - [x] Baja/reactivación de usuarios
+- [x] Session cookie flags + CSP header
+- [x] Admin password aleatorio en producción
+- [x] Error handlers HTML para navegadores
+- [x] Cache de usuario en `g` (rendimiento)
+- [x] `aria-current="page"` en nav mobile
+- [x] `robots.txt` + `sitemap.xml`
+- [x] JSON-LD structured data
+- [x] Dark mode completo (admin, user, profile, professional)
+- [ ] CSRF protection en formularios
 - [ ] Notificaciones internas entre admin y profesional
 - [ ] Integración WhatsApp Business API (producción)
 - [ ] Asignación automática de leads por especialidad y zona
 - [ ] Paginación en tabla de leads
-- [ ] Vista móvil responsiva completa
-- [ ] CSRF protection en formularios
+- [ ] Tests de admin y profile endpoints

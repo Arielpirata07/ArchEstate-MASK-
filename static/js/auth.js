@@ -24,7 +24,7 @@
     var CHECK_URL = '/api/auth/check-username';
     var USERNAME_DEBOUNCE_MS = 300;
 
-    var escapeHtml = function (str) {
+    var escapeHtml = window.escapeHtml || function (str) {
         if (str === null || str === undefined) return '';
         return String(str)
             .replace(/&/g, '&amp;')

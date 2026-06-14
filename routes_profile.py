@@ -72,7 +72,7 @@ def api_get_lead(lead_id):
 
 @profile_bp.route('/api/profile/lead/<int:lead_id>', methods=['PUT'])
 @decorators.login_required
-@rate_limit.check_rate_limit(limit=10, window=60)
+@rate_limit.check_rate_limit(limit=100, window=60)
 def api_update_lead(lead_id):
     user_id = session['user_id']
     data = request.json
@@ -123,7 +123,7 @@ def api_get_user():
 
 @profile_bp.route('/api/profile/user', methods=['PUT'])
 @decorators.login_required
-@rate_limit.check_rate_limit(limit=10, window=60)
+@rate_limit.check_rate_limit(limit=100, window=60)
 def api_update_user():
     user_id = session['user_id']
     data = request.json
@@ -161,7 +161,7 @@ def api_update_user():
 
 @profile_bp.route('/api/profile/user/password', methods=['PUT'])
 @decorators.login_required
-@rate_limit.check_rate_limit(limit=5, window=60)
+@rate_limit.check_rate_limit(limit=100, window=60)
 def api_change_password():
     user_id = session['user_id']
     data = request.json
@@ -205,7 +205,7 @@ def api_get_professional():
 
 @profile_bp.route('/api/profile/professional', methods=['PUT'])
 @decorators.professional_required
-@rate_limit.check_rate_limit(limit=10, window=60)
+@rate_limit.check_rate_limit(limit=100, window=60)
 def api_update_professional():
     user_id = session['user_id']
     data = request.json
@@ -240,7 +240,7 @@ def api_get_settings():
 
 @profile_bp.route('/api/profile/settings', methods=['PUT'])
 @decorators.login_required
-@rate_limit.check_rate_limit(limit=10, window=60)
+@rate_limit.check_rate_limit(limit=100, window=60)
 def api_update_settings():
     user_id = session['user_id']
     data = request.json
@@ -279,7 +279,7 @@ def api_get_sessions():
 
 @profile_bp.route('/api/profile/sessions/<int:entry_id>', methods=['DELETE'])
 @decorators.login_required
-@rate_limit.check_rate_limit(limit=5, window=60)
+@rate_limit.check_rate_limit(limit=100, window=60)
 def api_delete_session(entry_id):
     deleted = models.delete_login_history_entry(entry_id, session['user_id'])
     if not deleted:
@@ -302,7 +302,7 @@ def api_get_activity():
 
 @profile_bp.route('/api/profile/user/avatar', methods=['POST'])
 @decorators.login_required
-@rate_limit.check_rate_limit(limit=5, window=60)
+@rate_limit.check_rate_limit(limit=100, window=60)
 def api_upload_avatar():
     user_id = session['user_id']
     if 'avatar' not in request.files:
@@ -348,7 +348,7 @@ def api_upload_avatar():
 
 @profile_bp.route('/api/profile/user/avatar', methods=['DELETE'])
 @decorators.login_required
-@rate_limit.check_rate_limit(limit=5, window=60)
+@rate_limit.check_rate_limit(limit=100, window=60)
 def api_delete_avatar():
     user_id = session['user_id']
     old_path = models.get_user_avatar_path(user_id)
@@ -378,7 +378,7 @@ def api_get_professional_full():
 
 @profile_bp.route('/api/profile/professional/full', methods=['PUT'])
 @decorators.professional_required
-@rate_limit.check_rate_limit(limit=10, window=60)
+@rate_limit.check_rate_limit(limit=100, window=60)
 def api_update_professional_full():
     user_id = session['user_id']
     data = request.json
@@ -407,7 +407,7 @@ def api_update_professional_full():
 
 @profile_bp.route('/api/profile/professional/photo', methods=['POST'])
 @decorators.professional_required
-@rate_limit.check_rate_limit(limit=5, window=60)
+@rate_limit.check_rate_limit(limit=100, window=60)
 def api_upload_professional_photo():
     user_id = session['user_id']
     if 'photo' not in request.files:
@@ -452,7 +452,7 @@ def api_upload_professional_photo():
 
 @profile_bp.route('/api/profile/professional/photo', methods=['DELETE'])
 @decorators.professional_required
-@rate_limit.check_rate_limit(limit=5, window=60)
+@rate_limit.check_rate_limit(limit=100, window=60)
 def api_delete_professional_photo():
     user_id = session['user_id']
     old_path = models.get_professional_photo_path(user_id)

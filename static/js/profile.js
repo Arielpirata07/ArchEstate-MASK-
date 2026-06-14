@@ -152,7 +152,7 @@ function uploadAvatar(input) {
             if (img && ring) {
                 img.addEventListener('load', function() { extractAvatarColors(img, ring); });
             }
-            if (status) { status.textContent = 'Foto actualizada'; status.className = 'text-[9px] mt-1 text-green-600'; }
+            if (status) { status.textContent = 'Foto actualizada'; status.className = 'text-[9px] mt-1 text-emerald-600'; }
         } else {
             if (status) { status.textContent = data.error || 'Error al subir foto'; status.className = 'text-[9px] mt-1 text-rose-500'; }
         }
@@ -178,7 +178,7 @@ function deleteAvatar() {
                 if (img) img.src = '/static/img/default-avatar.svg';
                 var ring = document.getElementById('avatar-ring');
                 if (ring) ring.classList.remove('visible');
-                if (status) { status.textContent = 'Foto eliminada'; status.className = 'text-[9px] mt-1 text-green-600'; }
+                if (status) { status.textContent = 'Foto eliminada'; status.className = 'text-[9px] mt-1 text-emerald-600'; }
             } else {
                 if (status) { status.textContent = 'Error al eliminar foto'; status.className = 'text-[9px] mt-1 text-rose-500'; }
             }
@@ -784,7 +784,7 @@ function uploadProfessionalPhoto(input) {
             if (img && ring) {
                 img.addEventListener('load', function() { extractAvatarColors(img, ring); });
             }
-            if (status) { status.textContent = 'Foto actualizada'; status.className = 'text-[9px] mt-1 text-green-600'; }
+            if (status) { status.textContent = 'Foto actualizada'; status.className = 'text-[9px] mt-1 text-emerald-600'; }
         } else {
             if (status) { status.textContent = data.error || 'Error al subir foto'; status.className = 'text-[9px] mt-1 text-rose-500'; }
         }
@@ -810,7 +810,7 @@ function deleteProfessionalPhoto() {
                 if (img) img.src = '/static/img/default-avatar.svg';
                 var ring = document.getElementById('pro-photo-ring');
                 if (ring) ring.classList.remove('visible');
-                if (status) { status.textContent = 'Foto eliminada'; status.className = 'text-[9px] mt-1 text-green-600'; }
+                if (status) { status.textContent = 'Foto eliminada'; status.className = 'text-[9px] mt-1 text-emerald-600'; }
             } else {
                 if (status) { status.textContent = 'Error al eliminar foto'; status.className = 'text-[9px] mt-1 text-rose-500'; }
             }

@@ -12,15 +12,32 @@ def security_headers(response):
     if not request.path.startswith('/static/'):
         response.headers['X-Content-Type-Options'] = 'nosniff'
         response.headers['X-Frame-Options'] = 'DENY'
-        response.headers['X-XSS-Protection'] = '1; mode=block'
         response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
         response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
         response.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=()'
+        response.headers['Content-Security-Policy'] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://unpkg.com; "
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "font-src https://fonts.gstatic.com; "
+            "img-src 'self' data: blob: https:; "
+            "connect-src 'self'; "
+            "frame-ancestors 'none'"
+        )
     return rate_limit.add_rate_limit_headers(response)
 
 
 def assign_request_id():
     g.request_id = uuid.uuid4().hex[:12]
+
+
+def load_current_user():
+    user_id = session.get('user_id')
+    if user_id and 'user' not in g:
+        try:
+            g.user = models.get_user_by_id(user_id)
+        except Exception:
+            g.user = None
 
 
 def restore_session_from_remember_cookie():
@@ -93,6 +110,7 @@ def inject_theme():
 def register_middleware(app):
     app.after_request(security_headers)
     app.before_request(assign_request_id)
+    app.before_request(load_current_user)
     app.before_request(restore_session_from_remember_cookie)
     app.context_processor(inject_request_id)
     app.context_processor(inject_theme)

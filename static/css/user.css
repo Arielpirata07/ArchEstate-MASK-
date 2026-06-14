@@ -325,3 +325,69 @@
 .field-success {
     color: #059669;
 }
+
+/* ============================================
+   DARK MODE OVERRIDES
+   ============================================ */
+
+/* Input placeholders */
+.dark #userForm input::placeholder {
+    color: rgba(250, 249, 247, 0.3);
+}
+
+/* Select chevron - light color in dark mode */
+.dark #userForm select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23A68A64'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+}
+
+/* Budget popup slider thumb - dark mode */
+.dark #budget-popup input[type=range]::-webkit-slider-thumb {
+    background: var(--accent);
+    border-color: var(--bg-primary);
+}
+.dark #budget-popup input[type=range]::-moz-range-thumb {
+    background: var(--accent);
+    border-color: var(--bg-primary);
+}
+
+/* Budget popup close button */
+.dark #budget-popup #budget-popup-close {
+    border-color: rgba(250, 249, 247, 0.1);
+}
+
+/* Zone suggestions hover */
+.dark #zone-suggestions li:hover {
+    background-color: rgba(166, 138, 100, 0.12);
+}
+
+/* Property type chip hover */
+.dark #userForm button[id^="btn-"]:hover {
+    box-shadow: 0 8px 20px rgba(166, 138, 100, 0.15);
+    border-color: var(--accent);
+}
+
+/* Submit button hover */
+.dark #userForm button[type="submit"]:hover,
+.dark #userForm .submit-btn:hover {
+    box-shadow: 0 8px 25px rgba(166, 138, 100, 0.25);
+}
+
+/* Input focus glow */
+.dark #userForm input:focus,
+.dark #userForm select:focus,
+.dark #userForm textarea:focus {
+    box-shadow: 0 4px 12px rgba(166, 138, 100, 0.08);
+}
+
+/* Form progress bar */
+.dark .form-progress::before {
+    background: var(--accent);
+}
+
+/* Field error/success */
+.dark .field-error {
+    color: #fb7185;
+}
+.dark .field-success {
+    color: #34d399;
+}

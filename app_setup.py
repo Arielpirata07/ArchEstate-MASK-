@@ -397,7 +397,14 @@ def init_db(app):
 
         cursor.execute('SELECT COUNT(*) FROM users')
         if cursor.fetchone()[0] == 0:
+            is_prod = os.environ.get('FLASK_DEBUG', '0') != '1' and not os.environ.get('PYTEST_CURRENT_TEST')
+            if is_prod:
+                import secrets
+                admin_password = secrets.token_urlsafe(12)
+                print(f'[STARTUP] Admin user created. Password: {admin_password}')
+            else:
+                admin_password = 'admin123'
             cursor.execute('INSERT INTO users (username, email, hash, role) VALUES (?, ?, ?, ?)',
-                          ('admin', 'admin@archestate.local', generate_password_hash('admin123'), 'admin'))
+                          ('admin', 'admin@archestate.local', generate_password_hash(admin_password), 'admin'))
         conn.commit()
         conn.close()

@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /admin/usuarios
+Disallow: /api/
+Disallow: /mi-perfil
+
+Sitemap: https://archestate.com.ar/sitemap.xml

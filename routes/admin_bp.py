@@ -22,7 +22,7 @@ def admin_view():
     conn = None
     try:
         conn = models.get_db_connection()
-        audit_logs = conn.execute('SELECT * FROM audit_log ORDER BY timestamp DESC').fetchall()
+        audit_logs = conn.execute('SELECT * FROM audit_log ORDER BY timestamp DESC LIMIT 200').fetchall()
     finally:
         if conn:
             conn.close()

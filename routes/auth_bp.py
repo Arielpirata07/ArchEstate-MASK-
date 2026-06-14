@@ -129,6 +129,7 @@ def login():
                 return redirect(url_for('auth.login'))
 
             session.clear()
+            session.modified = True
             session.permanent = True
             session['user_id'] = user['id']
             session['username'] = user['username']

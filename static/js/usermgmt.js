@@ -327,7 +327,7 @@ async function confirmDisable() {
         const res  = await fetch(`/api/admin/user/${disableTargetId}/set-active`, {
             method:  'POST',
             headers: { 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ is_active: false })
+            body:    JSON.stringify({ is_active: false, ...(document.getElementById('disableReason').value.trim() && { reason: document.getElementById('disableReason').value.trim() }) })
         });
         const data = await res.json();
 

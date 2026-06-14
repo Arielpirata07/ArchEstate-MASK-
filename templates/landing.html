@@ -1,9 +1,23 @@
 {% extends "base.html" %}
 
-{% block title %}Inicio | ArchEstate{% endblock %}
+{% block title %}ArchEstate - Plataforma de Gestion Inmobiliaria | Argentina{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "ArchEstate",
+  "url": "https://archestate.com.ar",
+  "description": "Plataforma de gestion inmobiliaria exclusiva para clientes y profesionales en Argentina.",
+  "areaServed": {
+    "@type": "Country",
+    "name": "Argentina"
+  },
+  "serviceType": "Gestion Inmobiliaria"
+}
+</script>
 {% endblock %}
 
 {% block content %}
