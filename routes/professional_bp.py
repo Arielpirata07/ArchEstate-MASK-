@@ -446,7 +446,7 @@ def download_lead_pdf(lead_id):
     pdf.cell(60, 8, 'Habitaciones:', border=1)
     pdf.cell(0, 8, pdf_val(lead['bedrooms']), ln=True, border=1)
 
-    pdf.cell(60, 8, 'Banios:', border=1)
+    pdf.cell(60, 8, 'Baños:', border=1)
     pdf.cell(0, 8, pdf_val(lead['bathrooms']), ln=True, border=1)
 
     prop_type = pdf_safe(lead.get('property_type', '')).lower()

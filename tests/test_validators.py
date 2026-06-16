@@ -160,7 +160,8 @@ class TestValidatePassword:
 
 class TestValidatePropertyType:
     def test_valid_types(self):
-        for ptype in validators.VALID_PROPERTY_TYPES:
+        valid = validators.get_valid_property_types()
+        for ptype in valid:
             assert validators.validate_property_type(ptype) == (True, None)
 
     def test_invalid_type(self):
@@ -172,7 +173,8 @@ class TestValidatePropertyType:
 
 class TestValidateOperationType:
     def test_valid_types(self):
-        for otype in validators.VALID_OPERATION_TYPES:
+        valid = validators.get_valid_operation_types()
+        for otype in valid:
             assert validators.validate_operation_type(otype) == (True, None)
 
     def test_invalid_type(self):

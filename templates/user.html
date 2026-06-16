@@ -7,6 +7,18 @@
 {% endblock %}
 
 {% block content %}
+<script>
+window.__FORM_OPTIONS = {{ {
+    'property_type': form_options.get('property_type', []),
+    'operation_type': form_options.get('operation_type', []),
+    'currency': form_options.get('currency', []),
+    'parking': form_options.get('parking', []),
+    'orientation': form_options.get('orientation', []),
+    'condition': form_options.get('condition', []),
+    'age': form_options.get('age', []),
+    'province': form_options.get('province', []),
+} | tojson }};
+</script>
 <div class="grid grid-cols-1 lg:grid-cols-2 min-h-[85vh] gap-0">
     <!-- LADO IZQUIERDO - Oscuro/Midnight con animación ambiental -->
     <div class="aside-ambient bg-gradient-to-br from-midnight via-midnight-light to-midnight text-white p-12 lg:p-16 flex flex-col justify-between">
@@ -70,8 +82,9 @@
                             <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Tipo de Operación</label>
                             <select id="operation-select" name="type" required class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                 <option value="">Seleccionar</option>
-                                <option>Comprar Propiedad</option>
-                                <option>Remodelación Integral</option>
+                                {% for opt in form_options.get('operation_type', []) %}
+                                <option>{{ opt.label }}</option>
+                                {% endfor %}
                             </select>
                         </div>
 
@@ -98,9 +111,9 @@
 
                                     <select id="budget-currency-select"
                                             class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 text-sm mb-6">
-                                        <option value="ARG">$ (Pesos Argentinos)</option>
-                                        <option value="USD">US$ (Dólares)</option>
-                                        <option value="EUR">€ (Euros)</option>
+                                        {% for opt in form_options.get('currency', []) %}
+                                        <option value="{{ opt.value }}">{% if opt.value == 'ARG' %}${% elif opt.value == 'USD' %}US${% elif opt.value == 'EUR' %}€{% endif %} ({{ opt.label }})</option>
+                                        {% endfor %}
                                     </select>
 
                                     <p id="budget-selected-range" class="text-center text-xl font-serif text-midnight mb-6">

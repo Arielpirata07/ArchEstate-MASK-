@@ -87,9 +87,9 @@ function syncEditAgeToCondition(condition) {
     var ageChips = document.querySelectorAll('.edit-age-chip');
 
     if (condition === 'A estrenar') {
-        selectEditChip('age', 'Hasta 5 anios');
+        selectEditChip('age', 'Hasta 5 años');
         ageChips.forEach(function(btn) {
-            var isForced = btn.dataset.value === 'Hasta 5 anios';
+            var isForced = btn.dataset.value === 'Hasta 5 años';
             btn.disabled = !isForced;
             btn.style.opacity = isForced ? '1' : '0.35';
             btn.style.cursor = isForced ? 'default' : 'not-allowed';
@@ -101,7 +101,7 @@ function syncEditAgeToCondition(condition) {
     } else if (condition === 'A reciclar') {
         if (ageSection) ageSection.classList.remove('hidden');
         ageChips.forEach(function(btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = ''; });
-        selectEditChip('age', 'Mas de 30 anios');
+        selectEditChip('age', 'Más de 30 años');
     } else {
         if (ageSection) ageSection.classList.remove('hidden');
         ageChips.forEach(function(btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = ''; });

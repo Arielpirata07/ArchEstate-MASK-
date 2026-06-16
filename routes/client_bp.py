@@ -89,17 +89,17 @@ def submit_lead():
             return jsonify({"status": "error", "message": "El presupuesto es requerido."}), 400
 
         property_type = data.get('property_type', 'departamento')
-        VALID_PROPERTY_TYPES = ['departamento', 'casa', 'duplex', 'penthouse', 'local_comercial']
-        if property_type not in VALID_PROPERTY_TYPES:
+        valid_property_types = models.get_form_options_by_category('property_type')
+        if property_type not in valid_property_types:
             return jsonify({"status": "error", "message": "Tipo de propiedad no válido."}), 400
 
-        VALID_CURRENCIES = ['ARG', 'USD', 'EUR']
+        valid_currencies = models.get_form_options_by_category('currency')
         currency = data.get('currency', 'ARG')
-        if currency not in VALID_CURRENCIES:
+        if currency not in valid_currencies:
             return jsonify({"status": "error", "message": "Moneda no válida."}), 400
 
-        VALID_LEAD_TYPES = ['Comprar Propiedad', 'Remodelación Integral', 'Construir desde Cero']
-        if lead_type not in VALID_LEAD_TYPES:
+        valid_lead_types = models.get_form_options_by_category('operation_type')
+        if lead_type not in valid_lead_types:
             return jsonify({"status": "error", "message": "Tipo de operación no válido."}), 400
 
         try:

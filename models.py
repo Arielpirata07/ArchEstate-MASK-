@@ -483,3 +483,103 @@ def get_professional_by_license(license_number):
         return dict(pro) if pro else None
     finally:
         conn.close()
+
+
+FORM_OPTION_CATEGORIES = [
+    'property_type', 'operation_type', 'currency', 'parking',
+    'orientation', 'condition', 'age', 'budget_range',
+    'province', 'architectural_style', 'amenities'
+]
+
+
+def get_form_options(category=None, active_only=True):
+    conn = get_db_connection()
+    try:
+        if category:
+            if active_only:
+                rows = conn.execute(
+                    'SELECT * FROM form_options WHERE category = ? AND is_active = 1 ORDER BY sort_order, label',
+                    (category,)
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    'SELECT * FROM form_options WHERE category = ? ORDER BY sort_order, label',
+                    (category,)
+                ).fetchall()
+        else:
+            if active_only:
+                rows = conn.execute(
+                    'SELECT * FROM form_options WHERE is_active = 1 ORDER BY category, sort_order, label'
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    'SELECT * FROM form_options ORDER BY category, sort_order, label'
+                ).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def get_form_options_by_category(category, active_only=True):
+    opts = get_form_options(category, active_only)
+    return [o['value'] for o in opts]
+
+
+def get_form_option_by_id(option_id):
+    conn = get_db_connection()
+    try:
+        row = conn.execute('SELECT * FROM form_options WHERE id = ?', (option_id,)).fetchone()
+        return dict(row) if row else None
+    finally:
+        conn.close()
+
+
+def get_form_option_by_id_value(category, value):
+    conn = get_db_connection()
+    try:
+        row = conn.execute(
+            'SELECT * FROM form_options WHERE category = ? AND value = ?', (category, value)
+        ).fetchone()
+        return dict(row) if row else None
+    finally:
+        conn.close()
+
+
+def create_form_option(data):
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute(
+            'INSERT INTO form_options (category, value, label, icon, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?)',
+            (data['category'], data['value'], data['label'],
+             data.get('icon', ''), data.get('sort_order', 0), data.get('is_active', 1))
+        )
+        conn.commit()
+        return cursor.lastrowid
+    finally:
+        conn.close()
+
+
+def update_form_option(option_id, data):
+    conn = get_db_connection()
+    try:
+        allowed = {'value', 'label', 'icon', 'sort_order', 'is_active'}
+        filtered = {k: v for k, v in data.items() if k in allowed}
+        if not filtered:
+            return False
+        set_clause = ', '.join(f'{k} = ?' for k in filtered.keys())
+        values = list(filtered.values()) + [option_id]
+        conn.execute(f'UPDATE form_options SET {set_clause} WHERE id = ?', values)
+        conn.commit()
+        return True
+    finally:
+        conn.close()
+
+
+def delete_form_option(option_id):
+    conn = get_db_connection()
+    try:
+        conn.execute('DELETE FROM form_options WHERE id = ?', (option_id,))
+        conn.commit()
+        return True
+    finally:
+        conn.close()

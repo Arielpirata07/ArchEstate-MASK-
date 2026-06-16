@@ -3,6 +3,7 @@ function showTab(tab) {
     document.getElementById('panel-dashboard').classList.add('hidden');
     document.getElementById('panel-management').classList.add('hidden');
     document.getElementById('panel-reports').classList.add('hidden');
+    document.getElementById('panel-form-options').classList.add('hidden');
     document.getElementById('panel-' + tab).classList.remove('hidden');
 
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -15,6 +16,9 @@ function showTab(tab) {
 
     if (tab === 'reports') {
         loadReports();
+    }
+    if (tab === 'form-options') {
+        loadFormOptions();
     }
 }
 
@@ -950,5 +954,220 @@ function restoreReport(reportId) {
         .catch(function () {
             if (typeof showToast === 'function') showToast('Error de conexion', 'error');
         });
+    });
+}
+
+// ================================================================
+// FORM OPTIONS CRUD
+// ================================================================
+var allFormOptions = [];
+var currentCategoryFilter = '';
+var currentSearchFilter = '';
+
+var FORM_OPTION_CATEGORIES = [
+    'property_type', 'operation_type', 'currency', 'parking',
+    'orientation', 'condition', 'age', 'budget_range',
+    'province', 'architectural_style', 'amenities'
+];
+
+function loadFormOptions() {
+    currentSearchFilter = '';
+    var searchInput = document.getElementById('fo-search');
+    if (searchInput) searchInput.value = '';
+    fetch('/api/form-options/all')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            allFormOptions = data.options || [];
+            buildCategoryFilters();
+            renderFormOptions();
+        })
+        .catch(function() {
+            if (typeof showToast === 'function') showToast('Error al cargar opciones', 'error');
+        });
+}
+
+function buildCategoryFilters() {
+    var cats = [];
+    allFormOptions.forEach(function(o) {
+        if (cats.indexOf(o.category) === -1) cats.push(o.category);
+    });
+    var container = document.getElementById('category-filters');
+    var html = '<button onclick="filterCategory(\'\')" class="cat-filter px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded ' +
+        (!currentCategoryFilter ? 'bg-midnight text-white' : 'bg-paper-dark text-midnight hover:bg-gold hover:text-white') + '">Todas</button>';
+    cats.forEach(function(c) {
+        html += '<button onclick="filterCategory(\'' + c + '\')" class="cat-filter px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded ' +
+            (currentCategoryFilter === c ? 'bg-midnight text-white' : 'bg-paper-dark text-midnight hover:bg-gold hover:text-white') + '">' + c.replace(/_/g, ' ') + '</button>';
+    });
+    container.innerHTML = html;
+}
+
+function filterCategory(cat) {
+    currentCategoryFilter = cat;
+    buildCategoryFilters();
+    renderFormOptions();
+}
+
+function filterBySearch(query) {
+    currentSearchFilter = query.toLowerCase().trim();
+    renderFormOptions();
+}
+
+function renderFormOptions() {
+    var filtered = allFormOptions;
+    if (currentCategoryFilter) {
+        filtered = filtered.filter(function(o) { return o.category === currentCategoryFilter; });
+    }
+    if (currentSearchFilter) {
+        filtered = filtered.filter(function(o) {
+            return o.value.toLowerCase().indexOf(currentSearchFilter) !== -1 ||
+                   o.label.toLowerCase().indexOf(currentSearchFilter) !== -1 ||
+                   o.category.toLowerCase().indexOf(currentSearchFilter) !== -1;
+        });
+    }
+
+    var tbody = document.getElementById('form-options-tbody');
+    if (!filtered.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-midnight/40">Sin opciones</td></tr>';
+        return;
+    }
+    tbody.innerHTML = filtered.map(function(o) {
+        return '<tr class="hover:bg-paper-dark/30 ' + (o.is_active ? '' : 'opacity-40') + '">' +
+            '<td class="px-4 py-3"><span class="text-[10px] font-bold uppercase tracking-widest text-gold bg-gold/10 px-2 py-1 rounded">' + escapeHtml(o.category) + '</span></td>' +
+            '<td class="px-4 py-3 font-mono text-xs text-midnight/70">' + escapeHtml(o.value) + '</td>' +
+            '<td class="px-4 py-3 text-midnight">' + escapeHtml(o.label) + '</td>' +
+            '<td class="px-4 py-3 text-midnight/50">' + (o.icon || '-') + '</td>' +
+            '<td class="px-4 py-3 text-midnight/50">' + o.sort_order + '</td>' +
+            '<td class="px-4 py-3"><span class="px-2 py-1 text-[10px] font-bold rounded ' +
+            (o.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700') + '">' +
+            (o.is_active ? 'Activo' : 'Inactivo') + '</span></td>' +
+            '<td class="px-4 py-3 text-right"><div class="flex gap-1 justify-end">' +
+            '<button onclick="editFormOption(' + o.id + ')" class="p-1.5 rounded hover:bg-paper-dark" title="Editar"><i data-lucide="pencil" class="w-3 h-3"></i></button>' +
+            '<button onclick="toggleFormOption(' + o.id + ', ' + (o.is_active ? 0 : 1) + ')" class="p-1.5 rounded hover:bg-paper-dark" title="' + (o.is_active ? 'Desactivar' : 'Activar') + '"><i data-lucide="' + (o.is_active ? 'eye-off' : 'eye') + '" class="w-3 h-3"></i></button>' +
+            '<button onclick="deleteFormOption(' + o.id + ')" class="p-1.5 rounded hover:bg-rose-50 text-rose-600" title="Eliminar"><i data-lucide="trash-2" class="w-3 h-3"></i></button>' +
+            '</div></td></tr>';
+    }).join('');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function openCreateOptionModal() {
+    var catOptions = FORM_OPTION_CATEGORIES.map(function(c) {
+        return '<option value="' + c + '">' + c.replace(/_/g, ' ') + '</option>';
+    }).join('');
+    var html = '<div id="formOptionModal" class="fixed inset-0 z-50" role="dialog" aria-modal="true">' +
+        '<div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeFormOptionModal()"></div>' +
+        '<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md">' +
+        '<div class="bg-white rounded-lg shadow-2xl overflow-hidden">' +
+        '<div class="border-t-4 border-gold px-8 pt-8 pb-4">' +
+        '<h3 class="text-2xl font-serif">Nueva <span class="serif-italic">Opcion</span></h3>' +
+        '</div>' +
+        '<div class="px-8 pb-8 space-y-4">' +
+        '<div><label class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Categoria</label>' +
+        '<select id="fo-category" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm">' + catOptions + '</select></div>' +
+        '<div><label class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Valor</label>' +
+        '<input id="fo-value" type="text" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" placeholder="ej: departamento"></div>' +
+        '<div><label class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Etiqueta</label>' +
+        '<input id="fo-label" type="text" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" placeholder="ej: Departamento"></div>' +
+        '<div><label class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Icono (opcional)</label>' +
+        '<input id="fo-icon" type="text" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" placeholder="ej: building"></div>' +
+        '<div><label class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Orden</label>' +
+        '<input id="fo-order" type="number" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" value="0"></div>' +
+        '<div class="flex gap-3 pt-2">' +
+        '<button onclick="closeFormOptionModal()" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-all">Cancelar</button>' +
+        '<button onclick="saveFormOption()" class="flex-1 py-3 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">Guardar</button>' +
+        '</div></div></div></div></div>';
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function closeFormOptionModal() {
+    var m = document.getElementById('formOptionModal');
+    if (m) m.remove();
+}
+
+function saveFormOption(editId) {
+    var data = {
+        category: document.getElementById('fo-category').value,
+        value: document.getElementById('fo-value').value.trim(),
+        label: document.getElementById('fo-label').value.trim(),
+        icon: document.getElementById('fo-icon').value.trim(),
+        sort_order: parseInt(document.getElementById('fo-order').value) || 0
+    };
+    if (!data.value || !data.label) {
+        if (typeof showToast === 'function') showToast('Valor y etiqueta son requeridos', 'error');
+        return;
+    }
+    var url = editId ? '/api/form-options/' + editId : '/api/form-options';
+    var method = editId ? 'PUT' : 'POST';
+    fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+        .then(function(r) { return r.json(); })
+        .then(function(res) {
+            if (res.error) {
+                if (typeof showToast === 'function') showToast(res.error, 'error');
+            } else {
+                if (typeof showToast === 'function') showToast(editId ? 'Opcion actualizada' : 'Opcion creada', 'success');
+                closeFormOptionModal();
+                loadFormOptions();
+            }
+        })
+        .catch(function() {
+            if (typeof showToast === 'function') showToast('Error de conexion', 'error');
+        });
+}
+
+function editFormOption(id) {
+    var opt = allFormOptions.find(function(o) { return o.id === id; });
+    if (!opt) return;
+    var catOptions = FORM_OPTION_CATEGORIES.map(function(c) {
+        return '<option value="' + c + '"' + (c === opt.category ? ' selected' : '') + '>' + c.replace(/_/g, ' ') + '</option>';
+    }).join('');
+    var html = '<div id="formOptionModal" class="fixed inset-0 z-50" role="dialog" aria-modal="true">' +
+        '<div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeFormOptionModal()"></div>' +
+        '<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md">' +
+        '<div class="bg-white rounded-lg shadow-2xl overflow-hidden">' +
+        '<div class="border-t-4 border-gold px-8 pt-8 pb-4">' +
+        '<h3 class="text-2xl font-serif">Editar <span class="serif-italic">Opcion</span></h3>' +
+        '</div>' +
+        '<div class="px-8 pb-8 space-y-4">' +
+        '<div><label class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Categoria</label>' +
+        '<select id="fo-category" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" disabled>' + catOptions + '</select></div>' +
+        '<div><label class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Valor</label>' +
+        '<input id="fo-value" type="text" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" value="' + escapeHtml(opt.value) + '"></div>' +
+        '<div><label class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Etiqueta</label>' +
+        '<input id="fo-label" type="text" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" value="' + escapeHtml(opt.label) + '"></div>' +
+        '<div><label class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Icono</label>' +
+        '<input id="fo-icon" type="text" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" value="' + escapeHtml(opt.icon || '') + '"></div>' +
+        '<div><label class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Orden</label>' +
+        '<input id="fo-order" type="number" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" value="' + opt.sort_order + '"></div>' +
+        '<div class="flex gap-3 pt-2">' +
+        '<button onclick="closeFormOptionModal()" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-all">Cancelar</button>' +
+        '<button onclick="saveFormOption(' + id + ')" class="flex-1 py-3 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">Actualizar</button>' +
+        '</div></div></div></div></div>';
+    document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function toggleFormOption(id, newActive) {
+    fetch('/api/form-options/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ is_active: newActive }) })
+        .then(function(r) { return r.json(); })
+        .then(function() {
+            if (typeof showToast === 'function') showToast(newActive ? 'Opcion activada' : 'Opcion desactivada', 'success');
+            loadFormOptions();
+        })
+        .catch(function() {
+            if (typeof showToast === 'function') showToast('Error de conexion', 'error');
+        });
+}
+
+function deleteFormOption(id) {
+    var promise = typeof showConfirm === 'function' ? showConfirm('Eliminar esta opcion?') : Promise.resolve(true);
+    promise.then(function(ok) {
+        if (!ok) return;
+        fetch('/api/form-options/' + id, { method: 'DELETE' })
+            .then(function(r) { return r.json(); })
+            .then(function() {
+                if (typeof showToast === 'function') showToast('Opcion eliminada', 'success');
+                loadFormOptions();
+            })
+            .catch(function() {
+                if (typeof showToast === 'function') showToast('Error de conexion', 'error');
+            });
     });
 }

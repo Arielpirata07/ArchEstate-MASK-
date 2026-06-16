@@ -7,6 +7,18 @@
 {% endblock %}
 
 {% block content %}
+<script>
+window.__FORM_OPTIONS = {{ {
+    'property_type': form_options.get('property_type', []),
+    'operation_type': form_options.get('operation_type', []),
+    'currency': form_options.get('currency', []),
+    'parking': form_options.get('parking', []),
+    'orientation': form_options.get('orientation', []),
+    'condition': form_options.get('condition', []),
+    'age': form_options.get('age', []),
+    'province': form_options.get('province', []),
+} | tojson }};
+</script>
 <div class="grid grid-cols-1 lg:grid-cols-2 min-h-[85vh] gap-0">
     <!-- LADO IZQUIERDO - Oscuro -->
     <div class="bg-gradient-to-br from-midnight via-midnight-light to-midnight text-white p-12 lg:p-16 flex flex-col justify-between">
@@ -171,7 +183,7 @@
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Banios</label>
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Baños</label>
                                 <div class="flex items-center gap-3">
                                     <button type="button" onclick="stepEditNum('edit-bathrooms',-1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">-</button>
                                     <input id="edit-bathrooms" name="bathrooms" type="number" min="0" max="20" value="{{ lead.bathrooms if lead.bathrooms else '' }}"
@@ -314,10 +326,10 @@
                                 <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Antiguedad</label>
                                 <div class="space-y-2" id="edit-age-chips">
                                     <button type="button" data-value="" onclick="selectEditChip('age','')" class="edit-age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight bg-midnight text-white text-[10px] font-bold uppercase tracking-widest transition-all">Indiferente</button>
-                                    <button type="button" data-value="Hasta 5 anios" onclick="selectEditChip('age','Hasta 5 anios')" class="edit-age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Hasta 5 anios</button>
-                                    <button type="button" data-value="5 a 15 anios" onclick="selectEditChip('age','5 a 15 anios')" class="edit-age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">5 a 15 anios</button>
-                                    <button type="button" data-value="15 a 30 anios" onclick="selectEditChip('age','15 a 30 anios')" class="edit-age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">15 a 30 anios</button>
-                                    <button type="button" data-value="Mas de 30 anios" onclick="selectEditChip('age','Mas de 30 anios')" class="edit-age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Mas de 30 anios</button>
+                                    <button type="button" data-value="Hasta 5 años" onclick="selectEditChip('age','Hasta 5 años')" class="edit-age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Hasta 5 años</button>
+                                    <button type="button" data-value="5 a 15 años" onclick="selectEditChip('age','5 a 15 años')" class="edit-age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">5 a 15 años</button>
+                                    <button type="button" data-value="15 a 30 años" onclick="selectEditChip('age','15 a 30 años')" class="edit-age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">15 a 30 años</button>
+                                    <button type="button" data-value="Más de 30 años" onclick="selectEditChip('age','Más de 30 años')" class="edit-age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Más de 30 años</button>
                                 </div>
                                 <input type="hidden" id="edit-property-age" name="property_age" value="{{ lead.property_age if lead.property_age else '' }}">
                             </div>

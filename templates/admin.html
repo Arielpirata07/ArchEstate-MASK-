@@ -32,6 +32,10 @@
                     <span id="reportBadge" class="hidden ml-1 px-1.5 py-0.5 bg-rose-600 text-white text-[8px] font-bold rounded-full">0</span>
                 </span>
             </button>
+            <button onclick="showTab('form-options')" id="tab-form-options"
+                class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white">
+                <span class="flex items-center gap-2"><i data-lucide="list" class="w-3 h-3"></i> Opciones</span>
+            </button>
             <a href="{{ url_for('admin.user_management_view') }}"
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2"><i data-lucide="users" class="w-3 h-3"></i> Usuarios</span>
@@ -391,6 +395,48 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
+
+    <!-- ===== TAB: FORM OPTIONS ===== -->
+    <div id="panel-form-options" class="hidden space-y-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-bold text-midnight">Opciones de Formulario</h3>
+                <p class="text-xs text-midnight/50">Gestioná las opciones que aparecen en los formularios del sistema.</p>
+            </div>
+            <button onclick="openCreateOptionModal()" class="px-4 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all flex items-center gap-2">
+                <i data-lucide="plus" class="w-3 h-3"></i> Nueva Opcion
+            </button>
+        </div>
+
+        <div class="sticky top-0 z-30 bg-white py-3 flex items-center gap-3 flex-wrap">
+            <div class="relative flex-1 min-w-[200px] max-w-xs">
+                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-midnight/30"></i>
+                <input id="fo-search" type="text" placeholder="Buscar opción..."
+                    oninput="filterBySearch(this.value)"
+                    class="w-full pl-9 pr-4 py-2 bg-white border border-midnight/10 rounded text-sm focus:border-gold focus:ring-0 transition-all outline-none">
+            </div>
+            <div class="flex gap-2 flex-wrap" id="category-filters"></div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-midnight/5">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="bg-paper-dark/50">
+                        <th class="text-left px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Categoria</th>
+                        <th class="text-left px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Valor</th>
+                        <th class="text-left px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Etiqueta</th>
+                        <th class="text-left px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Icono</th>
+                        <th class="text-left px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Orden</th>
+                        <th class="text-left px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Estado</th>
+                        <th class="text-right px-4 py-3 text-[10px] uppercase tracking-widest font-bold text-midnight/40">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="form-options-tbody" class="divide-y divide-midnight/5">
+                    <tr><td colspan="7" class="text-center py-8 text-midnight/40">Cargando...</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
 

@@ -22,8 +22,20 @@ VALID_ZONES = [
     'malvinas_argentinas', 'pilar', 'del_viso', 'polvorines', '_MANZANA_'
 ]
 
-VALID_PROPERTY_TYPES = ['departamento', 'casa', 'duplex', 'penthouse', 'local_comercial']
-VALID_OPERATION_TYPES = ['Comprar Propiedad', 'Remodelación Integral', 'Construir desde Cero']
+
+def get_valid_property_types():
+    from models import get_form_options_by_category
+    return get_form_options_by_category('property_type')
+
+
+def get_valid_operation_types():
+    from models import get_form_options_by_category
+    return get_form_options_by_category('operation_type')
+
+
+def get_valid_currencies():
+    from models import get_form_options_by_category
+    return get_form_options_by_category('currency')
 
 
 def validate_email(email):
@@ -154,12 +166,14 @@ def validate_password(password):
 
 
 def validate_property_type(ptype):
-    if not ptype or ptype not in VALID_PROPERTY_TYPES:
+    valid = get_valid_property_types()
+    if not ptype or ptype not in valid:
         return False, 'Tipo de propiedad no valido.'
     return True, None
 
 
 def validate_operation_type(otype):
-    if not otype or otype not in VALID_OPERATION_TYPES:
+    valid = get_valid_operation_types()
+    if not otype or otype not in valid:
         return False, 'Tipo de operacion no valido.'
     return True, None

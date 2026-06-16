@@ -26,6 +26,15 @@ def create_app():
     from app_setup import init_db
     init_db(app)
 
+    @app.context_processor
+    def inject_form_options():
+        from models import get_form_options
+        options = get_form_options(active_only=True)
+        grouped = {}
+        for opt in options:
+            grouped.setdefault(opt['category'], []).append(opt)
+        return dict(form_options=grouped)
+
     from routes.auth_bp import auth_bp
     from routes.public_bp import public_bp
     from routes.client_bp import client_bp
@@ -33,6 +42,7 @@ def create_app():
     from routes.admin_bp import admin_bp
     from routes.phone_bp import phone_bp
     from routes.lead_bp import lead_bp
+    from routes.form_options_bp import form_options_bp
     from routes_profile import profile_bp
 
     app.register_blueprint(auth_bp)
@@ -42,6 +52,7 @@ def create_app():
     app.register_blueprint(admin_bp)
     app.register_blueprint(phone_bp)
     app.register_blueprint(lead_bp)
+    app.register_blueprint(form_options_bp)
     app.register_blueprint(profile_bp)
 
     return app
