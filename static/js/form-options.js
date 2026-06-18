@@ -16,21 +16,15 @@ function foRenderPropertyTypeButtons(containerId, onSelect) {
     if (!container) return;
     var options = foGetPropertyTypes();
     container.innerHTML = options.map(function(o) {
-        var iconHtml = o.icon ? '<i data-lucide="' + o.icon + '" class="w-4 h-4"></i>' : '';
+        var iconHtml = o.icon ? '<i data-lucide="' + o.icon + '" class="w-4 h-4 inline mr-2"></i>' : '';
         return '<button type="button" data-value="' + escapeHtml(o.value) + '" ' +
-            'class="prop-type-btn flex flex-col items-center gap-1 p-3 rounded-lg border border-midnight/10 hover:border-gold hover:bg-gold/5 transition-all text-xs font-bold text-midnight/60">' +
-            iconHtml + '<span>' + escapeHtml(o.label) + '</span></button>';
+            'class="prop-type-btn flex-1 min-w-[120px] py-3 px-4 rounded border-2 border-midnight/20 bg-white text-midnight font-semibold transition-all hover:border-gold">' +
+            iconHtml + escapeHtml(o.label) + '</button>';
     }).join('');
     if (typeof lucide !== 'undefined') lucide.createIcons();
 
     container.querySelectorAll('.prop-type-btn').forEach(function(btn) {
         btn.addEventListener('click', function() {
-            container.querySelectorAll('.prop-type-btn').forEach(function(b) {
-                b.classList.remove('border-gold', 'bg-gold/10', 'text-midnight');
-                b.classList.add('border-midnight/10', 'text-midnight/60');
-            });
-            btn.classList.add('border-gold', 'bg-gold/10', 'text-midnight');
-            btn.classList.remove('border-midnight/10', 'text-midnight/60');
             if (onSelect) onSelect(btn.dataset.value);
         });
     });

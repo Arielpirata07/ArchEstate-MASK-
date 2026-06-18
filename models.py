@@ -545,16 +545,29 @@ def get_form_option_by_id_value(category, value):
         conn.close()
 
 
+def _shift_sort_order(conn, category, from_order):
+    conn.execute(
+        'UPDATE form_options SET sort_order = sort_order + 1 WHERE category = ? AND sort_order >= ?',
+        (category, from_order)
+    )
+
+
 def create_form_option(data):
     conn = get_db_connection()
     try:
-        cursor = conn.execute(
-            'INSERT INTO form_options (category, value, label, icon, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?)',
-            (data['category'], data['value'], data['label'],
-             data.get('icon', ''), data.get('sort_order', 0), data.get('is_active', 1))
-        )
-        conn.commit()
-        return cursor.lastrowid
+        sort_order = data.get('sort_order', 0)
+        _shift_sort_order(conn, data['category'], sort_order)
+        try:
+            cursor = conn.execute(
+                'INSERT INTO form_options (category, value, label, icon, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?)',
+                (data['category'], data['value'], data['label'],
+                 data.get('icon', ''), sort_order, data.get('is_active', 1))
+            )
+            conn.commit()
+            return cursor.lastrowid
+        except Exception:
+            conn.rollback()
+            raise
     finally:
         conn.close()
 
@@ -562,15 +575,36 @@ def create_form_option(data):
 def update_form_option(option_id, data):
     conn = get_db_connection()
     try:
+        existing = conn.execute('SELECT category, sort_order FROM form_options WHERE id = ?', (option_id,)).fetchone()
+        if not existing:
+            return False
         allowed = {'value', 'label', 'icon', 'sort_order', 'is_active'}
         filtered = {k: v for k, v in data.items() if k in allowed}
         if not filtered:
             return False
-        set_clause = ', '.join(f'{k} = ?' for k in filtered.keys())
-        values = list(filtered.values()) + [option_id]
-        conn.execute(f'UPDATE form_options SET {set_clause} WHERE id = ?', values)
-        conn.commit()
-        return True
+        if 'sort_order' in filtered and filtered['sort_order'] != existing['sort_order']:
+            new_order = filtered['sort_order']
+            old_order = existing['sort_order']
+            category = existing['category']
+            if new_order > old_order:
+                conn.execute(
+                    'UPDATE form_options SET sort_order = sort_order - 1 WHERE category = ? AND sort_order > ? AND sort_order <= ?',
+                    (category, old_order, new_order)
+                )
+            else:
+                conn.execute(
+                    'UPDATE form_options SET sort_order = sort_order + 1 WHERE category = ? AND sort_order >= ? AND sort_order < ?',
+                    (category, new_order, old_order)
+                )
+        try:
+            set_clause = ', '.join(f'{k} = ?' for k in filtered.keys())
+            values = list(filtered.values()) + [option_id]
+            conn.execute(f'UPDATE form_options SET {set_clause} WHERE id = ?', values)
+            conn.commit()
+            return True
+        except Exception:
+            conn.rollback()
+            raise
     finally:
         conn.close()
 
@@ -578,7 +612,14 @@ def update_form_option(option_id, data):
 def delete_form_option(option_id):
     conn = get_db_connection()
     try:
+        row = conn.execute('SELECT category, sort_order FROM form_options WHERE id = ?', (option_id,)).fetchone()
+        if not row:
+            return False
         conn.execute('DELETE FROM form_options WHERE id = ?', (option_id,))
+        conn.execute(
+            'UPDATE form_options SET sort_order = sort_order - 1 WHERE category = ? AND sort_order > ?',
+            (row['category'], row['sort_order'])
+        )
         conn.commit()
         return True
     finally:

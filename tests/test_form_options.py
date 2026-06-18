@@ -68,6 +68,12 @@ class TestFormOptionsPublic:
         assert 'USD' in values
         assert 'EUR' in values
 
+    def test_list_with_invalid_category_returns_empty(self, client):
+        res = client.get('/api/form-options?category=nonexistent_cat')
+        assert res.status_code == 200
+        data = res.get_json()
+        assert data['options'] == {}
+
 
 class TestFormOptionsAdmin:
     def test_list_all_requires_admin(self, client):
@@ -133,3 +139,243 @@ class TestFormOptionsAdmin:
 
         res = admin_client.put(f'/api/form-options/{opt["id"]}', json={'is_active': opt['is_active']})
         assert res.status_code == 200
+
+    def test_update_label_and_icon(self, admin_client):
+        res = admin_client.get('/api/form-options/all')
+        opt = res.get_json()['options'][0]
+        res = admin_client.put(f'/api/form-options/{opt["id"]}', json={
+            'label': 'Updated Label', 'icon': 'new-icon', 'sort_order': 99
+        })
+        assert res.status_code == 200
+
+        res = admin_client.get('/api/form-options/all')
+        updated = [o for o in res.get_json()['options'] if o['id'] == opt['id']][0]
+        assert updated['label'] == 'Updated Label'
+        assert updated['icon'] == 'new-icon'
+        assert updated['sort_order'] == 99
+
+    def test_update_duplicate_value_returns_409(self, admin_client):
+        from models import get_db_connection
+        conn = get_db_connection()
+        conn.execute(
+            "INSERT INTO form_options (category, value, label, icon, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?)",
+            ('test_dup_cat', 'val_a', 'A', '', 1, 1)
+        )
+        conn.execute(
+            "INSERT INTO form_options (category, value, label, icon, sort_order, is_active) VALUES (?, ?, ?, ?, ?, ?)",
+            ('test_dup_cat', 'val_b', 'B', '', 2, 1)
+        )
+        conn.commit()
+        row_a = conn.execute("SELECT id FROM form_options WHERE category='test_dup_cat' AND value='val_a'").fetchone()
+        conn.close()
+
+        res = admin_client.put(f'/api/form-options/{row_a["id"]}', json={'value': 'val_b'})
+        assert res.status_code == 409
+        assert 'error' in res.get_json()
+
+        conn = get_db_connection()
+        conn.execute("DELETE FROM form_options WHERE category = 'test_dup_cat'")
+        conn.commit()
+        conn.close()
+
+    def test_update_nonexistent_returns_404(self, admin_client):
+        res = admin_client.put('/api/form-options/99999', json={'label': 'X'})
+        assert res.status_code == 404
+
+
+class TestFormOptionsDeleteFix:
+    def test_delete_nonexistent_returns_404(self, admin_client):
+        res = admin_client.delete('/api/form-options/99999')
+        assert res.status_code == 404
+        data = res.get_json()
+        assert 'error' in data
+
+    def test_delete_idempotent_after_double_delete(self, admin_client):
+        res = admin_client.post('/api/form-options', json={
+            'category': 'amenities', 'value': 'test_del', 'label': 'Test Del'
+        })
+        assert res.status_code == 200
+        opt_id = res.get_json()['id']
+
+        res = admin_client.delete(f'/api/form-options/{opt_id}')
+        assert res.status_code == 200
+
+        res = admin_client.delete(f'/api/form-options/{opt_id}')
+        assert res.status_code == 404
+
+
+class TestFormOptionsValidation:
+    def test_create_rejects_long_value(self, admin_client):
+        res = admin_client.post('/api/form-options', json={
+            'category': 'amenities', 'value': 'x' * 101, 'label': 'Long'
+        })
+        assert res.status_code == 400
+        assert '100 caracteres' in res.get_json()['error']
+
+    def test_create_rejects_long_label(self, admin_client):
+        res = admin_client.post('/api/form-options', json={
+            'category': 'amenities', 'value': 'ok', 'label': 'L' * 201
+        })
+        assert res.status_code == 400
+        assert '200 caracteres' in res.get_json()['error']
+
+    def test_create_accepts_max_length_value(self, admin_client):
+        res = admin_client.post('/api/form-options', json={
+            'category': 'amenities', 'value': 'a' * 100, 'label': 'Max'
+        })
+        assert res.status_code == 200
+        opt_id = res.get_json()['id']
+        admin_client.delete(f'/api/form-options/{opt_id}')
+
+    def test_create_rejects_empty_value(self, admin_client):
+        res = admin_client.post('/api/form-options', json={
+            'category': 'amenities', 'value': '', 'label': 'Empty'
+        })
+        assert res.status_code == 400
+
+    def test_create_rejects_empty_label(self, admin_client):
+        res = admin_client.post('/api/form-options', json={
+            'category': 'amenities', 'value': 'valid', 'label': ''
+        })
+        assert res.status_code == 400
+
+    def test_update_rejects_long_value(self, admin_client):
+        res = admin_client.get('/api/form-options/all')
+        opt = res.get_json()['options'][0]
+        res = admin_client.put(f'/api/form-options/{opt["id"]}', json={
+            'value': 'x' * 101
+        })
+        assert res.status_code == 400
+
+    def test_update_rejects_long_label(self, admin_client):
+        res = admin_client.get('/api/form-options/all')
+        opt = res.get_json()['options'][0]
+        res = admin_client.put(f'/api/form-options/{opt["id"]}', json={
+            'label': 'L' * 201
+        })
+        assert res.status_code == 400
+
+
+class TestFormOptionsSortOrder:
+    def test_sort_order_shift_on_create(self, admin_client):
+        from models import get_db_connection
+        res = admin_client.post('/api/form-options', json={
+            'category': 'amenities', 'value': 'so_test_a', 'label': 'SortA', 'sort_order': 1
+        })
+        assert res.status_code == 200
+        id_a = res.get_json()['id']
+
+        res = admin_client.post('/api/form-options', json={
+            'category': 'amenities', 'value': 'so_test_b', 'label': 'SortB', 'sort_order': 1
+        })
+        assert res.status_code == 200
+        id_b = res.get_json()['id']
+
+        conn = get_db_connection()
+        a = conn.execute('SELECT sort_order FROM form_options WHERE id = ?', (id_a,)).fetchone()
+        b = conn.execute('SELECT sort_order FROM form_options WHERE id = ?', (id_b,)).fetchone()
+        conn.close()
+
+        assert b['sort_order'] == 1
+        assert a['sort_order'] == 2
+
+        admin_client.delete(f'/api/form-options/{id_a}')
+        admin_client.delete(f'/api/form-options/{id_b}')
+
+    def test_sort_order_decrement_on_delete(self, admin_client):
+        from models import get_db_connection
+        res = admin_client.post('/api/form-options', json={
+            'category': 'amenities', 'value': 'so_del_a', 'label': 'DelA', 'sort_order': 50
+        })
+        id_a = res.get_json()['id']
+
+        res = admin_client.post('/api/form-options', json={
+            'category': 'amenities', 'value': 'so_del_b', 'label': 'DelB', 'sort_order': 51
+        })
+        id_b = res.get_json()['id']
+
+        admin_client.delete(f'/api/form-options/{id_a}')
+
+        conn = get_db_connection()
+        b = conn.execute('SELECT sort_order FROM form_options WHERE id = ?', (id_b,)).fetchone()
+        conn.close()
+        assert b['sort_order'] == 50
+
+        admin_client.delete(f'/api/form-options/{id_b}')
+
+    def test_create_does_not_corrupt_sort_on_duplicate(self, admin_client):
+        from models import get_db_connection
+        res = admin_client.post('/api/form-options', json={
+            'category': 'amenities', 'value': 'corrupt_test', 'label': 'Corrupt'
+        })
+        assert res.status_code == 200
+        id1 = res.get_json()['id']
+
+        original_sort = admin_client.get('/api/form-options/all')
+        original_orders = {o['id']: o['sort_order'] for o in original_sort.get_json()['options']}
+
+        res = admin_client.post('/api/form-options', json={
+            'category': 'amenities', 'value': 'corrupt_test', 'label': 'Corrupt'
+        })
+        assert res.status_code == 409
+
+        after_sort = admin_client.get('/api/form-options/all')
+        after_orders = {o['id']: o['sort_order'] for o in after_sort.get_json()['options']}
+
+        for oid, order in original_orders.items():
+            if oid in after_orders:
+                assert after_orders[oid] == order, f'Sort order corrupted for id {oid}'
+
+        admin_client.delete(f'/api/form-options/{id1}')
+
+    def test_update_sort_order_move_up_no_gap(self, admin_client):
+        from models import get_db_connection
+        ids = []
+        for i in range(4):
+            res = admin_client.post('/api/form-options', json={
+                'category': 'amenities', 'value': f'up_gap_{i}', 'label': f'UpGap{i}', 'sort_order': 50 + i
+            })
+            ids.append(res.get_json()['id'])
+
+        admin_client.put(f'/api/form-options/{ids[3]}', json={'sort_order': 50})
+
+        conn = get_db_connection()
+        orders = {}
+        for oid in ids:
+            row = conn.execute('SELECT sort_order FROM form_options WHERE id = ?', (oid,)).fetchone()
+            orders[oid] = row['sort_order']
+        conn.close()
+
+        assert orders[ids[3]] == 50
+        assert orders[ids[0]] == 51
+        assert orders[ids[1]] == 52
+        assert orders[ids[2]] == 53
+
+        for oid in ids:
+            admin_client.delete(f'/api/form-options/{oid}')
+
+    def test_update_sort_order_move_down_no_gap(self, admin_client):
+        from models import get_db_connection
+        ids = []
+        for i in range(4):
+            res = admin_client.post('/api/form-options', json={
+                'category': 'amenities', 'value': f'dn_gap_{i}', 'label': f'DnGap{i}', 'sort_order': 60 + i
+            })
+            ids.append(res.get_json()['id'])
+
+        admin_client.put(f'/api/form-options/{ids[0]}', json={'sort_order': 63})
+
+        conn = get_db_connection()
+        orders = {}
+        for oid in ids:
+            row = conn.execute('SELECT sort_order FROM form_options WHERE id = ?', (oid,)).fetchone()
+            orders[oid] = row['sort_order']
+        conn.close()
+
+        assert orders[ids[0]] == 63
+        assert orders[ids[1]] == 60
+        assert orders[ids[2]] == 61
+        assert orders[ids[3]] == 62
+
+        for oid in ids:
+            admin_client.delete(f'/api/form-options/{oid}')

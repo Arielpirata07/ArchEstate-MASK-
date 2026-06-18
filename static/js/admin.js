@@ -132,6 +132,7 @@ function toggleChartType() {
 }
 
 function renderTypeChart() {
+    if (typeof Chart === 'undefined') return;
     const data = dashState.rawData;
     if (!data) return;
     destroyChart('type');
@@ -184,6 +185,7 @@ function setMonthChartType(type) {
 }
 
 function renderMonthChart() {
+    if (typeof Chart === 'undefined') return;
     const data = dashState.rawData;
     if (!data) return;
 
@@ -263,51 +265,55 @@ async function initDashboard() {
         const topAction = data.audit_actions[0];
         document.getElementById('kpi-audit-sub').textContent = topAction ? `${topAction.label}: ${topAction.value}` : '';
 
-        // Gráficos
-        renderTypeChart();
+        // Gráficos (solo si Chart.js cargó correctamente)
+        if (typeof Chart !== 'undefined') {
+            renderTypeChart();
 
-        // Zona
-        destroyChart('zone');
-        charts['zone'] = new Chart(document.getElementById('chart-zone'), {
-            type: 'bar',
-            data: {
-                labels: data.leads_by_zone.map(d => d.label),
-                datasets: [{ label: 'Leads', data: data.leads_by_zone.map(d => d.value), backgroundColor: getPalette().dark, borderRadius: 4, borderSkipped: false }]
-            },
-            options: {
-                responsive: true,
-                indexAxis: 'y',
-                plugins: { legend: { display: false },
-                    tooltip: { callbacks: { label: ctx => `  ${ctx.parsed.x} leads` } }
+            // Zona
+            destroyChart('zone');
+            charts['zone'] = new Chart(document.getElementById('chart-zone'), {
+                type: 'bar',
+                data: {
+                    labels: data.leads_by_zone.map(d => d.label),
+                    datasets: [{ label: 'Leads', data: data.leads_by_zone.map(d => d.value), backgroundColor: getPalette().dark, borderRadius: 4, borderSkipped: false }]
                 },
-                scales: {
-                    x: { ticks: { font: baseFont, stepSize: 1 }, grid: { color: chartGridColor() } },
-                    y: { ticks: { font: baseFont }, grid: { display: false } }
+                options: {
+                    responsive: true,
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false },
+                        tooltip: { callbacks: { label: ctx => `  ${ctx.parsed.x} leads` } }
+                    },
+                    scales: {
+                        x: { ticks: { font: baseFont, stepSize: 1 }, grid: { color: chartGridColor() } },
+                        y: { ticks: { font: baseFont }, grid: { display: false } }
+                    }
                 }
-            }
-        });
+            });
 
-        renderMonthChart();
+            renderMonthChart();
 
-        // Presupuesto
-        destroyChart('budget');
-        charts['budget'] = new Chart(document.getElementById('chart-budget'), {
-            type: 'bar',
-            data: {
-                labels: data.leads_by_budget.map(d => d.label),
-                datasets: [{ label: 'Leads', data: data.leads_by_budget.map(d => d.value), backgroundColor: getPalette().mixed, borderRadius: 4, borderSkipped: false }]
-            },
-            options: {
-                responsive: true,
-                plugins: { legend: { display: false },
-                    tooltip: { callbacks: { label: ctx => `  ${ctx.parsed.y} leads` } }
+            // Presupuesto
+            destroyChart('budget');
+            charts['budget'] = new Chart(document.getElementById('chart-budget'), {
+                type: 'bar',
+                data: {
+                    labels: data.leads_by_budget.map(d => d.label),
+                    datasets: [{ label: 'Leads', data: data.leads_by_budget.map(d => d.value), backgroundColor: getPalette().mixed, borderRadius: 4, borderSkipped: false }]
                 },
-                scales: {
-                    x: { ticks: { font: { family: 'Manrope', size: 8, weight: 'bold' }, maxRotation: 30 }, grid: { display: false } },
-                    y: { ticks: { font: baseFont, stepSize: 1 }, grid: { color: chartGridColor() }, beginAtZero: true }
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false },
+                        tooltip: { callbacks: { label: ctx => `  ${ctx.parsed.y} leads` } }
+                    },
+                    scales: {
+                        x: { ticks: { font: { family: 'Manrope', size: 8, weight: 'bold' }, maxRotation: 30 }, grid: { display: false } },
+                        y: { ticks: { font: baseFont, stepSize: 1 }, grid: { color: chartGridColor() }, beginAtZero: true }
+                    }
                 }
-            }
-        });
+            });
+        } else {
+            console.warn('Chart.js no está disponible. Los gráficos no se renderizarán.');
+        }
 
         if (window.lucide) lucide.createIcons();
 
@@ -963,6 +969,8 @@ function restoreReport(reportId) {
 var allFormOptions = [];
 var currentCategoryFilter = '';
 var currentSearchFilter = '';
+var isFormOptionSaving = false;
+var _formOptionModalPrevFocus = null;
 
 var FORM_OPTION_CATEGORIES = [
     'property_type', 'operation_type', 'currency', 'parking',
@@ -970,12 +978,141 @@ var FORM_OPTION_CATEGORIES = [
     'province', 'architectural_style', 'amenities'
 ];
 
+var FORM_OPTION_ICONS = [
+    { name: 'building', label: 'Edificio' },
+    { name: 'home', label: 'Casa' },
+    { name: 'layers', label: 'Duplex' },
+    { name: 'crown', label: 'Penthouse' },
+    { name: 'store', label: 'Local' },
+    { name: 'shopping-cart', label: 'Comprar' },
+    { name: 'wrench', label: 'Reparar' },
+    { name: 'hammer', label: 'Construir' },
+    { name: 'paintbrush', label: 'Pintar' },
+    { name: 'ruler', label: 'Medir' },
+    { name: 'dollar-sign', label: 'Dolar' },
+    { name: 'euro', label: 'Euro' },
+    { name: 'banknote', label: 'Billete' },
+    { name: 'car', label: 'Auto' },
+    { name: 'parking-circle', label: 'Estacionamiento' },
+    { name: 'lock', label: 'Cerrado' },
+    { name: 'unlock', label: 'Abierto' },
+    { name: 'arrow-up', label: 'Norte' },
+    { name: 'arrow-down', label: 'Sur' },
+    { name: 'arrow-right', label: 'Este' },
+    { name: 'arrow-left', label: 'Oeste' },
+    { name: 'compass', label: 'Orientacion' },
+    { name: 'sparkles', label: 'Nuevo' },
+    { name: 'hard-hat', label: 'Obra' },
+    { name: 'clock', label: 'Antiguedad' },
+    { name: 'timer', label: 'Tiempo' },
+    { name: 'calendar', label: 'Fecha' },
+    { name: 'map-pin', label: 'Ubicacion' },
+    { name: 'map', label: 'Mapa' },
+    { name: 'globe', label: 'Global' },
+    { name: 'bed', label: 'Dormitorio' },
+    { name: 'bath', label: 'Bano' },
+    { name: 'sofa', label: 'Ambiente' },
+    { name: 'maximize', label: 'Metros' },
+    { name: 'move', label: 'Superficie' },
+    { name: 'triangle', label: 'Terreno' },
+    { name: 'box', label: 'Construido' },
+    { name: 'zap', label: 'Energia' },
+    { name: 'wifi', label: 'Conexion' },
+    { name: 'shield', label: 'Seguridad' },
+    { name: 'trees', label: 'Verde' },
+    { name: 'mountain', label: 'Montana' },
+    { name: 'sun', label: 'Sol' },
+    { name: 'droplets', label: 'Agua' },
+    { name: 'wind', label: 'Viento' },
+    { name: 'thermometer', label: 'Clima' },
+    { name: 'heart', label: 'Favorito' },
+    { name: 'star', label: 'Destacado' },
+    { name: 'eye', label: 'Visible' },
+    { name: 'camera', label: 'Foto' },
+    { name: 'image', label: 'Imagen' },
+    { name: 'file-text', label: 'Documento' },
+    { name: 'phone', label: 'Telefono' },
+    { name: 'mail', label: 'Email' },
+    { name: 'flag', label: 'Bandera' },
+    { name: 'tag', label: 'Etiqueta' },
+    { name: 'info', label: 'Info' },
+    { name: 'check-circle', label: 'OK' },
+    { name: 'x-circle', label: 'No' },
+    { name: 'alert-triangle', label: 'Alerta' },
+    { name: 'plus-circle', label: 'Agregar' },
+    { name: 'minus-circle', label: 'Quitar' }
+];
+
+function _setupFormOptionModalFocusTrap() {
+    var modal = document.getElementById('formOptionModal');
+    if (!modal) return;
+    modal.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeFormOptionModal();
+            return;
+        }
+        if (e.key !== 'Tab') return;
+        var focusable = modal.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])');
+        if (!focusable.length) return;
+        var first = focusable[0];
+        var last = focusable[focusable.length - 1];
+        if (e.shiftKey) {
+            if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+        } else {
+            if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+    });
+}
+
+function renderIconPicker(selectedIcon) {
+    var html = '<div class="icon-picker-wrap mt-1 border border-midnight/10 rounded overflow-hidden">' +
+        '<label for="fo-icon-search" class="sr-only">Buscar icono</label>' +
+        '<input id="fo-icon-search" type="text" placeholder="Buscar icono..." oninput="filterIcons(this.value)" class="icon-search w-full px-2 py-1.5 text-xs border-0 border-b border-midnight/10 outline-none bg-paper-dark/50">' +
+        '<div id="icon-picker-grid" class="grid grid-cols-6 gap-0.5 p-1.5 max-h-32 overflow-y-auto">';
+    html += '<button type="button" data-icon="" data-search="ninguno" onclick="selectIconOption(this)" aria-label="Sin icono" class="icon-pick p-1 rounded border text-[10px] flex flex-col items-center gap-px transition-all ' +
+        (!selectedIcon ? 'border-gold bg-gold/10 text-gold' : 'border-transparent text-midnight/40 hover:border-midnight/20') + '" title="Sin icono">' +
+        '<i data-lucide="x" class="w-3 h-3"></i><span class="leading-none">Ninguno</span></button>';
+    FORM_OPTION_ICONS.forEach(function(icon) {
+        var active = selectedIcon === icon.name;
+        html += '<button type="button" data-icon="' + icon.name + '" data-search="' + (icon.name + ' ' + icon.label).toLowerCase() + '" onclick="selectIconOption(this)" aria-label="' + escapeHtml(icon.label) + '" class="icon-pick p-1 rounded border text-[10px] flex flex-col items-center gap-px transition-all ' +
+            (active ? 'border-gold bg-gold/10 text-gold' : 'border-transparent text-midnight/50 hover:border-midnight/20 hover:text-midnight') + '" title="' + escapeHtml(icon.label) + '">' +
+            '<i data-lucide="' + icon.name + '" class="w-3 h-3"></i><span class="leading-none truncate w-full text-center">' + escapeHtml(icon.label) + '</span></button>';
+    });
+    html += '</div></div>';
+    return html;
+}
+
+function filterIcons(query) {
+    var grid = document.getElementById('icon-picker-grid');
+    if (!grid) return;
+    var q = query.toLowerCase().trim();
+    grid.querySelectorAll('.icon-pick').forEach(function(btn) {
+        var match = !q || (btn.dataset.search && btn.dataset.search.indexOf(q) !== -1);
+        btn.style.display = match ? '' : 'none';
+    });
+}
+
+function selectIconOption(btn) {
+    var picker = btn.closest('.grid');
+    picker.querySelectorAll('.icon-pick').forEach(function(b) {
+        b.classList.remove('border-gold', 'bg-gold/10', 'text-gold');
+        b.classList.add('border-transparent', 'text-midnight/50');
+    });
+    btn.classList.remove('border-transparent', 'text-midnight/50');
+    btn.classList.add('border-gold', 'bg-gold/10', 'text-gold');
+    document.getElementById('fo-icon').value = btn.dataset.icon || '';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
 function loadFormOptions() {
     currentSearchFilter = '';
     var searchInput = document.getElementById('fo-search');
     if (searchInput) searchInput.value = '';
     fetch('/api/form-options/all')
-        .then(function(r) { return r.json(); })
+        .then(function(r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        })
         .then(function(data) {
             allFormOptions = data.options || [];
             buildCategoryFilters();
@@ -992,10 +1129,10 @@ function buildCategoryFilters() {
         if (cats.indexOf(o.category) === -1) cats.push(o.category);
     });
     var container = document.getElementById('category-filters');
-    var html = '<button onclick="filterCategory(\'\')" class="cat-filter px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded ' +
+    var html = '<button role="tab" aria-pressed="' + (!currentCategoryFilter) + '" onclick="filterCategory(\'\')" class="cat-filter px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded ' +
         (!currentCategoryFilter ? 'bg-midnight text-white' : 'bg-paper-dark text-midnight hover:bg-gold hover:text-white') + '">Todas</button>';
     cats.forEach(function(c) {
-        html += '<button onclick="filterCategory(\'' + c + '\')" class="cat-filter px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded ' +
+        html += '<button role="tab" aria-pressed="' + (currentCategoryFilter === c) + '" onclick="filterCategory(\'' + c + '\')" class="cat-filter px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded ' +
             (currentCategoryFilter === c ? 'bg-midnight text-white' : 'bg-paper-dark text-midnight hover:bg-gold hover:text-white') + '">' + c.replace(/_/g, ' ') + '</button>';
     });
     container.innerHTML = html;
@@ -1026,8 +1163,10 @@ function renderFormOptions() {
     }
 
     var tbody = document.getElementById('form-options-tbody');
+    var liveRegion = document.getElementById('fo-results-count');
     if (!filtered.length) {
         tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-midnight/40">Sin opciones</td></tr>';
+        if (liveRegion) liveRegion.textContent = '0 opciones encontradas';
         return;
     }
     tbody.innerHTML = filtered.map(function(o) {
@@ -1035,55 +1174,75 @@ function renderFormOptions() {
             '<td class="px-4 py-3"><span class="text-[10px] font-bold uppercase tracking-widest text-gold bg-gold/10 px-2 py-1 rounded">' + escapeHtml(o.category) + '</span></td>' +
             '<td class="px-4 py-3 font-mono text-xs text-midnight/70">' + escapeHtml(o.value) + '</td>' +
             '<td class="px-4 py-3 text-midnight">' + escapeHtml(o.label) + '</td>' +
-            '<td class="px-4 py-3 text-midnight/50">' + (o.icon || '-') + '</td>' +
+            '<td class="px-4 py-3 text-midnight/50">' + (o.icon ? '<i data-lucide="' + escapeHtml(o.icon) + '" class="w-4 h-4 inline-block"></i> <span class="text-xs">' + escapeHtml(o.icon) + '</span>' : '<span class="text-xs">-</span>') + '</td>' +
             '<td class="px-4 py-3 text-midnight/50">' + o.sort_order + '</td>' +
             '<td class="px-4 py-3"><span class="px-2 py-1 text-[10px] font-bold rounded ' +
             (o.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700') + '">' +
             (o.is_active ? 'Activo' : 'Inactivo') + '</span></td>' +
             '<td class="px-4 py-3 text-right"><div class="flex gap-1 justify-end">' +
-            '<button onclick="editFormOption(' + o.id + ')" class="p-1.5 rounded hover:bg-paper-dark" title="Editar"><i data-lucide="pencil" class="w-3 h-3"></i></button>' +
-            '<button onclick="toggleFormOption(' + o.id + ', ' + (o.is_active ? 0 : 1) + ')" class="p-1.5 rounded hover:bg-paper-dark" title="' + (o.is_active ? 'Desactivar' : 'Activar') + '"><i data-lucide="' + (o.is_active ? 'eye-off' : 'eye') + '" class="w-3 h-3"></i></button>' +
-            '<button onclick="deleteFormOption(' + o.id + ')" class="p-1.5 rounded hover:bg-rose-50 text-rose-600" title="Eliminar"><i data-lucide="trash-2" class="w-3 h-3"></i></button>' +
+            '<button onclick="editFormOption(' + o.id + ')" aria-label="Editar ' + escapeHtml(o.label) + '" class="p-1.5 rounded hover:bg-paper-dark" title="Editar"><i data-lucide="pencil" class="w-3 h-3"></i></button>' +
+            '<button onclick="toggleFormOption(' + o.id + ', ' + (o.is_active ? 0 : 1) + ')" aria-label="' + (o.is_active ? 'Desactivar' : 'Activar') + ' ' + escapeHtml(o.label) + '" class="p-1.5 rounded hover:bg-paper-dark" title="' + (o.is_active ? 'Desactivar' : 'Activar') + '"><i data-lucide="' + (o.is_active ? 'eye-off' : 'eye') + '" class="w-3 h-3"></i></button>' +
+            '<button onclick="deleteFormOption(' + o.id + ')" aria-label="Eliminar ' + escapeHtml(o.label) + '" class="p-1.5 rounded hover:bg-rose-50 text-rose-600" title="Eliminar"><i data-lucide="trash-2" class="w-3 h-3"></i></button>' +
             '</div></td></tr>';
     }).join('');
+    if (liveRegion) liveRegion.textContent = filtered.length + ' opcion' + (filtered.length !== 1 ? 'es' : '') + ' encontrada' + (filtered.length !== 1 ? 's' : '');
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 function openCreateOptionModal() {
+    _formOptionModalPrevFocus = document.activeElement;
     var catOptions = FORM_OPTION_CATEGORIES.map(function(c) {
         return '<option value="' + c + '">' + c.replace(/_/g, ' ') + '</option>';
     }).join('');
-    var html = '<div id="formOptionModal" class="fixed inset-0 z-50" role="dialog" aria-modal="true">' +
+    var html = '<div id="formOptionModal" class="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-labelledby="fo-modal-title">' +
         '<div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeFormOptionModal()"></div>' +
-        '<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md">' +
-        '<div class="bg-white rounded-lg shadow-2xl overflow-hidden">' +
-        '<div class="border-t-4 border-gold px-8 pt-8 pb-4">' +
-        '<h3 class="text-2xl font-serif">Nueva <span class="serif-italic">Opcion</span></h3>' +
+        '<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md max-h-[90vh] mx-4 sm:mx-0 flex flex-col">' +
+        '<div class="bg-white rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-full">' +
+        '<div class="border-t-4 border-gold px-4 sm:px-6 pt-6 pb-3 flex-shrink-0">' +
+        '<h3 id="fo-modal-title" class="text-2xl font-serif">Nueva <span class="serif-italic">Opcion</span></h3>' +
         '</div>' +
-        '<div class="px-8 pb-8 space-y-4">' +
-        '<div><label class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Categoria</label>' +
+        '<div class="px-4 sm:px-6 pb-6 space-y-3 overflow-y-auto min-h-0">' +
+        '<div><label for="fo-category" class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Categoria</label>' +
         '<select id="fo-category" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm">' + catOptions + '</select></div>' +
-        '<div><label class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Valor</label>' +
-        '<input id="fo-value" type="text" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" placeholder="ej: departamento"></div>' +
-        '<div><label class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Etiqueta</label>' +
-        '<input id="fo-label" type="text" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" placeholder="ej: Departamento"></div>' +
-        '<div><label class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Icono (opcional)</label>' +
-        '<input id="fo-icon" type="text" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" placeholder="ej: building"></div>' +
-        '<div><label class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Orden</label>' +
+        '<div><label for="fo-value" class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Valor</label>' +
+        '<input id="fo-value" type="text" maxlength="100" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" placeholder="ej: departamento"></div>' +
+        '<div><label for="fo-label" class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Etiqueta</label>' +
+        '<input id="fo-label" type="text" maxlength="200" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" placeholder="ej: Departamento"></div>' +
+        '<div><label for="fo-icon-search" class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Icono (opcional)</label>' +
+        '<input id="fo-icon" type="hidden" value="">' +
+        renderIconPicker('') + '</div>' +
+        '<div><label for="fo-order" class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Orden</label>' +
         '<input id="fo-order" type="number" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" value="0"></div>' +
         '<div class="flex gap-3 pt-2">' +
         '<button onclick="closeFormOptionModal()" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-all">Cancelar</button>' +
-        '<button onclick="saveFormOption()" class="flex-1 py-3 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">Guardar</button>' +
+        '<button id="fo-save-btn" onclick="saveFormOption()" class="flex-1 py-3 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">Guardar</button>' +
         '</div></div></div></div></div>';
     document.body.insertAdjacentHTML('beforeend', html);
+    _setupFormOptionModalFocusTrap();
+    function _updateNextSortOrder() {
+        var cat = document.getElementById('fo-category').value;
+        var maxOrder = 0;
+        allFormOptions.forEach(function(o) { if (o.category === cat && o.sort_order >= maxOrder) maxOrder = o.sort_order + 1; });
+        document.getElementById('fo-order').value = maxOrder;
+    }
+    _updateNextSortOrder();
+    document.getElementById('fo-category').addEventListener('change', _updateNextSortOrder);
+    var firstInput = document.getElementById('fo-category');
+    if (firstInput) firstInput.focus();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 function closeFormOptionModal() {
+    isFormOptionSaving = false;
     var m = document.getElementById('formOptionModal');
     if (m) m.remove();
+    if (_formOptionModalPrevFocus && _formOptionModalPrevFocus.focus) {
+        _formOptionModalPrevFocus.focus();
+    }
 }
 
 function saveFormOption(editId) {
+    if (isFormOptionSaving) return;
     var data = {
         category: document.getElementById('fo-category').value,
         value: document.getElementById('fo-value').value.trim(),
@@ -1095,10 +1254,16 @@ function saveFormOption(editId) {
         if (typeof showToast === 'function') showToast('Valor y etiqueta son requeridos', 'error');
         return;
     }
+    isFormOptionSaving = true;
+    var saveBtn = document.getElementById('fo-save-btn');
+    if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Guardando...'; }
     var url = editId ? '/api/form-options/' + editId : '/api/form-options';
     var method = editId ? 'PUT' : 'POST';
     fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
-        .then(function(r) { return r.json(); })
+        .then(function(r) {
+            if (!r.ok) return r.json().then(function(body) { throw new Error(body.error || 'HTTP ' + r.status); });
+            return r.json();
+        })
         .then(function(res) {
             if (res.error) {
                 if (typeof showToast === 'function') showToast(res.error, 'error');
@@ -1108,51 +1273,69 @@ function saveFormOption(editId) {
                 loadFormOptions();
             }
         })
-        .catch(function() {
-            if (typeof showToast === 'function') showToast('Error de conexion', 'error');
+        .catch(function(err) {
+            if (typeof showToast === 'function') showToast(err.message || 'Error de conexion', 'error');
+        })
+        .finally(function() {
+            isFormOptionSaving = false;
+            var btn = document.getElementById('fo-save-btn');
+            if (btn) { btn.disabled = false; btn.textContent = editId ? 'Actualizar' : 'Guardar'; }
         });
 }
 
 function editFormOption(id) {
     var opt = allFormOptions.find(function(o) { return o.id === id; });
     if (!opt) return;
+    _formOptionModalPrevFocus = document.activeElement;
     var catOptions = FORM_OPTION_CATEGORIES.map(function(c) {
         return '<option value="' + c + '"' + (c === opt.category ? ' selected' : '') + '>' + c.replace(/_/g, ' ') + '</option>';
     }).join('');
-    var html = '<div id="formOptionModal" class="fixed inset-0 z-50" role="dialog" aria-modal="true">' +
+    var html = '<div id="formOptionModal" class="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-labelledby="fo-modal-title">' +
         '<div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeFormOptionModal()"></div>' +
-        '<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md">' +
-        '<div class="bg-white rounded-lg shadow-2xl overflow-hidden">' +
-        '<div class="border-t-4 border-gold px-8 pt-8 pb-4">' +
-        '<h3 class="text-2xl font-serif">Editar <span class="serif-italic">Opcion</span></h3>' +
+        '<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md max-h-[90vh] mx-4 sm:mx-0 flex flex-col">' +
+        '<div class="bg-white rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-full">' +
+        '<div class="border-t-4 border-gold px-4 sm:px-6 pt-6 pb-3 flex-shrink-0">' +
+        '<h3 id="fo-modal-title" class="text-2xl font-serif">Editar <span class="serif-italic">Opcion</span></h3>' +
         '</div>' +
-        '<div class="px-8 pb-8 space-y-4">' +
-        '<div><label class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Categoria</label>' +
+        '<div class="px-4 sm:px-6 pb-6 space-y-3 overflow-y-auto min-h-0">' +
+        '<div><label for="fo-category" class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Categoria</label>' +
         '<select id="fo-category" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" disabled>' + catOptions + '</select></div>' +
-        '<div><label class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Valor</label>' +
-        '<input id="fo-value" type="text" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" value="' + escapeHtml(opt.value) + '"></div>' +
-        '<div><label class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Etiqueta</label>' +
-        '<input id="fo-label" type="text" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" value="' + escapeHtml(opt.label) + '"></div>' +
-        '<div><label class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Icono</label>' +
-        '<input id="fo-icon" type="text" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" value="' + escapeHtml(opt.icon || '') + '"></div>' +
-        '<div><label class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Orden</label>' +
+        '<div><label for="fo-value" class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Valor</label>' +
+        '<input id="fo-value" type="text" maxlength="100" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" value="' + escapeHtml(opt.value) + '"></div>' +
+        '<div><label for="fo-label" class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Etiqueta</label>' +
+        '<input id="fo-label" type="text" maxlength="200" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" value="' + escapeHtml(opt.label) + '"></div>' +
+        '<div><label for="fo-icon-search" class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Icono</label>' +
+        '<input id="fo-icon" type="hidden" value="' + escapeHtml(opt.icon || '') + '">' +
+        renderIconPicker(opt.icon || '') + '</div>' +
+        '<div><label for="fo-order" class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Orden</label>' +
         '<input id="fo-order" type="number" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" value="' + opt.sort_order + '"></div>' +
         '<div class="flex gap-3 pt-2">' +
         '<button onclick="closeFormOptionModal()" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-all">Cancelar</button>' +
-        '<button onclick="saveFormOption(' + id + ')" class="flex-1 py-3 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">Actualizar</button>' +
+        '<button id="fo-save-btn" onclick="saveFormOption(' + id + ')" class="flex-1 py-3 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">Actualizar</button>' +
         '</div></div></div></div></div>';
     document.body.insertAdjacentHTML('beforeend', html);
+    _setupFormOptionModalFocusTrap();
+    var firstInput = document.getElementById('fo-value');
+    if (firstInput) firstInput.focus();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 function toggleFormOption(id, newActive) {
     fetch('/api/form-options/' + id, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ is_active: newActive }) })
-        .then(function(r) { return r.json(); })
-        .then(function() {
-            if (typeof showToast === 'function') showToast(newActive ? 'Opcion activada' : 'Opcion desactivada', 'success');
-            loadFormOptions();
+        .then(function(r) {
+            if (!r.ok) return r.json().then(function(body) { throw new Error(body.error || 'HTTP ' + r.status); });
+            return r.json();
         })
-        .catch(function() {
-            if (typeof showToast === 'function') showToast('Error de conexion', 'error');
+        .then(function(res) {
+            if (res.error) {
+                if (typeof showToast === 'function') showToast(res.error, 'error');
+            } else {
+                if (typeof showToast === 'function') showToast(newActive ? 'Opcion activada' : 'Opcion desactivada', 'success');
+                loadFormOptions();
+            }
+        })
+        .catch(function(err) {
+            if (typeof showToast === 'function') showToast(err.message || 'Error de conexion', 'error');
         });
 }
 
@@ -1161,13 +1344,20 @@ function deleteFormOption(id) {
     promise.then(function(ok) {
         if (!ok) return;
         fetch('/api/form-options/' + id, { method: 'DELETE' })
-            .then(function(r) { return r.json(); })
-            .then(function() {
-                if (typeof showToast === 'function') showToast('Opcion eliminada', 'success');
-                loadFormOptions();
+            .then(function(r) {
+                if (!r.ok) return r.json().then(function(body) { throw new Error(body.error || 'HTTP ' + r.status); });
+                return r.json();
             })
-            .catch(function() {
-                if (typeof showToast === 'function') showToast('Error de conexion', 'error');
+            .then(function(res) {
+                if (res.error) {
+                    if (typeof showToast === 'function') showToast(res.error, 'error');
+                } else {
+                    if (typeof showToast === 'function') showToast('Opcion eliminada', 'success');
+                    loadFormOptions();
+                }
+            })
+            .catch(function(err) {
+                if (typeof showToast === 'function') showToast(err.message || 'Error de conexion', 'error');
             });
     });
 }

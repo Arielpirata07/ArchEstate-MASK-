@@ -422,8 +422,15 @@ def download_lead_pdf(lead_id):
     section_header('Tipo de Operacion')
     pdf.cell(0, 6, pdf_val(lead['type']), ln=True)
 
+    prop_type = pdf_safe(lead.get('property_type', '')).lower()
+    prop_type_label = {'departamento': 'Departamento', 'casa': 'Casa', 'duplex': 'Duplex',
+                       'penthouse': 'Penthouse', 'local_comercial': 'Local Comercial'}.get(prop_type, prop_type)
+    section_header('Tipo de Propiedad')
+    pdf.cell(0, 6, pdf_val(prop_type_label, 'No especificado'), ln=True)
+
     section_header('Zona Geografica')
-    pdf.cell(0, 6, pdf_val(lead['zone']), ln=True)
+    pdf.cell(0, 6, f"Zona: {pdf_val(lead['zone'])}", ln=True)
+    pdf.cell(0, 6, f"Provincia: {pdf_val(lead.get('province'), 'No especificada')}", ln=True)
 
     section_header('Presupuesto')
     budget_symbol = 'USD' if lead['currency'] == 'USD' else 'EUR' if lead['currency'] == 'EUR' else '$'
@@ -443,19 +450,44 @@ def download_lead_pdf(lead_id):
     section_header('Especificaciones Tecnicas')
 
     pdf.set_font('Helvetica', 'B', 10)
+    pdf.cell(60, 8, 'Ambientes:', border=1)
+    pdf.cell(0, 8, pdf_val(lead.get('ambientes')), ln=True, border=1)
+
     pdf.cell(60, 8, 'Habitaciones:', border=1)
     pdf.cell(0, 8, pdf_val(lead['bedrooms']), ln=True, border=1)
 
-    pdf.cell(60, 8, 'Baños:', border=1)
+    pdf.cell(60, 8, 'Banios:', border=1)
     pdf.cell(0, 8, pdf_val(lead['bathrooms']), ln=True, border=1)
 
-    prop_type = pdf_safe(lead.get('property_type', '')).lower()
-    if prop_type == 'casa':
-        pdf.cell(60, 8, 'Metros de Terreno:', border=1)
-        pdf.cell(0, 8, f"{pdf_val(lead['land_area'])} m2" if lead.get('land_area') else '-', ln=True, border=1)
-    else:
-        pdf.cell(60, 8, 'Metros Utiles:', border=1)
-        pdf.cell(0, 8, f"{pdf_val(lead['usable_m2'])} m2" if lead.get('usable_m2') else '-', ln=True, border=1)
+    pdf.cell(60, 8, 'Estacionamiento:', border=1)
+    pdf.cell(0, 8, pdf_val(lead.get('parking'), 'No especificado'), ln=True, border=1)
+
+    pdf.cell(60, 8, 'Orientacion:', border=1)
+    pdf.cell(0, 8, pdf_val(lead.get('orientation'), 'No especificada'), ln=True, border=1)
+
+    pdf.ln(2)
+
+    pdf.cell(60, 8, 'Metros Utiles:', border=1)
+    pdf.cell(0, 8, f"{pdf_val(lead.get('usable_m2'))} m2" if lead.get('usable_m2') else '-', ln=True, border=1)
+
+    pdf.cell(60, 8, 'Superficie Total:', border=1)
+    pdf.cell(0, 8, f"{pdf_val(lead.get('total_area'))} m2" if lead.get('total_area') else '-', ln=True, border=1)
+
+    pdf.cell(60, 8, 'Superficie de Terreno:', border=1)
+    pdf.cell(0, 8, f"{pdf_val(lead.get('land_area'))} m2" if lead.get('land_area') else '-', ln=True, border=1)
+
+    pdf.cell(60, 8, 'Superficie Construida:', border=1)
+    pdf.cell(0, 8, f"{pdf_val(lead.get('built_area'))} m2" if lead.get('built_area') else '-', ln=True, border=1)
+
+    pdf.ln(5)
+
+    section_header('Estado y Antiguedad')
+    pdf.set_font('Helvetica', 'B', 10)
+    pdf.cell(60, 8, 'Estado:', border=1)
+    pdf.cell(0, 8, pdf_val(lead.get('property_condition'), 'No especificado'), ln=True, border=1)
+
+    pdf.cell(60, 8, 'Antiguedad:', border=1)
+    pdf.cell(0, 8, pdf_val(lead.get('property_age'), 'No especificada'), ln=True, border=1)
 
     pdf.ln(5)
 
@@ -469,16 +501,11 @@ def download_lead_pdf(lead_id):
     else:
         pdf.cell(0, 6, 'No especificadas', ln=True)
 
+    section_header('Detalles de la Propiedad')
     if prop_type == 'departamento':
-        section_header('Detalles del Departamento')
         pdf.cell(0, 6, f"Piso / Bloque: {pdf_val(lead.get('floor_block'), 'No especificado')}", ln=True)
-        pdf.cell(0, 6, f"Metros Utiles: {pdf_val(lead.get('usable_m2'), 'No especificado')} m2", ln=True)
-        pdf.cell(0, 6, f"Ascensor: {pdf_val(lead.get('elevator'), 'No especificado')}", ln=True)
-    else:
-        section_header('Detalles de la Propiedad')
-        pdf.cell(0, 6, f"Superficie de Terreno: {pdf_val(lead.get('land_area'), 'No especificado')} m2", ln=True)
-        pdf.cell(0, 6, f"Superficie Construida: {pdf_val(lead.get('built_area'), 'No especificado')} m2", ln=True)
-        pdf.cell(0, 6, f"Piscina: {pdf_val(lead.get('pool'), 'No especificado')}", ln=True)
+    pdf.cell(0, 6, f"Piscina: {pdf_val(lead.get('pool'), 'No especificada')}", ln=True)
+    pdf.cell(0, 6, f"Ascensor: {pdf_val(lead.get('elevator'), 'No especificado')}", ln=True)
 
     pdf_output = pdf.output(dest='S')
     if isinstance(pdf_output, str):

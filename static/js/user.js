@@ -1,38 +1,31 @@
 // ================================================================
-// TIPO DE PROPIEDAD: toggle entre Departamento, Casa, Dúplex, Penthouse, Local
+// TIPO DE PROPIEDAD: toggle dinámico desde form_options
 // ================================================================
 function setPropertyType(type) {
     document.getElementById('property-type-input').value = type;
 
-    const propertyTypes = ['department', 'house', 'duplex', 'penthouse', 'local'];
-    const selectedTypes = {
-        'departamento': 'department',
-        'casa': 'house',
-        'duplex': 'duplex',
-        'penthouse': 'penthouse',
-        'local_comercial': 'local'
-    };
-    const currentType = selectedTypes[type] || 'department';
-
     // Actualizar estilos de todos los botones
-    propertyTypes.forEach(pt => {
-        const btn = document.getElementById('btn-' + pt);
-        if (btn) {
-            const isSelected = pt === currentType;
-            btn.className = 'flex-1 min-w-[120px] py-3 px-4 rounded border-2 font-semibold transition-all '
-                + (isSelected ? 'border-midnight bg-midnight text-white'
-                             : 'border-midnight/20 bg-white text-midnight hover:border-gold');
-        }
+    document.querySelectorAll('#property-type-buttons .prop-type-btn').forEach(btn => {
+        const isSelected = btn.dataset.value === type;
+        btn.className = 'prop-type-btn flex-1 min-w-[120px] py-3 px-4 rounded border-2 font-semibold transition-all '
+            + (isSelected ? 'border-gold bg-gold/10 text-midnight'
+                         : 'border-midnight/20 bg-white text-midnight hover:border-gold');
     });
 
+    // Mapeo de valores de form_options a IDs de paneles
+    const panelMap = {
+        'departamento': 'department-details',
+        'casa': 'house-details',
+        'duplex': 'duplex-details',
+        'penthouse': 'penthouse-details',
+        'local_comercial': 'local-details'
+    };
+    const activePanel = panelMap[type] || '';
+
     // Mostrar/ocultar paneles de detalles
-    const panels = ['department-details', 'house-details', 'duplex-details', 'penthouse-details', 'local-details'];
-    panels.forEach(p => {
+    ['department-details', 'house-details', 'duplex-details', 'penthouse-details', 'local-details'].forEach(p => {
         const panel = document.getElementById(p);
-        if (panel) {
-            const expectedType = p.replace('-details', '');
-            panel.classList.toggle('hidden', expectedType !== currentType);
-        }
+        if (panel) panel.classList.toggle('hidden', p !== activePanel);
     });
 
     // Coherencia: "Remodelación Integral" solo aplica a Casa; "Construir desde Cero" solo a Casa
@@ -166,15 +159,13 @@ function stepNum(fieldName, delta) {
 // INIT
 // ================================================================
 document.addEventListener('DOMContentLoaded', () => {
+    // Renderizar botones de tipo de propiedad dinámicamente
+    foRenderPropertyTypeButtons('property-type-buttons', function(value) {
+        setPropertyType(value);
+    });
+
     // Inicializar en modo Departamento por defecto
     setPropertyType('departamento');
-
-    // Wiring botones de tipo de propiedad
-    document.getElementById('btn-department').addEventListener('click', () => setPropertyType('departamento'));
-    document.getElementById('btn-house').addEventListener('click',      () => setPropertyType('casa'));
-    document.getElementById('btn-duplex').addEventListener('click',     () => setPropertyType('duplex'));
-    document.getElementById('btn-penthouse').addEventListener('click',  () => setPropertyType('penthouse'));
-    document.getElementById('btn-local').addEventListener('click',      () => setPropertyType('local_comercial'));
 
     // Toggle Piscina Infinity cuando cambia el checkbox de Piscina
     const poolCheckbox = document.getElementById('pool-checkbox');

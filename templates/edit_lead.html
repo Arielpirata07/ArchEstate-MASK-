@@ -95,30 +95,9 @@ window.__FORM_OPTIONS = {{ {
                                 <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Provincia</label>
                                 <select id="edit-province" name="province" class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 transition-all text-sm bg-transparent">
                                     <option value="">Seleccionar provincia</option>
-                                    <option value="Buenos Aires" {% if lead.province == 'Buenos Aires' %}selected{% endif %}>Buenos Aires</option>
-                                    <option value="CABA" {% if lead.province == 'CABA' %}selected{% endif %}>CABA</option>
-                                    <option value="Catamarca" {% if lead.province == 'Catamarca' %}selected{% endif %}>Catamarca</option>
-                                    <option value="Chaco" {% if lead.province == 'Chaco' %}selected{% endif %}>Chaco</option>
-                                    <option value="Chubut" {% if lead.province == 'Chubut' %}selected{% endif %}>Chubut</option>
-                                    <option value="Córdoba" {% if lead.province == 'Córdoba' %}selected{% endif %}>Córdoba</option>
-                                    <option value="Corrientes" {% if lead.province == 'Corrientes' %}selected{% endif %}>Corrientes</option>
-                                    <option value="Entre Ríos" {% if lead.province == 'Entre Ríos' %}selected{% endif %}>Entre Ríos</option>
-                                    <option value="Formosa" {% if lead.province == 'Formosa' %}selected{% endif %}>Formosa</option>
-                                    <option value="Jujuy" {% if lead.province == 'Jujuy' %}selected{% endif %}>Jujuy</option>
-                                    <option value="La Pampa" {% if lead.province == 'La Pampa' %}selected{% endif %}>La Pampa</option>
-                                    <option value="La Rioja" {% if lead.province == 'La Rioja' %}selected{% endif %}>La Rioja</option>
-                                    <option value="Mendoza" {% if lead.province == 'Mendoza' %}selected{% endif %}>Mendoza</option>
-                                    <option value="Misiones" {% if lead.province == 'Misiones' %}selected{% endif %}>Misiones</option>
-                                    <option value="Neuquén" {% if lead.province == 'Neuquén' %}selected{% endif %}>Neuquén</option>
-                                    <option value="Río Negro" {% if lead.province == 'Río Negro' %}selected{% endif %}>Río Negro</option>
-                                    <option value="Salta" {% if lead.province == 'Salta' %}selected{% endif %}>Salta</option>
-                                    <option value="San Juan" {% if lead.province == 'San Juan' %}selected{% endif %}>San Juan</option>
-                                    <option value="San Luis" {% if lead.province == 'San Luis' %}selected{% endif %}>San Luis</option>
-                                    <option value="Santa Cruz" {% if lead.province == 'Santa Cruz' %}selected{% endif %}>Santa Cruz</option>
-                                    <option value="Santa Fe" {% if lead.province == 'Santa Fe' %}selected{% endif %}>Santa Fe</option>
-                                    <option value="Santiago del Estero" {% if lead.province == 'Santiago del Estero' %}selected{% endif %}>Santiago del Estero</option>
-                                    <option value="Tierra del Fuego" {% if lead.province == 'Tierra del Fuego' %}selected{% endif %}>Tierra del Fuego</option>
-                                    <option value="Tucumán" {% if lead.province == 'Tucumán' %}selected{% endif %}>Tucumán</option>
+                                    {% for opt in form_options.get('province', []) %}
+                                    <option value="{{ opt.value }}" {% if lead.province == opt.value %}selected{% endif %}>{{ opt.label }}</option>
+                                    {% endfor %}
                                 </select>
                             </div>
                             <div>
@@ -269,43 +248,22 @@ window.__FORM_OPTIONS = {{ {
                         <div>
                             <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Estacionamiento</label>
                             <div class="flex flex-wrap gap-2" id="edit-parking-chips">
-                                <button type="button" data-value="" onclick="selectEditChip('parking','')"
-                                    class="edit-parking-chip px-3 py-2 rounded border-2 border-midnight bg-midnight text-white text-[10px] font-bold uppercase tracking-widest transition-all">Sin preferencia</button>
-                                <button type="button" data-value="sin_cochera" onclick="selectEditChip('parking','sin_cochera')"
-                                    class="edit-parking-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Sin cochera</button>
-                                <button type="button" data-value="simple_cubierta" onclick="selectEditChip('parking','simple_cubierta')"
-                                    class="edit-parking-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Simple cubierta</button>
-                                <button type="button" data-value="doble_cubierta" onclick="selectEditChip('parking','doble_cubierta')"
-                                    class="edit-parking-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Doble cubierta</button>
-                                <button type="button" data-value="descubierta" onclick="selectEditChip('parking','descubierta')"
-                                    class="edit-parking-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Descubierta</button>
-                                <button type="button" data-value="garage" onclick="selectEditChip('parking','garage')"
-                                    class="edit-parking-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Garage cerrado</button>
+                                {% for opt in form_options.get('parking', []) %}
+                                <button type="button" data-value="{{ opt.value }}" onclick="selectEditChip('parking','{{ opt.value }}')"
+                                    class="edit-parking-chip {% if (lead.parking or '') == opt.value %}border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all hover:border-gold">{{ opt.label }}</button>
+                                {% endfor %}
                             </div>
                             <input type="hidden" id="edit-parking" name="parking" value="{{ lead.parking if lead.parking else '' }}">
                         </div>
 
                         <div>
                             <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Orientacion</label>
+                            {% set orient_short = {'': '', 'Norte': 'N', 'Sur': 'S', 'Este': 'E', 'Oeste': 'O', 'Noreste': 'NE', 'Noroeste': 'NO', 'Sureste': 'SE', 'Suroeste': 'SO'} %}
                             <div class="flex flex-wrap gap-2" id="edit-orientation-chips">
-                                <button type="button" data-value="" onclick="selectEditChip('orientation','')"
-                                    class="edit-orientation-chip px-3 py-2 rounded border-2 border-midnight bg-midnight text-white text-[10px] font-bold uppercase tracking-widest transition-all">Indiferente</button>
-                                <button type="button" data-value="Norte" onclick="selectEditChip('orientation','Norte')"
-                                    class="edit-orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">N</button>
-                                <button type="button" data-value="Sur" onclick="selectEditChip('orientation','Sur')"
-                                    class="edit-orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">S</button>
-                                <button type="button" data-value="Este" onclick="selectEditChip('orientation','Este')"
-                                    class="edit-orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">E</button>
-                                <button type="button" data-value="Oeste" onclick="selectEditChip('orientation','Oeste')"
-                                    class="edit-orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">O</button>
-                                <button type="button" data-value="Noreste" onclick="selectEditChip('orientation','Noreste')"
-                                    class="edit-orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">NE</button>
-                                <button type="button" data-value="Noroeste" onclick="selectEditChip('orientation','Noroeste')"
-                                    class="edit-orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">NO</button>
-                                <button type="button" data-value="Sureste" onclick="selectEditChip('orientation','Sureste')"
-                                    class="edit-orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">SE</button>
-                                <button type="button" data-value="Suroeste" onclick="selectEditChip('orientation','Suroeste')"
-                                    class="edit-orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">SO</button>
+                                {% for opt in form_options.get('orientation', []) %}
+                                <button type="button" data-value="{{ opt.value }}" onclick="selectEditChip('orientation','{{ opt.value }}')"
+                                    class="edit-orientation-chip {% if (lead.orientation or '') == opt.value %}border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all hover:border-gold">{{ orient_short.get(opt.value, opt.label) }}</button>
+                                {% endfor %}
                             </div>
                             <input type="hidden" id="edit-orientation" name="orientation" value="{{ lead.orientation if lead.orientation else '' }}">
                         </div>
@@ -314,22 +272,18 @@ window.__FORM_OPTIONS = {{ {
                             <div>
                                 <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Estado</label>
                                 <div class="space-y-2" id="edit-condition-chips">
-                                    <button type="button" data-value="" onclick="selectEditChip('condition','')" class="edit-condition-chip w-full text-left px-3 py-2 rounded border-2 border-midnight bg-midnight text-white text-[10px] font-bold uppercase tracking-widest transition-all">Sin preferencia</button>
-                                    <button type="button" data-value="A estrenar" onclick="selectEditChip('condition','A estrenar')" class="edit-condition-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">A estrenar</button>
-                                    <button type="button" data-value="Usado" onclick="selectEditChip('condition','Usado')" class="edit-condition-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Usado</button>
-                                    <button type="button" data-value="A reciclar" onclick="selectEditChip('condition','A reciclar')" class="edit-condition-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">A reciclar</button>
-                                    <button type="button" data-value="En construccion" onclick="selectEditChip('condition','En construccion')" class="edit-condition-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">En construccion</button>
+                                    {% for opt in form_options.get('condition', []) %}
+                                    <button type="button" data-value="{{ opt.value }}" onclick="selectEditChip('condition','{{ opt.value }}')" class="edit-condition-chip {% if (lead.property_condition or '') == opt.value %}border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all hover:border-gold">{{ opt.label }}</button>
+                                    {% endfor %}
                                 </div>
                                 <input type="hidden" id="edit-property-condition" name="property_condition" value="{{ lead.property_condition if lead.property_condition else '' }}">
                             </div>
                             <div id="edit-age-section">
                                 <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Antiguedad</label>
                                 <div class="space-y-2" id="edit-age-chips">
-                                    <button type="button" data-value="" onclick="selectEditChip('age','')" class="edit-age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight bg-midnight text-white text-[10px] font-bold uppercase tracking-widest transition-all">Indiferente</button>
-                                    <button type="button" data-value="Hasta 5 años" onclick="selectEditChip('age','Hasta 5 años')" class="edit-age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Hasta 5 años</button>
-                                    <button type="button" data-value="5 a 15 años" onclick="selectEditChip('age','5 a 15 años')" class="edit-age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">5 a 15 años</button>
-                                    <button type="button" data-value="15 a 30 años" onclick="selectEditChip('age','15 a 30 años')" class="edit-age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">15 a 30 años</button>
-                                    <button type="button" data-value="Más de 30 años" onclick="selectEditChip('age','Más de 30 años')" class="edit-age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Más de 30 años</button>
+                                    {% for opt in form_options.get('age', []) %}
+                                    <button type="button" data-value="{{ opt.value }}" onclick="selectEditChip('age','{{ opt.value }}')" class="edit-age-chip {% if (lead.property_age or '') == opt.value %}border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all hover:border-gold">{{ opt.label }}</button>
+                                    {% endfor %}
                                 </div>
                                 <input type="hidden" id="edit-property-age" name="property_age" value="{{ lead.property_age if lead.property_age else '' }}">
                             </div>

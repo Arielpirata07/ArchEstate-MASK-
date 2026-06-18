@@ -166,6 +166,35 @@
 }
 
 /* ============================================
+   RESPONSIVE: ADMIN TABS & FORM OPTIONS
+   ============================================ */
+
+/* Tabs: horizontal scroll on mobile */
+@media (max-width: 768px) {
+    .header-entrance .flex.gap-2 {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding-bottom: 4px;
+    }
+    .header-entrance .flex.gap-2::-webkit-scrollbar {
+        display: none;
+    }
+    .tab-btn {
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+}
+
+/* Form options table: hide less important columns on small screens */
+@media (max-width: 640px) {
+    #form-options-tbody td:nth-child(4),
+    #form-options-tbody td:nth-child(5) {
+        display: none;
+    }
+}
+
+/* ============================================
    DARK MODE OVERRIDES
    ============================================ */
 

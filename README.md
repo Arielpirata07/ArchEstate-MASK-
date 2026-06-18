@@ -1,201 +1,250 @@
-# 🏛️ ArchEstate - The Private Ledger
+# ArchEstate — The Private Ledger
 
 <div align="center">
 
-![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=flat&logo=python&logoColor=white)
-![Flask](https://img.shields.io/badge/Flask-3.x-000000?style=flat&logo=flask&logoColor=white)
-![SQLite](https://img.shields.io/badge/SQLite-3.x-003B57?style=flat&logo=sqlite&logoColor=white)
-![Tailwind](https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?style=flat&logo=tailwind-css&logoColor=white)
-![License](https://img.shields.io/badge/License-Private-blue?style=flat)
+![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-3.x-000000?style=for-the-badge&logo=flask&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-3.x-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
+![Tailwind](https://img.shields.io/badge/Tailwind_CSS-3.4-06B6D4?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Chart.js](https://img.shields.io/badge/Chart.js-4.4-FF6384?style=for-the-badge&logo=chartdotjs&logoColor=white)
+![Lucide](https://img.shields.io/badge/Lucide_Icons-0.468-735A3A?style=for-the-badge&logo=lucide&logoColor=white)
+![License](https://img.shields.io/badge/License-Private-blue?style=for-the-badge)
 
-**Estado del Proyecto:** 🚀 MVP Avanzado  
-**Última Actualización:** Junio 2026
+![Tests](https://img.shields.io/badge/Tests-302%20Passed-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)
+![Status](https://img.shields.io/badge/Status-MVP%20Avanzado-0078D4?style=for-the-badge)
+![Updated](https://img.shields.io/badge/Updated-Junio%202026-orange?style=for-the-badge)
+
+---
+
+**Plataforma privada de gestión inmobiliaria y arquitectónica**
+
+Conecta clientes de alto nivel adquisitivo con profesionales verificados del sector inmobiliario y arquitectónico.
 
 </div>
 
 ---
 
-## 📖 Sobre el Proyecto
-
-**ArchEstate** es una plataforma privada que conecta clientes de alto nivel adquisitivo con profesionales verificados del sector inmobiliario y arquitectónico.
-
-Foco del MVP: captura limpia de oportunidades (leads) con especificaciones técnicas detalladas, privacidad de datos bajo demanda, trazabilidad absoluta y gestión administrativa completa.
-
-### 🎯 Problema que Resuelve
+## Problema que Resuelve
 
 | Problema | Solución ArchEstate |
 |----------|---------------------|
-| Exposición innecesaria de datos de clientes | Revelación bajo demanda con auditoría |
-| Profesionales no verificados | Directorio con validación documental |
-| Leads sin contexto técnico suficiente | Formulario con 20+ especificaciones |
-| Falta de trazabilidad en operaciones | Log de auditoría en tiempo real |
-| Gestión manual de cuentas | Panel admin con baja/reactivación |
+| Leads sin contexto técnico suficiente | Formulario dinámico con 20+ especificaciones y opciones gestionables desde admin |
+| Datos de clientes expuestos innecesariamente | Revelación bajo demanda con auditoría completa |
+| Profesionales no verificados | Directorio con validación documental y aprobación manual |
+| Falta de trazabilidad en operaciones | Log de auditoría en tiempo real + versionado de leads |
+| Gestión manual de cuentas | Panel admin con baja/reactivación, reset de contraseña y preferencias de usuario |
+| Formularios rígidos con opciones hardcodeadas | CRUD de opciones de formulario (11 categorías) configurable desde admin |
+| Experiencia de usuario genérica | Dark mode completo, animaciones scroll-triggered, diseño responsive con Tailwind |
 
 ---
 
-## ✨ Características Implementadas
-
-### 🔹 Portal de Clientes (`/usuario`)
-- Formulario multi-sección con especificaciones técnicas completas
-- 5 tipos de propiedad: Departamento, Casa, Dúplex, Penthouse, Local Comercial
-- Toggle contextual con paneles específicos por tipo
-- Steppers +/− para ambientes, habitaciones y baños
-- Chips de selección para cochera, orientación, estado y antigüedad
-- Coherencia automática estado↔antigüedad ("A estrenar" fuerza "Hasta 5 años")
-- Barrio privado con sub-opciones (Club House, seguridad, canchas, lagunas)
-- Piscina Infinity condicional (solo Casa + Piscina checkeada)
-- Validación de email en tiempo real (cliente + servidor)
-- Guardado de teléfono predeterminado en perfil
-
-### 🔹 Edición de Leads (`/mi-perfil/lead/<id>/editar`)
-- Formulario de edición con datos precargados
-- Chips y steppers duplicados (prefijo `edit-`) para no colisionar con el formulario de creación
-- Guardado parcial vía PUT (solo campos permitidos en `ALLOWED_LEAD_EDIT_FIELDS`)
-- Versionado de cambios con snapshot en `lead_versions`
-
-### 🔹 Verificación Telefónica
-- Validación de formato con libphonenumber (internacional)
-- Normalización a E.164 (`phone_e164`)
-- OTP por SMS/WhatsApp (simulado en desarrollo)
-- Brute-force protection: lockout tras 5 intentos fallidos (`failed_attempts`)
-- Consent logging en `consent_log`
-
-### 🔹 Dashboard de Profesionales (`/profesional`)
-- Panel de estado pendiente con tracker de pasos
-- Upload de documentación con drag & drop, preview, barra de progreso
-- Validación de tipo (PDF/JPG/PNG) y tamaño (máx 10 MB) en cliente y servidor
-- Tabla de leads con badges: tipo de vivienda, cochera, orientación, estado, antigüedad
-- Specs compactas por lead: ambientes · habitaciones · baños · m²
-- Filtros avanzados: tipo de operación, tipo de vivienda, zona, rango de inversión
-- Tags de filtros activos con X individual para quitar
-- Toggle Visto/Contactado con persistencia en DB
-- Botón WhatsApp (server-side redirect a wa.me) con fallback SMS
-- Reporte de teléfonos inválidos con modal y rate limiting
-- Exportación CSV y XLSX
-- Panel colapsable de actualización documental para aprobados
-
-### 🔹 Perfil Profesional Extendido (`/mi-perfil`)
-- Foto de perfil con upload y preview
-- Bio profesional, años de experiencia, servicios ofrecidos
-- Portfolio con gestión de items
-- Disponibilidad horaria
-- Links sociales
-- Rango de honorarios
-
-### 🔹 Panel de Administración (`/admin`)
-- **Tab Dashboard** — KPIs animados con contadores, tooltips y subtextos contextuales
-- Selector de período (7d / 30d / 90d / 1a) para gráfico de actividad
-- Toggle Doughnut ↔ Barra en gráfico de tipos
-- Filtro de zonas inline en gráfico
-- Toggle Línea ↔ Barras en gráfico mensual
-- Exportar PNG de cualquier gráfico
-- Botón de refresh global con animación
-- **Tab Profesionales** — Aprobación/rechazo/desaprobación por fila
-- Baja y reactivación de cuenta con modal confirmatorio y log de auditoría
-- Descarga de documentación de cada profesional
-- Filtros de búsqueda, estado y especialidad con orden configurable
-- **Tab Usuarios** → `/admin/usuarios` — vista separada
-
-### 🔹 Gestión de Usuarios (`/admin/usuarios`)
-- Tabla con búsqueda en tiempo real y filtro por rol
-- Badge de estado (Activo / Baja) por fila
-- Reset de contraseña con modal, validación de fortaleza y confirmación
-- Baja / reactivación de cuenta con campo de motivo
-- Protección: no se puede operar sobre otros admins ni sobre uno mismo
-- Todo registrado en log de auditoría
-
-### 🔹 Seguridad
-- Sesiones Flask con roles (`admin`, `professional`, `client`)
-- Decoradores `@login_required`, `@admin_required`, `@professional_required` — todos verifican `is_active`
-- Cuentas deshabilitadas pierden sesión activa inmediatamente
-- Hash de contraseñas con werkzeug
-- Rate limiting file-backed (JSON + atomic writes) — sobrevive reinicios
-- Brute-force protection en OTP (5 intentos, lockout)
-- SQL allowlist para updates de perfil y leads
-- Auditoría de: teléfonos revelados, uploads, aprobaciones, bajas, resets, reportes
-- Session cookie flags: `HttpOnly`, `SameSite=Lax`, `Secure` (producción)
-- Content-Security-Policy header con allowlists para CDN
-- Admin seed con password aleatorio en producción (no más `admin123`)
-- Session regeneration post-login (prevención session fixation)
-- Error handlers con respuesta HTML para navegadores (400/404/409/410/429/500)
-- `.env` excluido de `.gitignore` para proteger `SECRET_KEY`
-
-### 🔹 Rendimiento
-- Cache de usuario en `g` via `before_request` (evita queries repetidas por request)
-- Audit log con `LIMIT 200` (evita carga de registros ilimitados)
-- `PRAGMA journal_mode=WAL` + `busy_timeout=5000` en cada conexión SQLite
-
-### 🔹 Accesibilidad (WCAG 2.2)
-- `aria-current="page"` en navegación mobile (4 links activos)
-- Skip link para saltar al contenido principal
-- Focus visible global con `outline: 2px solid var(--accent)`
-- Target size mínimo 24×24px en interactivos
-- `role="dialog"` + `aria-modal="true"` en todos los modales
-- `aria-label` en botones solo-ícono
-- `prefers-reduced-motion` coverage completo (base.css + landing.css)
-- Labels programáticamente asociados a inputs
-
-### 🔹 SEO
-- `robots.txt` — bloquea `/admin/`, `/api/`, `/mi-perfil`
-- `sitemap.xml` — páginas públicas indexables
-- JSON-LD `Organization` schema en landing page
-- `<link rel="canonical">` dinámico
-- Títulos únicos por página (50-60 chars)
-- Open Graph + Twitter Cards completos
-- `<html lang="es-AR">` declarado
-
-### 🔹 Frontend/UX
-- Dark mode completo en `admin.css` y `user.css` (overrides para cards, tablas, inputs, sliders)
-- `escapeHtml` consolidado (auth.js usa fallback a global de main.js)
-- Animaciones: hero reveal, navbar shrink, step connector draw, counter glow, cursor spotlight, header entrance, page entrance, table row stagger, form focus glow, button spinner, empty state pulse
-- 286 tests pasando
-
----
-
-## 🛠️ Stack Tecnológico
+## Stack Tecnológico
 
 | Capa | Tecnología | Versión |
 |------|------------|---------|
 | **Backend** | Python 3 + Flask | 3.10+ / 3.x |
-| **Base de Datos** | SQLite3 (raw, WAL mode) | stdlib |
-| **Frontend** | HTML5 + Vanilla JS | - |
+| **Base de Datos** | SQLite3 (WAL mode) | stdlib |
+| **Frontend** | HTML5 + Vanilla JS | — |
 | **Estilos** | Tailwind CSS (CDN) | 3.4 |
 | **Gráficas** | Chart.js | 4.4.0 (CDN) |
 | **Icons** | Lucide Icons | 0.468.0 (CDN) |
 | **Phone validation** | phonenumbers (libphonenumber) | 8.13+ |
+| **Export** | openpyxl (XLSX), fpdf (PDF) | 3.1+ / 1.7+ |
+| **Timezone** | pytz | 2023.3+ |
+| **Tests** | pytest + freezegun + monkeypatch | 9.x |
 
 ---
 
-## 📁 Estructura del Proyecto
+## Funcionalidades
+
+### Portal de Clientes
+
+| Funcionalidad | Descripción |
+|---------------|-------------|
+| Formulario multi-sección | Especificaciones técnicas completas: tipo, zona, presupuesto, ambientes, metros², amenities |
+| Opciones dinámicas | Tipos de propiedad, operación, moneda, cochera, orientación, etc. cargados desde admin via API |
+| Steppers +/− | Selector numérico para ambientes, habitaciones y baños |
+| Chips de selección | Cochera, orientación, estado y antigüedad con toggle visual |
+| Coherencia automática | "A estrenar" fuerza "Hasta 5 años" automáticamente |
+| Barrio privado | Sub-opciones: Club House, seguridad, canchas, lagunas |
+| Piscina Infinity | Condicional: solo Casa + Piscina checkeada |
+| Presupuesto interactivo | Popup con slider dual range, selección de moneda y rango min/max |
+| Validación en tiempo real | Email, teléfono, presupuesto, username con feedback visual |
+
+### Verificación Telefónica
+
+| Funcionalidad | Descripción |
+|---------------|-------------|
+| Formato internacional | Validación con libphonenumber, normalización a E.164 |
+| OTP por SMS/WhatsApp | Envío simulado en desarrollo con opción real en producción |
+| Brute-force protection | Lockout tras 5 intentos fallidos (`failed_attempts`) |
+| Preview en vivo | Formato E.164 visible debajo del input durante escritura |
+| Consent logging | Registro de consentimiento por canal en `consent_log` |
+
+### Dashboard de Profesionales
+
+| Funcionalidad | Descripción |
+|---------------|-------------|
+| Panel de estado pendiente | Tracker de pasos con fondo oscuro y badges de progreso |
+| Upload de documentación | Drag & drop, preview por tipo (PDF/imagen), barra de progreso, validación cliente+servidor |
+| Tabla de leads | Badges: tipo, cochera, orientación, estado, antigüedad + specs compactas |
+| Filtros avanzados | Tipo de operación, vivienda, zona, rango de inversión con tags de filtros activos |
+| Toggle Visto/Contactado | Persistencia en DB con animación pulse |
+| WhatsApp / SMS | Server-side redirect a wa.me con fallback SMS + telemetría |
+| Reportes | Teléfonos inválidos con modal, rate limiting y revisión admin |
+| Exportación | CSV y XLSX con datos completos |
+| Panel documental | Colapsable para profesionales aprobados con estado de actualización |
+
+### Perfil Profesional Extendido
+
+| Funcionalidad | Descripción |
+|---------------|-------------|
+| Foto de perfil | Upload con preview, crop automático |
+| Bio profesional | Texto libre con límite de caracteres |
+| Experiencia | Años de experiencia y servicios ofrecidos |
+| Portfolio | Gestión de items con imágenes |
+| Disponibilidad horaria | Configuración de horarios |
+| Links sociales | Redes sociales con íconos |
+| Rango de honorarios | Fee range min/max |
+
+### Panel de Administración
+
+| Tab | Funcionalidades |
+|-----|-----------------|
+| **Dashboard** | KPIs animados con contadores, tooltips y subtextos contextuales. Selector de período (7d/30d/90d/1a). Toggle Doughnut↔Barra. Filtro de zonas inline. Toggle Línea↔Barras mensual. Exportar PNG de gráficos. Botón refresh global. |
+| **Profesionales** | Aprobación/rechazo/desaprobación por fila. Baja y reactivación con modal confirmatorio. Descarga de documentación. Filtros de búsqueda, estado y especialidad. |
+| **Usuarios** | Tabla con búsqueda en tiempo real y filtro por rol. Badge de estado por fila. Reset de contraseña con validación de fortaleza. Baja/reactivación con campo de motivo. Protección: no se puede operar sobre otros admins ni sobre uno mismo. |
+| **Reportes de Leads** | Vista de leads reportados con acciones: eliminar lead, descartar reporte, restaurar. Detalle en modal con información del reporte. |
+| **Opciones de Formulario** | CRUD completo de opciones: crear, editar, activar/desactivar, eliminar. 11 categorías: property_type, operation_type, currency, parking, orientation, condition, age, budget_range, province, architectural_style, amenities. Validación de duplicados y categorías. |
+
+### Gestión de Opciones de Formulario
+
+| Funcionalidad | Descripción |
+|---------------|-------------|
+| CRUD completo | Crear, leer, actualizar y eliminar opciones desde el panel admin |
+| 11 categorías | property_type, operation_type, currency, parking, orientation, condition, age, budget_range, province, architectural_style, amenities |
+| Renderizado dinámico | `form-options.js` renderiza botones, chips, selects y botones activos desde la API |
+| Validación de duplicados | Previene opciones con el mismo valor en una categoría (constraint UNIQUE) |
+| Activar/Desactivar | Toggle de estado sin eliminar, opciones inactivas no aparecen en formularios públicos |
+| Seed inicial | 50+ opciones predefinidas cargadas automáticamente al iniciar |
+
+### Perfil y Configuración de Usuario
+
+| Funcionalidad | Descripción |
+|---------------|-------------|
+| Datos personales | Edición de email, teléfono, nombre, bio |
+| Cambio de contraseña | Con validación de fortaleza en tiempo real |
+| Avatar | Upload con preview y eliminación |
+| Preferencias | Theme (dark/light), idioma, notificaciones, canal preferido |
+| Sesiones activas | Historial de logins con IP, user_agent, timestamp. Cierre de sesión específica |
+| Actividad reciente | Log de acciones del usuario |
+| Remember Me | Login persistente via cookies HttpOnly con token selector/validator |
+
+### Seguridad
+
+| Medida | Implementación |
+|--------|----------------|
+| Sesiones Flask | Roles: admin, professional, client con flags `HttpOnly`, `SameSite=Lax`, `Secure` |
+| Decoradores | `@login_required`, `@admin_required`, `@professional_required` — todos verifican `is_active` |
+| Cuentas deshabilitadas | Pierden sesión activa inmediatamente |
+| Hash de contraseñas | werkzeug con salt |
+| Rate limiting | File-backed (JSON + atomic writes) — sobrevive reinicios |
+| Brute-force OTP | 5 intentos, lockout con `failed_attempts` |
+| SQL allowlist | Updates de perfil y leads solo permiten campos definidos en `ALLOWED_PROFILE_FIELDS` |
+| Auditoría | Teléfonos revelados, uploads, aprobaciones, bajas, resets, reportes, remember tokens |
+| CSP Header | Content-Security-Policy con allowlists para CDN |
+| Admin password | Aleatorio en producción (impreso en consola al arrancar) |
+| Session regeneration | Post-login para prevenir session fixation |
+| Error handlers | HTML para navegadores, JSON para API: 400/404/409/410/429/500 |
+
+### Frontend / UX
+
+| Funcionalidad | Descripción |
+|---------------|-------------|
+| Dark mode | Toggle en navbar, persistencia en `user_preferences.theme`, CSS variables, transición 400ms |
+| Scroll animations | IntersectionObserver con fade-in-up, slide-in-left/right, stagger delays |
+| Skeleton loading | Shimmer placeholders para carga de datos |
+| Modal animations | Fade + scale transitions (0.2s) |
+| Back to top | Botón fijo con scroll trigger, respeta prefers-reduced-motion |
+| Flash messages | Auto-dismissing (5s) con categorías success/error/info |
+| Toasts | `showToast()` desde main.js, posición fija bottom-right |
+| Hover effects | lift, scale, glow, bright, ripple en cards y botones |
+| Password strength | Barra animada 5 etapas (gray/rose/amber/blue/emerald) |
+| Username hint | Disponibilidad en tiempo real con debounce |
+| Form banners | Errores client-side con estilo rose |
+| Budget popup | Slider dual range con inputs numéricos y checkbox "Sin límite" |
+| Upload widget | Dropzone → Preview → Progress → Success con estados visuales |
+| Status buttons | Visto/Contactado con animación pulse y fill icons |
+| Contact buttons | WhatsApp/SMS con tooltips y dark mode adaptado |
+| Filter tags | Chips activos con botón X individual |
+| Budget display | Currency tag + amount en tablas con hover dotted/solid |
+
+### Rendimiento
+
+| Optimización | Descripción |
+|--------------|-------------|
+| Cache en `g` | `before_request` carga usuario actual, evita queries repetidas |
+| Audit log limit | `LIMIT 200` en consultas de auditoría |
+| SQLite WAL | `PRAGMA journal_mode=WAL` + `busy_timeout=5000` en cada conexión |
+| Form options cache | `FilterOptionsCache` en `app_setup.py` |
+
+### Accesibilidad (WCAG 2.2)
+
+| Medida | Implementación |
+|--------|----------------|
+| Skip link | `.skip-link` — aparece al Tab desde el top |
+| Focus visible | `outline: 2px solid #735A3A` en todos los interactivos |
+| Target size | Mínimo 24×24px en botones y links |
+| Modales | `role="dialog"`, `aria-modal="true"`, foco atrapado, Escape cierra |
+| Labels | Programáticamente asociados a inputs |
+| Reduced motion | `prefers-reduced-motion` coverage completo |
+| ARIA | `aria-current="page"` en nav mobile, `aria-label` en botones solo-ícono |
+
+### SEO
+
+| Elemento | Implementación |
+|----------|----------------|
+| `robots.txt` | Bloquea `/admin/`, `/api/`, `/mi-perfil` |
+| `sitemap.xml` | Páginas públicas indexables |
+| JSON-LD | Schema `Organization` en landing page |
+| Canonical | `<link rel="canonical">` dinámico |
+| Meta tags | Títulos únicos por página (50-60 chars), Open Graph + Twitter Cards |
+| `lang` | `<html lang="es-AR">` declarado |
+
+---
+
+## Estructura del Proyecto
 
 ```
 archestate/
 ├── app.py                    # Entry point (6 líneas)
 ├── factory.py                # Application Factory: config + middleware + errors + blueprints
-├── config.py                 # Reads .env, constants (UPLOAD_FOLDER, OTP settings, etc.)
-├── models.py                 # DB access, user CRUD, lead CRUD, preferences
-├── app_setup.py              # Schema init + migrations (ALTER TABLE), FilterOptionsCache
+├── config.py                 # Reads .env, constants
+├── models.py                 # DB access, user CRUD, lead CRUD, form options, preferences
+├── app_setup.py              # Schema init + migrations, FilterOptionsCache, form options seed
 ├── decorators.py             # @login_required, @admin_required, @professional_required
 ├── rate_limit.py             # File-backed rate limiting (JSON + atomic writes)
 ├── middleware.py              # Security headers, remember-cookie restore, theme inject
-├── errors.py                 # Error handlers
-├── utils.py                  # Phone normalization (E.164), logging, remember tokens
+├── errors.py                 # Error handlers (400/404/409/410/429/500)
+├── utils.py                  # Phone normalization, logging, remember tokens
 ├── validators.py             # Email, phone, password, budget, zone validation
 ├── routes/
 │   ├── auth_bp.py            # Login, register, logout
 │   ├── public_bp.py          # Landing page, lead detail public
 │   ├── client_bp.py          # /usuario, /api/submit
 │   ├── professional_bp.py    # /profesional, leads, docs, reports, WhatsApp
-│   ├── admin_bp.py           # /admin, stats, user management, reports
+│   ├── admin_bp.py           # /admin, stats, user management, reports, telemetry
 │   ├── phone_bp.py           # Phone update, OTP send/verify, brute-force
-│   └── lead_bp.py            # WhatsApp redirect, telemetry, lead reports
-├── routes_profile.py         # Profile, lead editing, avatar, settings, sessions
+│   ├── lead_bp.py            # WhatsApp redirect, telemetry, lead reports
+│   └── form_options_bp.py    # CRUD de opciones de formulario (admin)
+├── routes_profile.py         # Profile, lead editing, avatar, settings, sessions, activity
 ├── services/
 │   └── verifier.py           # OTP verifier router (WhatsApp/SMS)
 ├── static/
 │   ├── css/                  # base, landing, user, professional, admin, profile
 │   ├── js/                   # main, user, professional, admin, profile, edit_lead,
-│   │                         # usermgmt, auth, landing, dark-mode, tailwind-config
+│   │                         #   usermgmt, auth, landing, dark-mode, tailwind-config,
+│   │                         #   form-options
 │   ├── robots.txt            # SEO — bloquea admin/api
 │   ├── sitemap.xml           # SEO — páginas públicas
 │   └── uploads/docs/         # Professional document uploads
@@ -204,7 +253,7 @@ archestate/
 │                             #   edit_lead, lead_detail, profile,
 │                             #   errors/400, errors/404, errors/409,
 │                             #   errors/410, errors/429, errors/500)
-├── tests/                    # 286 tests (pytest + freezegun + monkeypatch)
+├── tests/                    # 302 tests (pytest + freezegun + monkeypatch)
 ├── design.md                 # Design system tokens and patterns
 ├── AGENTS.md                 # AI agent guide
 └── requirements.txt
@@ -212,7 +261,7 @@ archestate/
 
 ---
 
-## 🗄️ Esquema de Base de Datos
+## Esquema de Base de Datos
 
 ### `users`
 | Columna | Tipo | Notas |
@@ -238,11 +287,11 @@ archestate/
 |---------|------|-------|
 | `id` | INTEGER PK | |
 | `type` | TEXT | Comprar / Construir / Remodelar |
-| `property_type` | TEXT | `departamento` / `casa` / `duplex` / `penthouse` / `local_comercial` |
+| `property_type` | TEXT | Dinámico desde `form_options` |
 | `zone` | TEXT | |
 | `province` | TEXT | Provincia argentina |
 | `budget` | TEXT | Valor numérico como string |
-| `currency` | TEXT | `ARG` / `USD` / `EUR` |
+| `currency` | TEXT | Dinámico desde `form_options` (ARG/USD/EUR) |
 | `phone` | TEXT | |
 | `email` | TEXT | |
 | `user_id` | INTEGER FK | → `users.id` |
@@ -258,12 +307,12 @@ archestate/
 | `elevator` | TEXT | Dpto: sí/no |
 | `pool` | TEXT | Casa: sí/no |
 | `community_pool` | TEXT | Dpto: piscina comunitaria |
-| `parking` | TEXT | simple_cubierta / garage / etc. |
-| `orientation` | TEXT | Norte / Sur / NE / etc. |
-| `property_condition` | TEXT | A estrenar / Usado / etc. |
-| `property_age` | TEXT | Hasta 5 años / 5 a 15 / etc. |
-| `amenities` | TEXT | Comma-separated |
-| `architectural_style` | TEXT | |
+| `parking` | TEXT | Dinámico desde `form_options` |
+| `orientation` | TEXT | Dinámico desde `form_options` |
+| `property_condition` | TEXT | Dinámico desde `form_options` |
+| `property_age` | TEXT | Dinámico desde `form_options` |
+| `amenities` | TEXT | Comma-separated, dinámico desde `form_options` |
+| `architectural_style` | TEXT | Dinámico desde `form_options` |
 | `additional_features` | TEXT | Notas adicionales del cliente |
 | `timestamp` | DATETIME | UTC, convertido a UTC-3 al mostrar |
 
@@ -291,6 +340,18 @@ archestate/
 | `social_links` | TEXT | JSON object |
 | `fee_range_min` / `fee_range_max` | REAL | Rango de honorarios |
 | `professional_address` | TEXT | |
+
+### `form_options`
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | INTEGER PK | |
+| `category` | TEXT NOT NULL | Categoría de la opción |
+| `value` | TEXT NOT NULL | Valor interno |
+| `label` | TEXT NOT NULL | Etiqueta visible |
+| `icon` | TEXT DEFAULT '' | Nombre de ícono Lucide |
+| `sort_order` | INTEGER DEFAULT 0 | Orden de aparición |
+| `is_active` | INTEGER DEFAULT 1 | `1` activa / `0` inactiva |
+| | | UNIQUE(category, value) |
 
 ### `lead_versions`
 | Columna | Tipo | Notas |
@@ -344,7 +405,7 @@ archestate/
 
 ---
 
-## 🔌 Endpoints de la API
+## Endpoints de la API
 
 ### Leads
 | Método | Endpoint | Descripción |
@@ -359,6 +420,15 @@ archestate/
 | `POST` | `/api/lead/<id>/toggle-status` | Toggle Visto/Contactado |
 | `POST` | `/api/lead/<id>/report` | Reportar teléfono inválido |
 | `POST` | `/api/lead/<id>/whatsapp-event` | Telemetría de clicks WhatsApp/SMS |
+
+### Form Options
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| `GET` | `/api/form-options` | Opciones activas agrupadas por categoría (público) |
+| `GET` | `/api/form-options/all` | Todas las opciones incluyendo inactivas (admin) |
+| `POST` | `/api/form-options` | Crear opción (admin) |
+| `PUT` | `/api/form-options/<id>` | Actualizar opción (admin) |
+| `DELETE` | `/api/form-options/<id>` | Eliminar opción (admin) |
 
 ### Phone Verification
 | Método | Endpoint | Descripción |
@@ -418,18 +488,18 @@ archestate/
 
 ---
 
-## 👤 Usuarios de Prueba
+## Usuarios de Prueba
 
 | Rol | Usuario | Contraseña |
 |-----|---------|------------|
 | **Admin** | `admin` | `admin123` (solo dev/test) |
 | **Profesional** | `pro` | `pro123` |
 
-> ⚠️ En producción, el admin se crea con password aleatorio (impreso en consola al arrancar). Cambiar credenciales después del primer login.
+> En producción, el admin se crea con password aleatorio (impreso en consola al arrancar). Cambiar credenciales después del primer login.
 
 ---
 
-## 🚀 Guía de Instalación
+## Instalación
 
 ```bash
 git clone <repo-url> && cd archestate
@@ -445,16 +515,16 @@ Acceder en `http://127.0.0.1:5000`
 ### Ejecutar Tests
 
 ```bash
-python -m pytest tests/ -q            # Todos (286)
+python -m pytest tests/ -q            # Todos (302)
 python -m pytest tests/ -x -v         # Parar en primera falla, verbose
 python -m pytest tests/test_file.py   # Archivo individual
 ```
 
 ---
 
-## 📈 Roadmap
+## Roadmap
 
-- [x] Tests automatizados (286 tests)
+- [x] Tests automatizados (302 tests)
 - [x] Verificación telefónica con OTP
 - [x] Edición de leads con versionado
 - [x] Tracking Visto/Contactado
@@ -469,9 +539,13 @@ python -m pytest tests/test_file.py   # Archivo individual
 - [x] `robots.txt` + `sitemap.xml`
 - [x] JSON-LD structured data
 - [x] Dark mode completo (admin, user, profile, professional)
+- [x] CRUD de opciones de formulario (admin)
+- [x] Remember Me (login persistente)
+- [x] Preferencias de usuario (theme, idioma, notificaciones)
+- [x] Historial de sesiones y actividad
+- [x] Validación de duplicados en opciones de formulario
 - [ ] CSRF protection en formularios
 - [ ] Notificaciones internas entre admin y profesional
 - [ ] Integración WhatsApp Business API (producción)
 - [ ] Asignación automática de leads por especialidad y zona
 - [ ] Paginación en tabla de leads
-- [ ] Tests de admin y profile endpoints

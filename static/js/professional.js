@@ -277,17 +277,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.getElementById('uploadWidgetPending')) {
         renderUploadWidget('uploadWidgetPending');
     }
-
-    if (!IS_PENDING) {
-    loadLeads();
-    setupLeadEventListeners();
-    }
 });
 
 // ================================================================
 // LEADS (solo si está aprobado)
 // ================================================================
 if (!IS_PENDING) {
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadLeads();
+    setupLeadEventListeners();
+});
+
 let currentFilters = {
     search: '', type: '', property_type: '', zone: '',
     min_budget: '', max_budget: '', budget_range: '',
@@ -326,6 +327,15 @@ function setupLeadEventListeners() {
     // Aplicar al presionar Enter en zona
     document.getElementById('zoneFilter').addEventListener('keydown', e => {
         if (e.key === 'Enter') applyFilters();
+    });
+
+    // Event delegation for status buttons (Ver / Contactar)
+    document.getElementById('leadsTableBody').addEventListener('click', (e) => {
+        const btn = e.target.closest('.status-btn');
+        if (!btn) return;
+        const leadId = parseInt(btn.dataset.leadId, 10);
+        const statusType = btn.dataset.status;
+        if (leadId && statusType) toggleLeadStatus(leadId, statusType, btn);
     });
 }
 
@@ -500,15 +510,13 @@ function renderLeads(leads) {
                 <td class="p-4 font-mono text-xs text-midnight/60">${lead.id}</td>
                 <td class="p-4">
                     <div class="flex flex-col gap-1.5">
-                        <button type="button" onclick="toggleLeadStatus(${lead.id}, 'seen', this)"
-                                class="status-btn status-btn-seen ${tracking.seen ? 'status-active' : ''}"
+                        <button type="button" class="status-btn status-btn-seen ${tracking.seen ? 'status-active' : ''}"
                                 data-status="seen"
                                 data-lead-id="${lead.id}">
                             <i data-lucide="eye" class="w-3 h-3"></i>
                             <span>${tracking.seen ? 'Visto' : 'Ver'}</span>
                         </button>
-                        <button type="button" onclick="toggleLeadStatus(${lead.id}, 'contacted', this)"
-                                class="status-btn status-btn-contacted ${tracking.contacted ? 'status-active' : ''}"
+                        <button type="button" class="status-btn status-btn-contacted ${tracking.contacted ? 'status-active' : ''}"
                                 data-status="contacted"
                                 data-lead-id="${lead.id}">
                             <i data-lucide="message-circle" class="w-3 h-3"></i>

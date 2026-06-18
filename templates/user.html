@@ -53,26 +53,10 @@ window.__FORM_OPTIONS = {{ {
                         <h3 class="text-lg font-serif italic text-midnight">Parámetros Principales</h3>
                     </div>
 
-                    <!-- Tipo de Propiedad: Departamento vs Casa vs Dúplex vs Penthouse vs Local -->
+                    <!-- Tipo de Propiedad -->
                     <div class="mb-8">
                         <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">Tipo de Propiedad</label>
-                        <div class="flex flex-wrap gap-3">
-                            <button type="button" id="btn-department" class="flex-1 min-w-[120px] py-3 px-4 rounded border-2 border-midnight/20 bg-white text-midnight font-semibold transition-all hover:border-gold">
-                                <i data-lucide="building-2" class="w-4 h-4 inline mr-2"></i> Departamento
-                            </button>
-                            <button type="button" id="btn-house" class="flex-1 min-w-[120px] py-3 px-4 rounded border-2 border-midnight/20 bg-paper-dark text-midnight font-semibold transition-all hover:border-gold">
-                                <i data-lucide="home" class="w-4 h-4 inline mr-2"></i> Casa
-                            </button>
-                            <button type="button" id="btn-duplex" class="flex-1 min-w-[120px] py-3 px-4 rounded border-2 border-midnight/20 bg-white text-midnight font-semibold transition-all hover:border-gold">
-                                <i data-lucide="layers" class="w-4 h-4 inline mr-2"></i> Dúplex
-                            </button>
-                            <button type="button" id="btn-penthouse" class="flex-1 min-w-[120px] py-3 px-4 rounded border-2 border-midnight/20 bg-white text-midnight font-semibold transition-all hover:border-gold">
-                                <i data-lucide="apartment" class="w-4 h-4 inline mr-2"></i> Penthouse
-                            </button>
-                            <button type="button" id="btn-local" class="flex-1 min-w-[120px] py-3 px-4 rounded border-2 border-midnight/20 bg-white text-midnight font-semibold transition-all hover:border-gold">
-                                <i data-lucide="store" class="w-4 h-4 inline mr-2"></i> Local
-                            </button>
-                        </div>
+                        <div id="property-type-buttons" class="flex flex-wrap gap-3"></div>
                         <input type="hidden" id="property-type-input" name="property_type" value="departamento">
                     </div>
 
@@ -175,30 +159,9 @@ window.__FORM_OPTIONS = {{ {
                             <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Provincia</label>
                             <select id="province-select" name="province" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                 <option value="">Seleccionar provincia</option>
-                                <option value="Buenos Aires">Buenos Aires</option>
-                                <option value="CABA">CABA</option>
-                                <option value="Catamarca">Catamarca</option>
-                                <option value="Chaco">Chaco</option>
-                                <option value="Chubut">Chubut</option>
-                                <option value="Córdoba">Córdoba</option>
-                                <option value="Corrientes">Corrientes</option>
-                                <option value="Entre Ríos">Entre Ríos</option>
-                                <option value="Formosa">Formosa</option>
-                                <option value="Jujuy">Jujuy</option>
-                                <option value="La Pampa">La Pampa</option>
-                                <option value="La Rioja">La Rioja</option>
-                                <option value="Mendoza">Mendoza</option>
-                                <option value="Misiones">Misiones</option>
-                                <option value="Neuquén">Neuquén</option>
-                                <option value="Río Negro">Río Negro</option>
-                                <option value="Salta">Salta</option>
-                                <option value="San Juan">San Juan</option>
-                                <option value="San Luis">San Luis</option>
-                                <option value="Santa Cruz">Santa Cruz</option>
-                                <option value="Santa Fe">Santa Fe</option>
-                                <option value="Santiago del Estero">Santiago del Estero</option>
-                                <option value="Tierra del Fuego">Tierra del Fuego</option>
-                                <option value="Tucumán">Tucumán</option>
+                                {% for opt in form_options.get('province', []) %}
+                                <option value="{{ opt.value }}">{{ opt.label }}</option>
+                                {% endfor %}
                             </select>
                         </div>
 
@@ -258,18 +221,10 @@ window.__FORM_OPTIONS = {{ {
                         <div>
                             <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Cochera / Estacionamiento</label>
                             <div class="flex flex-wrap gap-2" id="parking-chips">
-                                <button type="button" data-value="" onclick="selectChip('parking','')"
-                                    class="parking-chip active-chip px-3 py-2 rounded border-2 border-midnight bg-midnight text-white text-[10px] font-bold uppercase tracking-widest transition-all">Sin preferencia</button>
-                                <button type="button" data-value="sin_cochera" onclick="selectChip('parking','sin_cochera')"
-                                    class="parking-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Sin cochera</button>
-                                <button type="button" data-value="simple_cubierta" onclick="selectChip('parking','simple_cubierta')"
-                                    class="parking-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Simple cubierta</button>
-                                <button type="button" data-value="doble_cubierta" onclick="selectChip('parking','doble_cubierta')"
-                                    class="parking-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Doble cubierta</button>
-                                <button type="button" data-value="descubierta" onclick="selectChip('parking','descubierta')"
-                                    class="parking-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Descubierta</button>
-                                <button type="button" data-value="garage" onclick="selectChip('parking','garage')"
-                                    class="parking-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Garage cerrado</button>
+                                {% for opt in form_options.get('parking', []) %}
+                                <button type="button" data-value="{{ opt.value }}" onclick="selectChip('parking','{{ opt.value }}')"
+                                    class="parking-chip {% if loop.first %}active-chip border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all hover:border-gold">{{ opt.label }}</button>
+                                {% endfor %}
                             </div>
                             <input type="hidden" id="parking-input" name="parking" value="">
                         </div>
@@ -277,25 +232,12 @@ window.__FORM_OPTIONS = {{ {
                         <!-- Orientación -->
                         <div>
                             <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Orientación Preferida</label>
+                            {% set orient_short = {'': '', 'Norte': 'N', 'Sur': 'S', 'Este': 'E', 'Oeste': 'O', 'Noreste': 'NE', 'Noroeste': 'NO', 'Sureste': 'SE', 'Suroeste': 'SO'} %}
                             <div class="flex flex-wrap gap-2" id="orientation-chips">
-                                <button type="button" data-value="" onclick="selectChip('orientation','')"
-                                    class="orientation-chip active-chip px-3 py-2 rounded border-2 border-midnight bg-midnight text-white text-[10px] font-bold uppercase tracking-widest transition-all">Indiferente</button>
-                                <button type="button" data-value="Norte" onclick="selectChip('orientation','Norte')"
-                                    class="orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">N</button>
-                                <button type="button" data-value="Sur" onclick="selectChip('orientation','Sur')"
-                                    class="orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">S</button>
-                                <button type="button" data-value="Este" onclick="selectChip('orientation','Este')"
-                                    class="orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">E</button>
-                                <button type="button" data-value="Oeste" onclick="selectChip('orientation','Oeste')"
-                                    class="orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">O</button>
-                                <button type="button" data-value="Noreste" onclick="selectChip('orientation','Noreste')"
-                                    class="orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">NE</button>
-                                <button type="button" data-value="Noroeste" onclick="selectChip('orientation','Noroeste')"
-                                    class="orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">NO</button>
-                                <button type="button" data-value="Sureste" onclick="selectChip('orientation','Sureste')"
-                                    class="orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">SE</button>
-                                <button type="button" data-value="Suroeste" onclick="selectChip('orientation','Suroeste')"
-                                    class="orientation-chip px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">SO</button>
+                                {% for opt in form_options.get('orientation', []) %}
+                                <button type="button" data-value="{{ opt.value }}" onclick="selectChip('orientation','{{ opt.value }}')"
+                                    class="orientation-chip {% if loop.first %}active-chip border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all hover:border-gold">{{ orient_short.get(opt.value, opt.label) }}</button>
+                                {% endfor %}
                             </div>
                             <input type="hidden" id="orientation-input" name="orientation" value="">
                         </div>
@@ -305,22 +247,18 @@ window.__FORM_OPTIONS = {{ {
                             <div>
                                 <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Estado de la Propiedad</label>
                                 <div class="space-y-2" id="condition-chips">
-                                    <button type="button" data-value="" onclick="selectChip('condition','')" class="condition-chip active-chip w-full text-left px-3 py-2 rounded border-2 border-midnight bg-midnight text-white text-[10px] font-bold uppercase tracking-widest transition-all">Sin preferencia</button>
-                                    <button type="button" data-value="A estrenar" onclick="selectChip('condition','A estrenar')" class="condition-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">✦ A estrenar</button>
-                                    <button type="button" data-value="Usado" onclick="selectChip('condition','Usado')" class="condition-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Usado</button>
-                                    <button type="button" data-value="A reciclar" onclick="selectChip('condition','A reciclar')" class="condition-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">A reciclar</button>
-                                    <button type="button" data-value="En construcción" onclick="selectChip('condition','En construcción')" class="condition-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">En construcción</button>
+                                    {% for opt in form_options.get('condition', []) %}
+                                    <button type="button" data-value="{{ opt.value }}" onclick="selectChip('condition','{{ opt.value }}')" class="condition-chip {% if loop.first %}active-chip border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all hover:border-gold">{{ opt.label }}</button>
+                                    {% endfor %}
                                 </div>
                                 <input type="hidden" id="condition-input" name="property_condition" value="">
                             </div>
                             <div id="age-section">
                                 <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Antigüedad Preferida</label>
                                 <div class="space-y-2" id="age-chips">
-                                    <button type="button" data-value="" onclick="selectChip('age','')" class="age-chip active-chip w-full text-left px-3 py-2 rounded border-2 border-midnight bg-midnight text-white text-[10px] font-bold uppercase tracking-widest transition-all">Indiferente</button>
-                                    <button type="button" data-value="Hasta 5 años" onclick="selectChip('age','Hasta 5 años')" class="age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Hasta 5 años</button>
-                                    <button type="button" data-value="5 a 15 años" onclick="selectChip('age','5 a 15 años')" class="age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">5 a 15 años</button>
-                                    <button type="button" data-value="15 a 30 años" onclick="selectChip('age','15 a 30 años')" class="age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">15 a 30 años</button>
-                                    <button type="button" data-value="Más de 30 años" onclick="selectChip('age','Más de 30 años')" class="age-chip w-full text-left px-3 py-2 rounded border-2 border-midnight/20 text-midnight text-[10px] font-bold uppercase tracking-widest hover:border-gold transition-all">Más de 30 años</button>
+                                    {% for opt in form_options.get('age', []) %}
+                                    <button type="button" data-value="{{ opt.value }}" onclick="selectChip('age','{{ opt.value }}')" class="age-chip {% if loop.first %}active-chip border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all hover:border-gold">{{ opt.label }}</button>
+                                    {% endfor %}
                                 </div>
                                 <input type="hidden" id="age-input" name="property_age" value="">
                             </div>
