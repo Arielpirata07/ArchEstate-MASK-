@@ -331,11 +331,19 @@ function setupLeadEventListeners() {
 
     // Event delegation for status buttons (Ver / Contactar)
     document.getElementById('leadsTableBody').addEventListener('click', (e) => {
-        const btn = e.target.closest('.status-btn');
-        if (!btn) return;
-        const leadId = parseInt(btn.dataset.leadId, 10);
-        const statusType = btn.dataset.status;
-        if (leadId && statusType) toggleLeadStatus(leadId, statusType, btn);
+        const statusBtn = e.target.closest('.status-btn');
+        if (statusBtn) {
+            const leadId = parseInt(statusBtn.dataset.leadId, 10);
+            const statusType = statusBtn.dataset.status;
+            if (leadId && statusType) toggleLeadStatus(leadId, statusType, statusBtn);
+            return;
+        }
+        // Event delegation for report button
+        const reportBtn = e.target.closest('.report-lead-btn');
+        if (reportBtn) {
+            const leadId = parseInt(reportBtn.dataset.leadId, 10);
+            if (leadId) openReportModal(leadId);
+        }
     });
 }
 
@@ -438,7 +446,7 @@ function formatBudget(value) {
     if (!value) return '0';
     const cleaned = String(value).replace(/[^\d.,]/g, '');
     if (!cleaned) return value;
-    const num = parseFloat(cleaned.replace(/,/g, '').replace(/\./g, ''));
+    const num = parseFloat(cleaned.replace(/,/g, ''));
     if (isNaN(num)) return value;
     if (num >= 1000000) return (num / 1000000).toFixed(1).replace('.0', '') + 'M';
     if (num >= 1000) return (num / 1000).toFixed(0) + 'k';
@@ -483,7 +491,7 @@ function renderLeads(leads) {
 
         // Badges extra
         const parkingLabels = { sin_cochera:'Sin cochera', simple_cubierta:'Coch. simple', doble_cubierta:'Coch. doble', descubierta:'Desc.', garage:'Garage' };
-        const conditionColors = { 'A estrenar':'bg-emerald-50 text-emerald-700', 'Usado':'bg-paper-dark text-midnight/60', 'A reciclar':'bg-amber-50 text-amber-700', 'En construcción':'bg-blue-50 text-blue-700' };
+        const conditionColors = { 'A estrenar':'bg-emerald-50 text-emerald-700', 'Usado':'bg-paper-dark text-midnight/60', 'A reciclar':'bg-amber-50 text-amber-700', 'En construccion':'bg-blue-50 text-blue-700' };
 
         const extraBadges = [];
         if (lead.parking && lead.parking !== '' && parkingLabels[lead.parking]) {
@@ -576,8 +584,8 @@ function renderLeads(leads) {
                             class="inline-flex items-center gap-1.5 px-3 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-all">
                             <i data-lucide="download" class="w-3 h-3"></i> PDF
                         </a>
-                        <button type="button" onclick="openReportModal(${lead.id})"
-                            class="inline-flex items-center gap-1.5 px-3 py-2 bg-paper-dark text-rose-600 rounded text-[10px] font-bold uppercase tracking-widest hover:bg-rose-600 hover:text-white transition-all"
+                        <button type="button" class="report-lead-btn inline-flex items-center gap-1.5 px-3 py-2 bg-paper-dark text-rose-600 rounded text-[10px] font-bold uppercase tracking-widest hover:bg-rose-600 hover:text-white transition-all"
+                            data-lead-id="${lead.id}"
                             title="Reportar telefono inexistente">
                             <i data-lucide="flag" class="w-3 h-3"></i>
                         </button>
@@ -632,7 +640,7 @@ async function toggleLeadStatus(leadId, statusType, btn) {
             btn.classList.remove('status-active');
             btn.classList.remove('status-toggling');
             if (label) label.textContent = originalText;
-            showToast(data.error || 'Error al actualizar estado', 'error');
+            if (typeof showToast === 'function') showToast(data.error || 'Error al actualizar estado', 'error');
         }
     } catch (error) {
         console.error('Error toggling lead status:', error);
@@ -643,7 +651,7 @@ async function toggleLeadStatus(leadId, statusType, btn) {
         if (label) label.textContent = isActive
             ? (statusType === 'seen' ? 'Visto' : 'Contactado')
             : (statusType === 'seen' ? 'Ver' : 'Contactar');
-        showToast('Error de conexion', 'error');
+        if (typeof showToast === 'function') showToast('Error de conexion', 'error');
     } finally {
         btn.disabled = false;
     }
@@ -696,9 +704,11 @@ function showLeadError(msg) {
     if (window.lucide) lucide.createIcons();
 }
 
-/**
- * Modal de Reporte de Lead
- */
+} // end if (!IS_PENDING)
+
+// ================================================================
+// MODAL REPORTE — funciones globales (fuera de if(!IS_PENDING))
+// ================================================================
 let currentReportLeadId = null;
 
 function openReportModal(leadId) {
@@ -714,17 +724,39 @@ function closeReportModal() {
     document.getElementById('reportModal').classList.add('hidden');
 }
 
-async function confirmReport(e) {
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('#confirmReportBtn');
+    if (btn) {
+        e.preventDefault();
+        confirmReport(btn);
+        return;
+    }
+    const cancelBtn = e.target.closest('#reportModal [data-close-report]');
+    if (cancelBtn) {
+        closeReportModal();
+        return;
+    }
+    const backdrop = e.target.closest('#reportModal > .absolute');
+    if (backdrop) {
+        closeReportModal();
+        return;
+    }
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeReportModal();
+});
+
+async function confirmReport(btn) {
     if (!currentReportLeadId) return;
 
     const notes = document.getElementById('reportNotes').value.trim();
-    const btn = e ? e.target : document.getElementById('confirmReportBtn');
     const originalText = btn.textContent;
     btn.disabled = true;
     btn.textContent = 'Enviando...';
 
     try {
-        const response = await fetch(`/api/lead/${currentReportLeadId}/report`, {
+        const response = await fetch('/api/lead/' + currentReportLeadId + '/report', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ notes: notes })
@@ -733,50 +765,41 @@ async function confirmReport(e) {
         const data = await response.json();
 
         if (response.ok && data.success) {
-            showToast(data.message, 'success');
+            if (typeof showToast === 'function') showToast(data.message, 'success');
             closeReportModal();
         } else {
-            showToast(data.error || 'Error al reportar', 'error');
+            if (typeof showToast === 'function') showToast(data.error || 'Error al reportar', 'error');
         }
     } catch (error) {
         console.error('Error reporting lead:', error);
-        showToast('Error de conexion', 'error');
+        if (typeof showToast === 'function') showToast('Error de conexion', 'error');
     } finally {
         btn.disabled = false;
         btn.textContent = originalText;
     }
 }
 
-/**
- * Refactor Fase D: el link es server-side (/r/whatsapp/<id>) y genera 302 a wa.me.
- * Esta función sólo emite eventos de telemetría (click/popup_blocked) y
- * muestra feedback si la redirección falla.
- */
 function trackWhatsAppClick(link, e) {
     const leadId = link.dataset.leadId;
-    fetch(`/api/lead/${leadId}/whatsapp-event`, {
+    fetch('/api/lead/' + leadId + '/whatsapp-event', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ event: 'wa_button_clicked', props: { source: 'professional_table' } })
-    }).catch(() => {});
+    }).catch(function() {});
 }
 
 function trackSmsClick(link) {
     const leadId = link.dataset.leadId;
-    fetch(`/api/lead/${leadId}/whatsapp-event`, {
+    fetch('/api/lead/' + leadId + '/whatsapp-event', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ event: 'sms_button_clicked', props: { source: 'professional_table' } })
-    }).catch(() => {});
+    }).catch(function() {});
 }
 
-document.addEventListener('click', (e) => {
+document.addEventListener('click', function(e) {
     const waLink = e.target.closest('[data-wa-link]');
     if (waLink) trackWhatsAppClick(waLink, e);
     const smsLink = e.target.closest('[data-sms-link]');
     if (smsLink) trackSmsClick(smsLink);
 });
-
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeReportModal();
-})};

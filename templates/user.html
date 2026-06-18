@@ -67,7 +67,7 @@ window.__FORM_OPTIONS = {{ {
                             <select id="operation-select" name="type" required class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                 <option value="">Seleccionar</option>
                                 {% for opt in form_options.get('operation_type', []) %}
-                                <option>{{ opt.label }}</option>
+                                <option value="{{ opt.value }}">{{ opt.label }}</option>
                                 {% endfor %}
                             </select>
                         </div>

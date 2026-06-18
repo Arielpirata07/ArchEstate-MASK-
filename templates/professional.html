@@ -296,7 +296,7 @@ window.__FORM_OPTIONS = {{ {
 
     <!-- Modal: Reportar Lead -->
     <div id="reportModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="reportModalTitle">
-        <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeReportModal()"></div>
+        <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm"></div>
         <div class="flex items-center justify-center min-h-full p-4">
             <div class="relative bg-white rounded-lg shadow-2xl border-t-4 border-rose-600 max-w-md w-full p-8 transform transition-all">
                 <div class="flex items-center gap-3 mb-6">
@@ -324,11 +324,11 @@ window.__FORM_OPTIONS = {{ {
                 </div>
 
                 <div class="flex gap-3 justify-end">
-                    <button onclick="closeReportModal()"
+                    <button data-close-report
                         class="px-4 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight hover:text-white transition-all">
                         Cancelar
                     </button>
-                    <button id="confirmReportBtn" onclick="confirmReport(event)"
+                    <button id="confirmReportBtn"
                         class="px-4 py-2 bg-rose-600 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
                         Confirmar Reporte
                     </button>

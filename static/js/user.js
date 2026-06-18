@@ -119,7 +119,7 @@ function syncAgeToCondition(condition) {
         });
         if (ageSection) ageSection.classList.remove('hidden');
 
-    } else if (condition === 'En construcción') {
+    } else if (condition === 'En construccion') {
         // Sin antigüedad aplicable → ocultar la sección
         selectChip('age', '');
         if (ageSection) ageSection.classList.add('hidden');
@@ -148,7 +148,7 @@ function stepNum(fieldName, delta) {
     };
     const el  = document.getElementById(inputMap[fieldName]);
     if (!el) return;
-    const min  = parseInt(el.min) ?? 0;
+    const min  = parseInt(el.min) || 0;
     const max  = parseInt(el.max) || 99;
     const cur  = parseInt(el.value) || 0;
     const next = cur + delta;

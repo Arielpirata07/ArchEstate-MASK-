@@ -155,13 +155,33 @@
                                         <option value="378">Obera</option>
                                         <option value="385">La Rioja</option>
                                         <option value="11">CABA</option>
+                                        <option value="other">Otra...</option>
                                     </select>
-                                    <input id="profile-phone" type="tel" value="{{ user.phone if user and user.phone else '' }}" class="input-field flex-1" placeholder="9 11 1234 5678" maxlength="16">
+                                    <input id="profile-custom-area" type="tel" maxlength="5" placeholder="Cod." class="px-2 py-2 border border-midnight/20 rounded text-sm bg-white text-midnight w-14 flex-shrink-0 hidden">
+                                    <input id="profile-phone" type="tel" value="{{ user.phone if user and user.phone else '' }}" class="input-field flex-1" placeholder="9 11 1234 5678" maxlength="16" oninput="validateProfilePhone()">
                                 </div>
                                 <div class="flex items-center justify-between mt-1">
                                     <p id="profile-phone-hint" class="text-[9px] hint-text">El codigo de pais se incluira automaticamente</p>
                                     <p id="profile-phone-valid" class="hidden text-[9px] font-medium text-emerald-600">Formato valido</p>
                                     <p id="profile-phone-invalid" class="hidden text-[9px] font-medium text-rose-600">Formato invalido</p>
+                                </div>
+                                <div id="profile-phone-suggestion" class="hidden mt-1">
+                                    <button type="button" onclick="showPhoneCorrection()" class="text-[9px] text-amber-600 hover:text-amber-800 transition-colors cursor-pointer">
+                                        &iquest;Corregir numero?
+                                    </button>
+                                </div>
+                                <div id="phone-correction-preview" class="hidden mt-1 p-2 bg-amber-50 border border-amber-200 rounded text-[10px]">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <span class="text-midnight/50 line-through" id="correction-from"></span>
+                                            <span class="mx-1 text-midnight/40">&rarr;</span>
+                                            <span class="text-amber-700 font-medium" id="correction-to"></span>
+                                        </div>
+                                        <div class="flex gap-2 ml-2">
+                                            <button type="button" onclick="applyPhoneCorrection()" class="text-[9px] font-bold text-emerald-600 hover:text-emerald-800">Aplicar</button>
+                                            <button type="button" onclick="dismissPhoneCorrection()" class="text-[9px] font-bold text-midnight/40 hover:text-midnight/60">Cancelar</button>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="flex items-center gap-3 mt-2" id="phone-verification-area">
                                     {% if user and user.phone %}

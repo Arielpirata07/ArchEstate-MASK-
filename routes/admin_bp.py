@@ -230,6 +230,7 @@ def get_lead_reports():
                 u.username as reported_by_name,
                 l.type as lead_type, l.zone as lead_zone,
                 l.phone as lead_phone, l.budget as lead_budget,
+                l.currency as lead_currency, l.property_type as lead_property_type,
                 l.timestamp as lead_timestamp
             FROM lead_reports lr
             JOIN users u ON lr.reported_by = u.id

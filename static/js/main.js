@@ -1276,6 +1276,11 @@ function initPageEntrance() {
     if (!main) return;
     requestAnimationFrame(function() {
         main.classList.add('page-loaded');
+        main.addEventListener('animationend', function() {
+            main.style.animation = 'none';
+            main.style.opacity = '1';
+            main.style.transform = 'none';
+        }, { once: true });
     });
 }
 

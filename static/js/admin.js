@@ -364,6 +364,16 @@ document.addEventListener('DOMContentLoaded', function() {
             searchTimeout = setTimeout(applyProFilters, 500);
         });
     }
+
+    // Delegación de eventos para botones toggle-active en la tabla de profesionales
+    document.getElementById('professionalsTableBody').addEventListener('click', function(e) {
+        const btn = e.target.closest('.toggle-active-btn');
+        if (!btn) return;
+        const userId = parseInt(btn.dataset.userId, 10);
+        const userName = btn.dataset.userName || '';
+        const activate = btn.dataset.activate === 'true';
+        if (userId) openDeactivateModal(userId, userName, activate);
+    });
 });
 
 // Cargar profesionales desde la API
@@ -392,7 +402,7 @@ function renderProfessionals(pros) {
     if (pros.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="6" class="p-8 text-center text-midnight/60">
+                <td colspan="5" class="p-8 text-center text-midnight/60">
                     <i data-lucide="search" class="w-8 h-8 mx-auto mb-2 text-midnight/30"></i>
                     <p>No se encontraron profesionales con los filtros aplicados.</p>
                 </td>
@@ -458,13 +468,13 @@ function renderProfessionals(pros) {
         if (!hasUser) {
             accountBtn = '<span class="text-[10px] text-midnight/20 italic">Sin cuenta</span>';
         } else if (isActive !== false) {
-            accountBtn = `<button onclick="openDeactivateModal(${pro.user_id}, '${escapeHtml(pro.name)}', false)"
-                   class="inline-flex items-center gap-1 px-2 py-1 bg-midnight/5 text-midnight/50 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-rose-50 hover:text-rose-600 transition-colors">
+            accountBtn = `<button data-user-id="${pro.user_id}" data-user-name="${escapeHtml(pro.name)}" data-activate="false"
+                   class="toggle-active-btn inline-flex items-center gap-1 px-2 py-1 bg-midnight/5 text-midnight/50 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-rose-50 hover:text-rose-600 transition-colors">
                    <i data-lucide="user-x" class="w-3 h-3"></i> Dar de baja
                </button>`;
         } else {
-            accountBtn = `<button onclick="openDeactivateModal(${pro.user_id}, '${escapeHtml(pro.name)}', true)"
-                   class="inline-flex items-center gap-1 px-2 py-1 bg-midnight/5 text-midnight/50 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-50 hover:text-emerald-600 transition-colors">
+            accountBtn = `<button data-user-id="${pro.user_id}" data-user-name="${escapeHtml(pro.name)}" data-activate="true"
+                   class="toggle-active-btn inline-flex items-center gap-1 px-2 py-1 bg-midnight/5 text-midnight/50 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-50 hover:text-emerald-600 transition-colors">
                    <i data-lucide="user-check" class="w-3 h-3"></i> Reactivar
                </button>`;
         }
@@ -754,7 +764,7 @@ function renderReports(reports) {
 
     if (!reports.length) {
         tbody.innerHTML = `
-            <tr><td colspan="8" class="p-12 text-center text-midnight/60">
+            <tr><td colspan="10" class="p-12 text-center text-midnight/60">
                 <i data-lucide="check-circle" class="w-10 h-10 mx-auto mb-3 text-emerald-200"></i>
                 <p class="font-semibold text-midnight/40">No hay reportes para mostrar</p>
             </td></tr>`;
@@ -795,7 +805,9 @@ function renderReports(reports) {
             <tr class="border-b border-midnight/5 hover:bg-paper transition-colors ${r.status === 'deleted' ? 'opacity-60' : ''}">
                 <td class="p-4 font-mono text-xs text-midnight/60">#${r.lead_id}</td>
                 <td class="p-4 text-sm">${r.lead_type ? escapeHtml(r.lead_type) : '<span class="text-midnight/30">Lead eliminado</span>'}</td>
+                <td class="p-4 text-sm text-midnight/70">${r.lead_property_type ? escapeHtml(r.lead_property_type) : '—'}</td>
                 <td class="p-4 text-sm text-midnight/70">${r.lead_zone ? escapeHtml(r.lead_zone) : '—'}</td>
+                <td class="p-4 text-sm">${r.lead_budget ? '<span class="text-[9px] font-bold uppercase tracking-widest text-midnight/50">' + (r.lead_currency === 'USD' ? 'US$' : r.lead_currency === 'EUR' ? '€' : '$') + '</span> ' + escapeHtml(r.lead_budget) : '—'}</td>
                 <td class="p-4 font-mono text-xs text-rose-600">${r.lead_phone ? escapeHtml(r.lead_phone) : '—'}</td>
                 <td class="p-4 text-sm">${escapeHtml(r.reported_by_name)}</td>
                 <td class="p-4">${statusBadge}</td>
@@ -872,10 +884,16 @@ function renderLeadDetail(lead) {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-4">
                 <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Tipo de Operacion</p><p class="text-base font-semibold text-midnight">${escapeHtml(lead.type)}</p></div>
+                <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Tipo de Vivienda</p><p class="text-base text-midnight">${escapeHtml(lead.property_type || 'No especificado')}</p></div>
                 <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Zona</p><p class="text-base text-midnight">${escapeHtml(lead.zone)}</p></div>
                 ${lead.province ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Provincia</p><p class="text-base text-midnight">${escapeHtml(lead.province)}</p></div>` : ''}
                 <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Presupuesto</p><p class="text-base font-serif italic text-gold">${budget}</p></div>
                 <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Estilo Arquitectonico</p><p class="text-base text-midnight">${escapeHtml(style)}</p></div>
+                ${lead.ambientes ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Ambientes</p><p class="text-base text-midnight">${lead.ambientes}</p></div>` : ''}
+                ${lead.parking ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Cochera</p><p class="text-base text-midnight">${escapeHtml(lead.parking)}</p></div>` : ''}
+                ${lead.orientation ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Orientacion</p><p class="text-base text-midnight">${escapeHtml(lead.orientation)}</p></div>` : ''}
+                ${lead.property_condition ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Estado</p><p class="text-base text-midnight">${escapeHtml(lead.property_condition)}</p></div>` : ''}
+                ${lead.property_age ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Antiguedad</p><p class="text-base text-midnight">${escapeHtml(lead.property_age)}</p></div>` : ''}
                 <div class="border-t border-midnight/10 pt-4">
                     <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Contacto</p>
                     <div class="flex items-center gap-2 text-sm text-midnight"><i data-lucide="mail" class="w-4 h-4 text-gold flex-shrink-0"></i><span>${escapeHtml(lead.email)}</span></div>
@@ -888,7 +906,12 @@ function renderLeadDetail(lead) {
                 <div class="grid grid-cols-3 gap-4">
                     <div class="text-center"><p class="text-[9px] uppercase tracking-widest text-gold font-bold mb-1">Habitaciones</p><p class="text-2xl font-serif text-midnight">${lead.bedrooms || '-'}</p></div>
                     <div class="text-center"><p class="text-[9px] uppercase tracking-widest text-gold font-bold mb-1">Banos</p><p class="text-2xl font-serif text-midnight">${lead.bathrooms || '-'}</p></div>
-                    <div class="text-center"><p class="text-[9px] uppercase tracking-widest text-gold font-bold mb-1">Metros</p><p class="text-2xl font-serif text-midnight">${lead.land_area || lead.usable_m2 || '-'}</p>${lead.land_area || lead.usable_m2 ? '<p class="text-[9px] text-midnight/60">m²</p>' : ''}</div>
+                    <div class="text-center"><p class="text-[9px] uppercase tracking-widest text-gold font-bold mb-1">Metros</p><p class="text-2xl font-serif text-midnight">${lead.total_area || lead.land_area || lead.usable_m2 || '-'}</p>${(lead.total_area || lead.land_area || lead.usable_m2) ? '<p class="text-[9px] text-midnight/60">m²</p>' : ''}</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    ${lead.usable_m2 ? `<div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Metros Utiles</p><p class="text-sm text-midnight">${lead.usable_m2} m²</p></div>` : ''}
+                    ${lead.built_area ? `<div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Construida</p><p class="text-sm text-midnight">${lead.built_area} m²</p></div>` : ''}
+                    ${lead.land_area ? `<div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Terreno</p><p class="text-sm text-midnight">${lead.land_area} m²</p></div>` : ''}
                 </div>
                 <div class="border-t border-midnight/10 pt-4">
                     <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-3">Extras y Comodidades</p>
@@ -915,7 +938,7 @@ function deleteLead(reportId, leadId) {
             if (data.success) {
                 if (typeof showToast === 'function') showToast('Lead eliminado correctamente', 'success');
                 loadReports();
-                if (typeof loadDashboard === 'function') loadDashboard();
+                if (typeof refreshDashboard === 'function') refreshDashboard();
             } else {
                 if (typeof showToast === 'function') showToast(data.error || 'Error al eliminar', 'error');
             }
@@ -952,7 +975,7 @@ function restoreReport(reportId) {
             if (data.success) {
                 if (typeof showToast === 'function') showToast('Reporte restaurado correctamente', 'success');
                 loadReports();
-                if (typeof loadDashboard === 'function') loadDashboard();
+                if (typeof refreshDashboard === 'function') refreshDashboard();
             } else {
                 if (typeof showToast === 'function') showToast(data.error || 'Error al restaurar', 'error');
             }
