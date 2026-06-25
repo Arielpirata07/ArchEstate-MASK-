@@ -157,6 +157,12 @@ def submit_lead():
         ))
         conn.commit()
 
+        from services.notifications import notify_lead_created
+        try:
+            notify_lead_created(conn.execute('SELECT last_insert_rowid()').fetchone()[0])
+        except Exception:
+            pass
+
         return jsonify({
             "status": "success",
             "message": "Solicitud enviada con éxito. Los profesionales se contactarán contigo."

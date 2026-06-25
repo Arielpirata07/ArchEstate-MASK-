@@ -210,11 +210,11 @@ def api_update_professional():
     user_id = session['user_id']
     data = request.json
 
+    ALLOWED_FIELDS = {'specialty', 'title', 'province', 'zone'}
     update_data = {}
-    if 'specialty' in data:
-        update_data['specialty'] = utils.safe_text(data['specialty']).strip()
-    if 'title' in data:
-        update_data['title'] = utils.safe_text(data['title']).strip()
+    for field in ALLOWED_FIELDS:
+        if field in data:
+            update_data[field] = utils.safe_text(data[field]).strip()
 
     if not update_data:
         return jsonify({'error': 'No hay datos validos para actualizar'}), 400

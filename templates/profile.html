@@ -441,6 +441,23 @@
                                 </div>
                             </div>
 
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div>
+                                    <label for="pro-province" class="input-label">Provincia</label>
+                                    <select id="pro-province" class="input-field">
+                                        <option value="">Todas las provincias</option>
+                                        {% for opt in form_options.get('province', []) %}
+                                        <option value="{{ opt.value }}">{{ opt.label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="pro-zone" class="input-label">Zona de Cobertura</label>
+                                    <input id="pro-zone" type="text" class="input-field" placeholder="Ej: Palermo, Recoleta, Belgrano...">
+                                    <p class="text-[9px] text-midnight/40 mt-1">Barrios o zonas donde trabajás</p>
+                                </div>
+                            </div>
+
                             <div>
                                 <label class="input-label">Servicios Ofrecidos</label>
                                 <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2" id="services-container">

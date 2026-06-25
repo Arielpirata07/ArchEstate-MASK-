@@ -125,6 +125,12 @@ def update_pro_status(pro_id):
             conn.execute('UPDATE professionals SET status = ? WHERE id = ?', (new_status, pro_id))
             conn.commit()
 
+            from services.notifications import notify_professional_status_change
+            try:
+                notify_professional_status_change(pro_id, new_status)
+            except Exception:
+                pass
+
             action = "Aprobación" if new_status == 'approved' else "Rechazo"
             utils.log_action(action, pro['name'], session)
             return jsonify({"status": "success", "message": f"Profesional {action.lower()} correctamente"})
@@ -359,6 +365,12 @@ def delete_reported_lead(report_id):
         )
         conn.commit()
         utils.log_action("Eliminacion de Lead", f"Lead ID: {lead_id} eliminado tras reporte #{report_id} por {session.get('username')}", session)
+
+        from services.notifications import notify_report_deleted
+        try:
+            notify_report_deleted(lead_id, report['reported_by'])
+        except Exception:
+            pass
 
         return jsonify({
             'success': True,

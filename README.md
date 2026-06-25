@@ -10,7 +10,7 @@
 ![Lucide](https://img.shields.io/badge/Lucide_Icons-0.468-735A3A?style=for-the-badge&logo=lucide&logoColor=white)
 ![License](https://img.shields.io/badge/License-Private-blue?style=for-the-badge)
 
-![Tests](https://img.shields.io/badge/Tests-351%20Passed-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)
+![Tests](https://img.shields.io/badge/Tests-380%20Passed-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)
 ![Status](https://img.shields.io/badge/Status-MVP%20Avanzado-0078D4?style=for-the-badge)
 ![Updated](https://img.shields.io/badge/Updated-Junio%202026-orange?style=for-the-badge)
 
@@ -50,6 +50,7 @@ Conecta clientes de alto nivel adquisitivo con profesionales verificados del sec
 | **Icons** | Lucide Icons | 0.468.0 (CDN) |
 | **Phone validation** | phonenumbers (libphonenumber) | 8.13+ |
 | **Phone verification** | Twilio SDK (SMS + WhatsApp) | 9.x+ |
+| **Email** | SMTP (Gmail/Outlook compatible) | stdlib |
 | **Export** | openpyxl (XLSX), fpdf (PDF) | 3.1+ / 1.7+ |
 | **Timezone** | pytz | 2023.3+ |
 | **Tests** | pytest + freezegun + monkeypatch | 9.x |
@@ -85,6 +86,18 @@ Conecta clientes de alto nivel adquisitivo con profesionales verificados del sec
 | Preview en vivo | Formato E.164 visible debajo del input durante escritura |
 | Consent logging | Registro de consentimiento por canal en `consent_log` |
 
+### Sistema de Notificaciones
+
+| Funcionalidad | Descripción |
+|---------------|-------------|
+| Email transaccional | SMTP con fallback a consola en desarrollo |
+| Templates HTML | Base, lead asignado, cambio de estado, estado profesional |
+| Toggles por usuario | `email_notifications`, `sms_notifications`, `lead_alerts` en `user_preferences` |
+| Lead assignments | Notifica profesionales aprobados cuando se crea un lead nuevo |
+| Lead status changes | Notifica admin cuando profesional cambia estado de lead |
+| Professional approval | Notifica al profesional cuando es aprobado/rechazado |
+| Report deletion | Notifica al reporter cuando admin elimina un lead |
+
 ### Dashboard de Profesionales
 
 | Funcionalidad | Descripción |
@@ -92,6 +105,7 @@ Conecta clientes de alto nivel adquisitivo con profesionales verificados del sec
 | Panel de estado pendiente | Tracker de pasos con fondo oscuro y badges de progreso |
 | Upload de documentación | Drag & drop, preview por tipo (PDF/imagen), barra de progreso, validación cliente+servidor |
 | Tabla de leads | Badges: tipo, cochera, orientación, estado, antigüedad + specs compactas |
+| Filtro "Mis Leads / Todos" | Por defecto muestra leads de la provincia/zona del profesional |
 | Filtros avanzados | Tipo de operación, vivienda, zona, rango de inversión con tags de filtros activos |
 | Toggle Visto/Contactado | Persistencia en DB con animación pulse |
 | WhatsApp / SMS | Server-side redirect a wa.me con fallback SMS + telemetría |
@@ -243,7 +257,9 @@ archestate/
 │   └── form_options_bp.py    # CRUD de opciones de formulario (admin)
 ├── routes_profile.py         # Profile, lead editing, avatar, settings, sessions, activity
 ├── services/
-│   └── verifier.py           # OTP verifier: SmsSimulated, WhatsAppSimulated, TwilioSms, TwilioWhatsApp + VerifierRouter
+│   ├── verifier.py           # OTP verifier: SmsSimulated, WhatsAppSimulated, TwilioSms, TwilioWhatsApp + VerifierRouter
+│   ├── email.py              # SMTPEmailSender — SMTP with console fallback
+│   └── notifications.py      # Event-driven notifications: lead, status, approval, reports
 ├── static/
 │   ├── css/                  # base, landing, user, professional, admin, profile
 │   ├── js/                   # main, user, professional, admin, profile, edit_lead,
@@ -257,6 +273,7 @@ archestate/
 │                             #   edit_lead, lead_detail, profile,
 │                             #   errors/400, errors/404, errors/409,
 │                             #   errors/410, errors/429, errors/500)
+│   └── email/                # Email templates: base, lead_assigned, status_change, professional_status
 ├── tests/                    # 302 tests (pytest + freezegun + monkeypatch)
 ├── design.md                 # Design system tokens and patterns
 ├── AGENTS.md                 # AI agent guide
@@ -331,6 +348,8 @@ archestate/
 | `specialty` | TEXT | |
 | `status` | TEXT | `pending` / `approved` / `rejected` |
 | `license_verified` | INTEGER | `1` si verificada |
+| `province` | TEXT | Provincia de cobertura (24 provincias argentinas) |
+| `zone` | TEXT | Zona/barrios de cobertura (texto libre) |
 
 ### `professional_profiles`
 | Columna | Tipo | Notas |
@@ -520,7 +539,7 @@ Acceder en `http://127.0.0.1:5000`
 ### Ejecutar Tests
 
 ```bash
-python -m pytest tests/ -q            # Todos (351)
+python -m pytest tests/ -q            # Todos (380)
 python -m pytest tests/ -x -v         # Parar en primera falla, verbose
 python -m pytest tests/test_file.py   # Archivo individual
 ```
@@ -546,7 +565,7 @@ Las credenciales de Twilio se configuran en el archivo `.env`:
 
 ## Roadmap
 
-- [x] Tests automatizados (351 tests)
+- [x] Tests automatizados (380 tests)
 - [x] Verificación telefónica con OTP
 - [x] Edición de leads con versionado
 - [x] Tracking Visto/Contactado
@@ -570,6 +589,12 @@ Las credenciales de Twilio se configuran en el archivo `.env`:
 - [x] Selector de canal de verificación (SMS/WhatsApp)
 - [x] Badges de verificación con icono de canal
 - [x] Auto-envío de OTP al abrir modal
+- [x] Sistema de notificaciones por email (SMTP)
+- [x] Notificaciones de leads, estados y aprobaciones
+- [x] Templates HTML para emails transaccionales
+- [x] Filtro de leads por provincia/zona del profesional
+- [x] Toggle "Mis Leads / Todos" en panel profesional
+- [x] Province/zone en perfil profesional
 - [ ] CSRF protection en formularios
 - [ ] Notificaciones internas entre admin y profesional
 - [ ] Asignación automática de leads por especialidad y zona

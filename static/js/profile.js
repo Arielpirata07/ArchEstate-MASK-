@@ -837,6 +837,8 @@ function loadProfessionalFullProfile() {
         setVal('pro-bio', p.bio_pro);
         setVal('pro-experience', p.experience_years);
         setVal('pro-address', p.professional_address);
+        setVal('pro-province', p.province || '');
+        setVal('pro-zone', p.zone || '');
         setVal('pro-fee-min', p.fee_range_min);
         setVal('pro-fee-max', p.fee_range_max);
 
@@ -910,6 +912,8 @@ function saveProfessionalFullProfile() {
         bio_pro: document.getElementById('pro-bio')?.value || '',
         experience_years: parseInt(document.getElementById('pro-experience')?.value) || 0,
         professional_address: document.getElementById('pro-address')?.value || '',
+        province: document.getElementById('pro-province')?.value || '',
+        zone: document.getElementById('pro-zone')?.value || '',
         services_offered: JSON.stringify(services),
         availability: JSON.stringify(avail),
         social_links: JSON.stringify(social),

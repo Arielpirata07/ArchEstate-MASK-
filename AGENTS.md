@@ -16,21 +16,23 @@
 | File | Role |
 |---|---|
 | `factory.py` | Wires app: config + middleware + errors + blueprints |
-| `config.py` | Reads `.env`, defines constants, Twilio config (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER`, `TWILIO_WHATSAPP_FROM`, `TWILIO_SIMULATE`) |
+| `config.py` | Reads `.env`, defines constants, Twilio config (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER`, `TWILIO_WHATSAPP_FROM`, `TWILIO_SIMULATE`), SMTP config (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`) |
 | `models.py` | `get_db_connection()`, `get_user_by_id()`, `update_user_credentials()`, `update_user_profile()`, `FORM_OPTION_CATEGORIES`, `ALLOWED_PROFILE_FIELDS` |
-| `app_setup.py` | `init_db(app)`, `FilterOptionsCache`, schema migrations (ALTER TABLE) including `verification_channel` column |
+| `app_setup.py` | `init_db(app)`, `FilterOptionsCache`, schema migrations (ALTER TABLE) including `verification_channel`, `province`, `zone` columns |
 | `decorators.py` | `@login_required`, `@admin_required`, `@professional_required` — all enforce `is_active` |
 | `rate_limit.py` | File-backed rate limiting (JSON + atomic writes) |
 | `routes_profile.py` | Profile, lead editing, avatar upload (at root, not in `routes/`), `ALLOWED_LEAD_EDIT_FIELDS` |
 | `routes/` | 8 blueprints: `auth_bp`, `public_bp`, `client_bp`, `professional_bp`, `admin_bp`, `phone_bp`, `lead_bp`, `form_options_bp` |
 | `services/verifier.py` | OTP verification layer: `SmsSimulatedVerifier`, `WhatsAppSimulatedVerifier`, `TwilioSmsVerifier`, `TwilioWhatsAppVerifier`, `VerifierRouter`, `get_default_router()` |
+| `services/email.py` | `SMTPEmailSender` — SMTP email sender with console fallback |
+| `services/notifications.py` | `notify_lead_created()`, `notify_lead_status_change()`, `notify_professional_status_change()`, `notify_report_deleted()` — reads `user_preferences` toggles |
 
 ## Commands
 
 ```bash
 python app.py                          # Run dev server (reads .env DEBUG)
 FLASK_DEBUG=true python app.py         # Dev mode with debug
-python -m pytest tests/ -q            # Run all tests (351 total)
+python -m pytest tests/ -q            # Run all tests (380 total)
 python -m pytest tests/ -x -v         # Stop on first failure, verbose
 python -m pytest tests/test_file.py   # Single file
 python verify_coherence.py            # Cross-checks schema/routes/templates

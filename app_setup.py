@@ -371,6 +371,10 @@ def init_db(app):
         pro_cols = [r[1] for r in cursor.fetchall()]
         if 'license_verified' not in pro_cols:
             cursor.execute("ALTER TABLE professionals ADD COLUMN license_verified INTEGER NOT NULL DEFAULT 0")
+        if 'province' not in pro_cols:
+            cursor.execute("ALTER TABLE professionals ADD COLUMN province TEXT DEFAULT ''")
+        if 'zone' not in pro_cols:
+            cursor.execute("ALTER TABLE professionals ADD COLUMN zone TEXT DEFAULT ''")
 
         cursor.execute('PRAGMA table_info(audit_log)')
         al_cols = [r[1] for r in cursor.fetchall()]

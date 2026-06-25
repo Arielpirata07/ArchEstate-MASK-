@@ -292,8 +292,22 @@ document.addEventListener('DOMContentLoaded', () => {
 let currentFilters = {
     search: '', type: '', property_type: '', zone: '',
     min_budget: '', max_budget: '', budget_range: '',
-    currency: '', sort: 'timestamp', order: 'desc'
+    currency: '', sort: 'timestamp', order: 'desc', my_leads: true
 };
+
+function setMyLeads(myLeads) {
+    currentFilters.my_leads = myLeads;
+    const btnMy = document.getElementById('btnMyLeads');
+    const btnAll = document.getElementById('btnAllLeads');
+    if (myLeads) {
+        btnMy.className = 'px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all bg-gold text-white';
+        btnAll.className = 'px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all text-midnight/50 hover:text-midnight';
+    } else {
+        btnMy.className = 'px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all text-midnight/50 hover:text-midnight';
+        btnAll.className = 'px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all bg-gold text-white';
+    }
+    loadLeads();
+}
 
 // ---- Labels legibles para los filtros activos ----
 const PROP_LABELS = {
@@ -418,7 +432,13 @@ function removeFilter(key) {
 // ---- Cargar y renderizar leads ----
 async function loadLeads() {
     const params = new URLSearchParams();
-    Object.entries(currentFilters).forEach(([k, v]) => { if (v) params.set(k, v); });
+    Object.entries(currentFilters).forEach(([k, v]) => {
+        if (k === 'my_leads') {
+            params.set('my_leads', v ? '1' : '0');
+        } else if (v) {
+            params.set(k, v);
+        }
+    });
 
     const tbody = document.getElementById('leadsTableBody');
     tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-midnight/60">

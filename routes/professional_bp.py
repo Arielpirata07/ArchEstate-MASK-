@@ -88,6 +88,7 @@ def get_leads_api():
         if not professional or professional['status'] != 'approved':
             return jsonify({"status": "error", "message": "Cuenta pendiente de aprobación"}), 403
 
+        my_leads = request.args.get('my_leads', '1').strip() == '1'
         search = request.args.get('search', '').strip()
         type_filter = request.args.get('type', '').strip()
         prop_type = request.args.get('property_type', '').strip()
@@ -113,6 +114,21 @@ def get_leads_api():
 
         query = 'SELECT * FROM leads WHERE 1=1'
         params = []
+
+        if my_leads:
+            pro_data = conn.execute(
+                'SELECT province, zone FROM professionals WHERE user_id = ?',
+                (session['user_id'],)
+            ).fetchone()
+            if pro_data:
+                pro_province = (pro_data['province'] or '').strip()
+                pro_zone = (pro_data['zone'] or '').strip()
+                if pro_province:
+                    query += ' AND province = ?'
+                    params.append(pro_province)
+                if pro_zone:
+                    query += ' AND zone LIKE ?'
+                    params.append(f'%{pro_zone}%')
 
         if search:
             query += ' AND (zone LIKE ? OR email LIKE ? OR type LIKE ? OR budget LIKE ?)'
@@ -584,6 +600,13 @@ def toggle_lead_status(lead_id):
             new_value = 1
 
         conn.commit()
+
+        if new_value:
+            from services.notifications import notify_lead_status_change
+            try:
+                notify_lead_status_change(lead_id, professional_id, status_type)
+            except Exception:
+                pass
 
         return jsonify({
             'success': True,
