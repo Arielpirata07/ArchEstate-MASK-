@@ -487,7 +487,7 @@ def get_all_users():
     conn = None
     try:
         conn = models.get_db_connection()
-        query = 'SELECT id, username, email, phone, role, is_active FROM users WHERE 1=1'
+        query = 'SELECT id, username, email, phone, phone_verified, role, is_active FROM users WHERE 1=1'
         params = []
 
         if search:

@@ -1,15 +1,37 @@
+# Environment
 .env
+.env.local
+.env.production
 .venv/
+venv/
+
+# Database
 database.db
+*.db
+*.sqlite3
+
+# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-*.db
-*.sqlite3
-.DS_Store
+
+# IDE
 .idea/
 .vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
 *.log
+
+# OpenCode
 .opencode/
+
+# Uploads
 uploads/
+static/uploads/

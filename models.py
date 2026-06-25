@@ -201,6 +201,7 @@ def get_user_profile(user_id):
     try:
         row = conn.execute(
             'SELECT u.id, u.username, u.email, u.phone, u.role, u.is_active, u.phone_verified, '
+            'u.verification_channel, '
             'up.first_name, up.last_name, up.bio, up.title, up.avatar_path, '
             'up.created_at, up.updated_at '
             'FROM users u LEFT JOIN user_profiles up ON u.id = up.user_id WHERE u.id = ?',

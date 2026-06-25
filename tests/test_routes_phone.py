@@ -6,6 +6,7 @@ con el contrato externo (status, error, formato de respuesta).
 
 import json
 from datetime import datetime, timedelta
+from unittest.mock import patch
 
 import pytest
 from freezegun import freeze_time
@@ -23,7 +24,12 @@ def _user_id(auth_client, db):
 @pytest.fixture(autouse=True)
 def _reset_router_singleton():
     reset_default_router()
-    yield
+    with patch('config.TWILIO_ACCOUNT_SID', ''), \
+         patch('config.TWILIO_AUTH_TOKEN', ''), \
+         patch('config.TWILIO_PHONE_NUMBER', ''), \
+         patch('config.TWILIO_WHATSAPP_FROM', ''), \
+         patch('config.TWILIO_WHATSAPP_CONTENT_SID', ''):
+        yield
     reset_default_router()
 
 

@@ -118,8 +118,13 @@ def send_verification_code():
             return jsonify({"error": "No se pudo normalizar el teléfono a E.164."}), 400
 
         try:
-            prefs = models.get_user_preferences(user_id)
-            preferred_channel = (prefs.get('preferred_channel') or 'auto').lower()
+            data = request.json or {}
+            explicit_channel = (data.get('preferred_channel') or '').strip().lower()
+            if explicit_channel in ('sms', 'whatsapp', 'auto'):
+                preferred_channel = explicit_channel
+            else:
+                prefs = models.get_user_preferences(user_id)
+                preferred_channel = (prefs.get('preferred_channel') or 'auto').lower()
         except Exception:
             preferred_channel = 'auto'
 
@@ -135,8 +140,8 @@ def send_verification_code():
 
         conn.execute(
             'UPDATE users SET verification_code = ?, verification_expires = ?, failed_attempts = 0, '
-            'phone_format_valid = 1 WHERE id = ?',
-            (code, expires.isoformat(), user_id)
+            'phone_format_valid = 1, verification_channel = ? WHERE id = ?',
+            (code, expires.isoformat(), result.channel, user_id)
         )
 
         conn.execute(
@@ -191,7 +196,7 @@ def verify_phone_code():
     try:
         user = conn.execute(
             'SELECT username, phone, phone_format_valid, verification_code, verification_expires, phone_verified, '
-            'failed_attempts FROM users WHERE id = ?',
+            'failed_attempts, verification_channel FROM users WHERE id = ?',
             (user_id,)
         ).fetchone()
         if not user:
@@ -260,15 +265,19 @@ def verify_phone_code():
         )
         conn.commit()
 
+        verified_channel = user['verification_channel'] or 'sms'
+
         utils.log_action(
             "Telefono verificado correctamente",
             f"user={user['username']}, phone_hash={utils.hash_phone_digits(user['phone'] or '')}",
             session,
             conn=conn
         )
-        utils.log_event(user_id=user_id, event='otp_verified', conn=conn)
+        utils.log_event(user_id=user_id, event='otp_verified',
+                        props={'channel': verified_channel}, conn=conn)
 
-        return jsonify({"status": "success", "message": "Teléfono verificado correctamente."})
+        return jsonify({"status": "success", "message": "Teléfono verificado correctamente.",
+                        "channel": verified_channel})
 
     except Exception as e:
         print(f"Error en verify_phone_code: {e}")

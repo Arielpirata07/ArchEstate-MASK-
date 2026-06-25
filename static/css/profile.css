@@ -425,18 +425,22 @@
 
 .sessions-table th {
     text-align: left;
-    padding: 0.75rem;
-    font-size: 10px;
-    font-weight: 700;
+    padding: 0.875rem 0.75rem;
+    font-size: 11px;
+    font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.1em;
     color: var(--accent);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 2px solid rgba(115, 90, 58, 0.25);
+}
+
+.dark .sessions-table th {
+    border-bottom-color: rgba(166, 138, 100, 0.3);
 }
 
 .sessions-table td {
     padding: 0.75rem;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--text-primary);
     border-bottom: 1px solid var(--border);
 }

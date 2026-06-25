@@ -8,6 +8,7 @@ function initSettingsPage() {
     initPhoneFromServer();
     validateProfileEmail();
     validateProfilePhone();
+    loadPreferredChannel();
 }
 
 // ============================================================
@@ -196,6 +197,13 @@ function formatProfilePhone(phone, countryCode) {
     const digits = phone.replace(/\D/g, '');
     const provinceSelect = document.getElementById('profile-province');
     const customAreaInput = document.getElementById('profile-custom-area');
+
+    const codeDigits = countryCode.replace('+', '');
+    let localDigits = digits;
+    if (localDigits.startsWith(codeDigits)) {
+        localDigits = localDigits.substring(codeDigits.length);
+    }
+
     let prefix = '';
     if (provinceSelect && !provinceSelect.classList.contains('hidden')) {
         if (provinceSelect.value === 'other') {
@@ -206,7 +214,7 @@ function formatProfilePhone(phone, countryCode) {
     }
     let fullNumber = countryCode + ' ';
     if (prefix) {
-        let local = digits;
+        let local = localDigits;
         if (local.startsWith(prefix)) {
             local = local.substring(prefix.length);
         }
@@ -215,7 +223,7 @@ function formatProfilePhone(phone, countryCode) {
         else if (local.startsWith('15')) { mobilePrefix = '15'; local = local.substring(2); }
         fullNumber += (mobilePrefix ? mobilePrefix + ' ' : '') + prefix + ' ' + local;
     } else {
-        fullNumber += digits;
+        fullNumber += localDigits;
     }
     return fullNumber.trim();
 }
@@ -376,8 +384,9 @@ function validateProfilePhone() {
     }
     const digits = raw.replace(/\D/g, '');
     const countryCode = document.getElementById('profile-country-code').value;
-    const isArgentina = countryCode === '+54';
-    const isValid = digits.length >= 8 && digits.length <= 15;
+    const codeDigits = countryCode.replace('+', '');
+    const localDigits = digits.startsWith(codeDigits) ? digits.substring(codeDigits.length) : digits;
+    const isValid = localDigits.length >= 6 && localDigits.length <= 12;
     if (isValid) {
         if (hint) hint.classList.add('hidden');
         if (valid) valid.classList.remove('hidden');
@@ -387,8 +396,9 @@ function validateProfilePhone() {
         if (valid) valid.classList.add('hidden');
         if (invalid) invalid.classList.remove('hidden');
     }
-    if (isArgentina && raw.length > 0) {
-        const suggestion = suggestArgPhone(digits);
+    const isArgentina = countryCode === '+54';
+    if (isArgentina && localDigits.length > 0) {
+        const suggestion = suggestArgPhone(localDigits);
         if (suggestion) {
             _lastPhoneSuggestion = suggestion;
             if (suggestionEl) suggestionEl.classList.remove('hidden');
@@ -443,6 +453,36 @@ function applyPhoneCorrection() {
 function dismissPhoneCorrection() {
     const previewEl = document.getElementById('phone-correction-preview');
     if (previewEl) previewEl.classList.add('hidden');
+}
+
+function loadPreferredChannel() {
+    const select = document.getElementById('preferred-channel-select');
+    if (!select) return;
+    fetch('/api/profile/settings')
+        .then(r => r.json())
+        .then(data => {
+            if (data.settings && data.settings.preferred_channel) {
+                select.value = data.settings.preferred_channel;
+            }
+        })
+        .catch(() => {});
+}
+
+function savePreferredChannel() {
+    const select = document.getElementById('preferred-channel-select');
+    if (!select) return;
+    fetch('/api/profile/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ preferred_channel: select.value })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.error) {
+            if (typeof showToast === 'function') showToast(data.error, 'error');
+        }
+    })
+    .catch(() => {});
 }
 
 function suggestArgPhone(digits) {
@@ -721,12 +761,12 @@ function loadUserLeads() {
         tbody.innerHTML = data.leads.map(lead => {
             const sym = lead.currency === 'USD' ? 'US$' : lead.currency === 'EUR' ? 'EUR' : '$';
             return `<tr style="border-bottom:1px solid var(--border)">
-                <td class="p-4 text-sm font-semibold" style="color:var(--text-primary)">#${lead.id}</td>
-                <td class="p-4 text-sm" style="color:var(--text-secondary)">${lead.type || '-'}</td>
-                <td class="p-4 text-sm" style="color:var(--text-secondary)">${lead.zone || '-'}</td>
-                <td class="p-4 text-sm" style="color:var(--text-secondary)">${sym} ${lead.budget || '-'}</td>
-                <td class="p-4 text-sm" style="color:var(--text-secondary)">${lead.timestamp || '-'}</td>
-                <td class="p-4">
+                <td class="px-4 py-3 text-[13px] font-semibold" style="color:var(--text-primary)">#${lead.id}</td>
+                <td class="px-4 py-3 text-[13px]" style="color:var(--text-secondary)">${lead.type || '-'}</td>
+                <td class="px-4 py-3 text-[13px]" style="color:var(--text-secondary)">${lead.zone || '-'}</td>
+                <td class="px-4 py-3 text-[13px]" style="color:var(--text-secondary)">${sym} ${lead.budget || '-'}</td>
+                <td class="px-4 py-3 text-[13px]" style="color:var(--text-secondary)">${lead.timestamp || '-'}</td>
+                <td class="px-4 py-3">
                     <a href="/mi-perfil/lead/${lead.id}/editar" class="inline-flex items-center gap-1 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-widest transition-all" style="background:var(--accent);color:white">
                         <i data-lucide="edit-3" class="w-3 h-3"></i>
                         Editar
@@ -1087,11 +1127,39 @@ function openPhoneVerifyModal() {
     if (modal) {
         modal.classList.remove('hidden');
         modal.classList.add('flex');
-        // Resetear inputs
         document.querySelectorAll('.verify-digit').forEach(inp => inp.value = '');
         document.getElementById('verify-error').classList.add('hidden');
         document.getElementById('verify-success').classList.add('hidden');
         document.querySelector('.verify-digit').focus();
+        autoSendVerificationCode();
+    }
+}
+
+async function autoSendVerificationCode() {
+    const errorEl = document.getElementById('verify-error');
+    const submitBtn = document.getElementById('verify-submit-btn');
+    errorEl.classList.add('hidden');
+    submitBtn.disabled = true;
+
+    const select = document.getElementById('preferred-channel-select');
+    const preferredChannel = select ? select.value : 'auto';
+
+    try {
+        const res = await fetch('/api/phone/send-code', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ preferred_channel: preferredChannel })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            errorEl.textContent = data.error || 'Error al enviar el código.';
+            errorEl.classList.remove('hidden');
+        }
+    } catch {
+        errorEl.textContent = 'Error de conexión. Intentá de nuevo.';
+        errorEl.classList.remove('hidden');
+    } finally {
+        submitBtn.disabled = false;
     }
 }
 
@@ -1141,11 +1209,13 @@ async function submitVerificationCode() {
             if (typeof showToast === 'function') showToast('Teléfono verificado correctamente', 'success');
             setTimeout(() => {
                 closePhoneVerifyModal();
-                // Actualizar badge sin recargar
                 const area = document.getElementById('phone-verification-area');
                 if (area) {
+                    const channel = data.channel || 'sms';
+                    const icon = channel === 'whatsapp' ? 'message-circle' : 'smartphone';
+                    const label = channel === 'whatsapp' ? 'WhatsApp' : 'SMS';
                     area.innerHTML = '<span class="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-700 inline-flex items-center gap-1">'
-                        + '<i data-lucide="smartphone" class="w-3 h-3"></i> Verificado</span>';
+                        + '<i data-lucide="' + icon + '" class="w-3 h-3"></i> Verificado por ' + label + '</span>';
                     if (window.lucide) lucide.createIcons();
                 }
             }, 1500);
@@ -1175,11 +1245,14 @@ async function resendVerificationCode() {
     btn.disabled = true;
     btn.classList.add('opacity-50');
 
+    const select = document.getElementById('preferred-channel-select');
+    const preferredChannel = select ? select.value : 'auto';
+
     try {
         const res = await fetch('/api/phone/send-code', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: '{}'
+            body: JSON.stringify({ preferred_channel: preferredChannel })
         });
         const data = await res.json();
 

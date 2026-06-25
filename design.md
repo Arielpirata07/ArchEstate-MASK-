@@ -488,11 +488,13 @@ Con botón X interno: `hover:text-rose-500 transition-colors`.
 ```
 w-full text-left border-collapse
 ```
-- Header row: `bg-paper-dark border-b border-midnight/5`
-- Header cell: `p-4 text-[10px] uppercase tracking-widest font-bold text-gold`
-- Body row: `border-b border-midnight/5 hover:bg-paper transition-colors`
-- Body cell: `p-4`
+- Header row `<tr>`: `table-header-border` (clase custom: `border-bottom: 2px solid rgba(115,90,58,0.25)`)
+- Header cell: `px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold`
+- Body row: `border-b border-midnight/[0.03] hover:bg-paper transition-colors`
+- Body cell: `px-4 py-3 text-[13px] text-midnight/50`
 
+> Jerarquía visual: `<th>` siempre más pesado, más grande y con mayor padding que `<td>`.
+> IDs monoespaciados: `font-mono text-[11px] text-midnight/40`.
 > Las filas de cuentas inactivas usan `opacity-60` adicional.
 
 ### Modales

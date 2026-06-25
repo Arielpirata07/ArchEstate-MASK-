@@ -488,15 +488,15 @@ function renderProfessionals(pros) {
         const rowOpacity = isActive === false ? 'opacity-60' : '';
 
         return `
-            <tr class="border-b border-midnight/5 hover:bg-paper transition-colors ${rowOpacity}">
-                <td class="p-4">
+            <tr class="border-b border-midnight/[0.03] hover:bg-paper transition-colors ${rowOpacity}">
+                <td class="px-4 py-3 text-[13px]">
                     <div class="font-medium text-midnight">${escapeHtml(pro.name)} ${accountBadge}</div>
-                    <div class="text-[10px] text-midnight/40 italic">${escapeHtml(pro.specialty || '')}</div>
+                    <div class="text-[11px] text-midnight/40 italic">${escapeHtml(pro.specialty || '')}</div>
                 </td>
-                <td class="p-4 font-mono text-xs text-midnight/60">${escapeHtml(pro.license)}</td>
-                <td class="p-4">${statusBadge}</td>
-                <td class="p-4">${docCell}</td>
-                <td class="p-4 text-right">
+                <td class="px-4 py-3 font-mono text-[11px] text-midnight/40">${escapeHtml(pro.license)}</td>
+                <td class="px-4 py-3">${statusBadge}</td>
+                <td class="px-4 py-3">${docCell}</td>
+                <td class="px-4 py-3 text-right">
                     <div class="flex justify-end items-center gap-2 flex-wrap">
                         ${approvalActions}
                         <span class="text-midnight/10 select-none">|</span>
@@ -802,17 +802,17 @@ function renderReports(reports) {
         }
 
         return `
-            <tr class="border-b border-midnight/5 hover:bg-paper transition-colors ${r.status === 'deleted' ? 'opacity-60' : ''}">
-                <td class="p-4 font-mono text-xs text-midnight/60">#${r.lead_id}</td>
-                <td class="p-4 text-sm">${r.lead_type ? escapeHtml(r.lead_type) : '<span class="text-midnight/30">Lead eliminado</span>'}</td>
-                <td class="p-4 text-sm text-midnight/70">${r.lead_property_type ? escapeHtml(r.lead_property_type) : '—'}</td>
-                <td class="p-4 text-sm text-midnight/70">${r.lead_zone ? escapeHtml(r.lead_zone) : '—'}</td>
-                <td class="p-4 text-sm">${r.lead_budget ? '<span class="text-[9px] font-bold uppercase tracking-widest text-midnight/50">' + (r.lead_currency === 'USD' ? 'US$' : r.lead_currency === 'EUR' ? '€' : '$') + '</span> ' + escapeHtml(r.lead_budget) : '—'}</td>
-                <td class="p-4 font-mono text-xs text-rose-600">${r.lead_phone ? escapeHtml(r.lead_phone) : '—'}</td>
-                <td class="p-4 text-sm">${escapeHtml(r.reported_by_name)}</td>
-                <td class="p-4">${statusBadge}</td>
-                <td class="p-4 text-sm text-midnight/50">${r.created_at}</td>
-                <td class="p-4">${actions}</td>
+            <tr class="border-b border-midnight/[0.03] hover:bg-paper transition-colors ${r.status === 'deleted' ? 'opacity-60' : ''}">
+                <td class="px-4 py-3 font-mono text-[11px] text-midnight/40">#${r.lead_id}</td>
+                <td class="px-4 py-3 text-[13px] text-midnight/50">${r.lead_type ? escapeHtml(r.lead_type) : '<span class="text-midnight/30">Lead eliminado</span>'}</td>
+                <td class="px-4 py-3 text-[13px] text-midnight/50">${r.lead_property_type ? escapeHtml(r.lead_property_type) : '—'}</td>
+                <td class="px-4 py-3 text-[13px] text-midnight/50">${r.lead_zone ? escapeHtml(r.lead_zone) : '—'}</td>
+                <td class="px-4 py-3 text-[13px]">${r.lead_budget ? '<span class="text-[9px] font-bold uppercase tracking-widest text-midnight/50">' + (r.lead_currency === 'USD' ? 'US$' : r.lead_currency === 'EUR' ? '€' : '$') + '</span> ' + escapeHtml(r.lead_budget) : '—'}</td>
+                <td class="px-4 py-3 font-mono text-[11px] text-rose-600">${r.lead_phone ? escapeHtml(r.lead_phone) : '—'}</td>
+                <td class="px-4 py-3 text-[13px] text-midnight/50">${escapeHtml(r.reported_by_name)}</td>
+                <td class="px-4 py-3">${statusBadge}</td>
+                <td class="px-4 py-3 text-[13px] text-midnight/50">${r.created_at}</td>
+                <td class="px-4 py-3">${actions}</td>
             </tr>`;
     }).join('');
 
@@ -1194,11 +1194,11 @@ function renderFormOptions() {
     }
     tbody.innerHTML = filtered.map(function(o) {
         return '<tr class="hover:bg-paper-dark/30 ' + (o.is_active ? '' : 'opacity-40') + '">' +
-            '<td class="px-4 py-3"><span class="text-[10px] font-bold uppercase tracking-widest text-gold bg-gold/10 px-2 py-1 rounded">' + escapeHtml(o.category) + '</span></td>' +
-            '<td class="px-4 py-3 font-mono text-xs text-midnight/70">' + escapeHtml(o.value) + '</td>' +
-            '<td class="px-4 py-3 text-midnight">' + escapeHtml(o.label) + '</td>' +
-            '<td class="px-4 py-3 text-midnight/50">' + (o.icon ? '<i data-lucide="' + escapeHtml(o.icon) + '" class="w-4 h-4 inline-block"></i> <span class="text-xs">' + escapeHtml(o.icon) + '</span>' : '<span class="text-xs">-</span>') + '</td>' +
-            '<td class="px-4 py-3 text-midnight/50">' + o.sort_order + '</td>' +
+            '<td class="px-4 py-3 text-[13px]"><span class="text-[10px] font-bold uppercase tracking-widest text-gold bg-gold/10 px-2 py-1 rounded">' + escapeHtml(o.category) + '</span></td>' +
+            '<td class="px-4 py-3 font-mono text-[11px] text-midnight/40">' + escapeHtml(o.value) + '</td>' +
+            '<td class="px-4 py-3 text-[13px] text-midnight/50">' + escapeHtml(o.label) + '</td>' +
+            '<td class="px-4 py-3 text-[13px] text-midnight/50">' + (o.icon ? '<i data-lucide="' + escapeHtml(o.icon) + '" class="w-4 h-4 inline-block"></i> <span class="text-[11px]">' + escapeHtml(o.icon) + '</span>' : '<span class="text-[11px]">-</span>') + '</td>' +
+            '<td class="px-4 py-3 text-[13px] text-midnight/50">' + o.sort_order + '</td>' +
             '<td class="px-4 py-3"><span class="px-2 py-1 text-[10px] font-bold rounded ' +
             (o.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700') + '">' +
             (o.is_active ? 'Activo' : 'Inactivo') + '</span></td>' +

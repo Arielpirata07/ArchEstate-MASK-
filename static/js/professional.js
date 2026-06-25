@@ -514,9 +514,9 @@ function renderLeads(leads) {
         const tracking = lead.tracking || { seen: false, contacted: false };
 
         return `
-            <tr class="border-b border-midnight/5 hover:bg-paper transition-colors group" data-lead-id="${lead.id}" data-seen="${tracking.seen}" data-contacted="${tracking.contacted}">
-                <td class="p-4 font-mono text-xs text-midnight/60">${lead.id}</td>
-                <td class="p-4">
+            <tr class="border-b border-midnight/[0.03] hover:bg-paper transition-colors group" data-lead-id="${lead.id}" data-seen="${tracking.seen}" data-contacted="${tracking.contacted}">
+                <td class="px-4 py-3 font-mono text-[11px] text-midnight/40">${lead.id}</td>
+                <td class="px-4 py-3">
                     <div class="flex flex-col gap-1.5">
                         <button type="button" class="status-btn status-btn-seen ${tracking.seen ? 'status-active' : ''}"
                                 data-status="seen"
@@ -532,10 +532,10 @@ function renderLeads(leads) {
                         </button>
                     </div>
                 </td>
-                <td class="p-4 text-sm font-medium">${escapeHtml(lead.type)}</td>
-                <td class="p-4">${propBadge}</td>
-                <td class="p-4 text-sm text-midnight/70">${escapeHtml(lead.zone)}</td>
-                <td class="p-4">
+                <td class="px-4 py-3 text-[13px] text-midnight/50 font-medium">${escapeHtml(lead.type)}</td>
+                <td class="px-4 py-3">${propBadge}</td>
+                <td class="px-4 py-3 text-[13px] text-midnight/50">${escapeHtml(lead.zone)}</td>
+                <td class="px-4 py-3">
                     <div class="budget-display">
                         <span class="budget-currency-tag">${sym}</span>
                         <span class="budget-amount" title="${escapeHtml(lead.budget)}">${formatBudget(escapeHtml(lead.budget))}</span>
@@ -543,8 +543,8 @@ function renderLeads(leads) {
                     ${specLine}
                     ${extrasLine}
                 </td>
-                <td class="p-4 text-sm text-midnight/50">${escapeHtml(lead.timestamp)}</td>
-                <td class="p-4 text-right">
+                <td class="px-4 py-3 text-[13px] text-midnight/50">${escapeHtml(lead.timestamp)}</td>
+                <td class="px-4 py-3 text-right">
                     <div class="flex justify-end gap-2 flex-wrap items-center">
                         <button onclick="togglePhone(this,'${lead.id}')"
                             class="inline-flex items-center gap-1.5 px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">

@@ -20,7 +20,7 @@ async function loadUsers() {
     const tbody = document.getElementById('usersTableBody');
     tbody.innerHTML = `
         <tr>
-            <td colspan="6" class="p-8 text-center text-midnight/40">
+            <td colspan="7" class="p-8 text-center text-midnight/40">
                 <div class="flex justify-center items-center gap-2">
                     <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gold"></div>
                     Cargando...
@@ -66,8 +66,11 @@ function renderUsers(users) {
 
     tbody.innerHTML = users.map(u => {
         const badge = ROLE_LABELS[u.role] || { text: u.role, cls: 'bg-paper-dark text-midnight' };
+        const phoneVerified = u.phone_verified === 1;
         const phone = u.phone
-            ? escapeHtml(u.phone)
+            ? (phoneVerified
+                ? `<span class="inline-flex items-center gap-1"><i data-lucide="smartphone" class="w-3 h-3 text-emerald-600"></i> ${escapeHtml(u.phone)}</span>`
+                : `<span class="inline-flex items-center gap-1"><i data-lucide="phone-off" class="w-3 h-3 text-midnight/30"></i> ${escapeHtml(u.phone)}</span>`)
             : '<span class="text-midnight/25 italic">Sin teléfono</span>';
 
         const isAdmin = u.role === 'admin';
@@ -97,25 +100,25 @@ function renderUsers(users) {
                    </button>`);
 
         return `
-            <tr class="border-b border-midnight/5 hover:bg-paper transition-colors">
-                <td class="p-4 font-mono text-xs text-midnight/40">#${u.id}</td>
-                <td class="p-4">
+            <tr class="border-b border-midnight/[0.03] hover:bg-paper transition-colors">
+                <td class="px-4 py-3 font-mono text-[11px] text-midnight/40">#${u.id}</td>
+                <td class="px-4 py-3 text-[13px]">
                     <div class="font-medium text-midnight">${escapeHtml(u.username)}</div>
                 </td>
-                <td class="p-4 text-sm text-midnight/60">${escapeHtml(u.email) || '<span class="text-midnight/25 italic">Sin email</span>'}</td>
-                <td class="p-4 text-sm text-midnight/60">${phone}</td>
-                <td class="p-4">
+                <td class="px-4 py-3 text-[13px] text-midnight/50">${escapeHtml(u.email) || '<span class="text-midnight/25 italic">Sin email</span>'}</td>
+                <td class="px-4 py-3 text-[13px] text-midnight/50">${phone}</td>
+                <td class="px-4 py-3">
                     <span class="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest ${badge.cls}">
                         ${badge.text}
                     </span>
                 </td>
-                <td class="p-4">
+                <td class="px-4 py-3">
                     <div class="flex flex-col gap-1.5">
                         ${statusBadge}
                         ${toggleBtn}
                     </div>
                 </td>
-                <td class="p-4 text-right">${resetBtn}</td>
+                <td class="px-4 py-3 text-right">${resetBtn}</td>
             </tr>`;
     }).join('');
 
@@ -127,9 +130,9 @@ function showTableError(msg) {
     const tbody = document.getElementById('usersTableBody');
     tbody.innerHTML = `
         <tr>
-            <td colspan="6" class="p-8 text-center text-rose-500">
+            <td colspan="7" class="p-8 text-center text-rose-500">
                 <i data-lucide="alert-circle" class="w-6 h-6 mx-auto mb-2"></i>
-                <p class="text-sm">${msg}</p>
+                <p class="text-[13px]">${msg}</p>
             </td>
         </tr>`;
     if (window.lucide) lucide.createIcons();

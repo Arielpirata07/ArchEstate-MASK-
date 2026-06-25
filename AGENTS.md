@@ -16,21 +16,21 @@
 | File | Role |
 |---|---|
 | `factory.py` | Wires app: config + middleware + errors + blueprints |
-| `config.py` | Reads `.env`, defines constants |
+| `config.py` | Reads `.env`, defines constants, Twilio config (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER`, `TWILIO_WHATSAPP_FROM`, `TWILIO_SIMULATE`) |
 | `models.py` | `get_db_connection()`, `get_user_by_id()`, `update_user_credentials()`, `update_user_profile()`, `FORM_OPTION_CATEGORIES`, `ALLOWED_PROFILE_FIELDS` |
-| `app_setup.py` | `init_db(app)`, `FilterOptionsCache`, schema migrations (ALTER TABLE) |
+| `app_setup.py` | `init_db(app)`, `FilterOptionsCache`, schema migrations (ALTER TABLE) including `verification_channel` column |
 | `decorators.py` | `@login_required`, `@admin_required`, `@professional_required` — all enforce `is_active` |
 | `rate_limit.py` | File-backed rate limiting (JSON + atomic writes) |
 | `routes_profile.py` | Profile, lead editing, avatar upload (at root, not in `routes/`), `ALLOWED_LEAD_EDIT_FIELDS` |
 | `routes/` | 8 blueprints: `auth_bp`, `public_bp`, `client_bp`, `professional_bp`, `admin_bp`, `phone_bp`, `lead_bp`, `form_options_bp` |
-| `services/` | OTP verifier router (WhatsApp/SMS) |
+| `services/verifier.py` | OTP verification layer: `SmsSimulatedVerifier`, `WhatsAppSimulatedVerifier`, `TwilioSmsVerifier`, `TwilioWhatsAppVerifier`, `VerifierRouter`, `get_default_router()` |
 
 ## Commands
 
 ```bash
 python app.py                          # Run dev server (reads .env DEBUG)
 FLASK_DEBUG=true python app.py         # Dev mode with debug
-python -m pytest tests/ -q            # Run all tests (302 total)
+python -m pytest tests/ -q            # Run all tests (351 total)
 python -m pytest tests/ -x -v         # Stop on first failure, verbose
 python -m pytest tests/test_file.py   # Single file
 python verify_coherence.py            # Cross-checks schema/routes/templates
@@ -42,6 +42,7 @@ python verify_coherence.py            # Cross-checks schema/routes/templates
 - **No `className.replace()`** on Tailwind classes with `/` — rebuild full string instead.
 - **Tailwind custom colors** (`midnight`, `gold`, `paper`, etc.) defined in `static/js/tailwind-config.js` — use class names, never raw hex in templates.
 - **Design tokens** in `design.md` — follow button/card/modal patterns from there.
+- **Tabla hierarchy**: `<th>` siempre `font-extrabold text-[11px] text-gold px-4 py-4` con `<tr>` thead `table-header-border`. `<td>` siempre `text-[13px] text-midnight/50`. Los headers deben dominar visualmente a los datos.
 - **Single quotes** for all strings in Python code.
 - **SQL allowlist** for profile updates: `ALLOWED_PROFILE_FIELDS` in `models.py`, `ALLOWED_LEAD_EDIT_FIELDS` in `routes_profile.py`.
 
@@ -67,3 +68,13 @@ python verify_coherence.py            # Cross-checks schema/routes/templates
 | `/api/phone/verify` | `phone.verify_phone_code` |
 | `/api/admin/user/<id>/set-active` | `admin.admin_set_user_active` |
 | `/api/admin/user/<id>/reset-password` | `admin.admin_reset_password` |
+
+## Phone Verification Architecture
+
+- **Verifier abstraction** (`services/verifier.py`): `OTPChannel` ABC with `SmsSimulatedVerifier`, `WhatsAppSimulatedVerifier`, `TwilioSmsVerifier`, `TwilioWhatsAppVerifier`.
+- **Router** (`VerifierRouter`): routes `sms`/`whatsapp` channels to correct provider.
+- **Config** (`config.py`): `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER`, `TWILIO_WHATSAPP_FROM`, `TWILIO_WHATSAPP_CONTENT_SID`, `TWILIO_SIMULATE`.
+- **`TWILIO_SIMULATE` flag**: when `true`, forces simulated verifiers even if Twilio credentials are set (avoids trial rate limits).
+- **DB**: `users.phone_verified` (0/1), `users.verification_channel` ('sms'/'whatsapp'/''), `consent_log` records OTP sends.
+- **API endpoints**: `POST /api/phone/send-code`, `POST /api/phone/verify`, `POST /api/user/update-phone`.
+- **UX**: Auto-sends OTP on modal open; channel selector in profile; verification badges show channel icon (smartphone/message-circle).

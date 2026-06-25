@@ -15,7 +15,7 @@ def user_view():
     conn = None
     try:
         conn = models.get_db_connection()
-        user = conn.execute('SELECT role FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+        user = conn.execute('SELECT id, role, phone_verified FROM users WHERE id = ?', (session['user_id'],)).fetchone()
         lead_count = conn.execute('SELECT COUNT(*) FROM leads WHERE user_id = ?', (session['user_id'],)).fetchone()[0]
     finally:
         if conn:
@@ -25,7 +25,8 @@ def user_view():
         flash('Acceso denegado. Los profesionales no pueden acceder a esta sección.', 'error')
         return redirect(url_for('public.index'))
 
-    return render_template('user.html', is_first_lead=lead_count == 0)
+    user_dict = dict(user) if user else None
+    return render_template('user.html', is_first_lead=lead_count == 0, user=user_dict)
 
 
 @client_bp.route('/api/submit', methods=['POST'])

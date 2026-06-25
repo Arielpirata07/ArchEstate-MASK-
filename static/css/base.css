@@ -964,6 +964,14 @@ html {
     }
 }
 
+/* --- Table Header Border (used on <tr> inside <thead>) --- */
+.table-header-border {
+    border-bottom: 2px solid rgba(115, 90, 58, 0.25);
+}
+.dark .table-header-border {
+    border-bottom-color: rgba(166, 138, 100, 0.3);
+}
+
 /* --- Cursor Spotlight (dark mode only) --- */
 .dark .cursor-spotlight {
     position: fixed;

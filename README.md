@@ -10,7 +10,7 @@
 ![Lucide](https://img.shields.io/badge/Lucide_Icons-0.468-735A3A?style=for-the-badge&logo=lucide&logoColor=white)
 ![License](https://img.shields.io/badge/License-Private-blue?style=for-the-badge)
 
-![Tests](https://img.shields.io/badge/Tests-302%20Passed-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)
+![Tests](https://img.shields.io/badge/Tests-351%20Passed-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)
 ![Status](https://img.shields.io/badge/Status-MVP%20Avanzado-0078D4?style=for-the-badge)
 ![Updated](https://img.shields.io/badge/Updated-Junio%202026-orange?style=for-the-badge)
 
@@ -49,6 +49,7 @@ Conecta clientes de alto nivel adquisitivo con profesionales verificados del sec
 | **Gráficas** | Chart.js | 4.4.0 (CDN) |
 | **Icons** | Lucide Icons | 0.468.0 (CDN) |
 | **Phone validation** | phonenumbers (libphonenumber) | 8.13+ |
+| **Phone verification** | Twilio SDK (SMS + WhatsApp) | 9.x+ |
 | **Export** | openpyxl (XLSX), fpdf (PDF) | 3.1+ / 1.7+ |
 | **Timezone** | pytz | 2023.3+ |
 | **Tests** | pytest + freezegun + monkeypatch | 9.x |
@@ -76,7 +77,10 @@ Conecta clientes de alto nivel adquisitivo con profesionales verificados del sec
 | Funcionalidad | Descripción |
 |---------------|-------------|
 | Formato internacional | Validación con libphonenumber, normalización a E.164 |
-| OTP por SMS/WhatsApp | Envío simulado en desarrollo con opción real en producción |
+| OTP por SMS/WhatsApp | Twilio real o simulado según `TWILIO_SIMULATE` |
+| Auto-envío OTP | Se envía automáticamente al abrir el modal de verificación |
+| Selector de canal | Preferencia SMS/WhatsApp guardada en `user_preferences` |
+| Badges de verificación | Icono de canal (smartphone/message-circle) en perfil, dashboard y admin |
 | Brute-force protection | Lockout tras 5 intentos fallidos (`failed_attempts`) |
 | Preview en vivo | Formato E.164 visible debajo del input durante escritura |
 | Consent logging | Registro de consentimiento por canal en `consent_log` |
@@ -239,7 +243,7 @@ archestate/
 │   └── form_options_bp.py    # CRUD de opciones de formulario (admin)
 ├── routes_profile.py         # Profile, lead editing, avatar, settings, sessions, activity
 ├── services/
-│   └── verifier.py           # OTP verifier router (WhatsApp/SMS)
+│   └── verifier.py           # OTP verifier: SmsSimulated, WhatsAppSimulated, TwilioSms, TwilioWhatsApp + VerifierRouter
 ├── static/
 │   ├── css/                  # base, landing, user, professional, admin, profile
 │   ├── js/                   # main, user, professional, admin, profile, edit_lead,
@@ -281,6 +285,7 @@ archestate/
 | `verification_code` | TEXT | OTP actual |
 | `verification_expires` | DATETIME | Expiración del OTP |
 | `failed_attempts` | INTEGER | Intentos fallidos de OTP (lockout a 5) |
+| `verification_channel` | TEXT | `sms` / `whatsapp` / `''` — canal usado para verificar |
 
 ### `leads`
 | Columna | Tipo | Notas |
@@ -515,16 +520,33 @@ Acceder en `http://127.0.0.1:5000`
 ### Ejecutar Tests
 
 ```bash
-python -m pytest tests/ -q            # Todos (302)
+python -m pytest tests/ -q            # Todos (351)
 python -m pytest tests/ -x -v         # Parar en primera falla, verbose
 python -m pytest tests/test_file.py   # Archivo individual
 ```
 
 ---
 
+## Variables de Entorno
+
+Las credenciales de Twilio se configuran en el archivo `.env`:
+
+| Variable | Descripción |
+|----------|-------------|
+| `TWILIO_ACCOUNT_SID` | SID de la cuenta Twilio |
+| `TWILIO_AUTH_TOKEN` | Token de autenticación |
+| `TWILIO_PHONE_NUMBER` | Número de Twilio para SMS |
+| `TWILIO_WHATSAPP_FROM` | Número de WhatsApp sandbox |
+| `TWILIO_WHATSAPP_CONTENT_SID` | Content SID para plantillas WhatsApp |
+| `TWILIO_SIMULATE` | `true` = códigos en consola, `false` = envío real |
+
+> En desarrollo, `TWILIO_SIMULATE=true` evita consumir créditos del trial.
+
+---
+
 ## Roadmap
 
-- [x] Tests automatizados (302 tests)
+- [x] Tests automatizados (351 tests)
 - [x] Verificación telefónica con OTP
 - [x] Edición de leads con versionado
 - [x] Tracking Visto/Contactado
@@ -544,8 +566,11 @@ python -m pytest tests/test_file.py   # Archivo individual
 - [x] Preferencias de usuario (theme, idioma, notificaciones)
 - [x] Historial de sesiones y actividad
 - [x] Validación de duplicados en opciones de formulario
+- [x] Integración Twilio (SMS + WhatsApp real o simulado)
+- [x] Selector de canal de verificación (SMS/WhatsApp)
+- [x] Badges de verificación con icono de canal
+- [x] Auto-envío de OTP al abrir modal
 - [ ] CSRF protection en formularios
 - [ ] Notificaciones internas entre admin y profesional
-- [ ] Integración WhatsApp Business API (producción)
 - [ ] Asignación automática de leads por especialidad y zona
 - [ ] Paginación en tabla de leads
