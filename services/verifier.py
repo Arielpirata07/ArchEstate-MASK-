@@ -30,9 +30,10 @@ class OTPChannel(ABC):
     name: str = "abstract"
 
     @abstractmethod
-    def send(self, phone_e164: str, code: str, ttl_minutes: int = 10) -> SendResult:
+    def send(self, phone_e164: str, code: str, ttl_minutes: int = 10, username: str = None) -> SendResult:
         """
         Envía un OTP al número (en formato E.164) y devuelve un SendResult.
+        username: se incluye como {{3}} en el template de WhatsApp cuando está presente.
         No debe lanzar excepciones: fallos deben reflejarse en ok=False.
         """
 
@@ -45,7 +46,7 @@ class SmsSimulatedVerifier(OTPChannel):
     def __init__(self, audit_fn=None):
         self._audit = audit_fn
 
-    def send(self, phone_e164, code, ttl_minutes=10):
+    def send(self, phone_e164, code, ttl_minutes=10, username=None):
         try:
             print(f"\n[SMS SIMULADO] -> {phone_e164}")
             print(f"[SMS SIMULADO] Codigo: {code} (valido {ttl_minutes} min)\n")
@@ -75,11 +76,12 @@ class WhatsAppSimulatedVerifier(OTPChannel):
         self._base_url = base_url
         self._include_deep_link = include_deep_link
 
-    def send(self, phone_e164, code, ttl_minutes=10):
+    def send(self, phone_e164, code, ttl_minutes=10, username=None):
         try:
             from urllib.parse import quote_plus
             digits = phone_e164.lstrip('+')
-            text = quote_plus(f"Tu codigo de verificacion de ArchEstate es: {code} (valido {ttl_minutes} min)")
+            label = f" {username}," if username else ""
+            text = quote_plus(f"Hola{label} tu codigo de verificacion de ArchEstate es: {code} (valido {ttl_minutes} min)")
             link = f"{self._base_url}/{digits}?text={text}"
             print(f"\n[WHATSAPP SIMULADO] -> {phone_e164}")
             print(f"[WHATSAPP SIMULADO] Link wa.me con codigo prellenado (no enviado): {link}\n")
@@ -109,7 +111,7 @@ class TwilioSmsVerifier(OTPChannel):
         self._from = from_number
         self._audit = audit_fn
 
-    def send(self, phone_e164, code, ttl_minutes=10):
+    def send(self, phone_e164, code, ttl_minutes=10, username=None):
         try:
             body = f"Tu codigo de verificacion de ArchEstate es: {code} (valido {ttl_minutes} min)"
             message = self._client.messages.create(
@@ -157,11 +159,14 @@ class TwilioWhatsAppVerifier(OTPChannel):
         self._content_sid = content_sid
         self._audit = audit_fn
 
-    def send(self, phone_e164, code, ttl_minutes=10):
+    def send(self, phone_e164, code, ttl_minutes=10, username=None):
         try:
             to_number = f"whatsapp:{phone_e164}"
             import json
-            content_variables = json.dumps({"1": code, "2": f"{ttl_minutes}"})
+            variables = {"1": code, "2": f"{ttl_minutes}"}
+            if username:
+                variables["3"] = username
+            content_variables = json.dumps(variables)
 
             message = self._client.messages.create(
                 from_=self._from,
@@ -205,19 +210,20 @@ class VerifierRouter:
         self._is_wa = is_whatsapp_capable_fn or (lambda p: False)
 
     def send_otp(self, phone_e164: str, code: str, preferred_channel: str = "auto",
-                 ttl_minutes: int = 10) -> SendResult:
+                 ttl_minutes: int = 10, username: str = None) -> SendResult:
         """
         preferred_channel: 'sms' | 'whatsapp' | 'auto'.
         En 'auto', intenta WhatsApp si el número es WhatsApp-capable, si no SMS.
+        username: se incluye como {{3}} en el template de WhatsApp cuando está presente.
         """
         channel = (preferred_channel or "auto").lower()
         if channel == "whatsapp":
-            return self._whatsapp.send(phone_e164, code, ttl_minutes)
+            return self._whatsapp.send(phone_e164, code, ttl_minutes, username=username)
         if channel == "sms":
             return self._sms.send(phone_e164, code, ttl_minutes)
 
         if self._is_wa(phone_e164):
-            return self._whatsapp.send(phone_e164, code, ttl_minutes)
+            return self._whatsapp.send(phone_e164, code, ttl_minutes, username=username)
         return self._sms.send(phone_e164, code, ttl_minutes)
 
 
@@ -253,12 +259,13 @@ def get_default_router() -> VerifierRouter:
         else:
             sms_verifier = SmsSimulatedVerifier(audit_fn=log_action)
 
-        if use_real and config.TWILIO_ACCOUNT_SID and config.TWILIO_AUTH_TOKEN and config.TWILIO_WHATSAPP_FROM and config.TWILIO_WHATSAPP_CONTENT_SID:
+        if use_real and config.TWILIO_ACCOUNT_SID and config.TWILIO_AUTH_TOKEN and config.TWILIO_WHATSAPP_FROM and (config.TWILIO_WHATSAPP_BUTTON_CONTENT_SID or config.TWILIO_WHATSAPP_CONTENT_SID):
+            content_sid = config.TWILIO_WHATSAPP_BUTTON_CONTENT_SID or config.TWILIO_WHATSAPP_CONTENT_SID
             whatsapp_verifier = TwilioWhatsAppVerifier(
                 config.TWILIO_ACCOUNT_SID,
                 config.TWILIO_AUTH_TOKEN,
                 config.TWILIO_WHATSAPP_FROM,
-                config.TWILIO_WHATSAPP_CONTENT_SID,
+                content_sid,
                 audit_fn=log_action
             )
         else:

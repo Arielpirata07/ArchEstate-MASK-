@@ -464,9 +464,20 @@ function loadPreferredChannel() {
             if (data.settings && data.settings.preferred_channel) {
                 select.value = data.settings.preferred_channel;
             }
+            toggleWhatsappHint();
         })
         .catch(() => {});
 }
+
+function toggleWhatsappHint() {
+    const select = document.getElementById('preferred-channel-select');
+    const hint = document.getElementById('whatsapp-hint');
+    const modalHint = document.getElementById('modal-whatsapp-hint');
+    const isWhatsapp = select && select.value === 'whatsapp';
+    if (hint) hint.classList.toggle('hidden', !isWhatsapp);
+    if (modalHint) modalHint.classList.toggle('hidden', !isWhatsapp);
+}
+
 
 function savePreferredChannel() {
     const select = document.getElementById('preferred-channel-select');
@@ -1135,6 +1146,7 @@ function openPhoneVerifyModal() {
         document.getElementById('verify-error').classList.add('hidden');
         document.getElementById('verify-success').classList.add('hidden');
         document.querySelector('.verify-digit').focus();
+        toggleWhatsappHint();
         autoSendVerificationCode();
     }
 }

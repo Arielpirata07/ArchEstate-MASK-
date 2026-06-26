@@ -133,10 +133,12 @@ def send_verification_code():
 
         from services.verifier import get_default_router
         router = get_default_router()
-        result = router.send_otp(phone_e164, code, preferred_channel=preferred_channel, ttl_minutes=config.OTP_TTL_MINUTES)
+        username = user['username'] if preferred_channel in ('whatsapp', 'auto') else None
+        result = router.send_otp(phone_e164, code, preferred_channel=preferred_channel,
+                                 ttl_minutes=config.OTP_TTL_MINUTES, username=username)
 
         if not result.ok:
-            return jsonify({"status": "error", "message": result.message, "channel": result.channel}), 502
+            return jsonify({"error": result.message, "channel": result.channel}), 502
 
         conn.execute(
             'UPDATE users SET verification_code = ?, verification_expires = ?, failed_attempts = 0, '

@@ -43,6 +43,7 @@ def create_app():
     from routes.phone_bp import phone_bp
     from routes.lead_bp import lead_bp
     from routes.form_options_bp import form_options_bp
+    from routes.whatsapp_bp import whatsapp_bp
     from routes_profile import profile_bp
 
     app.register_blueprint(auth_bp)
@@ -53,6 +54,7 @@ def create_app():
     app.register_blueprint(phone_bp)
     app.register_blueprint(lead_bp)
     app.register_blueprint(form_options_bp)
+    app.register_blueprint(whatsapp_bp)
     app.register_blueprint(profile_bp)
 
     return app

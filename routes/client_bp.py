@@ -15,7 +15,7 @@ def user_view():
     conn = None
     try:
         conn = models.get_db_connection()
-        user = conn.execute('SELECT id, role, phone_verified FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+        user = conn.execute('SELECT id, role, phone_verified, email FROM users WHERE id = ?', (session['user_id'],)).fetchone()
         lead_count = conn.execute('SELECT COUNT(*) FROM leads WHERE user_id = ?', (session['user_id'],)).fetchone()[0]
     finally:
         if conn:
@@ -26,6 +26,24 @@ def user_view():
         return redirect(url_for('public.index'))
 
     user_dict = dict(user) if user else None
+
+    if user_dict and not user_dict.get('email'):
+        conn2 = None
+        try:
+            conn2 = models.get_db_connection()
+            last_lead = conn2.execute(
+                'SELECT email FROM leads WHERE user_id = ? ORDER BY id DESC LIMIT 1',
+                (session['user_id'],)
+            ).fetchone()
+            if last_lead and last_lead['email']:
+                user_dict['email'] = last_lead['email']
+        finally:
+            if conn2:
+                conn2.close()
+
+    if user_dict and user_dict.get('email'):
+        session['email'] = user_dict['email']
+
     return render_template('user.html', is_first_lead=lead_count == 0, user=user_dict)
 
 

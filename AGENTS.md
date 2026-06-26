@@ -3,7 +3,7 @@
 ## Architecture
 
 - **Flask app** built with Application Factory pattern via `factory.py:create_app()`.
-- **9 blueprints** registered: `auth`, `public`, `client`, `professional`, `admin`, `phone`, `lead`, `form_options`, `profile` (8 in `routes/` + `profile` in `routes_profile.py`).
+- **10 blueprints** registered: `auth`, `public`, `client`, `professional`, `admin`, `phone`, `lead`, `form_options`, `whatsapp`, `profile` (9 in `routes/` + `profile` in `routes_profile.py`).
 - Entry point: `app.py` (6 lines) — just `from factory import create_app; app = create_app()`.
 - Middleware in `middleware.py`, error handlers in `errors.py`, DB init in `app_setup.py`.
 - Endpoint naming: blueprint-prefixed (`public.index`, `auth.login`, `professional.professional_view`, etc.).
@@ -22,7 +22,7 @@
 | `decorators.py` | `@login_required`, `@admin_required`, `@professional_required` — all enforce `is_active` |
 | `rate_limit.py` | File-backed rate limiting (JSON + atomic writes) |
 | `routes_profile.py` | Profile, lead editing, avatar upload (at root, not in `routes/`), `ALLOWED_LEAD_EDIT_FIELDS` |
-| `routes/` | 8 blueprints: `auth_bp`, `public_bp`, `client_bp`, `professional_bp`, `admin_bp`, `phone_bp`, `lead_bp`, `form_options_bp` |
+| `routes/` | 9 blueprints: `auth_bp`, `public_bp`, `client_bp`, `professional_bp`, `admin_bp`, `phone_bp`, `lead_bp`, `form_options_bp`, `whatsapp_bp` |
 | `services/verifier.py` | OTP verification layer: `SmsSimulatedVerifier`, `WhatsAppSimulatedVerifier`, `TwilioSmsVerifier`, `TwilioWhatsAppVerifier`, `VerifierRouter`, `get_default_router()` |
 | `services/email.py` | `SMTPEmailSender` — SMTP email sender with console fallback |
 | `services/notifications.py` | `notify_lead_created()`, `notify_lead_status_change()`, `notify_professional_status_change()`, `notify_report_deleted()` — reads `user_preferences` toggles |
@@ -47,6 +47,7 @@ python verify_coherence.py            # Cross-checks schema/routes/templates
 - **Tabla hierarchy**: `<th>` siempre `font-extrabold text-[11px] text-gold px-4 py-4` con `<tr>` thead `table-header-border`. `<td>` siempre `text-[13px] text-midnight/50`. Los headers deben dominar visualmente a los datos.
 - **Single quotes** for all strings in Python code.
 - **SQL allowlist** for profile updates: `ALLOWED_PROFILE_FIELDS` in `models.py`, `ALLOWED_LEAD_EDIT_FIELDS` in `routes_profile.py`.
+- **Auto-completar email en formulario de solicitud (`/usuario`)**: el email del usuario autenticado (sin importar su rol) debe auto-completarse del registro en DB. Prioridad en template: `user.email` (DB) → `session.get('email')`. El servidor (`client_bp.py:submit_lead`) siempre usa `session.get('email')` ignorando `data.get('email')`. Si no hay email en DB ni en sesión, el campo queda editable. Para cambiar el email, el usuario debe ir a `/mi-perfil`.
 
 ## Test notes
 
@@ -70,13 +71,16 @@ python verify_coherence.py            # Cross-checks schema/routes/templates
 | `/api/phone/verify` | `phone.verify_phone_code` |
 | `/api/admin/user/<id>/set-active` | `admin.admin_set_user_active` |
 | `/api/admin/user/<id>/reset-password` | `admin.admin_reset_password` |
+| `/api/whatsapp/webhook` | `whatsapp.whatsapp_webhook` |
 
 ## Phone Verification Architecture
 
 - **Verifier abstraction** (`services/verifier.py`): `OTPChannel` ABC with `SmsSimulatedVerifier`, `WhatsAppSimulatedVerifier`, `TwilioSmsVerifier`, `TwilioWhatsAppVerifier`.
 - **Router** (`VerifierRouter`): routes `sms`/`whatsapp` channels to correct provider.
-- **Config** (`config.py`): `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER`, `TWILIO_WHATSAPP_FROM`, `TWILIO_WHATSAPP_CONTENT_SID`, `TWILIO_SIMULATE`.
+- **Config** (`config.py`): `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER`, `TWILIO_WHATSAPP_FROM`, `TWILIO_WHATSAPP_CONTENT_SID`, `TWILIO_WHATSAPP_BUTTON_CONTENT_SID`, `TWILIO_SIMULATE`.
 - **`TWILIO_SIMULATE` flag**: when `true`, forces simulated verifiers even if Twilio credentials are set (avoids trial rate limits).
+- **WhatsApp button template** (`TWILIO_WHATSAPP_BUTTON_CONTENT_SID`): template con botón "✅ Verificar" que al tocarlo envía un POST al webhook con `Body=VERIFICAR`.
+- **Webhook** (`routes/whatsapp_bp.py`): `POST /api/whatsapp/webhook` — valida firma de Twilio, recibe el mensaje, busca usuario por `phone_e164` y setea `phone_verified=1`.
 - **DB**: `users.phone_verified` (0/1), `users.verification_channel` ('sms'/'whatsapp'/''), `consent_log` records OTP sends.
-- **API endpoints**: `POST /api/phone/send-code`, `POST /api/phone/verify`, `POST /api/user/update-phone`.
+- **API endpoints**: `POST /api/phone/send-code`, `POST /api/phone/verify`, `POST /api/user/update-phone`, `POST /api/whatsapp/webhook`.
 - **UX**: Auto-sends OTP on modal open; channel selector in profile; verification badges show channel icon (smartphone/message-circle).
