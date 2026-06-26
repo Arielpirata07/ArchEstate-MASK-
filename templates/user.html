@@ -55,7 +55,7 @@ window.__FORM_OPTIONS = {{ {
 
                     <!-- Tipo de Propiedad -->
                     <div class="mb-8">
-                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">Tipo de Propiedad</label>
+                        <label for="property-type-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">Tipo de Propiedad</label>
                         <div id="property-type-buttons" class="flex flex-wrap gap-3"></div>
                         <input type="hidden" id="property-type-input" name="property_type" value="departamento">
                     </div>
@@ -63,7 +63,7 @@ window.__FORM_OPTIONS = {{ {
                     <div class="grid grid-cols-2 gap-6">
                         <!-- Tipo de Operación -->
                         <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Tipo de Operación</label>
+                            <label for="operation-select" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Tipo de Operación</label>
                             <select id="operation-select" name="type" required class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                 <option value="">Seleccionar</option>
                                 {% for opt in form_options.get('operation_type', []) %}
@@ -74,7 +74,7 @@ window.__FORM_OPTIONS = {{ {
 
                         <!-- Presupuesto Estimado -->
                         <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Presupuesto Estimado</label>
+                            <label for="budget-popup-trigger" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Presupuesto Estimado</label>
                             <button type="button" id="budget-popup-trigger"
                                     class="w-full py-3 px-4 rounded border-2 border-midnight/20 bg-paper-dark text-midnight font-semibold transition-all hover:border-gold text-left">
                                 Presupuesto: $0 — $10.000.000.000
@@ -87,13 +87,13 @@ window.__FORM_OPTIONS = {{ {
                                 <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
                                     <div class="flex items-center justify-between mb-6">
                                         <h3 class="text-lg font-serif">Presupuesto</h3>
-                                        <button type="button" id="budget-popup-close"
+                                        <button type="button" id="budget-popup-close" aria-label="Cerrar selector de presupuesto"
                                                 class="w-10 h-10 rounded-full flex items-center justify-center text-midnight/40 hover:text-midnight hover:bg-midnight/5 transition-all">
                                             <i data-lucide="x" class="w-5 h-5"></i>
                                         </button>
                                     </div>
 
-                                    <select id="budget-currency-select"
+                                    <select id="budget-currency-select" aria-label="Moneda"
                                             class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 text-sm mb-6">
                                         {% for opt in form_options.get('currency', []) %}
                                         <option value="{{ opt.value }}">{% if opt.value == 'ARG' %}${% elif opt.value == 'USD' %}US${% elif opt.value == 'EUR' %}€{% endif %} ({{ opt.label }})</option>
@@ -107,8 +107,8 @@ window.__FORM_OPTIONS = {{ {
                                     <div class="relative h-12 mb-8">
                                         <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-2 bg-midnight/10 rounded-full"></div>
                                         <div id="budget-slider-fill" class="absolute top-1/2 -translate-y-1/2 h-2 bg-gold rounded-full" style="left:0%;width:100%"></div>
-                                        <input type="range" id="budget-min-slider" class="budget-range-slider absolute inset-x-0" min="0" max="10000000000" value="0" step="10000000">
-                                        <input type="range" id="budget-max-slider" class="budget-range-slider absolute inset-x-0" min="0" max="10000000000" value="10000000000" step="10000000">
+                                        <input type="range" id="budget-min-slider" aria-label="Presupuesto mínimo" class="budget-range-slider absolute inset-x-0" min="0" max="10000000000" value="0" step="10000000">
+                                        <input type="range" id="budget-max-slider" aria-label="Presupuesto máximo" class="budget-range-slider absolute inset-x-0" min="0" max="10000000000" value="10000000000" step="10000000">
                                     </div>
 
                                     <div class="grid grid-cols-2 gap-4 mb-6">
@@ -147,7 +147,7 @@ window.__FORM_OPTIONS = {{ {
 
                         <!-- Zona Geográfica -->
                         <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Zona Geográfica</label>
+                            <label for="zone-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Zona Geográfica</label>
                             <div class="relative">
                                 <input id="zone-input" name="zone" type="text" placeholder="Ej. Costa Brava, Madrid Centro..." class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm" required>
                                 <ul id="zone-suggestions" class="hidden absolute top-full left-0 right-0 bg-white border border-slate-200 rounded shadow-md z-10" role="listbox"></ul>
@@ -156,7 +156,7 @@ window.__FORM_OPTIONS = {{ {
 
                         <!-- Provincia -->
                         <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Provincia</label>
+                            <label for="province-select" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Provincia</label>
                             <select id="province-select" name="province" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                 <option value="">Seleccionar provincia</option>
                                 {% for opt in form_options.get('province', []) %}
@@ -167,7 +167,7 @@ window.__FORM_OPTIONS = {{ {
 
                         <!-- Estilo Arquitectónico -->
                         <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Estilo Arquitectónico</label>
+                            <label for="architectural-style-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Estilo Arquitectónico</label>
                             <div class="relative">
                                 <input id="architectural-style-input" name="architectural_style" type="text" placeholder="Ej. Moderno, Clásico, Minimalista..." class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                 <ul id="architectural-style-suggestions" class="hidden absolute top-full left-0 right-0 bg-white border border-slate-200 rounded shadow-md z-10" role="listbox"></ul>
@@ -188,7 +188,7 @@ window.__FORM_OPTIONS = {{ {
                         <!-- Ambientes, Habitaciones, Baños -->
                         <div class="grid grid-cols-3 gap-6">
                             <div>
-                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Ambientes</label>
+                                <label for="ambientes-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Ambientes</label>
                                 <div class="flex items-center gap-3">
                                     <button type="button" onclick="stepNum('ambientes',-1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">−</button>
                                     <input id="ambientes-input" name="ambientes" type="number" min="1" max="20" value="" placeholder="—"
@@ -198,7 +198,7 @@ window.__FORM_OPTIONS = {{ {
                                 <p class="text-[9px] text-midnight/30 mt-1">Incluye living, cocina</p>
                             </div>
                             <div>
-                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Habitaciones</label>
+                                <label for="bedrooms-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Habitaciones</label>
                                 <div class="flex items-center gap-3">
                                     <button type="button" onclick="stepNum('bedrooms',-1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">−</button>
                                     <input id="bedrooms-input" name="bedrooms" type="number" min="0" max="20" value="" placeholder="—"
@@ -207,7 +207,7 @@ window.__FORM_OPTIONS = {{ {
                                 </div>
                             </div>
                             <div>
-                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Baños</label>
+                                <label for="bathrooms-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Baños</label>
                                 <div class="flex items-center gap-3">
                                     <button type="button" onclick="stepNum('bathrooms',-1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">−</button>
                                     <input id="bathrooms-input" name="bathrooms" type="number" min="0" max="20" value="" placeholder="—"
@@ -219,7 +219,7 @@ window.__FORM_OPTIONS = {{ {
 
                         <!-- Cochera -->
                         <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Cochera / Estacionamiento</label>
+                            <label for="parking-chips" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Cochera / Estacionamiento</label>
                             <div class="flex flex-wrap gap-2" id="parking-chips">
                                 {% for opt in form_options.get('parking', []) %}
                                 <button type="button" data-value="{{ opt.value }}" onclick="selectChip('parking','{{ opt.value }}')"
@@ -231,7 +231,7 @@ window.__FORM_OPTIONS = {{ {
 
                         <!-- Orientación -->
                         <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Orientación Preferida</label>
+                            <label for="orientation-chips" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Orientación Preferida</label>
                             {% set orient_short = {'': '', 'Norte': 'N', 'Sur': 'S', 'Este': 'E', 'Oeste': 'O', 'Noreste': 'NE', 'Noroeste': 'NO', 'Sureste': 'SE', 'Suroeste': 'SO'} %}
                             <div class="flex flex-wrap gap-2" id="orientation-chips">
                                 {% for opt in form_options.get('orientation', []) %}
@@ -245,7 +245,7 @@ window.__FORM_OPTIONS = {{ {
                         <!-- Estado + Antigüedad -->
                         <div class="grid grid-cols-2 gap-6">
                             <div>
-                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Estado de la Propiedad</label>
+                                <label for="condition-chips" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Estado de la Propiedad</label>
                                 <div class="space-y-2" id="condition-chips">
                                     {% for opt in form_options.get('condition', []) %}
                                     <button type="button" data-value="{{ opt.value }}" onclick="selectChip('condition','{{ opt.value }}')" class="condition-chip {% if loop.first %}active-chip border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all hover:border-gold">{{ opt.label }}</button>
@@ -254,7 +254,7 @@ window.__FORM_OPTIONS = {{ {
                                 <input type="hidden" id="condition-input" name="property_condition" value="">
                             </div>
                             <div id="age-section">
-                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Antigüedad Preferida</label>
+                                <label for="age-chips" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Antigüedad Preferida</label>
                                 <div class="space-y-2" id="age-chips">
                                     {% for opt in form_options.get('age', []) %}
                                     <button type="button" data-value="{{ opt.value }}" onclick="selectChip('age','{{ opt.value }}')" class="age-chip {% if loop.first %}active-chip border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all hover:border-gold">{{ opt.label }}</button>
@@ -305,11 +305,11 @@ window.__FORM_OPTIONS = {{ {
                                 <h4 class="text-[10px] uppercase tracking-widest font-bold text-midnight/40 mb-4">Detalles de la Casa</h4>
                                 <div class="grid grid-cols-2 gap-6">
                                     <div>
-                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Superficie de Terreno (m²)</label>
+                                        <label for="house-land-area" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Superficie de Terreno (m²)</label>
                                         <input id="house-land-area" name="land_area" type="number" min="0" placeholder="600" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Superficie Construida (m²)</label>
+                                        <label for="house-built-area" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Superficie Construida (m²)</label>
                                         <input id="house-built-area" name="built_area" type="number" min="0" placeholder="300" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                         <p id="house-area-warning" class="hidden text-[10px] text-rose-500 font-medium mt-1">Los metros construidos superan el 80% del terreno.</p>
                                     </div>
@@ -370,11 +370,11 @@ window.__FORM_OPTIONS = {{ {
                                 <h4 class="text-[10px] uppercase tracking-widest font-bold text-midnight/40 mb-4">Detalles del Dúplex</h4>
                                 <div class="grid grid-cols-2 gap-6">
                                     <div>
-                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Superficie de Terreno (m²)</label>
+                                        <label for="duplex-land-area" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Superficie de Terreno (m²)</label>
                                         <input id="duplex-land-area" name="land_area" type="number" min="0" placeholder="300" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Superficie Construida (m²)</label>
+                                        <label for="duplex-built-area" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Superficie Construida (m²)</label>
                                         <input id="duplex-built-area" name="built_area" type="number" min="0" placeholder="180" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                         <p id="duplex-area-warning" class="hidden text-[10px] text-rose-500 font-medium mt-1">Los metros construidos superan el 80% del terreno.</p>
                                     </div>
@@ -495,8 +495,8 @@ window.__FORM_OPTIONS = {{ {
 
                         <!-- Características adicionales -->
                         <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Características Adicionales</label>
-                            <textarea name="additional_features" placeholder="Vistas, materiales preferidos, detalles de diseño, requerimientos especiales..." rows="3" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm resize-none"></textarea>
+                                        <label for="additional_features" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Características Adicionales</label>
+                                        <textarea id="additional_features" name="additional_features" placeholder="Vistas, materiales preferidos, detalles de diseño, requerimientos especiales..." rows="3" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm resize-none"></textarea>
                         </div>
 
                     </div>
@@ -511,7 +511,7 @@ window.__FORM_OPTIONS = {{ {
                     <div class="grid grid-cols-2 gap-6">
                         <!-- Email Profesional -->
                         <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Email Profesional</label>
+                            <label for="email-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Email Profesional</label>
                             <input id="email-input" type="email" name="email" value="{{ session.get('email', '') }}" readonly class="w-full bg-white border-0 border-b-2 border-midnight/20 py-2 text-midnight/50 text-sm cursor-not-allowed">
                             <a href="{{ url_for('profile.profile_view') }}" class="inline-flex items-center gap-1 mt-2 text-[9px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors">
                                 <i data-lucide="settings" class="w-3 h-3"></i>
@@ -521,7 +521,7 @@ window.__FORM_OPTIONS = {{ {
 
                         <!-- Teléfono -->
                         <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Teléfono</label>
+                            <label for="phone-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Teléfono</label>
                             {% if not is_first_lead %}
                             <input id="phone-input" type="tel" name="phone" value="{{ session.get('phone', '') }}" readonly class="w-full bg-white border-0 border-b-2 border-midnight/20 py-2 text-midnight/50 text-sm cursor-not-allowed">
                             <a href="{{ url_for('profile.profile_view') }}" class="inline-flex items-center gap-1 mt-2 text-[9px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors">
@@ -532,6 +532,7 @@ window.__FORM_OPTIONS = {{ {
                             <div class="flex gap-2">
                                  <select
                                      id="country-code-select"
+                                     aria-label="Código de país"
                                      onchange="updateCountryCode()"
                                      class="w-14 bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 text-sm text-midnight"
                                  >
@@ -546,7 +547,7 @@ window.__FORM_OPTIONS = {{ {
                                      <option value="+34">+34</option>
                                      <option value="+1">+1</option>
                                  </select>
-                                 <select id="phone-province" onchange="applyPhoneProvincePrefix()" class="w-16 bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 text-sm text-midnight hidden">
+                                 <select id="phone-province" aria-label="Código de área" onchange="applyPhoneProvincePrefix()" class="w-16 bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 text-sm text-midnight hidden">
                                      <option value="11">CABA</option>
                                      <option value="221">La Plata</option>
                                      <option value="223">Mar del Plata</option>
@@ -658,23 +659,23 @@ window.__FORM_OPTIONS = {{ {
                 Ingresá el código de 6 dígitos
             </p>
 
-            <div class="flex gap-2 justify-center mb-6" id="verify-code-inputs">
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off"
+            <div class="flex gap-2 justify-center mb-6" id="verify-code-inputs" role="group" aria-label="Código de verificación de 6 dígitos">
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off" aria-label="Dígito 1 de 6"
                     class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-all"
                     data-index="0">
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off"
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off" aria-label="Dígito 2 de 6"
                     class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-all"
                     data-index="1">
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off"
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off" aria-label="Dígito 3 de 6"
                     class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-all"
                     data-index="2">
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off"
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off" aria-label="Dígito 4 de 6"
                     class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-all"
                     data-index="3">
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off"
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off" aria-label="Dígito 5 de 6"
                     class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-all"
                     data-index="4">
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off"
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off" aria-label="Dígito 6 de 6"
                     class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-all"
                     data-index="5">
             </div>

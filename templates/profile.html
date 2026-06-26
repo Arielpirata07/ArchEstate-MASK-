@@ -114,7 +114,7 @@
                             <div>
                                 <label for="profile-phone" class="input-label">Telefono</label>
                                 <div class="flex gap-2">
-                                    <select id="profile-country-code" onchange="updateProfilePhoneFormat()" class="px-2 py-2 border border-midnight/20 rounded text-sm bg-white text-midnight w-14 flex-shrink-0">
+                                    <select id="profile-country-code" aria-label="Código de país" onchange="updateProfilePhoneFormat()" class="px-2 py-2 border border-midnight/20 rounded text-sm bg-white text-midnight w-14 flex-shrink-0">
                                         <option value="+54">+54</option>
                                         <option value="+598">+598</option>
                                         <option value="+56">+56</option>
@@ -126,7 +126,7 @@
                                         <option value="+34">+34</option>
                                         <option value="+1">+1</option>
                                     </select>
-                                    <select id="profile-province" onchange="applyProvincePrefix()" class="px-2 py-2 border border-midnight/20 rounded text-sm bg-white text-midnight w-16 flex-shrink-0 hidden">
+                                    <select id="profile-province" aria-label="Código de área" onchange="applyProvincePrefix()" class="px-2 py-2 border border-midnight/20 rounded text-sm bg-white text-midnight w-16 flex-shrink-0 hidden">
                                         <option value="221">La Plata</option>
                                         <option value="223">Mar del Plata</option>
                                         <option value="341">Rosario</option>
@@ -157,7 +157,7 @@
                                         <option value="11">CABA</option>
                                         <option value="other">Otra...</option>
                                     </select>
-                                    <input id="profile-custom-area" type="tel" maxlength="5" placeholder="Cod." class="px-2 py-2 border border-midnight/20 rounded text-sm bg-white text-midnight w-14 flex-shrink-0 hidden">
+                                    <input id="profile-custom-area" type="tel" maxlength="5" placeholder="Cod." aria-label="Código de área personalizado" class="px-2 py-2 border border-midnight/20 rounded text-sm bg-white text-midnight w-14 flex-shrink-0 hidden">
                                     <input id="profile-phone" type="tel" value="{{ user.phone if user and user.phone else '' }}" class="input-field flex-1" placeholder="9 11 1234 5678" maxlength="16" oninput="validateProfilePhone()">
                                 </div>
                                 <div class="flex items-center justify-between mt-1">
@@ -587,23 +587,23 @@
                     Ingresá el código de 6 dígitos
                 </p>
 
-                <div class="flex gap-2 justify-center mb-6" id="verify-code-inputs">
-                    <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off"
+                <div class="flex gap-2 justify-center mb-6" id="verify-code-inputs" role="group" aria-label="Código de verificación de 6 dígitos">
+                    <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off" aria-label="Dígito 1 de 6"
                         class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-all"
                         data-index="0">
-                    <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off"
+                    <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off" aria-label="Dígito 2 de 6"
                         class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-all"
                         data-index="1">
-                    <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off"
+                    <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off" aria-label="Dígito 3 de 6"
                         class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-all"
                         data-index="2">
-                    <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off"
+                    <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off" aria-label="Dígito 4 de 6"
                         class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-all"
                         data-index="3">
-                    <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off"
+                    <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off" aria-label="Dígito 5 de 6"
                         class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-all"
                         data-index="4">
-                    <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off"
+                    <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="off" aria-label="Dígito 6 de 6"
                         class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-all"
                         data-index="5">
                 </div>

@@ -25,12 +25,12 @@
         <!-- Buscador y filtro de rol -->
         <div class="flex items-end gap-3">
             <div>
-                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/40 mb-2">Buscar</label>
+                <label for="userSearchInput" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/40 mb-2">Buscar</label>
                 <input id="userSearchInput" type="text" placeholder="Nombre o email..."
                        class="px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none w-48">
             </div>
             <div>
-                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/40 mb-2">Rol</label>
+                <label for="roleFilter" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/40 mb-2">Rol</label>
                 <select id="roleFilter" class="px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
                     <option value="">Todos</option>
                     <option value="client">Cliente</option>
@@ -114,7 +114,7 @@
             <!-- Formulario -->
             <div class="px-8 pb-8 space-y-5">
                 <div>
-                    <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Nueva Contraseña</label>
+                    <label for="newPasswordInput" class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Nueva Contraseña</label>
                     <div class="relative">
                         <i data-lucide="lock" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5"></i>
                         <input
@@ -128,7 +128,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Confirmar Contraseña</label>
+                    <label for="confirmPasswordInput" class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Confirmar Contraseña</label>
                     <div class="relative">
                         <i data-lucide="lock-keyhole" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5"></i>
                         <input
@@ -200,7 +200,7 @@
             </div>
             <div class="px-8 pb-8 space-y-5">
                 <div>
-                    <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Motivo (opcional)</label>
+                    <label for="disableReason" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Motivo (opcional)</label>
                     <textarea id="disableReason" rows="3" placeholder="Ej. Cuenta inactiva, solicitud del usuario..."
                         class="w-full bg-paper-dark border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm resize-none"></textarea>
                 </div>

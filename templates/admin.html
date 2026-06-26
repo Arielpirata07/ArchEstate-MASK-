@@ -208,14 +208,14 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <!-- Búsqueda general -->
                         <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Buscar</label>
+                            <label for="proSearchInput" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Buscar</label>
                             <input type="text" id="proSearchInput" placeholder="Nombre, matrícula, especialidad..." 
                                    class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
                         </div>
                         
                         <!-- Filtro por estado -->
                         <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Estado</label>
+                            <label for="statusFilter" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Estado</label>
                             <select id="statusFilter" class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
                                 <option value="">Todos los estados</option>
                                 <option value="pending">Pendiente</option>
@@ -226,7 +226,7 @@
                         
                         <!-- Filtro por especialidad -->
                         <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Especialidad</label>
+                            <label for="specialtyFilter" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Especialidad</label>
                             <input type="text" id="specialtyFilter" placeholder="Arquitecto, Agente..." 
                                    class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
                         </div>
@@ -253,7 +253,7 @@
                         <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Directorio de Profesionales</h3>
                         <div class="flex items-center gap-2">
                             <span class="text-[10px] text-midnight/60 uppercase tracking-widest">Ordenar por:</span>
-                            <select id="proSortSelect" class="text-[10px] px-2 py-1 border border-midnight/20 rounded focus:border-gold focus:outline-none">
+                            <select id="proSortSelect" aria-label="Ordenar por" class="text-[10px] px-2 py-1 border border-midnight/20 rounded focus:border-gold focus:outline-none">
                                 <option value="id">ID</option>
                                 <option value="name">Nombre</option>
                                 <option value="license">Matrícula</option>

@@ -137,7 +137,7 @@ window.__FORM_OPTIONS = {{ {
             <!-- Fila 1: Búsqueda + Tipo Operación + Zona -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                    <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">Búsqueda rápida</label>
+                    <label for="searchInput" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">Búsqueda rápida</label>
                     <div class="relative">
                         <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-midnight/30"></i>
                         <input type="text" id="searchInput" placeholder="Zona, email, presupuesto..."
@@ -145,7 +145,7 @@ window.__FORM_OPTIONS = {{ {
                     </div>
                 </div>
                 <div>
-                    <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">Tipo de Operación</label>
+                    <label for="typeFilter" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">Tipo de Operación</label>
                     <select id="typeFilter" class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
                         <option value="">Todas las operaciones</option>
                         <option value="Comprar Propiedad">Comprar Propiedad</option>
@@ -154,7 +154,7 @@ window.__FORM_OPTIONS = {{ {
                     </select>
                 </div>
                 <div>
-                    <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">Zona</label>
+                    <label for="zoneFilter" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">Zona</label>
                     <div class="relative">
                         <i data-lucide="map-pin" class="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-midnight/30"></i>
                         <input type="text" id="zoneFilter" placeholder="Ej: Palermo, CABA..."
@@ -245,13 +245,13 @@ window.__FORM_OPTIONS = {{ {
             <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Leads Disponibles</h3>
             <div class="flex items-center gap-2">
                 <span class="text-[10px] text-midnight/60 uppercase tracking-widest">Ordenar por:</span>
-                <select id="sortSelect" class="text-[10px] px-2 py-1 border border-midnight/20 rounded focus:border-gold focus:outline-none">
+                <select id="sortSelect" aria-label="Ordenar por" class="text-[10px] px-2 py-1 border border-midnight/20 rounded focus:border-gold focus:outline-none">
                     <option value="timestamp">Fecha</option>
                     <option value="budget">Presupuesto</option>
                     <option value="zone">Zona</option>
                     <option value="type">Tipo</option>
                 </select>
-                <button id="sortOrder" class="p-1 text-midnight/40 hover:text-gold" title="Cambiar orden">
+                <button id="sortOrder" class="p-1 text-midnight/40 hover:text-gold" aria-label="Cambiar orden">
                     <i data-lucide="arrow-down" class="w-3 h-3"></i>
                 </button>
             </div>
@@ -323,7 +323,7 @@ window.__FORM_OPTIONS = {{ {
                 </p>
 
                 <div class="mb-6">
-                    <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">
+                    <label for="reportNotes" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">
                         Notas adicionales (opcional)
                     </label>
                     <textarea id="reportNotes" rows="3"
