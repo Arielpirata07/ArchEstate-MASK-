@@ -2,6 +2,15 @@
    ARCHESTATE - PROFESSIONAL PANEL STYLES
    ============================================ */
 
+/* --- Tab Button --- */
+.tab-btn {
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tab-btn:active {
+    transform: scale(0.96);
+}
+
 /* --- Dark Mode Hover Overrides --- */
 .dark [id^="dropzone-"]:hover {
     background: var(--bg-card) !important;
@@ -482,4 +491,32 @@ button[title="Reportar telefono inexistente"]:hover i[data-lucide] {
 
 .dark .budget-hero-range {
     color: rgba(250, 249, 247, 0.5);
+}
+
+/* ============================================
+   MARKET STATS ANIMATIONS
+   ============================================ */
+
+@keyframes statsFadeIn {
+    0% { opacity: 0; transform: translateY(-8px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-stats-in {
+    animation: statsFadeIn 0.35s ease-out forwards;
+}
+
+.dark .metric-card#kpiTotal,
+.dark .metric-card#kpiPrevTotal,
+.dark .metric-card#kpiAvgBudget,
+.dark .metric-card#kpiZones {
+    color: #FAF9F7;
+}
+
+.dark #kpiTotalGrowth {
+    color: #6ee7b7 !important;
+}
+
+.dark #kpiTotalGrowth.text-rose-600 {
+    color: #fda4af !important;
 }

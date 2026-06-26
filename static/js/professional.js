@@ -285,11 +285,13 @@ document.addEventListener('DOMContentLoaded', () => {
 if (!IS_PENDING) {
 
 document.addEventListener('DOMContentLoaded', () => {
-    loadLeads();
-    setupLeadEventListeners();
+    loadLeads().catch(function(){});
+    try { setupLeadEventListeners(); } catch(e) { console.error('setupLeadEventListeners:', e); }
+    // Show leads tab by default
+    showProTab('leads');
 });
 
-let currentFilters = {
+var currentFilters = {
     search: '', type: '', property_type: '', zone: '',
     min_budget: '', max_budget: '', budget_range: '',
     currency: '', sort: 'timestamp', order: 'desc', my_leads: true
@@ -431,23 +433,23 @@ function removeFilter(key) {
 
 // ---- Cargar y renderizar leads ----
 async function loadLeads() {
-    const params = new URLSearchParams();
-    Object.entries(currentFilters).forEach(([k, v]) => {
-        if (k === 'my_leads') {
-            params.set('my_leads', v ? '1' : '0');
-        } else if (v) {
-            params.set(k, v);
-        }
-    });
-
-    const tbody = document.getElementById('leadsTableBody');
-    tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-midnight/60">
-        <div class="flex justify-center items-center gap-2">
-            <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gold"></div>
-            Buscando leads...
-        </div></td></tr>`;
-
     try {
+        const params = new URLSearchParams();
+        Object.entries(currentFilters).forEach(([k, v]) => {
+            if (k === 'my_leads') {
+                params.set('my_leads', v ? '1' : '0');
+            } else if (v) {
+                params.set(k, v);
+            }
+        });
+
+        const tbody = document.getElementById('leadsTableBody');
+        tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-midnight/60">
+            <div class="flex justify-center items-center gap-2">
+                <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gold"></div>
+                Buscando leads...
+            </div></td></tr>`;
+
         const res  = await fetch(`/api/leads?${params}`);
         const data = await res.json();
         if (data.success) {
@@ -717,10 +719,12 @@ function toggleSortOrder() {
 }
 
 function showLeadError(msg) {
+    var safeMsg = msg;
+    if (typeof escapeHtml === 'function') safeMsg = escapeHtml(msg);
     document.getElementById('leadsTableBody').innerHTML = `
         <tr><td colspan="8" class="p-8 text-center text-rose-600">
             <i data-lucide="alert-circle" class="w-8 h-8 mx-auto mb-2"></i>
-            <p>${escapeHtml(msg)}</p>
+            <p>${safeMsg}</p>
         </td></tr>`;
     if (window.lucide) lucide.createIcons();
 }
@@ -823,4 +827,434 @@ document.addEventListener('click', function(e) {
     if (waLink) trackWhatsAppClick(waLink, e);
     const smsLink = e.target.closest('[data-sms-link]');
     if (smsLink) trackSmsClick(smsLink);
+    const telLink = e.target.closest('[data-tel-link]');
+    if (telLink) {
+        const leadId = telLink.dataset.leadId;
+        fetch('/api/lead/' + leadId + '/whatsapp-event', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ event: 'tel_clicked' })
+        }).catch(function() {});
+    }
 });
+
+// ================================================================
+// MARKET STATISTICS
+// ================================================================
+function isDarkMode() {
+    return document.documentElement.classList.contains('dark');
+}
+
+function getPalette() {
+    if (isDarkMode()) {
+        return {
+            gold:  ['#A68A64', '#C4A882', '#D4BC9A', '#E8D5B7', '#F0E6D0'],
+            dark:  ['#243E62', '#2E4E7A', '#3A5F96', '#4A70A8', '#5A82BA'],
+            mixed: ['#A68A64', '#243E62', '#C4A882', '#2E4E7A', '#D4BC9A', '#3A5F96'],
+        };
+    }
+    return {
+        gold:  ['#735A3A', '#A68A64', '#C4A882', '#D4BC9A', '#E8D5B7'],
+        dark:  ['#000410', '#101E33', '#1A2E4A', '#243E62', '#2E4E7A'],
+        mixed: ['#735A3A', '#000410', '#A68A64', '#101E33', '#C4A882', '#1A2E4A'],
+    };
+}
+
+function chartGridColor() {
+    return isDarkMode() ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)';
+}
+
+const baseFont = { family: 'Manrope', size: 10, weight: 'bold' };
+const statsCharts = {};
+
+function destroyStatsChart(key) {
+    if (statsCharts[key]) { statsCharts[key].destroy(); delete statsCharts[key]; }
+}
+
+function animateCounter(el, target) {
+    const duration = 700;
+    const start = performance.now();
+    const from = 0;
+    const step = (now) => {
+        const t = Math.min((now - start) / duration, 1);
+        const val = Math.round(from + (target - from) * (1 - Math.pow(1 - t, 3)));
+        el.textContent = val;
+        if (t < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+}
+
+function formatMonthLabel(ym) {
+    if (!ym) return '';
+    const [y, m] = ym.split('-');
+    const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                    'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const idx = parseInt(m, 10) - 1;
+    return months[idx] + ' ' + y;
+}
+
+function populateMonthSelect() {
+    const sel = document.getElementById('statsMonthSelect');
+    if (!sel) return;
+    const now = new Date();
+    const current = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+    sel.innerHTML = '';
+    for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const val = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+        const opt = document.createElement('option');
+        opt.value = val;
+        opt.textContent = formatMonthLabel(val);
+        if (val === current) opt.selected = true;
+        sel.appendChild(opt);
+    }
+}
+
+function showProTab(tab) {
+    const panelLeads = document.getElementById('panel-leads');
+    const panelStats = document.getElementById('panel-stats');
+    const tabLeads = document.getElementById('tab-leads');
+    const tabStats = document.getElementById('tab-stats');
+    const exportCsv = document.getElementById('exportCsvBtn');
+    const exportXlsx = document.getElementById('exportXlsxBtn');
+    if (!panelLeads || !panelStats || !tabLeads || !tabStats) return;
+
+    const activeClass = 'tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-midnight text-white';
+    const inactiveClass = 'tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white';
+
+    if (tab === 'stats') {
+        panelLeads.classList.add('hidden');
+        panelStats.classList.remove('hidden');
+        tabLeads.className = inactiveClass;
+        tabStats.className = activeClass;
+        if (exportCsv) exportCsv.href = exportCsv.dataset.statsHref;
+        if (exportXlsx) exportXlsx.href = exportXlsx.dataset.statsHref;
+        populateMonthSelect();
+        loadMarketStats();
+    } else {
+        panelStats.classList.add('hidden');
+        panelLeads.classList.remove('hidden');
+        tabStats.className = inactiveClass;
+        tabLeads.className = activeClass;
+        if (exportCsv) exportCsv.href = exportCsv.dataset.leadsHref;
+        if (exportXlsx) exportXlsx.href = exportXlsx.dataset.leadsHref;
+    }
+}
+
+async function loadMarketStats(tryAutoSelect) {
+    const sel = document.getElementById('statsMonthSelect');
+    if (!sel) return;
+    let month = sel.value;
+    if (!month) return;
+
+    const monthLabel = document.getElementById('statsMonthLabel');
+    if (monthLabel) monthLabel.textContent = formatMonthLabel(month);
+
+    const params = new URLSearchParams();
+    params.set('month', month);
+    params.set('my_leads', currentFilters.my_leads ? '1' : '0');
+
+    try {
+        const res = await fetch('/api/leads/stats?' + params.toString());
+        const data = await res.json();
+        if (data.status === 'success') {
+            if (data.stats.total === 0 && tryAutoSelect !== false) {
+                const options = Array.from(sel.options);
+                for (let i = 0; i < options.length; i++) {
+                    const opt = options[i];
+                    if (opt.value === month) continue;
+                    const p = new URLSearchParams();
+                    p.set('month', opt.value);
+                    p.set('my_leads', currentFilters.my_leads ? '1' : '0');
+                    const r = await fetch('/api/leads/stats?' + p.toString());
+                    const d = await r.json();
+                    if (d.status === 'success' && d.stats.total > 0) {
+                        sel.value = opt.value;
+                        if (monthLabel) monthLabel.textContent = formatMonthLabel(opt.value);
+                        renderStatsKpis(d.stats);
+                        renderStatsCharts(d.stats);
+                        return;
+                    }
+                }
+            }
+            renderStatsKpis(data.stats);
+            renderStatsCharts(data.stats);
+        } else {
+            showToast(data.message || 'Error al cargar estadísticas', 'error');
+        }
+    } catch (err) {
+        console.error('Error loading market stats:', err);
+        showToast('Error de conexión al cargar estadísticas', 'error');
+    }
+}
+
+function formatCurrency(value) {
+    if (!value || value === 0) return '$0';
+    const num = Number(value);
+    if (num >= 1000000) return '$' + (num / 1000000).toFixed(1).replace('.0', '') + 'M';
+    if (num >= 1000) return '$' + (num / 1000).toFixed(0) + 'k';
+    return '$' + num.toLocaleString('es-AR');
+}
+
+function renderStatsKpis(stats) {
+    const totalEl = document.getElementById('kpiTotal');
+    const prevEl = document.getElementById('kpiPrevTotal');
+    const prevLabelEl = document.getElementById('kpiPrevLabel');
+    const growthEl = document.getElementById('kpiTotalGrowth');
+    const budgetEl = document.getElementById('kpiAvgBudget');
+    const zonesEl = document.getElementById('kpiZones');
+
+    if (totalEl) {
+        totalEl.textContent = stats.total;
+        animateCounter(totalEl, stats.total);
+    }
+
+    const prevTotal = stats.previous_month ? stats.previous_month.total : 0;
+    if (prevEl) {
+        prevEl.textContent = prevTotal;
+        animateCounter(prevEl, prevTotal);
+    }
+    if (prevLabelEl) {
+        const sel = document.getElementById('statsMonthSelect');
+        const opts = sel ? sel.options : [];
+        const idx = sel ? sel.selectedIndex : 0;
+        const prevIdx = idx > 0 ? idx - 1 : 0;
+        prevLabelEl.textContent = opts[prevIdx] ? 'vs ' + opts[prevIdx].textContent : '';
+    }
+
+    if (growthEl) {
+        const diff = stats.total - prevTotal;
+        if (prevTotal > 0) {
+            const pct = ((diff / prevTotal) * 100).toFixed(1);
+            growthEl.className = 'text-[10px] font-bold mt-1 ' + (diff >= 0 ? 'text-emerald-600' : 'text-rose-600');
+            growthEl.textContent = (diff >= 0 ? '+' : '') + diff + ' (' + (diff >= 0 ? '+' : '') + pct + '%)';
+            growthEl.classList.remove('hidden');
+        } else if (stats.total > 0) {
+            growthEl.className = 'text-[10px] font-bold mt-1 text-emerald-600';
+            growthEl.textContent = 'Nuevo este mes';
+            growthEl.classList.remove('hidden');
+        } else {
+            growthEl.classList.add('hidden');
+        }
+    }
+
+    if (budgetEl) {
+        const val = stats.avg_budget || 0;
+        budgetEl.textContent = formatCurrency(val);
+    }
+
+    if (zonesEl) {
+        zonesEl.textContent = stats.active_zones || 0;
+        animateCounter(zonesEl, stats.active_zones || 0);
+    }
+}
+
+function renderStatsCharts(stats) {
+    if (typeof Chart === 'undefined') return;
+
+    const palette = getPalette();
+    const isDark = isDarkMode();
+
+    const tooltipOpts = {
+        backgroundColor: isDark ? '#1a2332' : '#fff',
+        titleFont: { family: 'Manrope', size: 11, weight: 'bold' },
+        titleColor: isDark ? '#FAF9F7' : '#000410',
+        bodyFont: { family: 'Manrope', size: 10 },
+        bodyColor: isDark ? '#C4A882' : '#735A3A',
+        borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,4,16,0.08)',
+        borderWidth: 1,
+        padding: 10,
+        cornerRadius: 8,
+    };
+
+    // 1. Property Type (doughnut)
+    destroyStatsChart('propType');
+    const ptData = stats.by_property_type || [];
+    if (ptData.length && document.getElementById('chart-prop-type')) {
+        const ptLabels = ptData.map(function(d) { return d.label || 'Sin tipo'; });
+        const ptValues = ptData.map(function(d) { return d.value; });
+        statsCharts['propType'] = new Chart(document.getElementById('chart-prop-type'), {
+            type: 'doughnut',
+            data: {
+                labels: ptLabels,
+                datasets: [{
+                    data: ptValues,
+                    backgroundColor: palette.gold,
+                    borderWidth: 0,
+                    hoverOffset: 10,
+                    hoverBorderWidth: 2,
+                    hoverBorderColor: palette.dark[0],
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '68%',
+                plugins: {
+                    legend: { display: true, position: 'bottom', labels: { font: baseFont, boxWidth: 14, padding: 14, usePointStyle: true, pointStyle: 'circle' } },
+                    tooltip: Object.assign({}, tooltipOpts, {
+                        callbacks: {
+                            label: function(ctx) {
+                                const total = ctx.dataset.data.reduce(function(a, b) { return a + b; }, 0);
+                                const pct = total ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
+                                return '  ' + ctx.label + ': ' + ctx.parsed.toLocaleString('es-AR') + ' (' + pct + '%)';
+                            }
+                        }
+                    })
+                },
+                animation: { duration: 500, easing: 'easeOutQuart' }
+            }
+        });
+    }
+
+    // 2. Zones (horizontal bar)
+    destroyStatsChart('zones');
+    const zData = stats.by_zone || [];
+    if (zData.length && document.getElementById('chart-zones')) {
+        const zLabels = zData.map(function(d) { return d.label || 'Sin zona'; }).reverse();
+        const zValues = zData.map(function(d) { return d.value; }).reverse();
+        statsCharts['zones'] = new Chart(document.getElementById('chart-zones'), {
+            type: 'bar',
+            data: {
+                labels: zLabels,
+                datasets: [{
+                    data: zValues,
+                    backgroundColor: palette.dark,
+                    borderWidth: 0,
+                    borderRadius: 4,
+                    borderSkipped: false,
+                    hoverBackgroundColor: palette.gold,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: Object.assign({}, tooltipOpts, {
+                        padding: 8,
+                        cornerRadius: 6,
+                        callbacks: {
+                            label: function(ctx) { return '  ' + ctx.parsed.x.toLocaleString('es-AR') + ' leads'; }
+                        }
+                    })
+                },
+                scales: {
+                    x: {
+                        ticks: { font: baseFont, stepSize: 1, callback: function(v) { return v.toLocaleString('es-AR'); } },
+                        grid: { color: chartGridColor() },
+                        beginAtZero: true
+                    },
+                    y: { ticks: { font: { family: 'Manrope', size: 9 } }, grid: { display: false } }
+                },
+                animation: { duration: 500, easing: 'easeOutQuart' }
+            }
+        });
+    }
+
+    // 3. Trend (line)
+    destroyStatsChart('trend');
+    const tData = stats.trend || [];
+    if (tData.length && document.getElementById('chart-trend')) {
+        const tLabels = tData.map(function(d) {
+            var parts = d.label.split('-');
+            return new Date(parts[0], parseInt(parts[1], 10) - 1).toLocaleString('es', { month: 'short', year: '2-digit' });
+        });
+        const tValues = tData.map(function(d) { return d.value; });
+        statsCharts['trend'] = new Chart(document.getElementById('chart-trend'), {
+            type: 'line',
+            data: {
+                labels: tLabels,
+                datasets: [{
+                    label: 'Leads',
+                    data: tValues,
+                    borderColor: palette.gold[0],
+                    backgroundColor: function(ctx) {
+                        if (!ctx || !ctx.chart || !ctx.chart.chartArea) return palette.gold[0] + '30';
+                        var chart = ctx.chart;
+                        var gradient = chart.ctx.createLinearGradient(0, chart.chartArea.top, 0, chart.chartArea.bottom);
+                        gradient.addColorStop(0, palette.gold[0] + '30');
+                        gradient.addColorStop(1, palette.gold[0] + '04');
+                        return gradient;
+                    },
+                    fill: true,
+                    tension: 0.35,
+                    pointBackgroundColor: palette.gold[0],
+                    pointBorderColor: isDark ? '#1a2332' : '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 8,
+                    pointHoverBorderWidth: 3,
+                    pointHoverBorderColor: palette.dark[0],
+                    borderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: Object.assign({}, tooltipOpts, {
+                        padding: 8,
+                        cornerRadius: 6,
+                        callbacks: {
+                            label: function(ctx) { return '  ' + ctx.parsed.y.toLocaleString('es-AR') + ' leads'; }
+                        }
+                    })
+                },
+                scales: {
+                    x: { ticks: { font: { family: 'Manrope', size: 9 } }, grid: { display: false } },
+                    y: {
+                        ticks: { font: baseFont, stepSize: 1, callback: function(v) { return v.toLocaleString('es-AR'); } },
+                        grid: { color: chartGridColor() },
+                        beginAtZero: true
+                    }
+                },
+                animation: { duration: 500, easing: 'easeOutQuart' }
+            }
+        });
+    }
+
+    // 4. Operation Type (doughnut)
+    destroyStatsChart('opType');
+    const otData = stats.by_operation_type || [];
+    if (otData.length && document.getElementById('chart-op-type')) {
+        const otLabels = otData.map(function(d) { return d.label || 'Sin tipo'; });
+        const otValues = otData.map(function(d) { return d.value; });
+        statsCharts['opType'] = new Chart(document.getElementById('chart-op-type'), {
+            type: 'doughnut',
+            data: {
+                labels: otLabels,
+                datasets: [{
+                    data: otValues,
+                    backgroundColor: palette.mixed,
+                    borderWidth: 0,
+                    hoverOffset: 10,
+                    hoverBorderWidth: 2,
+                    hoverBorderColor: palette.dark[0],
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '68%',
+                plugins: {
+                    legend: { display: true, position: 'bottom', labels: { font: baseFont, boxWidth: 14, padding: 14, usePointStyle: true, pointStyle: 'circle' } },
+                    tooltip: Object.assign({}, tooltipOpts, {
+                        callbacks: {
+                            label: function(ctx) {
+                                const total = ctx.dataset.data.reduce(function(a, b) { return a + b; }, 0);
+                                const pct = total ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
+                                return '  ' + ctx.label + ': ' + ctx.parsed.toLocaleString('es-AR') + ' (' + pct + '%)';
+                            }
+                        }
+                    })
+                },
+                animation: { duration: 500, easing: 'easeOutQuart' }
+            }
+        });
+    }
+}
+
+
