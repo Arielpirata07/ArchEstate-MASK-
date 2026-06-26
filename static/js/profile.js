@@ -762,10 +762,10 @@ function loadUserLeads() {
             const sym = lead.currency === 'USD' ? 'US$' : lead.currency === 'EUR' ? 'EUR' : '$';
             return `<tr style="border-bottom:1px solid var(--border)">
                 <td class="px-4 py-3 text-[13px] font-semibold" style="color:var(--text-primary)">#${lead.id}</td>
-                <td class="px-4 py-3 text-[13px]" style="color:var(--text-secondary)">${lead.type || '-'}</td>
-                <td class="px-4 py-3 text-[13px]" style="color:var(--text-secondary)">${lead.zone || '-'}</td>
-                <td class="px-4 py-3 text-[13px]" style="color:var(--text-secondary)">${sym} ${lead.budget || '-'}</td>
-                <td class="px-4 py-3 text-[13px]" style="color:var(--text-secondary)">${lead.timestamp || '-'}</td>
+                <td class="px-4 py-3 text-[13px]" style="color:var(--text-secondary)">${escapeHtml(lead.type || '-')}</td>
+                <td class="px-4 py-3 text-[13px]" style="color:var(--text-secondary)">${escapeHtml(lead.zone || '-')}</td>
+                <td class="px-4 py-3 text-[13px]" style="color:var(--text-secondary)">${escapeHtml(sym)} ${escapeHtml(lead.budget || '-')}</td>
+                <td class="px-4 py-3 text-[13px]" style="color:var(--text-secondary)">${escapeHtml(lead.timestamp || '-')}</td>
                 <td class="px-4 py-3">
                     <a href="/mi-perfil/lead/${lead.id}/editar" class="inline-flex items-center gap-1 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-widest transition-all" style="background:var(--accent);color:white">
                         <i data-lucide="edit-3" class="w-3 h-3"></i>

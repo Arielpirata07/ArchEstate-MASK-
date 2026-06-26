@@ -132,7 +132,7 @@ function showTableError(msg) {
         <tr>
             <td colspan="7" class="p-8 text-center text-rose-500">
                 <i data-lucide="alert-circle" class="w-6 h-6 mx-auto mb-2"></i>
-                <p class="text-[13px]">${msg}</p>
+                <p class="text-[13px]">${escapeHtml(msg)}</p>
             </td>
         </tr>`;
     if (window.lucide) lucide.createIcons();

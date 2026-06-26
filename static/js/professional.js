@@ -691,7 +691,8 @@ function clearFilters() {
     currentFilters = {
         search: '', type: '', property_type: '', zone: '',
         min_budget: '', max_budget: '', budget_range: '',
-        currency: '', sort: 'timestamp', order: 'desc'
+        currency: '', sort: 'timestamp', order: 'desc',
+        my_leads: currentFilters.my_leads
     };
     setPropType('');
     setBudgetRange('');
@@ -719,7 +720,7 @@ function showLeadError(msg) {
     document.getElementById('leadsTableBody').innerHTML = `
         <tr><td colspan="8" class="p-8 text-center text-rose-600">
             <i data-lucide="alert-circle" class="w-8 h-8 mx-auto mb-2"></i>
-            <p>${msg}</p>
+            <p>${escapeHtml(msg)}</p>
         </td></tr>`;
     if (window.lucide) lucide.createIcons();
 }

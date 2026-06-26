@@ -584,7 +584,7 @@ function showProError(message) {
             <tr>
                 <td colspan="5" class="p-8 text-center text-rose-600">
                     <i data-lucide="alert-circle" class="w-8 h-8 mx-auto mb-2"></i>
-                <p>${message}</p>
+                <p>${escapeHtml(message)}</p>
             </td>
         </tr>
         `;
@@ -836,7 +836,7 @@ function viewLeadDetail(leadId) {
                 renderLeadDetail(data.lead);
             } else {
                 document.getElementById('leadDetailContent').innerHTML = `
-                    <p class="text-center text-rose-600 py-8">${data.error || 'Error al cargar'}</p>`;
+                    <p class="text-center text-rose-600 py-8">${escapeHtml(data.error || 'Error al cargar')}</p>`;
             }
         })
         .catch(() => {
@@ -863,9 +863,9 @@ function renderLeadDetail(lead) {
             <div class="border-t border-midnight/10 pt-5 mt-5">
                 <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-3">Detalles del Departamento</p>
                 <div class="grid grid-cols-2 gap-4">
-                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Piso/Bloque</p><p class="text-sm text-midnight">${lead.floor_block || 'No especificado'}</p></div>
+                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Piso/Bloque</p><p class="text-sm text-midnight">${escapeHtml(lead.floor_block || 'No especificado')}</p></div>
                     <div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Metros Utiles</p><p class="text-sm text-midnight">${lead.usable_m2 ? lead.usable_m2 + ' m²' : 'No especificado'}</p></div>
-                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Ascensor</p><p class="text-sm text-midnight">${lead.elevator || 'No especificado'}</p></div>
+                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Ascensor</p><p class="text-sm text-midnight">${escapeHtml(lead.elevator || 'No especificado')}</p></div>
                 </div>
             </div>`;
     } else if (lead.property_type === 'casa') {
@@ -875,7 +875,7 @@ function renderLeadDetail(lead) {
                 <div class="grid grid-cols-2 gap-4">
                     <div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Terreno</p><p class="text-sm text-midnight">${lead.land_area ? lead.land_area + ' m²' : 'No especificado'}</p></div>
                     <div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Construida</p><p class="text-sm text-midnight">${lead.built_area ? lead.built_area + ' m²' : 'No especificado'}</p></div>
-                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Piscina</p><p class="text-sm text-midnight">${lead.pool || 'No especificado'}</p></div>
+                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Piscina</p><p class="text-sm text-midnight">${escapeHtml(lead.pool || 'No especificado')}</p></div>
                 </div>
             </div>`;
     }
@@ -889,7 +889,7 @@ function renderLeadDetail(lead) {
                 ${lead.province ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Provincia</p><p class="text-base text-midnight">${escapeHtml(lead.province)}</p></div>` : ''}
                 <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Presupuesto</p><p class="text-base font-serif italic text-gold">${budget}</p></div>
                 <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Estilo Arquitectonico</p><p class="text-base text-midnight">${escapeHtml(style)}</p></div>
-                ${lead.ambientes ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Ambientes</p><p class="text-base text-midnight">${lead.ambientes}</p></div>` : ''}
+                ${lead.ambientes ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Ambientes</p><p class="text-base text-midnight">${escapeHtml(String(lead.ambientes))}</p></div>` : ''}
                 ${lead.parking ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Cochera</p><p class="text-base text-midnight">${escapeHtml(lead.parking)}</p></div>` : ''}
                 ${lead.orientation ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Orientacion</p><p class="text-base text-midnight">${escapeHtml(lead.orientation)}</p></div>` : ''}
                 ${lead.property_condition ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Estado</p><p class="text-base text-midnight">${escapeHtml(lead.property_condition)}</p></div>` : ''}

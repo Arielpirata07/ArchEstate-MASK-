@@ -97,7 +97,7 @@ function showToast(message, type = 'success') {
             <i data-lucide="${icon}" class="w-5 h-5"></i>
         </div>
         <div class="flex-grow">
-            <p class="text-[10px] font-bold uppercase tracking-[0.2em] leading-tight">${message}</p>
+            <p class="text-[10px] font-bold uppercase tracking-[0.2em] leading-tight">${escapeHtml(message)}</p>
         </div>
         <div class="toast-progress"></div>
     `;
