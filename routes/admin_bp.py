@@ -177,6 +177,12 @@ def admin_stats():
         pending_reports = conn.execute(
             "SELECT COUNT(*) FROM lead_reports WHERE status = 'pending'"
         ).fetchone()[0]
+        phone_reveals = conn.execute(
+            "SELECT COUNT(*) FROM events WHERE event = 'phone_revealed'"
+        ).fetchone()[0]
+        phone_clicks = conn.execute(
+            "SELECT COUNT(*) FROM events WHERE event = 'phone_button_clicked'"
+        ).fetchone()[0]
 
         return jsonify({
             'total_leads': total_leads,
@@ -188,6 +194,8 @@ def admin_stats():
             'users_by_role': [{'label': r['role'], 'value': r['count']} for r in users_by_role],
             'audit_actions': [{'label': r['action'], 'value': r['count']} for r in audit_actions],
             'pending_reports': pending_reports,
+            'phone_reveals': phone_reveals,
+            'phone_clicks': phone_clicks,
         })
     except Exception as e:
         print(f"Error en admin_stats: {e}")
@@ -297,6 +305,19 @@ def get_telemetry():
         otp_failed = event_counts.get('otp_verify_failed', 0)
         ctr = round(100 * wa_opens / wa_clicks, 1) if wa_clicks else 0.0
 
+        phone_revealed = event_counts.get('phone_revealed', 0)
+        phone_clicks = event_counts.get('phone_button_clicked', 0)
+        tel_clicks = event_counts.get('tel_clicked', 0)
+        phone_success_rate_pct = round(100 * phone_revealed / phone_clicks, 1) if phone_clicks else 0.0
+
+        phone_daily = []
+        for row in conn.execute(
+            f"SELECT strftime('%Y-%m-%d', ts) as day, COUNT(*) as c "
+            f"FROM events WHERE event = 'phone_revealed' AND ts >= {since_clause} "
+            f"GROUP BY day ORDER BY day ASC"
+        ).fetchall():
+            phone_daily.append({'day': row['day'], 'count': row['c']})
+
         consent_by_channel = {}
         for row in conn.execute(
             f"SELECT channel, COUNT(*) as c FROM consent_log "
@@ -327,7 +348,12 @@ def get_telemetry():
                 'otp_verified': otp_verified,
                 'otp_failed': otp_failed,
                 'otp_success_rate_pct': round(100 * otp_verified / otp_sent, 1) if otp_sent else 0.0,
+                'phone_revealed': phone_revealed,
+                'phone_clicks': phone_clicks,
+                'tel_clicks': tel_clicks,
+                'phone_success_rate_pct': phone_success_rate_pct,
             },
+            'phone_daily': phone_daily,
             'consent_by_channel': consent_by_channel,
             'top_professionals': top_pros,
         })

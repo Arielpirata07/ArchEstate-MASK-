@@ -29,7 +29,7 @@
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2">
                     <i data-lucide="flag" class="w-3 h-3"></i> Reportes
-                    <span id="reportBadge" class="hidden ml-1 px-1.5 py-0.5 bg-rose-600 text-white text-[8px] font-bold rounded-full">0</span>
+                    <span id="reportBadge" class="hidden ml-1 px-1.5 py-0.5 bg-rose-600 dark:bg-rose-700 text-white text-[8px] font-bold rounded-full">0</span>
                 </span>
             </button>
             <button onclick="showTab('form-options')" id="tab-form-options"
@@ -65,7 +65,7 @@
         </div>
 
         <!-- KPI Cards -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div class="bg-white rounded-lg shadow p-5 border-l-4 border-gold group relative cursor-default">
                 <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Total Leads</p>
                 <p id="kpi-leads" class="text-3xl font-serif text-midnight">—</p>
@@ -108,6 +108,17 @@
                 </div>
                 <div class="absolute top-8 right-3 hidden group-hover:block z-10 w-36 bg-midnight text-white text-[9px] p-2 rounded shadow-xl">
                     Operaciones registradas en el log de auditoría.
+                </div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-5 border-l-4 border-violet-400 dark:border-violet-300 group relative cursor-default">
+                <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Teléfonos Vistos</p>
+                <p id="kpi-phones" class="text-3xl font-serif text-midnight">—</p>
+                <p id="kpi-phones-rate" class="text-[10px] text-midnight/30 mt-1 font-bold"></p>
+                <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i data-lucide="info" class="w-3 h-3 text-midnight/30"></i>
+                </div>
+                <div class="absolute top-8 right-3 hidden group-hover:block z-10 w-36 bg-midnight text-white text-[9px] p-2 rounded shadow-xl">
+                    Veces que se reveló un teléfono.
                 </div>
             </div>
         </div>
@@ -194,8 +205,98 @@
                 </div>
             </div>
         </div>
-    </div>
 
+        <!-- Telemetría de Contacto -->
+        <div class="bg-white rounded-lg shadow-xl overflow-hidden mt-6">
+            <div class="p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between">
+                <h3 class="text-xs font-bold uppercase tracking-widest text-gold flex items-center gap-2">
+                    <i data-lucide="smartphone" class="w-3.5 h-3.5"></i> Telemetría de Contacto
+                </h3>
+                <select id="telemetry-period" onchange="loadTelemetry()"
+                    class="px-2 py-1 text-[10px] border border-midnight/20 rounded focus:border-gold focus:outline-none bg-white">
+                    <option value="7d">7 días</option>
+                    <option value="30d" selected>30 días</option>
+                    <option value="90d">90 días</option>
+                    <option value="1y">1 año</option>
+                </select>
+            </div>
+            <div class="p-6 space-y-6" id="telemetry-content">
+                <div id="tm-loading" class="flex items-center justify-center py-8">
+                    <i data-lucide="loader-2" class="w-5 h-5 animate-spin text-gold"></i>
+                </div>
+                <div id="tm-loaded" class="hidden space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-paper-dark rounded-lg p-5 border-l-4 border-gold relative group">
+                            <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40 mb-1 flex items-center gap-1.5">
+                                <i data-lucide="eye" class="w-3 h-3"></i> Intentos Ver Teléfono
+                            </p>
+                            <p id="tm-phone-clicks" class="text-3xl font-serif text-midnight mt-2">—</p>
+                            <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <i data-lucide="info" class="w-3 h-3 text-midnight/30"></i>
+                            </div>
+                            <div class="absolute top-8 right-3 hidden group-hover:block z-10 w-36 bg-midnight text-white text-[9px] p-2 rounded shadow-xl">
+                                Clics en el botón "Ver Teléfono".
+                            </div>
+                        </div>
+                        <div class="md:col-span-2 bg-white rounded-lg border border-midnight/10 p-5 relative group">
+                            <div class="flex items-start justify-between">
+                                <div class="flex-1">
+                                    <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40 mb-1 flex items-center gap-1.5">
+                                        <i data-lucide="smartphone" class="w-3 h-3"></i> Teléfonos Revelados
+                                    </p>
+                                    <p id="tm-phone-revealed" class="text-3xl font-serif text-midnight mt-2">—</p>
+                                    <p id="tm-phone-rate" class="text-[11px] text-midnight/40 mt-1 font-bold">—</p>
+                                    <p id="tm-tel-clicks" class="text-[10px] text-midnight/30 mt-0.5 flex items-center gap-1">
+                                        <i data-lucide="phone" class="w-2.5 h-2.5"></i> <span>—</span>
+                                    </p>
+                                </div>
+                                <div class="w-28 h-14 flex-shrink-0 ml-4 self-center">
+                                    <canvas id="sparkline-phone" width="112" height="56"></canvas>
+                                </div>
+                            </div>
+                            <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <i data-lucide="info" class="w-3 h-3 text-midnight/30"></i>
+                            </div>
+                            <div class="absolute top-8 right-3 hidden group-hover:block z-10 w-40 bg-midnight text-white text-[9px] p-2 rounded shadow-xl">
+                                Progreso diario de revelaciones en el período.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div class="bg-white rounded-lg border border-midnight/5 p-3">
+                            <p class="text-[8px] uppercase tracking-widest font-bold text-midnight/30 flex items-center gap-1">
+                                <i data-lucide="message-circle" class="w-2.5 h-2.5"></i> WhatsApp Clics
+                            </p>
+                            <p id="tm-wa-clicks" class="text-lg font-serif text-midnight/60 mt-1">—</p>
+                        </div>
+                        <div class="bg-white rounded-lg border border-midnight/5 p-3">
+                            <p class="text-[8px] uppercase tracking-widest font-bold text-midnight/30 flex items-center gap-1">
+                                <i data-lucide="trending-up" class="w-2.5 h-2.5"></i> WhatsApp CTR
+                            </p>
+                            <p id="tm-wa-ctr" class="text-lg font-serif text-midnight/60 mt-1">—</p>
+                        </div>
+                        <div class="bg-white rounded-lg border border-midnight/5 p-3">
+                            <p class="text-[8px] uppercase tracking-widest font-bold text-midnight/30 flex items-center gap-1">
+                                <i data-lucide="shield" class="w-2.5 h-2.5"></i> OTP Enviados
+                            </p>
+                            <p id="tm-otp-sent" class="text-lg font-serif text-midnight/60 mt-1">—</p>
+                        </div>
+                        <div class="bg-white rounded-lg border border-midnight/5 p-3">
+                            <p class="text-[8px] uppercase tracking-widest font-bold text-midnight/30 flex items-center gap-1">
+                                <i data-lucide="shield-check" class="w-2.5 h-2.5"></i> OTP Verificados
+                            </p>
+                            <p id="tm-otp-verified" class="text-lg font-serif text-midnight/60 mt-1">—</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="tm-empty" class="hidden flex flex-col items-center justify-center py-10 text-center">
+                    <i data-lucide="inbox" class="w-8 h-8 text-midnight/20 mb-2"></i>
+                    <p class="text-xs text-midnight/30 font-bold tracking-wider">Sin datos de telemetría en este período</p>
+                    <p class="text-[10px] text-midnight/20 mt-1">Los eventos se registrarán a medida que los profesionales interactúen.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- ===== TAB: GESTIÓN ===== -->
     <div id="panel-management" class="hidden space-y-8">
@@ -523,7 +624,7 @@
                         Cancelar
                     </button>
                     <button id="confirmDeactivateBtn" onclick="confirmDeactivate()"
-                        class="flex-1 py-3 bg-rose-600 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all flex items-center justify-center gap-2">
+                        class="flex-1 py-3 bg-rose-600 dark:bg-rose-700 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all flex items-center justify-center gap-2">
                         <i data-lucide="user-x" class="w-3 h-3"></i>
                         <span id="confirmDeactivateBtnLabel">Dar de Baja</span>
                     </button>

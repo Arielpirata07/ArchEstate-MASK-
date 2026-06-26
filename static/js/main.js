@@ -335,6 +335,7 @@ function initUserForm() {
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('opacity-70');
                 if (window.lucide) lucide.createIcons();
+                showToast('El email no es válido o está vacío. Verificá tu perfil.', 'error');
                 return;
             }
 
@@ -737,7 +738,7 @@ function initBudgetPopup() {
 
     const fetchBudgetStats = async () => {
         try {
-            const response = await fetch('/api/budget-stats');
+            const response = await fetch('/estadisticas-popup');
             const result = await response.json();
             budgetData = {
                 min: typeof result.min === 'number' ? result.min : budgetData.min,
@@ -840,6 +841,12 @@ async function togglePhone(btn, leadId) {
         btn.classList.remove('bg-gold');
         btn.classList.add('bg-midnight');
     } else {
+        fetch('/api/lead/' + leadId + '/whatsapp-event', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ event: 'phone_button_clicked' })
+        }).catch(function() {});
+
         const cachedPhone = btn.getAttribute('data-phone');
 
         if (cachedPhone) {

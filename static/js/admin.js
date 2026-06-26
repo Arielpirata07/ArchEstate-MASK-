@@ -145,30 +145,52 @@ function renderTypeChart() {
                 data: data.leads_by_type.map(d => d.value),
                 backgroundColor: getPalette().gold,
                 borderWidth: 0,
-                hoverOffset: 6,
+                hoverOffset: 10,
+                hoverBorderWidth: 2,
+                hoverBorderColor: getPalette().dark[0],
                 borderRadius: isDoughnut ? 0 : 4,
                 borderSkipped: false,
             }]
         },
         options: {
             responsive: true,
-            cutout: isDoughnut ? '65%' : undefined,
+            maintainAspectRatio: false,
+            cutout: isDoughnut ? '68%' : undefined,
             plugins: {
-                legend: { display: isDoughnut, labels: { font: baseFont, boxWidth: 12 } },
+                legend: {
+                    display: isDoughnut,
+                    position: 'bottom',
+                    labels: { font: baseFont, boxWidth: 14, padding: 14, usePointStyle: true, pointStyle: 'circle' }
+                },
                 tooltip: {
+                    backgroundColor: isDarkMode() ? '#1a2332' : '#fff',
+                    titleFont: { family: 'Manrope', size: 11, weight: 'bold' },
+                    titleColor: isDarkMode() ? '#FAF9F7' : '#000410',
+                    bodyFont: { family: 'Manrope', size: 10 },
+                    bodyColor: isDarkMode() ? '#C4A882' : '#735A3A',
+                    borderColor: isDarkMode() ? 'rgba(255,255,255,0.08)' : 'rgba(0,4,16,0.08)',
+                    borderWidth: 1,
+                    padding: 10,
+                    cornerRadius: 8,
                     callbacks: {
                         label: ctx => {
                             const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
                             const pct   = total ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
-                            return `  ${ctx.label}: ${ctx.parsed} (${pct}%)`;
+                            const val   = ctx.parsed.toLocaleString('es-AR');
+                            return `  ${ctx.label}: ${val} (${pct}%)`;
                         }
                     }
                 }
             },
             scales: isDoughnut ? {} : {
                 x: { ticks: { font: { family: 'Manrope', size: 9 } }, grid: { display: false } },
-                y: { ticks: { font: baseFont, stepSize: 1 }, grid: { color: chartGridColor() }, beginAtZero: true }
-            }
+                y: {
+                    ticks: { font: baseFont, stepSize: 1, callback: v => v.toLocaleString('es-AR') },
+                    grid: { color: chartGridColor() },
+                    beginAtZero: true
+                }
+            },
+            animation: { duration: 500, easing: 'easeOutQuart' }
         }
     });
 }
@@ -189,8 +211,9 @@ function renderMonthChart() {
     const data = dashState.rawData;
     if (!data) return;
 
-    // Filtrar por período seleccionado
-    const all     = data.leads_by_month;
+    const all = data.leads_by_month;
+    if (!all || !all.length) return;
+
     const months  = dashState.period <= 30  ? 1
                   : dashState.period <= 90  ? 3
                   : dashState.period <= 180 ? 6
@@ -212,27 +235,59 @@ function renderMonthChart() {
             datasets: [{
                 label: 'Leads',
                 data:  values.length ? values : [data.total_leads],
-                borderColor: '#735A3A',
-                backgroundColor: isLine ? 'rgba(115,90,58,0.08)' : '#735A3A',
-                fill: isLine, tension: 0.4,
-                pointBackgroundColor: '#735A3A', pointRadius: isLine ? 5 : 0,
+                borderColor: getPalette().gold[0],
+                backgroundColor: isLine
+                    ? (function(ctx) {
+                        if (!ctx || !ctx.chart || !ctx.chart.chartArea) return getPalette().gold[0] + '30';
+                        var chart = ctx.chart;
+                        if (!chart.chartArea) return getPalette().gold[0] + '30';
+                        var gradient = chart.ctx.createLinearGradient(0, chart.chartArea.top, 0, chart.chartArea.bottom);
+                        gradient.addColorStop(0, getPalette().gold[0] + '30');
+                        gradient.addColorStop(1, getPalette().gold[0] + '04');
+                        return gradient;
+                      })
+                    : getPalette().gold[0],
+                fill: isLine,
+                tension: 0.35,
+                pointBackgroundColor: getPalette().gold[0],
+                pointBorderColor: isDarkMode() ? '#1a2332' : '#fff',
+                pointBorderWidth: 2,
+                pointRadius: isLine ? 5 : 0,
+                pointHoverRadius: isLine ? 8 : 0,
+                pointHoverBorderWidth: 3,
+                pointHoverBorderColor: getPalette().dark[0],
+                borderWidth: 2,
                 borderRadius: isLine ? 0 : 4,
                 borderSkipped: false,
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
                 legend: { display: false },
                 tooltip: {
-                    callbacks: { label: ctx => `  ${ctx.parsed.y} leads` }
+                    backgroundColor: isDarkMode() ? '#1a2332' : '#fff',
+                    titleFont: { family: 'Manrope', size: 11, weight: 'bold' },
+                    titleColor: isDarkMode() ? '#FAF9F7' : '#000410',
+                    bodyFont: { family: 'Manrope', size: 10 },
+                    bodyColor: isDarkMode() ? '#C4A882' : '#735A3A',
+                    borderColor: isDarkMode() ? 'rgba(255,255,255,0.08)' : 'rgba(0,4,16,0.08)',
+                    borderWidth: 1,
+                    padding: 8,
+                    cornerRadius: 6,
+                    callbacks: { label: ctx => `  ${ctx.parsed.y.toLocaleString('es-AR')} leads` }
                 }
             },
             scales: {
                 x: { ticks: { font: baseFont }, grid: { color: chartGridColor() } },
-                y: { ticks: { font: baseFont, stepSize: 1 }, grid: { color: chartGridColor() }, beginAtZero: true }
+                y: {
+                    ticks: { font: baseFont, stepSize: 1, callback: v => v.toLocaleString('es-AR') },
+                    grid: { color: chartGridColor() },
+                    beginAtZero: true
+                }
             },
-            animation: { duration: 400 }
+            animation: { duration: 500, easing: 'easeOutQuart' }
         }
     });
 }
@@ -265,6 +320,12 @@ async function initDashboard() {
         const topAction = data.audit_actions[0];
         document.getElementById('kpi-audit-sub').textContent = topAction ? `${topAction.label}: ${topAction.value}` : '';
 
+        animateCounter(document.getElementById('kpi-phones'), data.phone_reveals || 0);
+        const phoneClicks = data.phone_clicks || 0;
+        const phoneReveals = data.phone_reveals || 0;
+        const phoneRate = phoneClicks ? Math.round(phoneReveals / phoneClicks * 100) : 0;
+        document.getElementById('kpi-phones-rate').textContent = phoneClicks ? `${phoneRate}% de intentos exitosos` : '';
+
         // Gráficos (solo si Chart.js cargó correctamente)
         if (typeof Chart !== 'undefined') {
             renderTypeChart();
@@ -275,18 +336,44 @@ async function initDashboard() {
                 type: 'bar',
                 data: {
                     labels: data.leads_by_zone.map(d => d.label),
-                    datasets: [{ label: 'Leads', data: data.leads_by_zone.map(d => d.value), backgroundColor: getPalette().dark, borderRadius: 4, borderSkipped: false }]
+                    datasets: [{
+                        label: 'Leads',
+                        data: data.leads_by_zone.map(d => d.value),
+                        backgroundColor: getPalette().dark,
+                        borderRadius: 4,
+                        borderSkipped: false,
+                        hoverBackgroundColor: getPalette().gold,
+                    }]
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     indexAxis: 'y',
-                    plugins: { legend: { display: false },
-                        tooltip: { callbacks: { label: ctx => `  ${ctx.parsed.x} leads` } }
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: isDarkMode() ? '#1a2332' : '#fff',
+                            titleFont: { family: 'Manrope', size: 11, weight: 'bold' },
+                            titleColor: isDarkMode() ? '#FAF9F7' : '#000410',
+                            bodyFont: { family: 'Manrope', size: 10 },
+                            bodyColor: isDarkMode() ? '#C4A882' : '#735A3A',
+                            borderColor: isDarkMode() ? 'rgba(255,255,255,0.08)' : 'rgba(0,4,16,0.08)',
+                            borderWidth: 1,
+                            padding: 8,
+                            cornerRadius: 6,
+                            callbacks: {
+                                label: ctx => `  ${ctx.parsed.x.toLocaleString('es-AR')} leads`
+                            }
+                        }
                     },
                     scales: {
-                        x: { ticks: { font: baseFont, stepSize: 1 }, grid: { color: chartGridColor() } },
-                        y: { ticks: { font: baseFont }, grid: { display: false } }
-                    }
+                        x: {
+                            ticks: { font: baseFont, stepSize: 1, callback: v => v.toLocaleString('es-AR') },
+                            grid: { color: chartGridColor() }
+                        },
+                        y: { ticks: { font: { family: 'Manrope', size: 9 } }, grid: { display: false } }
+                    },
+                    animation: { duration: 500, easing: 'easeOutQuart' }
                 }
             });
 
@@ -298,17 +385,42 @@ async function initDashboard() {
                 type: 'bar',
                 data: {
                     labels: data.leads_by_budget.map(d => d.label),
-                    datasets: [{ label: 'Leads', data: data.leads_by_budget.map(d => d.value), backgroundColor: getPalette().mixed, borderRadius: 4, borderSkipped: false }]
+                    datasets: [{
+                        label: 'Leads',
+                        data: data.leads_by_budget.map(d => d.value),
+                        backgroundColor: getPalette().mixed,
+                        borderRadius: 4,
+                        borderSkipped: false,
+                        hoverBackgroundColor: getPalette().gold,
+                    }]
                 },
                 options: {
                     responsive: true,
-                    plugins: { legend: { display: false },
-                        tooltip: { callbacks: { label: ctx => `  ${ctx.parsed.y} leads` } }
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: isDarkMode() ? '#1a2332' : '#fff',
+                            titleFont: { family: 'Manrope', size: 11, weight: 'bold' },
+                            titleColor: isDarkMode() ? '#FAF9F7' : '#000410',
+                            bodyFont: { family: 'Manrope', size: 10 },
+                            bodyColor: isDarkMode() ? '#C4A882' : '#735A3A',
+                            borderColor: isDarkMode() ? 'rgba(255,255,255,0.08)' : 'rgba(0,4,16,0.08)',
+                            borderWidth: 1,
+                            padding: 8,
+                            cornerRadius: 6,
+                            callbacks: { label: ctx => `  ${ctx.parsed.y.toLocaleString('es-AR')} leads` }
+                        }
                     },
                     scales: {
                         x: { ticks: { font: { family: 'Manrope', size: 8, weight: 'bold' }, maxRotation: 30 }, grid: { display: false } },
-                        y: { ticks: { font: baseFont, stepSize: 1 }, grid: { color: chartGridColor() }, beginAtZero: true }
-                    }
+                        y: {
+                            ticks: { font: baseFont, stepSize: 1, callback: v => v.toLocaleString('es-AR') },
+                            grid: { color: chartGridColor() },
+                            beginAtZero: true
+                        }
+                    },
+                    animation: { duration: 500, easing: 'easeOutQuart' }
                 }
             });
         } else {
@@ -316,9 +428,102 @@ async function initDashboard() {
         }
 
         if (window.lucide) lucide.createIcons();
+        loadTelemetry();
 
     } catch (err) {
         console.error('Error cargando estadísticas:', err);
+    }
+}
+
+async function loadTelemetry() {
+    var period = document.getElementById('telemetry-period');
+    if (!period) return;
+    var p = period.value;
+    var loadingEl = document.getElementById('tm-loading');
+    var loadedEl = document.getElementById('tm-loaded');
+    var emptyEl = document.getElementById('tm-empty');
+    if (!loadedEl) return;
+    loadedEl.classList.add('hidden');
+    emptyEl.classList.add('hidden');
+    loadingEl.classList.remove('hidden');
+    try {
+        var res = await fetch('/api/admin/telemetry?period=' + p);
+        var data = await res.json();
+        loadingEl.classList.add('hidden');
+        if (!data.success) { emptyEl.classList.remove('hidden'); return; }
+        var m = data.metrics || {};
+        var c = m.phone_clicks || 0;
+        var r = m.phone_revealed || 0;
+        var tc = m.tel_clicks || 0;
+        if (c === 0 && r === 0 && tc === 0) {
+            emptyEl.classList.remove('hidden');
+            return;
+        }
+        emptyEl.classList.add('hidden');
+        loadedEl.classList.remove('hidden');
+        animateCounter(document.getElementById('tm-phone-clicks'), c);
+        animateCounter(document.getElementById('tm-phone-revealed'), r);
+        var rateEl = document.getElementById('tm-phone-rate');
+        var rate = m.phone_success_rate_pct != null ? m.phone_success_rate_pct : 0;
+        rateEl.textContent = rate > 0 ? rate + '% de éxito' : '—';
+        var telEl = document.getElementById('tm-tel-clicks');
+        telEl.innerHTML = '<i data-lucide="phone" class="w-2.5 h-2.5"></i> <span>' + tc + ' clics en Llamar</span>';
+        animateCounter(document.getElementById('tm-wa-clicks'), m.wa_button_clicks || 0);
+        var ctrEl = document.getElementById('tm-wa-ctr');
+        var ctr = m.wa_click_through_rate_pct != null ? m.wa_click_through_rate_pct : 0;
+        ctrEl.textContent = ctr > 0 ? ctr + '%' : '—';
+        animateCounter(document.getElementById('tm-otp-sent'), m.otp_sent || 0);
+        animateCounter(document.getElementById('tm-otp-verified'), m.otp_verified || 0);
+        if (typeof Chart !== 'undefined' && data.phone_daily && data.phone_daily.length > 0) {
+            var sparkCanvas = document.getElementById('sparkline-phone');
+            if (sparkCanvas) {
+                var sparkCtx = sparkCanvas.getContext('2d');
+                if (sparkCtx) {
+                    var dm = isDarkMode();
+                    var lineColor = dm ? '#A68A64' : '#735A3A';
+                    var fillTop = dm ? 'rgba(166,138,100,0.20)' : 'rgba(115,90,58,0.20)';
+                    var fillBot = dm ? 'rgba(166,138,100,0.01)' : 'rgba(115,90,58,0.01)';
+                    new Chart(sparkCtx, {
+                        type: 'line',
+                        data: {
+                            labels: data.phone_daily.map(function(d) { return d.day; }),
+                            datasets: [{
+                                data: data.phone_daily.map(function(d) { return d.count; }),
+                                borderColor: lineColor,
+                                borderWidth: 1.5,
+                                backgroundColor: function(ctx) {
+                                    if (!ctx.chart.chartArea) return fillTop;
+                                    var g = ctx.chart.chartArea;
+                                    var grad = ctx.chart.ctx.createLinearGradient(0, g.top, 0, g.bottom);
+                                    grad.addColorStop(0, fillTop);
+                                    grad.addColorStop(1, fillBot);
+                                    return grad;
+                                },
+                                fill: true,
+                                pointRadius: 0,
+                                pointHoverRadius: 2,
+                                tension: 0.3,
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                            scales: {
+                                x: { display: false },
+                                y: { display: false, beginAtZero: true }
+                            },
+                            animation: { duration: 400 }
+                        }
+                    });
+                }
+            }
+        }
+        if (window.lucide) lucide.createIcons();
+    } catch (err) {
+        loadingEl.classList.add('hidden');
+        emptyEl.classList.remove('hidden');
+        console.error('Error cargando telemetría:', err);
     }
 }
 

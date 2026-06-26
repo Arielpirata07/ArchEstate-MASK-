@@ -866,6 +866,14 @@ html {
 .dark .border-green-200,
 .dark .border-green-100 { border-color: rgba(34, 197, 94, 0.3) !important; }
 
+/* --- Profile leads table header border --- */
+.profile-leads-table thead tr {
+    border-bottom: 2px solid rgba(115, 90, 58, 0.25);
+}
+.dark .profile-leads-table thead tr {
+    border-bottom: 2px solid rgba(166, 138, 100, 0.25);
+}
+
 /* --- Back to Top Button --- */
 .back-to-top {
     position: fixed;

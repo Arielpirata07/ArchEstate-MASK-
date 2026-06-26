@@ -213,7 +213,7 @@ def whatsapp_event(lead_id):
     if event not in {
         'wa_button_clicked', 'wa_window_opened', 'wa_popup_blocked',
         'wa_invalid_number', 'sms_button_clicked', 'sms_window_opened',
-        'sms_fallback_used', 'tel_clicked'
+        'sms_fallback_used', 'tel_clicked', 'phone_button_clicked'
     }:
         return jsonify({"error": "Evento no reconocido."}), 400
 
