@@ -90,6 +90,15 @@ function exportChart(canvasId, filename) {
     link.click();
 }
 
+// ---- Collapsible sections ----
+function toggleSection(id) {
+    var body = document.getElementById(id + '-body');
+    var chevron = document.getElementById(id + '-chevron');
+    if (!body) return;
+    body.classList.toggle('hidden');
+    if (chevron) chevron.classList.toggle('-rotate-90');
+}
+
 // ---- Período ----
 function setPeriod(days) {
     dashState.period = days;
@@ -98,7 +107,7 @@ function setPeriod(days) {
         btn.className = 'period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest transition-all '
             + (active ? 'bg-midnight text-white' : 'bg-paper-dark text-midnight hover:bg-gold hover:text-white');
     });
-    renderMonthChart();
+    initDashboard();
 }
 
 // ---- Refresh ----
@@ -295,7 +304,7 @@ function renderMonthChart() {
 // ---- Init principal ----
 async function initDashboard() {
     try {
-        const res  = await fetch('/api/admin/stats');
+        const res  = await fetch('/api/admin/stats?period=' + dashState.period);
         const data = await res.json();
         dashState.rawData  = data;
         dashState.allZones = data.leads_by_zone;
@@ -436,9 +445,8 @@ async function initDashboard() {
 }
 
 async function loadTelemetry() {
-    var period = document.getElementById('telemetry-period');
-    if (!period) return;
-    var p = period.value;
+    var periodMap = {0: '0', 7: '7d', 30: '30d', 90: '90d', 365: '1y'};
+    var p = periodMap[dashState.period] || '30d';
     var loadingEl = document.getElementById('tm-loading');
     var loadedEl = document.getElementById('tm-loaded');
     var emptyEl = document.getElementById('tm-empty');
@@ -915,18 +923,26 @@ async function confirmDeactivate() {
 /**
  * Gestion de Reportes de Leads
  */
-let allReports = [];
-let currentReportFilter = 'pending';
+let currentReportsPage = 1;
+let currentReportsFilter = 'pending';
 
-function loadReports() {
-    fetch('/api/admin/reports')
+function loadReports(filter, page) {
+    if (filter !== undefined) currentReportsFilter = filter;
+    if (page !== undefined) currentReportsPage = page;
+
+    var params = new URLSearchParams();
+    params.set('page', currentReportsPage);
+    params.set('per_page', '25');
+    if (currentReportsFilter !== 'all') params.set('status', currentReportsFilter);
+
+    fetch('/api/admin/reports?' + params.toString())
         .then(r => r.json())
         .then(data => {
             if (data.success) {
-                allReports = data.reports;
                 renderReportsKPIs(data);
                 renderReports(data.reports);
                 updateReportBadge(data.status_counts);
+                renderReportsPagination(data.total, data.page, data.per_page);
             }
         })
         .catch(e => console.error('Error loading reports:', e));
@@ -951,17 +967,42 @@ function updateReportBadge(statusCounts) {
 }
 
 function filterReports(filter) {
-    currentReportFilter = filter;
+    currentReportsFilter = filter;
+    currentReportsPage = 1;
     document.querySelectorAll('.report-filter-chip').forEach(chip => {
         chip.classList.toggle('report-filter-active', chip.dataset.filter === filter);
     });
+    loadReports();
+}
 
-    let filtered = allReports;
-    if (filter === 'pending') filtered = allReports.filter(r => r.status === 'pending');
-    else if (filter === 'dismissed') filtered = allReports.filter(r => r.status === 'dismissed');
-    else if (filter === 'deleted') filtered = allReports.filter(r => r.status === 'deleted');
+function loadReportsPage(page) {
+    if (page < 1) return;
+    currentReportsPage = page;
+    loadReports();
+}
 
-    renderReports(filtered);
+function renderReportsPagination(total, page, perPage) {
+    var paginationEl = document.getElementById('reports-pagination');
+    if (!paginationEl) return;
+    var totalPages = Math.ceil(total / perPage);
+    if (totalPages <= 1) { paginationEl.classList.add('hidden'); return; }
+    paginationEl.classList.remove('hidden');
+
+    var infoEl = document.getElementById('reports-page-info');
+    var prevBtn = document.getElementById('reports-prev');
+    var nextBtn = document.getElementById('reports-next');
+    var indicator = document.getElementById('reports-page-indicator');
+
+    if (infoEl) infoEl.textContent = 'Pagina ' + page + ' de ' + totalPages + ' (' + total + ' reportes)';
+    if (prevBtn) {
+        prevBtn.disabled = page <= 1;
+        prevBtn.classList.toggle('disabled\\:opacity-30', page <= 1);
+    }
+    if (nextBtn) {
+        nextBtn.disabled = page >= totalPages;
+        nextBtn.classList.toggle('disabled\\:opacity-30', page >= totalPages);
+    }
+    if (indicator) indicator.textContent = page + ' / ' + totalPages;
 }
 
 function renderReports(reports) {
@@ -1142,7 +1183,7 @@ function deleteLead(reportId, leadId) {
         .then(data => {
             if (data.success) {
                 if (typeof showToast === 'function') showToast('Lead eliminado correctamente', 'success');
-                loadReports();
+                loadReports(undefined, 1);
                 if (typeof refreshDashboard === 'function') refreshDashboard();
             } else {
                 if (typeof showToast === 'function') showToast(data.error || 'Error al eliminar', 'error');
@@ -1160,7 +1201,7 @@ function dismissReport(reportId) {
         .then(data => {
             if (data.success) {
                 if (typeof showToast === 'function') showToast('Reporte descartado', 'success');
-                loadReports();
+                loadReports(undefined, 1);
             } else {
                 if (typeof showToast === 'function') showToast(data.error || 'Error', 'error');
             }
@@ -1179,7 +1220,7 @@ function restoreReport(reportId) {
         .then(function (data) {
             if (data.success) {
                 if (typeof showToast === 'function') showToast('Reporte restaurado correctamente', 'success');
-                loadReports();
+                loadReports(undefined, 1);
                 if (typeof refreshDashboard === 'function') refreshDashboard();
             } else {
                 if (typeof showToast === 'function') showToast(data.error || 'Error al restaurar', 'error');
@@ -1589,3 +1630,186 @@ function deleteFormOption(id) {
             });
     });
 }
+
+// ================================================================
+// PHONE AUDIT — Historial de Acceso a Teléfonos
+// ================================================================
+var currentPaPage = 1;
+var currentPaFilters = {};
+var paProfesionalList = [];
+
+function initPhoneAudit() {
+    fetch('/api/professionals?sort=name&order=asc')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success && data.professionals) {
+                paProfesionalList = data.professionals.map(function(p) { return p.name; });
+                var select = document.getElementById('pa-profesional');
+                if (select) {
+                    paProfesionalList.forEach(function(name) {
+                        var opt = document.createElement('option');
+                        opt.value = name;
+                        opt.textContent = name;
+                        select.appendChild(opt);
+                    });
+                }
+            }
+        })
+        .catch(function() {});
+    loadPhoneAudit();
+}
+
+function loadPhoneAudit() {
+    currentPaPage = 1;
+    var profesional = document.getElementById('pa-profesional');
+    var evento = document.getElementById('pa-evento');
+    var desde = document.getElementById('pa-desde');
+    var hasta = document.getElementById('pa-hasta');
+    currentPaFilters = {
+        profesional: profesional ? profesional.value : '',
+        evento: evento ? evento.value : '',
+        desde: desde ? desde.value : '',
+        hasta: hasta ? hasta.value : '',
+    };
+    _fetchPhoneAudit();
+}
+
+function loadPhoneAuditPage(page) {
+    if (page < 1) return;
+    currentPaPage = page;
+    _fetchPhoneAudit();
+}
+
+function clearPhoneAuditFilters() {
+    var profesional = document.getElementById('pa-profesional');
+    var evento = document.getElementById('pa-evento');
+    var desde = document.getElementById('pa-desde');
+    var hasta = document.getElementById('pa-hasta');
+    if (profesional) profesional.value = '';
+    if (evento) evento.value = '';
+    if (desde) desde.value = '';
+    if (hasta) hasta.value = '';
+    currentPaFilters = {};
+    currentPaPage = 1;
+    _fetchPhoneAudit();
+}
+
+function _fetchPhoneAudit() {
+    var loadingEl = document.getElementById('pa-loading');
+    var emptyEl = document.getElementById('pa-empty');
+    var tbody = document.getElementById('pa-tbody');
+    var paginationEl = document.getElementById('pa-pagination');
+    var countEl = document.getElementById('pa-count');
+    if (!tbody) return;
+    loadingEl.classList.remove('hidden');
+    emptyEl.classList.add('hidden');
+    if (paginationEl) paginationEl.classList.add('hidden');
+    var params = new URLSearchParams();
+    params.set('page', currentPaPage);
+    params.set('per_page', '25');
+    if (currentPaFilters.profesional) params.set('profesional', currentPaFilters.profesional);
+    if (currentPaFilters.evento) params.set('evento', currentPaFilters.evento);
+    if (currentPaFilters.desde) params.set('desde', currentPaFilters.desde);
+    if (currentPaFilters.hasta) params.set('hasta', currentPaFilters.hasta);
+    fetch('/api/admin/phone-audit?' + params.toString())
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            loadingEl.classList.add('hidden');
+            if (data.success) {
+                renderPhoneAudit(data);
+                if (countEl) countEl.textContent = data.total || 0;
+            } else {
+                emptyEl.classList.remove('hidden');
+            }
+        })
+        .catch(function() {
+            loadingEl.classList.add('hidden');
+            emptyEl.classList.remove('hidden');
+        });
+}
+
+function renderPhoneAudit(data) {
+    var tbody = document.getElementById('pa-tbody');
+    var emptyEl = document.getElementById('pa-empty');
+    var paginationEl = document.getElementById('pa-pagination');
+    if (!tbody) return;
+    var rows = data.data || [];
+    if (!rows.length) {
+        emptyEl.classList.remove('hidden');
+        if (paginationEl) paginationEl.classList.add('hidden');
+        tbody.querySelectorAll('tr:not(#pa-loading):not(#pa-empty)').forEach(function(r) { r.remove(); });
+        return;
+    }
+    emptyEl.classList.add('hidden');
+    tbody.querySelectorAll('tr:not(#pa-loading):not(#pa-empty)').forEach(function(r) { r.remove(); });
+    rows.forEach(function(entry, idx) {
+        var tr = document.createElement('tr');
+        tr.className = 'border-b border-midnight/[0.03] hover:bg-paper transition-colors';
+        tr.style.animationDelay = (idx * 0.05) + 's';
+        tr.innerHTML = renderPhoneAuditRow(entry);
+        tbody.appendChild(tr);
+    });
+    initTableStagger(tbody);
+    updatePaPagination(data.total, data.page, data.per_page);
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function renderPhoneAuditRow(entry) {
+    var eventoLabel, eventoClass, eventoIcon;
+    if (entry.event === 'phone_revealed') {
+        eventoLabel = 'Revelado';
+        eventoClass = 'bg-emerald-50 text-emerald-700';
+        eventoIcon = '<i data-lucide="eye" class="w-2.5 h-2.5"></i>';
+    } else if (entry.event === 'wa_link_generated') {
+        eventoLabel = 'WhatsApp';
+        eventoClass = 'bg-gold/10 text-gold';
+        eventoIcon = '<i data-lucide="message-circle" class="w-2.5 h-2.5"></i>';
+    } else {
+        eventoLabel = entry.event;
+        eventoClass = 'bg-paper-dark text-midnight/50';
+        eventoIcon = '<i data-lucide="activity" class="w-2.5 h-2.5"></i>';
+    }
+    var leadCell = entry.lead_id
+        ? '<div class="font-medium text-midnight">#' + entry.lead_id + ' ' + escapeHtml(entry.lead_tipo || '') + '</div>' +
+          '<div class="text-[11px] text-midnight/40">' + escapeHtml(entry.lead_zona || '') + '</div>'
+        : '<span class="text-midnight/30 italic">Lead eliminado</span>';
+    var phoneCell = entry.lead_telefono
+        ? '<span class="font-mono text-[11px] text-midnight/70">' + escapeHtml(entry.lead_telefono) + '</span>'
+        : '<span class="text-midnight/30 italic">—</span>';
+    var fecha = entry.ts || '';
+    return '<td class="px-4 py-3 text-[13px] font-medium text-midnight">' + escapeHtml(entry.profesional || '') + '</td>' +
+           '<td class="px-4 py-3 text-[13px]">' + leadCell + '</td>' +
+           '<td class="px-4 py-3">' + phoneCell + '</td>' +
+           '<td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest ' + eventoClass + '">' + eventoIcon + ' ' + eventoLabel + '</span></td>' +
+           '<td class="px-4 py-3 text-[11px] text-midnight/50 font-mono">' + fecha + '</td>';
+}
+
+function updatePaPagination(total, page, perPage) {
+    var paginationEl = document.getElementById('pa-pagination');
+    var infoEl = document.getElementById('pa-info');
+    var prevBtn = document.getElementById('pa-prev');
+    var nextBtn = document.getElementById('pa-next');
+    var indicator = document.getElementById('pa-page-indicator');
+    if (!paginationEl || !total) { paginationEl.classList.add('hidden'); return; }
+    var totalPages = Math.ceil(total / perPage);
+    paginationEl.classList.remove('hidden');
+    if (infoEl) infoEl.textContent = 'Página ' + page + ' de ' + totalPages + ' (' + total + ' accesos)';
+    if (prevBtn) {
+        prevBtn.disabled = page <= 1;
+        prevBtn.classList.toggle('disabled\\:opacity-30', page <= 1);
+    }
+    if (nextBtn) {
+        nextBtn.disabled = page >= totalPages;
+        nextBtn.classList.toggle('disabled\\:opacity-30', page >= totalPages);
+    }
+    if (indicator) indicator.textContent = page + ' / ' + totalPages;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Phone audit init after dashboard renders
+    var paCard = document.getElementById('phone-audit-card');
+    if (paCard) {
+        // init after telemetry loads
+        setTimeout(initPhoneAudit, 100);
+    }
+});

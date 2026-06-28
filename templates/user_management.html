@@ -38,6 +38,14 @@
                     <option value="admin">Admin</option>
                 </select>
             </div>
+            <div>
+                <label for="phoneVerifiedFilter" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/40 mb-2">Teléfono</label>
+                <select id="phoneVerifiedFilter" class="px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
+                    <option value="">Todos</option>
+                    <option value="1">Verificado</option>
+                    <option value="0">Sin verificar</option>
+                </select>
+            </div>
         </div>
     </div>
 
@@ -50,6 +58,12 @@
             </span>
         </div>
 
+        <!-- Leyenda de verificación telefónica -->
+        <div class="px-4 py-2 bg-paper-dark/50 border-b border-midnight/5 flex items-center gap-4 text-[9px] font-bold uppercase tracking-widest">
+            <span class="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400"><i data-lucide="smartphone" class="w-3 h-3"></i> Verificado</span>
+            <span class="inline-flex items-center gap-1.5 text-rose-500 dark:text-rose-400"><i data-lucide="phone-off" class="w-3 h-3"></i> Sin verificar</span>
+            <span class="text-midnight/30 dark:text-paper/30 ml-auto">Estado de verificación del teléfono</span>
+        </div>
         <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
             <thead>

@@ -148,19 +148,37 @@ def admin_stats():
     try:
         conn = models.get_db_connection()
 
-        total_leads = conn.execute('SELECT COUNT(*) FROM leads').fetchone()[0]
+        period = request.args.get('period', '')
+        days = None
+        if period:
+            try:
+                days = int(period)
+            except (ValueError, TypeError):
+                pass
+
+        leads_where = ''
+        events_where = ''
+        audit_where = ''
+        if days:
+            leads_where = f"WHERE timestamp >= datetime('now', '-{days} days')"
+            events_where = f"AND ts >= datetime('now', '-{days} days')"
+            audit_where = f"WHERE timestamp >= datetime('now', '-{days} days')"
+
+        total_leads = conn.execute(
+            f'SELECT COUNT(*) FROM leads {leads_where}'
+        ).fetchone()[0]
         leads_by_type = conn.execute(
-            'SELECT type, COUNT(*) as count FROM leads GROUP BY type ORDER BY count DESC'
+            f'SELECT type, COUNT(*) as count FROM leads {leads_where} GROUP BY type ORDER BY count DESC'
         ).fetchall()
         leads_by_zone = conn.execute(
-            'SELECT zone, COUNT(*) as count FROM leads GROUP BY zone ORDER BY count DESC LIMIT 5'
+            f'SELECT zone, COUNT(*) as count FROM leads {leads_where} GROUP BY zone ORDER BY count DESC LIMIT 5'
         ).fetchall()
         leads_by_budget = conn.execute(
-            'SELECT budget, COUNT(*) as count FROM leads GROUP BY budget ORDER BY count DESC'
+            f'SELECT budget, COUNT(*) as count FROM leads {leads_where} GROUP BY budget ORDER BY count DESC'
         ).fetchall()
-        leads_by_month = conn.execute('''
+        leads_by_month = conn.execute(f'''
             SELECT strftime('%Y-%m', timestamp) as month, COUNT(*) as count
-            FROM leads
+            FROM leads {leads_where}
             GROUP BY month
             ORDER BY month DESC
             LIMIT 6
@@ -172,16 +190,16 @@ def admin_stats():
             'SELECT role, COUNT(*) as count FROM users GROUP BY role'
         ).fetchall()
         audit_actions = conn.execute(
-            'SELECT action, COUNT(*) as count FROM audit_log GROUP BY action ORDER BY count DESC'
+            f'SELECT action, COUNT(*) as count FROM audit_log {audit_where} GROUP BY action ORDER BY count DESC'
         ).fetchall()
         pending_reports = conn.execute(
             "SELECT COUNT(*) FROM lead_reports WHERE status = 'pending'"
         ).fetchone()[0]
         phone_reveals = conn.execute(
-            "SELECT COUNT(*) FROM events WHERE event = 'phone_revealed'"
+            f"SELECT COUNT(*) FROM events WHERE event = 'phone_revealed' {events_where}"
         ).fetchone()[0]
         phone_clicks = conn.execute(
-            "SELECT COUNT(*) FROM events WHERE event = 'phone_button_clicked'"
+            f"SELECT COUNT(*) FROM events WHERE event = 'phone_button_clicked' {events_where}"
         ).fetchone()[0]
 
         return jsonify({
@@ -237,7 +255,34 @@ def get_lead_reports():
     try:
         conn = models.get_db_connection()
 
-        reports = conn.execute('''
+        page = request.args.get('page', '1')
+        per_page = request.args.get('per_page', '25')
+        status_filter = request.args.get('status', '').strip()
+
+        try:
+            page = int(page)
+            per_page = int(per_page)
+        except (ValueError, TypeError):
+            return jsonify({'error': 'page y per_page deben ser enteros'}), 400
+
+        if page < 1:
+            page = 1
+        if per_page < 1 or per_page > 100:
+            per_page = 25
+
+        where_clause = ''
+        params = []
+        if status_filter in ('pending', 'dismissed', 'deleted'):
+            where_clause = 'WHERE lr.status = ?'
+            params.append(status_filter)
+
+        total = conn.execute(
+            f'SELECT COUNT(*) FROM lead_reports lr {where_clause}', params
+        ).fetchone()[0]
+
+        offset = (page - 1) * per_page
+
+        reports = conn.execute(f'''
             SELECT
                 lr.id, lr.lead_id, lr.reason, lr.notes, lr.status,
                 lr.reviewed_by, lr.reviewed_at, lr.created_at,
@@ -249,8 +294,10 @@ def get_lead_reports():
             FROM lead_reports lr
             JOIN users u ON lr.reported_by = u.id
             LEFT JOIN leads l ON lr.lead_id = l.id
+            {where_clause}
             ORDER BY lr.created_at DESC
-        ''').fetchall()
+            LIMIT ? OFFSET ?
+        ''', params + [per_page, offset]).fetchall()
 
         reports_list = []
         for r in reports:
@@ -267,7 +314,9 @@ def get_lead_reports():
         return jsonify({
             'success': True,
             'reports': reports_list,
-            'total': len(reports_list),
+            'total': total,
+            'page': page,
+            'per_page': per_page,
             'status_counts': status_counts
         })
     except Exception as e:
@@ -286,13 +335,17 @@ def get_telemetry():
         conn = models.get_db_connection()
 
         period = request.args.get('period', '30d')
-        days = {'7d': 7, '30d': 30, '90d': 90, '1y': 365}.get(period, 30)
-        since_clause = f"datetime('now', '-{days} days')"
+        since_clause = None
+        if period != '0':
+            days = {'7d': 7, '30d': 30, '90d': 90, '1y': 365}.get(period, 30)
+            since_clause = f"datetime('now', '-{days} days')"
+
+        since_filter = f"AND ts >= {since_clause}" if since_clause else ""
 
         event_counts = {}
         for row in conn.execute(
             f"SELECT event, COUNT(*) as c FROM events "
-            f"WHERE ts >= {since_clause} GROUP BY event ORDER BY c DESC"
+            f"WHERE 1=1 {since_filter} GROUP BY event ORDER BY c DESC"
         ).fetchall():
             event_counts[row['event']] = row['c']
 
@@ -313,15 +366,17 @@ def get_telemetry():
         phone_daily = []
         for row in conn.execute(
             f"SELECT strftime('%Y-%m-%d', ts) as day, COUNT(*) as c "
-            f"FROM events WHERE event = 'phone_revealed' AND ts >= {since_clause} "
+            f"FROM events WHERE event = 'phone_revealed' {since_filter} "
             f"GROUP BY day ORDER BY day ASC"
         ).fetchall():
             phone_daily.append({'day': row['day'], 'count': row['c']})
 
+        consent_since_filter = f"AND created_at >= {since_clause}" if since_clause else ""
+
         consent_by_channel = {}
         for row in conn.execute(
             f"SELECT channel, COUNT(*) as c FROM consent_log "
-            f"WHERE created_at >= {since_clause} GROUP BY channel"
+            f"WHERE 1=1 {consent_since_filter} GROUP BY channel"
         ).fetchall():
             consent_by_channel[row['channel']] = row['c']
 
@@ -329,7 +384,7 @@ def get_telemetry():
         for row in conn.execute(
             f"SELECT u.username, COUNT(*) as clicks FROM events e "
             f"JOIN users u ON e.user_id = u.id "
-            f"WHERE e.event = 'wa_link_generated' AND e.ts >= {since_clause} "
+            f"WHERE e.event = 'wa_link_generated' {since_filter} "
             f"GROUP BY u.username ORDER BY clicks DESC LIMIT 5"
         ).fetchall():
             top_pros.append({'username': row['username'], 'clicks': row['clicks']})
@@ -359,6 +414,112 @@ def get_telemetry():
         })
     except Exception as e:
         print(f"Error en get_telemetry: {e}")
+        return jsonify({'error': 'Error interno'}), 500
+    finally:
+        if conn:
+            conn.close()
+
+
+@admin_bp.route('/api/admin/phone-audit', methods=['GET'])
+@login_required
+@admin_required
+def admin_phone_audit():
+    profesional = (request.args.get('profesional') or '').strip()
+    evento = (request.args.get('evento') or '').strip()
+    desde = (request.args.get('desde') or '').strip()
+    hasta = (request.args.get('hasta') or '').strip()
+    page = request.args.get('page', '1')
+    per_page = request.args.get('per_page', '25')
+
+    try:
+        page = int(page)
+        per_page = int(per_page)
+    except (ValueError, TypeError):
+        return jsonify({'error': 'page y per_page deben ser enteros'}), 400
+
+    if page < 1:
+        page = 1
+    if per_page < 1 or per_page > 100:
+        per_page = 25
+
+    if desde:
+        try:
+            datetime.strptime(desde, '%Y-%m-%d')
+        except ValueError:
+            return jsonify({'error': 'desde debe tener formato YYYY-MM-DD'}), 400
+
+    if hasta:
+        try:
+            datetime.strptime(hasta, '%Y-%m-%d')
+        except ValueError:
+            return jsonify({'error': 'hasta debe tener formato YYYY-MM-DD'}), 400
+
+    conn = None
+    try:
+        conn = models.get_db_connection()
+
+        where_clauses = ["e.event IN ('phone_revealed', 'wa_link_generated')"]
+        params = []
+
+        if profesional:
+            where_clauses.append('u.username = ?')
+            params.append(profesional)
+
+        if evento in ('phone_revealed', 'wa_link_generated'):
+            where_clauses.append('e.event = ?')
+            params.append(evento)
+
+        if desde:
+            where_clauses.append("e.ts >= ? || ' 00:00:00'")
+            params.append(desde)
+
+        if hasta:
+            where_clauses.append("e.ts <= ? || ' 23:59:59'")
+            params.append(hasta)
+
+        where_sql = ' AND '.join(where_clauses)
+
+        total = conn.execute(
+            f"SELECT COUNT(*) FROM events e "
+            f"JOIN users u ON e.user_id = u.id "
+            f"JOIN professionals p ON (p.user_id IS NOT NULL AND p.user_id = u.id) OR (p.user_id IS NULL AND p.name = u.username) "
+            f"WHERE {where_sql}",
+            params
+        ).fetchone()[0]
+
+        offset = (page - 1) * per_page
+
+        rows = conn.execute(
+            f"SELECT e.id, e.event, e.ts, "
+            f"       u.username AS profesional, "
+            f"       l.id AS lead_id, l.type AS lead_tipo, "
+            f"       l.zone AS lead_zona, l.phone AS lead_telefono "
+            f"FROM events e "
+            f"JOIN users u ON e.user_id = u.id "
+            f"JOIN professionals p ON (p.user_id IS NOT NULL AND p.user_id = u.id) OR (p.user_id IS NULL AND p.name = u.username) "
+            f"LEFT JOIN leads l ON e.lead_id = l.id "
+            f"WHERE {where_sql} "
+            f"ORDER BY e.ts DESC "
+            f"LIMIT ? OFFSET ?",
+            params + [per_page, offset]
+        ).fetchall()
+
+        data = []
+        for row in rows:
+            entry = dict(row)
+            if entry['ts']:
+                entry['ts'] = convert_to_argentina_time(entry['ts'])
+            data.append(entry)
+
+        return jsonify({
+            'success': True,
+            'data': data,
+            'total': total,
+            'page': page,
+            'per_page': per_page,
+        })
+    except Exception as e:
+        print(f"Error en admin_phone_audit: {e}")
         return jsonify({'error': 'Error interno'}), 500
     finally:
         if conn:
@@ -521,6 +682,7 @@ def get_all_users():
     search = request.args.get('search', '').strip()
     role_filter = request.args.get('role', '').strip()
     active_filter = request.args.get('active', '').strip()
+    phone_verified_filter = request.args.get('phone_verified', '').strip()
 
     conn = None
     try:
@@ -539,6 +701,10 @@ def get_all_users():
         if active_filter in ('0', '1'):
             query += ' AND is_active = ?'
             params.append(int(active_filter))
+
+        if phone_verified_filter in ('0', '1'):
+            query += ' AND phone_verified = ?'
+            params.append(int(phone_verified_filter))
 
         query += ' ORDER BY is_active DESC, id ASC'
         users = conn.execute(query, params).fetchall()

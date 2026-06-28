@@ -100,6 +100,7 @@ def get_leads_api():
         currency_filter = request.args.get('currency', '').strip()
         sort_by = request.args.get('sort', 'timestamp')
         sort_order = request.args.get('order', 'desc')
+        time_range = request.args.get('time_range', '').strip()
 
         BUDGET_RANGES = {
             'hasta_200k': (0, 200000),
@@ -175,6 +176,16 @@ def get_leads_api():
         order = 'DESC' if sort_order.lower() == 'desc' else 'ASC'
         if order not in ('ASC', 'DESC'):
             order = 'ASC'
+
+        if time_range:
+            try:
+                tr = int(time_range)
+                if tr > 0:
+                    query += " AND timestamp >= datetime('now', ?)"
+                    params.append(f'-{tr} days')
+            except ValueError:
+                pass
+
         query += f' ORDER BY {sort_by} {order}, id DESC'
 
         leads = conn.execute(query, params).fetchall()

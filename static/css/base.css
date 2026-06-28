@@ -85,11 +85,11 @@ input:focus-visible, select:focus-visible, textarea:focus-visible {
     outline-color: var(--accent);
 }
 
-/* --- Focus Glow (decorative gold glow on focus) --- */
+/* --- Focus Glow (decorative gold glow + left accent bar) --- */
 input:not([type="checkbox"]):not([type="radio"]):focus,
 select:focus,
 textarea:focus {
-    box-shadow: 0 0 0 3px rgba(115, 90, 58, 0.12);
+    box-shadow: inset 2px 0 0 0 #735A3A, 0 0 0 3px rgba(115, 90, 58, 0.12);
     border-color: #735A3A;
     transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
@@ -97,7 +97,7 @@ textarea:focus {
 .dark input:not([type="checkbox"]):not([type="radio"]):focus,
 .dark select:focus,
 .dark textarea:focus {
-    box-shadow: 0 0 0 3px rgba(166, 138, 100, 0.15);
+    box-shadow: inset 2px 0 0 0 #A68A64, 0 0 0 3px rgba(166, 138, 100, 0.15);
     border-color: #A68A64;
 }
 
@@ -821,6 +821,13 @@ html {
 .dark .shadow-lg { box-shadow: 0 10px 15px rgba(0,0,0,0.5) !important; }
 .dark .shadow-xl { box-shadow: 0 20px 25px rgba(0,0,0,0.6) !important; }
 .dark .shadow-2xl { box-shadow: 0 25px 50px rgba(0,0,0,0.7) !important; }
+
+/* Light mode: input caret visibility */
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+    caret-color: #735A3A;
+}
 
 /* Dark mode: form inputs */
 .dark input:not([type="checkbox"]):not([type="radio"]),

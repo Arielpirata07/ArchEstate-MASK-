@@ -520,3 +520,103 @@ button[title="Reportar telefono inexistente"]:hover i[data-lucide] {
 .dark #kpiTotalGrowth.text-rose-600 {
     color: #fda4af !important;
 }
+
+/* ============================================
+   LEAD KPI BAR (leads tab header)
+   ============================================ */
+
+.kpi-lead-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kpi-lead-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.dark .kpi-lead-card {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.dark #kpiLeadsUnseen,
+.dark #kpiLeadsContacted,
+.dark #kpiLeadsTotal,
+.dark #kpiLeadsContactRate {
+    color: #FAF9F7;
+}
+
+/* ============================================
+   LEAD PREVIEW DRAWER
+   ============================================ */
+
+#leadPreviewDrawer {
+    will-change: transform;
+}
+
+#leadPreviewOverlay {
+    will-change: opacity;
+}
+
+.dark #leadPreviewDrawer {
+    background: var(--bg-card, #1a2332);
+    border-color: var(--border, rgba(255,255,255,0.06));
+}
+
+.dark #previewLeadTitle {
+    color: #FAF9F7;
+}
+
+/* ============================================
+   UNSEEN LEAD ROW HIGHLIGHT
+   ============================================ */
+
+tr[data-elide="true"] {
+    /* reserved for future elision */
+}
+
+tr.lead-row-unseen {
+    border-left: 2px solid #A68A64;
+}
+
+tr.lead-row-unseen td:first-child {
+    padding-left: calc(1rem - 2px);
+}
+
+.dark tr.lead-row-unseen {
+    border-left-color: #C4A882;
+}
+
+/* ============================================
+   DARK MODE — Action buttons (second row)
+   ============================================ */
+.dark .bg-rose-50 {
+    background: rgba(190, 18, 60, 0.15) !important;
+}
+.dark .text-rose-600 {
+    color: #fb7185 !important;
+}
+.dark .hover\:bg-rose-600:hover {
+    background: #e11d48 !important;
+}
+.dark .bg-emerald-50 {
+    background: rgba(5, 150, 105, 0.15) !important;
+}
+.dark .text-emerald-700 {
+    color: #34d399 !important;
+}
+
+/* ============================================
+   DARK MODE — Period toolbar buttons
+   ============================================ */
+.dark .period-btn.bg-paper-dark.text-midnight {
+    background: var(--bg-secondary) !important;
+    color: var(--text-secondary, rgba(250, 249, 247, 0.7)) !important;
+}
+.dark .period-btn:hover.bg-paper-dark.text-midnight {
+    background: var(--accent) !important;
+    color: #fff !important;
+}
+.dark .period-btn.bg-midnight.text-white {
+    background: var(--accent) !important;
+    color: #fff !important;
+}

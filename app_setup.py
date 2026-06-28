@@ -41,6 +41,49 @@ class FilterOptionsCache:
 filter_cache = FilterOptionsCache(ttl_seconds=300)
 
 
+def _clean_lead_test_data(cursor):
+    """Limpia datos de prueba sin sentido en la tabla leads."""
+    import utils
+
+    fixes = [
+        (1, '150000 - 400000', 'USD', ''),
+        (2, '200000 - 500000', 'USD', ''),
+        (3, '100000 - 350000', 'USD', 'Córdoba'),
+        (9, '100000 - 400000', 'USD', ''),
+    ]
+    for lid, budget, currency, zone in fixes:
+        parts = []
+        params = []
+        if budget:
+            parts.append('budget = ?')
+            params.append(budget)
+        if currency:
+            parts.append('currency = ?')
+            params.append(currency)
+        if zone:
+            parts.append('zone = ?')
+            params.append(zone)
+        if parts:
+            params.append(lid)
+            cursor.execute(f'UPDATE leads SET {", ".join(parts)} WHERE id = ?', params)
+
+    # Clean up random test text
+    cursor.execute("UPDATE leads SET additional_features = '' WHERE additional_features = 'fafa'")
+
+    # Recalcular phone_format_valid para leads con teléfono
+    pending = cursor.execute(
+        'SELECT id, phone FROM leads WHERE phone IS NOT NULL AND phone != "" AND phone_format_valid = 0'
+    ).fetchall()
+    for row in pending:
+        e164 = utils.normalize_phone_to_e164(row['phone'])
+        if e164:
+            cursor.execute('UPDATE leads SET phone_format_valid = 1 WHERE id = ?', (row['id'],))
+
+    if fixes or pending:
+        print(f'[init_db] Cleaned test data: {len(fixes)} leads budget/zone, {len(pending)} phone_format_valid')
+
+
+
 def get_budget_stats_from_db():
     conn = None
     try:
@@ -529,6 +572,8 @@ def init_db(app):
                 'INSERT OR IGNORE INTO form_options (category, value, label, icon, sort_order) VALUES (?, ?, ?, ?, ?)',
                 (cat, val, lbl, icon, order)
             )
+
+        _clean_lead_test_data(cursor)
 
         cursor.execute('SELECT COUNT(*) FROM users')
         if cursor.fetchone()[0] == 0:

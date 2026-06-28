@@ -15,6 +15,41 @@ def admin_client(client):
     return client
 
 
+@pytest.fixture
+def phone_audit_data(db):
+    """Crea un profesional y eventos de phone_revealed/wa_link_generated para tests de auditoría."""
+    from werkzeug.security import generate_password_hash
+    import uuid
+
+    uname = f'pro_audit_{uuid.uuid4().hex[:8]}'
+    cur = db.execute(
+        'INSERT INTO users (username, email, hash, role, phone, phone_e164, phone_format_valid) '
+        'VALUES (?, ?, ?, ?, ?, ?, 1)',
+        (uname, f'{uname}@example.com', generate_password_hash('pro123'),
+         'professional', '+5491144445555', '+5491144445555')
+    )
+    pro_user_id = cur.lastrowid
+    db.execute(
+        'INSERT INTO professionals (user_id, name, license, specialty, status) VALUES (?, ?, ?, ?, ?)',
+        (pro_user_id, uname, f'LIC-{uname}', 'General', 'approved')
+    )
+    lead_id = db.execute(
+        'INSERT INTO leads (type, zone, budget, currency, phone, email, phone_format_valid) '
+        'VALUES (?, ?, ?, ?, ?, ?, 1)',
+        ('Comprar', 'Palermo', '500000', 'USD', '+5491144445555', f'{uname}@lead.com')
+    ).lastrowid
+    db.execute(
+        "INSERT INTO events (user_id, lead_id, event, ts) VALUES (?, ?, 'phone_revealed', datetime('now', '-1 day'))",
+        (pro_user_id, lead_id)
+    )
+    db.execute(
+        "INSERT INTO events (user_id, lead_id, event, ts) VALUES (?, ?, 'wa_link_generated', datetime('now', '-2 hours'))",
+        (pro_user_id, lead_id)
+    )
+    db.commit()
+    return pro_user_id, uname, lead_id
+
+
 class TestAdminDashboard:
     def test_admin_dashboard_renders(self, admin_client):
         res = admin_client.get('/admin')
@@ -161,3 +196,135 @@ class TestAdminFormOptionsIntegration:
             'category': 'amenities', 'value': 'no_label'
         })
         assert res.status_code == 400
+
+
+class TestPhoneAudit:
+    @pytest.fixture(autouse=True)
+    def _clean_events(self, db):
+        db.execute('DELETE FROM events')
+        db.commit()
+
+    def test_phone_audit_empty(self, admin_client, db):
+        res = admin_client.get('/api/admin/phone-audit')
+        assert res.status_code == 200
+        data = res.get_json()
+        assert data['success'] is True
+        assert data['data'] == []
+        assert data['total'] == 0
+
+    def test_phone_audit_returns_events(self, admin_client, db, phone_audit_data):
+        pro_user_id, uname, lead_id = phone_audit_data
+        res = admin_client.get('/api/admin/phone-audit')
+        assert res.status_code == 200
+        data = res.get_json()
+        assert data['success'] is True
+        assert data['total'] == 2
+        assert len(data['data']) == 2
+        events = [e['event'] for e in data['data']]
+        assert 'phone_revealed' in events
+        assert 'wa_link_generated' in events
+        for entry in data['data']:
+            assert entry['profesional'] == uname
+            assert entry['lead_id'] == lead_id
+
+    def test_phone_audit_filter_by_profesional(self, admin_client, db, phone_audit_data):
+        pro_user_id, uname, lead_id = phone_audit_data
+        res = admin_client.get(f'/api/admin/phone-audit?profesional={uname}')
+        assert res.status_code == 200
+        data = res.get_json()
+        assert data['total'] == 2
+
+        res = admin_client.get('/api/admin/phone-audit?profesional=nonexistent')
+        assert res.status_code == 200
+        data = res.get_json()
+        assert data['total'] == 0
+        assert data['data'] == []
+
+    def test_phone_audit_filter_by_evento(self, admin_client, db, phone_audit_data):
+        pro_user_id, uname, lead_id = phone_audit_data
+        res = admin_client.get('/api/admin/phone-audit?evento=phone_revealed')
+        assert res.status_code == 200
+        data = res.get_json()
+        assert data['total'] == 1
+        assert data['data'][0]['event'] == 'phone_revealed'
+
+        res = admin_client.get('/api/admin/phone-audit?evento=wa_link_generated')
+        assert res.status_code == 200
+        data = res.get_json()
+        assert data['total'] == 1
+        assert data['data'][0]['event'] == 'wa_link_generated'
+
+    def test_phone_audit_pagination(self, admin_client, db):
+        from werkzeug.security import generate_password_hash
+        import uuid
+
+        lead_id = db.execute(
+            'INSERT INTO leads (type, zone, budget, currency, phone, email, phone_format_valid) '
+            'VALUES (?, ?, ?, ?, ?, ?, 1)',
+            ('Comprar', 'Palermo', '500000', 'USD', '+5491144445555', 'lead@test.com')
+        ).lastrowid
+        pro_user_id = None
+        for i in range(3):
+            uname = f'pro_pag_{uuid.uuid4().hex[:8]}'
+            cur = db.execute(
+                'INSERT INTO users (username, email, hash, role, phone, phone_e164, phone_format_valid) '
+                'VALUES (?, ?, ?, ?, ?, ?, 1)',
+                (uname, f'{uname}@example.com', generate_password_hash('pro123'),
+                 'professional', '+5491144445555', '+5491144445555')
+            )
+            uid = cur.lastrowid
+            if pro_user_id is None:
+                pro_user_id = uid
+            db.execute(
+                'INSERT INTO professionals (user_id, name, license, specialty, status) VALUES (?, ?, ?, ?, ?)',
+                (uid, uname, f'LIC-{uname}', 'General', 'approved')
+            )
+            db.execute(
+                "INSERT INTO events (user_id, lead_id, event, ts) VALUES (?, ?, 'phone_revealed', datetime('now', ?))",
+                (uid, lead_id, f'-{i} hours')
+            )
+        db.commit()
+
+        res = admin_client.get('/api/admin/phone-audit?per_page=2&page=1')
+        assert res.status_code == 200
+        data = res.get_json()
+        assert data['total'] == 3
+        assert len(data['data']) == 2
+        assert data['page'] == 1
+
+        res = admin_client.get('/api/admin/phone-audit?per_page=2&page=2')
+        data = res.get_json()
+        assert len(data['data']) == 1
+        assert data['page'] == 2
+
+    def test_phone_audit_forbidden_client(self, client, db):
+        from werkzeug.security import generate_password_hash
+        import uuid
+        uname = f'no_admin_{uuid.uuid4().hex[:8]}'
+        cur = db.execute(
+            'INSERT INTO users (username, email, hash, role) VALUES (?, ?, ?, ?)',
+            (uname, f'{uname}@example.com', generate_password_hash('test123'), 'client')
+        )
+        uid = cur.lastrowid
+        db.commit()
+        with client.session_transaction() as sess:
+            sess['user_id'] = uid
+            sess['username'] = uname
+            sess['role'] = 'client'
+        res = client.get('/api/admin/phone-audit')
+        # admin_required redirects non-admin to public.index (302)
+        assert res.status_code == 302
+
+    def test_phone_audit_invalid_dates(self, admin_client):
+        res = admin_client.get('/api/admin/phone-audit?desde=not-a-date')
+        assert res.status_code == 400
+
+        res = admin_client.get('/api/admin/phone-audit?hasta=also-invalid')
+        assert res.status_code == 400
+
+    def test_phone_audit_invalid_pagination(self, admin_client):
+        res = admin_client.get('/api/admin/phone-audit?page=abc')
+        assert res.status_code == 400
+
+        res = admin_client.get('/api/admin/phone-audit?per_page=-1')
+        assert res.status_code == 200  # se clamp a valor por defecto

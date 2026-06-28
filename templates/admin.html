@@ -56,6 +56,7 @@
                     <button onclick="setPeriod(30)"  data-period="30"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all">30d</button>
                     <button onclick="setPeriod(90)"  data-period="90"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all">90d</button>
                     <button onclick="setPeriod(365)" data-period="365" class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all">1a</button>
+                    <button onclick="setPeriod(0)"   data-period="0"   class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all">Siempre</button>
                 </div>
             </div>
             <button id="refresh-btn" onclick="refreshDashboard()"
@@ -208,19 +209,13 @@
 
         <!-- Telemetría de Contacto -->
         <div class="bg-white rounded-lg shadow-xl overflow-hidden mt-6">
-            <div class="p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between">
+            <button onclick="toggleSection('tm')" class="w-full p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between hover:bg-midnight/5 transition-colors">
                 <h3 class="text-xs font-bold uppercase tracking-widest text-gold flex items-center gap-2">
                     <i data-lucide="smartphone" class="w-3.5 h-3.5"></i> Telemetría de Contacto
                 </h3>
-                <select id="telemetry-period" onchange="loadTelemetry()"
-                    class="px-2 py-1 text-[10px] border border-midnight/20 rounded focus:border-gold focus:outline-none bg-white">
-                    <option value="7d">7 días</option>
-                    <option value="30d" selected>30 días</option>
-                    <option value="90d">90 días</option>
-                    <option value="1y">1 año</option>
-                </select>
-            </div>
-            <div class="p-6 space-y-6" id="telemetry-content">
+                <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-gold transition-transform duration-200" id="tm-chevron"></i>
+            </button>
+            <div id="tm-body" class="p-6 space-y-6">
                 <div id="tm-loading" class="flex items-center justify-center py-8">
                     <i data-lucide="loader-2" class="w-5 h-5 animate-spin text-gold"></i>
                 </div>
@@ -293,6 +288,100 @@
                     <i data-lucide="inbox" class="w-8 h-8 text-midnight/20 mb-2"></i>
                     <p class="text-xs text-midnight/30 font-bold tracking-wider">Sin datos de telemetría en este período</p>
                     <p class="text-[10px] text-midnight/20 mt-1">Los eventos se registrarán a medida que los profesionales interactúen.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Historial de Acceso a Teléfonos -->
+        <div class="bg-white rounded-lg shadow-xl overflow-hidden" id="phone-audit-card">
+            <button onclick="toggleSection('pa')" class="w-full p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between hover:bg-midnight/5 transition-colors">
+                <h3 class="text-xs font-bold uppercase tracking-widest text-gold flex items-center gap-2">
+                    <i data-lucide="phone" class="w-3.5 h-3.5"></i> Historial de Acceso a Teléfonos
+                </h3>
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center justify-center min-w-[22px] h-[18px] px-1.5 bg-midnight/5 text-midnight/50 rounded text-[9px] font-bold uppercase tracking-widest" id="pa-count">0</span>
+                    <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-gold transition-transform duration-200" id="pa-chevron"></i>
+                </div>
+            </button>
+            <div id="pa-body" class="p-6">
+                <!-- Filters -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4 pa-filters">
+                    <div>
+                        <label class="block text-[9px] uppercase tracking-widest font-bold text-midnight/50 mb-1.5">Profesional</label>
+                        <select id="pa-profesional" class="w-full px-2.5 py-2 border border-midnight/20 rounded text-[11px] focus:border-gold focus:outline-none bg-white">
+                            <option value="">Todos</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[9px] uppercase tracking-widest font-bold text-midnight/50 mb-1.5">Evento</label>
+                        <select id="pa-evento" class="w-full px-2.5 py-2 border border-midnight/20 rounded text-[11px] focus:border-gold focus:outline-none bg-white">
+                            <option value="">Todos</option>
+                            <option value="phone_revealed">Revelado</option>
+                            <option value="wa_link_generated">WhatsApp</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[9px] uppercase tracking-widest font-bold text-midnight/50 mb-1.5">Desde</label>
+                        <input type="date" id="pa-desde" class="w-full px-2.5 py-2 border border-midnight/20 rounded text-[11px] focus:border-gold focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[9px] uppercase tracking-widest font-bold text-midnight/50 mb-1.5">Hasta</label>
+                        <input type="date" id="pa-hasta" class="w-full px-2.5 py-2 border border-midnight/20 rounded text-[11px] focus:border-gold focus:outline-none">
+                    </div>
+                </div>
+                <div class="flex gap-2 mb-4">
+                    <button onclick="loadPhoneAudit()" class="px-3 py-1.5 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all flex items-center gap-1.5">
+                        <i data-lucide="search" class="w-3 h-3"></i> Filtrar
+                    </button>
+                    <button onclick="clearPhoneAuditFilters()" class="px-3 py-1.5 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-all flex items-center gap-1.5">
+                        <i data-lucide="x" class="w-3 h-3"></i> Limpiar
+                    </button>
+                </div>
+
+                <!-- Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-paper-dark table-header-border">
+                                <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Profesional</th>
+                                <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Lead</th>
+                                <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Teléfono</th>
+                                <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Evento</th>
+                                <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pa-tbody" class="stagger-rows">
+                            <tr id="pa-loading">
+                                <td colspan="5" class="p-8 text-center text-midnight/60">
+                                    <div class="flex justify-center items-center gap-2">
+                                        <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gold"></div>
+                                        Cargando historial...
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr id="pa-empty" class="hidden">
+                                <td colspan="5" class="p-8 text-center">
+                                    <i data-lucide="phone-off" class="w-8 h-8 text-midnight/20 mx-auto mb-2"></i>
+                                    <p class="text-xs text-midnight/30 font-bold tracking-wider">Ningún acceso registrado</p>
+                                    <p class="text-[10px] text-midnight/20 mt-1">Los eventos aparecerán cuando los profesionales interactúen con los teléfonos.</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div id="pa-pagination" class="hidden flex items-center justify-between mt-4 pt-4 border-t border-midnight/10">
+                    <p id="pa-info" class="text-[10px] text-midnight/40 font-bold tracking-wider"></p>
+                    <div class="flex gap-1">
+                        <button id="pa-prev" onclick="loadPhoneAuditPage(currentPaPage - 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                            <i data-lucide="chevron-left" class="w-3 h-3"></i>
+                        </button>
+                        <span id="pa-page-indicator" class="px-2.5 py-1 text-[10px] font-bold text-midnight/50"></span>
+                        <button id="pa-next" onclick="loadPhoneAuditPage(currentPaPage + 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                            <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -395,38 +484,50 @@
             </div>
 
             <!-- Log de Auditoría -->
-            <div class="space-y-6">
-                <div class="bg-white rounded-lg shadow-xl overflow-hidden flex flex-col h-full max-h-[600px]">
-                    <div class="p-4 bg-midnight text-white border-b border-gold/20 flex items-center justify-between">
-                        <h3 class="text-xs font-bold uppercase tracking-widest text-gold-light">Log de Auditoría</h3>
-                        <i data-lucide="shield" class="w-4 h-4 text-gold/50"></i>
+            <div class="bg-white rounded-lg shadow-xl overflow-hidden flex flex-col max-h-[660px]" id="auditLogCard">
+                <div class="px-6 py-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between flex-shrink-0">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="shield" class="w-4 h-4 text-gold"></i>
+                        <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Log de Auditoría</h3>
                     </div>
-                    <div class="flex-grow overflow-y-auto p-4 space-y-4 bg-paper-dark/30">
-                        {% for entry in audit_log %}
-                        <div class="p-3 bg-white border border-midnight/5 rounded shadow-sm space-y-2 audit-entry">
-                            <div class="flex justify-between items-start">
-                                <span class="text-[9px] font-bold uppercase tracking-tighter 
-                                    {% if entry.action == 'Aprobación' %}text-emerald-600
-                                    {% elif entry.action == 'Rechazo' %}text-rose-600
-                                    {% else %}text-gold{% endif %}">
-                                    {{ entry.action }}
-                                </span>
-                                <span class="text-[8px] text-midnight/30 font-mono">{{ entry.timestamp }}</span>
-                            </div>
-                            <div class="text-xs font-medium text-midnight">{{ entry.target }}</div>
-                            <div class="text-[9px] text-midnight/40 flex items-center gap-1">
-                                <i data-lucide="user" class="w-2 h-2"></i>
-                                {{ entry.admin }}
-                            </div>
+                    <span class="inline-flex items-center justify-center min-w-[22px] h-[18px] px-1.5 bg-midnight/5 text-midnight/50 rounded text-[9px] font-bold uppercase tracking-widest">{{ audit_log|length }}</span>
+                </div>
+                <div class="flex-grow overflow-y-auto p-4 space-y-3 bg-paper-dark/30">
+                    {% for entry in audit_log %}
+                    <div class="p-3 bg-white rounded-lg border border-midnight/5 shadow-sm hover:shadow-md hover:border-gold/20 transition-all duration-200 audit-entry">
+                        <div class="flex justify-between items-start mb-2">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest
+                                {% if entry.action == 'Aprobación' %}bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400
+                                {% elif entry.action == 'Rechazo' %}bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400
+                                {% else %}bg-gold/10 text-gold dark:bg-gold/15 dark:text-gold-light{% endif %}">
+                                {% if entry.action == 'Aprobación' %}<i data-lucide="check-circle" class="w-2.5 h-2.5"></i>
+                                {% elif entry.action == 'Rechazo' %}<i data-lucide="x-circle" class="w-2.5 h-2.5"></i>
+                                {% else %}<i data-lucide="clock" class="w-2.5 h-2.5"></i>{% endif %}
+                                {{ entry.action }}
+                            </span>
+                            <span class="text-[8px] text-midnight/30 dark:text-midnight-light/50 font-mono whitespace-nowrap ml-2 flex-shrink-0">{{ entry.timestamp }}</span>
                         </div>
-                        {% endfor %}
-                        {% if not audit_log %}
-                        <p class="text-[10px] text-midnight/30 text-center uppercase tracking-widest font-bold pt-4">Sin registros aún</p>
-                        {% endif %}
+                        <p class="text-xs font-medium text-midnight dark:text-paper mb-1.5">{{ entry.target }}</p>
+                        <div class="flex items-center gap-1.5">
+                            <div class="w-5 h-5 rounded-full bg-midnight/5 dark:bg-white/5 flex items-center justify-center flex-shrink-0">
+                                <i data-lucide="user" class="w-2.5 h-2.5 text-midnight/40 dark:text-paper/40"></i>
+                            </div>
+                            <span class="text-[9px] text-midnight/50 dark:text-paper/50 font-medium">{{ entry.admin }}</span>
+                        </div>
                     </div>
-                    <div class="p-3 bg-paper-dark border-t border-midnight/5 text-center">
-                        <p class="text-[8px] text-midnight/30 uppercase tracking-widest font-bold">Fin del registro reciente</p>
+                    {% endfor %}
+                    {% if not audit_log %}
+                    <div class="flex flex-col items-center justify-center py-10 text-center">
+                        <div class="w-12 h-12 rounded-full bg-paper-dark dark:bg-midnight-light/30 flex items-center justify-center mb-3">
+                            <i data-lucide="shield" class="w-6 h-6 text-midnight/20 dark:text-paper/20"></i>
+                        </div>
+                        <p class="text-xs font-bold uppercase tracking-widest text-midnight/30 dark:text-paper/30">Sin registros aún</p>
+                        <p class="text-[9px] text-midnight/20 dark:text-paper/20 mt-1">Las acciones de aprobación aparecerán aquí</p>
                     </div>
+                    {% endif %}
+                </div>
+                <div class="px-6 py-3 bg-paper-dark border-t border-midnight/5 flex-shrink-0">
+                    <p class="text-[8px] text-midnight/30 dark:text-paper/30 uppercase tracking-widest font-bold text-center">Fin del registro reciente</p>
                 </div>
             </div>
 
@@ -497,6 +598,19 @@
                         </tr>
                     </tbody>
                 </table>
+                <!-- Pagination -->
+                <div id="reports-pagination" class="hidden flex items-center justify-between px-4 py-3 border-t border-midnight/10">
+                    <p id="reports-page-info" class="text-[10px] text-midnight/40 font-bold tracking-wider"></p>
+                    <div class="flex gap-1">
+                        <button id="reports-prev" onclick="loadReportsPage(currentReportsPage - 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                            <i data-lucide="chevron-left" class="w-3 h-3"></i>
+                        </button>
+                        <span id="reports-page-indicator" class="px-2.5 py-1 text-[10px] font-bold text-midnight/50"></span>
+                        <button id="reports-next" onclick="loadReportsPage(currentReportsPage + 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                            <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

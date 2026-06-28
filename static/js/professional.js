@@ -294,7 +294,8 @@ document.addEventListener('DOMContentLoaded', () => {
 var currentFilters = {
     search: '', type: '', property_type: '', zone: '',
     min_budget: '', max_budget: '', budget_range: '',
-    currency: '', sort: 'timestamp', order: 'desc', my_leads: true
+    currency: '', sort: 'timestamp', order: 'desc', my_leads: true,
+    time_range: ''
 };
 
 function setMyLeads(myLeads) {
@@ -359,6 +360,18 @@ function setupLeadEventListeners() {
         if (reportBtn) {
             const leadId = parseInt(reportBtn.dataset.leadId, 10);
             if (leadId) openReportModal(leadId);
+            return;
+        }
+        // Skip row-click for any click inside the action column
+        if (e.target.closest('td:last-child')) return;
+        // Event delegation for lead preview drawer (click row → open preview)
+        const leadRow = e.target.closest('tr[data-lead-id]');
+        if (leadRow) {
+            const leadId = parseInt(leadRow.dataset.leadId, 10);
+            if (leadId) {
+                e.preventDefault();
+                openLeadPreview(leadId);
+            }
         }
     });
 }
@@ -389,6 +402,19 @@ function setBudgetRange(range) {
     applyFilters();
 }
 
+// ---- Chips: Período de Tiempo ----
+function setTimeRange(days) {
+    currentFilters.time_range = days;
+    document.querySelectorAll('.period-btn').forEach(function(btn) {
+        var active = btn.dataset.days === days;
+        btn.className = 'period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest transition-all '
+            + (active
+                ? 'bg-midnight text-white'
+                : 'bg-paper-dark text-midnight hover:bg-gold hover:text-white');
+    });
+    applyFilters();
+}
+
 // ---- Barra de filtros activos ----
 function renderActiveTags() {
     const container = document.getElementById('activeFilterTags');
@@ -400,6 +426,10 @@ function renderActiveTags() {
     if (currentFilters.property_type) tags.push({ key: 'property_type',label: PROP_LABELS[currentFilters.property_type] || currentFilters.property_type });
     if (currentFilters.zone)          tags.push({ key: 'zone',         label: `Zona: ${currentFilters.zone}` });
     if (currentFilters.budget_range)  tags.push({ key: 'budget_range', label: BUDGET_LABELS[currentFilters.budget_range] || currentFilters.budget_range });
+    if (currentFilters.time_range) {
+        var trLabels = {'1': 'Hoy', '7': '7 días', '30': '30 días'};
+        tags.push({ key: 'time_range', label: trLabels[currentFilters.time_range] || currentFilters.time_range + ' días' });
+    }
 
     if (tags.length === 0) {
         container.innerHTML = '';
@@ -428,6 +458,7 @@ function removeFilter(key) {
     if (key === 'search')  document.getElementById('searchInput').value = '';
     if (key === 'type')    { document.getElementById('typeFilter').value = ''; }
     if (key === 'zone')    document.getElementById('zoneFilter').value = '';
+    if (key === 'time_range') setTimeRange('');
     applyFilters();
 }
 
@@ -453,7 +484,9 @@ async function loadLeads() {
         const res  = await fetch(`/api/leads?${params}`);
         const data = await res.json();
         if (data.success) {
+            window.__leadsData = data.leads;
             renderLeads(data.leads);
+            renderLeadKpis(data.leads);
             document.getElementById('leadsCount').textContent = data.total;
             renderActiveTags();
         } else {
@@ -535,8 +568,9 @@ function renderLeads(leads) {
 
         const tracking = lead.tracking || { seen: false, contacted: false };
 
+        var unseenClass = tracking.seen ? '' : ' lead-row-unseen';
         return `
-            <tr class="border-b border-midnight/[0.03] hover:bg-paper transition-colors group" data-lead-id="${lead.id}" data-seen="${tracking.seen}" data-contacted="${tracking.contacted}">
+            <tr class="border-b border-midnight/[0.03] hover:bg-paper transition-colors group cursor-pointer${unseenClass}" data-lead-id="${lead.id}" data-seen="${tracking.seen}" data-contacted="${tracking.contacted}">
                 <td class="px-4 py-3 font-mono text-[11px] text-midnight/40">${lead.id}</td>
                 <td class="px-4 py-3">
                     <div class="flex flex-col gap-1.5">
@@ -567,50 +601,52 @@ function renderLeads(leads) {
                 </td>
                 <td class="px-4 py-3 text-[13px] text-midnight/50">${escapeHtml(lead.timestamp)}</td>
                 <td class="px-4 py-3 text-right">
-                    <div class="flex justify-end gap-2 flex-wrap items-center">
-                        <button onclick="togglePhone(this,'${lead.id}')"
-                            class="inline-flex items-center gap-1.5 px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">
-                            <i data-lucide="phone" class="w-3 h-3"></i> Teléfono
-                        </button>
-                        ${lead.phone_format_valid == 1
-                            ? `<span class="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-700 inline-flex items-center gap-1">
-                                <i data-lucide="check" class="w-3 h-3"></i> Formato Válido
-                               </span>`
-                            : ''
-                        }
-                        ${lead.phone_is_mobile
-                            ? `<a href="/api/lead/${lead.id}/r/whatsapp"
-                                 data-wa-link
-                                 data-lead-id="${lead.id}"
-                                 class="contact-btn contact-btn-whatsapp inline-flex items-center gap-1.5 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-widest transition-all"
-                                 title="Abrir chat de WhatsApp con el usuario"
-                                 aria-label="Abrir chat de WhatsApp">
-                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/><path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1Zm0 0a5 5 0 0 0 5 5m0 0a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1v1a.5.5 0 0 0 1 0v-1a.5.5 0 0 0-1 0Z"/><path d="M17 8a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2"/><path d="M12 12h.01"/></svg> WhatsApp
-                               </a>`
-                            : (lead.phone_format_valid == 1
-                                ? `<a href="sms:${lead.phone_e164 || lead.phone}?&body=${encodeURIComponent('Hola, te contacto desde ArchEstate. Vi tu consulta y me interesa conversar.')}"
-                                     data-sms-link
+                    <div class="flex flex-col items-end gap-1">
+                        <div class="flex justify-end gap-1.5 items-center">
+                            <button onclick="togglePhone(this,'${lead.id}')"
+                                class="inline-flex items-center gap-1.5 px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">
+                                <i data-lucide="phone" class="w-3 h-3"></i> Teléfono
+                            </button>
+                            ${lead.phone_is_mobile
+                                ? `<a href="/api/lead/${lead.id}/r/whatsapp"
+                                     data-wa-link
                                      data-lead-id="${lead.id}"
-                                     class="contact-btn contact-btn-sms inline-flex items-center gap-1.5 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-widest transition-all"
-                                     title="Enviar SMS al cliente (número no es WhatsApp)"
-                                     aria-label="Enviar SMS">
-                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg> SMS
+                                     class="contact-btn contact-btn-whatsapp inline-flex items-center gap-1.5 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-widest transition-all"
+                                     title="Abrir chat de WhatsApp"
+                                     aria-label="Abrir chat de WhatsApp">
+                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/><path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1Zm0 0a5 5 0 0 0 5 5m0 0a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1v1a.5.5 0 0 0 1 0v-1a.5.5 0 0 0-1 0Z"/><path d="M17 8a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2"/><path d="M12 12h.01"/></svg> WhatsApp
                                    </a>`
-                                : '')
-                        }
-                        <a href="/profesional/lead/${lead.id}"
-                            class="inline-flex items-center gap-1.5 px-3 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
-                            <i data-lucide="arrow-right" class="w-3 h-3"></i> Ver más
-                        </a>
-                        <a href="/api/lead/${lead.id}/download"
-                            class="inline-flex items-center gap-1.5 px-3 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-all">
-                            <i data-lucide="download" class="w-3 h-3"></i> PDF
-                        </a>
-                        <button type="button" class="report-lead-btn inline-flex items-center gap-1.5 px-3 py-2 bg-paper-dark text-rose-600 rounded text-[10px] font-bold uppercase tracking-widest hover:bg-rose-600 hover:text-white transition-all"
-                            data-lead-id="${lead.id}"
-                            title="Reportar telefono inexistente">
-                            <i data-lucide="flag" class="w-3 h-3"></i>
-                        </button>
+                                : (lead.phone_format_valid == 1
+                                    ? `<a href="sms:${lead.phone_e164 || lead.phone}?&body=${encodeURIComponent('Hola, te contacto desde ArchEstate.')}"
+                                         data-sms-link
+                                         data-lead-id="${lead.id}"
+                                         class="contact-btn contact-btn-sms inline-flex items-center gap-1.5 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-widest transition-all"
+                                         title="Enviar SMS"
+                                         aria-label="Enviar SMS">
+                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg> SMS
+                                       </a>`
+                                    : '')
+                            }
+                        </div>
+                        <div class="flex justify-end gap-1.5 items-center flex-wrap">
+                            <a href="/profesional/lead/${lead.id}"
+                                class="inline-flex items-center gap-1.5 px-3 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
+                                <i data-lucide="arrow-right" class="w-3 h-3"></i> Ver más
+                            </a>
+                            <a href="/api/lead/${lead.id}/download"
+                                class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-paper-dark text-midnight rounded text-[9px] font-bold uppercase tracking-widest hover:bg-midnight hover:text-white transition-all">
+                                <i data-lucide="download" class="w-3 h-3"></i> PDF
+                            </a>
+                            <button type="button" class="report-lead-btn inline-flex items-center gap-1 px-2.5 py-1.5 bg-rose-50 text-rose-600 rounded text-[9px] font-bold uppercase tracking-widest hover:bg-rose-600 hover:text-white transition-all"
+                                data-lead-id="${lead.id}"
+                                title="Reportar teléfono inexistente">
+                                <i data-lucide="flag" class="w-3 h-3"></i> Reportar
+                            </button>
+                            ${lead.phone_format_valid == 1
+                                ? '<span class="inline-flex items-center gap-1 px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-700"><i data-lucide="check" class="w-3 h-3"></i> OK</span>'
+                                : ''
+                            }
+                        </div>
                     </div>
                 </td>
             </tr>`;
@@ -694,10 +730,11 @@ function clearFilters() {
         search: '', type: '', property_type: '', zone: '',
         min_budget: '', max_budget: '', budget_range: '',
         currency: '', sort: 'timestamp', order: 'desc',
-        my_leads: currentFilters.my_leads
+        my_leads: currentFilters.my_leads, time_range: ''
     };
     setPropType('');
     setBudgetRange('');
+    setTimeRange('');
     const sortBtn = document.getElementById('sortOrder');
     if (sortBtn) { sortBtn.innerHTML = '<i data-lucide="arrow-down" class="w-3 h-3"></i>'; if (window.lucide) lucide.createIcons(); }
     loadLeads();
@@ -730,6 +767,132 @@ function showLeadError(msg) {
 }
 
 } // end if (!IS_PENDING)
+
+// ================================================================
+// LEAD KPI BAR (leads tab header)
+// ================================================================
+function renderLeadKpis(leads) {
+    var total = leads.length;
+    var unseen = 0, contacted = 0, seen = 0;
+    for (var i = 0; i < leads.length; i++) {
+        var t = leads[i].tracking;
+        if (t) {
+            if (!t.seen) unseen++;
+            if (t.contacted) contacted++;
+        } else {
+            unseen++;
+        }
+    }
+    seen = total - unseen;
+    var contactRate = seen > 0 ? Math.round((contacted / seen) * 100) : 0;
+
+    var el = document.getElementById('kpiLeadsTotal');
+    if (el) {
+        if (total === 0) { el.textContent = '\u2014'; }
+        else { el.textContent = '0'; setTimeout(function() { if (typeof animateCounter === 'function') animateCounter(el, total); else el.textContent = total; }, 50); }
+    }
+    el = document.getElementById('kpiLeadsUnseen');
+    if (el) {
+        if (total === 0) { el.textContent = '\u2014'; }
+        else { el.textContent = '0'; setTimeout(function() { if (typeof animateCounter === 'function') animateCounter(el, unseen); else el.textContent = unseen; }, 50); }
+    }
+    el = document.getElementById('kpiLeadsContacted');
+    if (el) {
+        if (total === 0) { el.textContent = '\u2014'; }
+        else { el.textContent = '0'; setTimeout(function() { if (typeof animateCounter === 'function') animateCounter(el, contacted); else el.textContent = contacted; }, 50); }
+    }
+    el = document.getElementById('kpiLeadsContactRate');
+    if (el) { el.textContent = total === 0 ? '\u2014' : contactRate + '%'; }
+}
+
+// ================================================================
+// LEAD PREVIEW DRAWER
+// ================================================================
+function openLeadPreview(leadId) {
+    var leads = window.__leadsData || [];
+    var lead = null;
+    for (var i = 0; i < leads.length; i++) {
+        if (leads[i].id === leadId) { lead = leads[i]; break; }
+    }
+    if (!lead) return;
+
+    var overlay = document.getElementById('leadPreviewOverlay');
+    var drawer = document.getElementById('leadPreviewDrawer');
+    if (!overlay || !drawer) return;
+
+    document.getElementById('previewLeadId').textContent = '#' + lead.id;
+    document.getElementById('previewLeadTitle').textContent = (lead.type || 'Sin tipo') + ' en ' + (lead.zone || '—');
+
+    var sym = lead.currency === 'USD' ? 'US$' : lead.currency === 'EUR' ? '\u20ac' : '$';
+    var propType = (lead.property_type || '').toLowerCase();
+    var propLabel = PROP_LABELS[propType] || lead.property_type || '—';
+
+    var specs = [];
+    if (lead.ambientes) specs.push(lead.ambientes + ' amb.');
+    if (lead.bedrooms) specs.push(lead.bedrooms + ' hab.');
+    if (lead.bathrooms) specs.push(lead.bathrooms + ' ba\u00f1os');
+    if (lead.usable_m2 > 0) specs.push(lead.usable_m2 + ' m\u00b2');
+
+    var tracking = lead.tracking || { seen: false, contacted: false };
+
+    var html = '';
+
+    // Info grid
+    html += '<div class="grid grid-cols-2 gap-3">';
+    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Operaci\u00f3n</p><p class="text-[13px] font-medium text-midnight">' + escapeHtml(lead.type) + '</p></div>';
+    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Vivienda</p><p class="text-[13px] font-medium text-midnight">' + propLabel + '</p></div>';
+    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Zona</p><p class="text-[13px] font-medium text-midnight">' + escapeHtml(lead.zone) + '</p></div>';
+    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Presupuesto</p><p class="text-[13px] font-medium text-midnight">' + sym + ' ' + escapeHtml(lead.budget) + '</p></div>';
+    html += '</div>';
+
+    // Specs
+    if (specs.length) {
+        html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Especificaciones</p><p class="text-xs text-midnight/70">' + specs.join(' \u00b7 ') + '</p></div>';
+    }
+
+    // Status buttons
+    html += '<div class="flex gap-2">';
+    html += '<button type="button" class="status-btn status-btn-seen ' + (tracking.seen ? 'status-active' : '') + '" data-status="seen" data-lead-id="' + lead.id + '" onclick="event.stopPropagation(); toggleLeadStatus(' + lead.id + ', \'seen\', this)"><i data-lucide="eye" class="w-3 h-3"></i><span>' + (tracking.seen ? 'Visto' : 'Ver') + '</span></button>';
+    html += '<button type="button" class="status-btn status-btn-contacted ' + (tracking.contacted ? 'status-active' : '') + '" data-status="contacted" data-lead-id="' + lead.id + '" onclick="event.stopPropagation(); toggleLeadStatus(' + lead.id + ', \'contacted\', this)"><i data-lucide="message-circle" class="w-3 h-3"></i><span>' + (tracking.contacted ? 'Contactado' : 'Contactar') + '</span></button>';
+    html += '</div>';
+
+    // Phone + contact
+    html += '<div class="flex flex-wrap gap-2">';
+    html += '<button onclick="event.stopPropagation(); togglePhone(this,\'' + lead.id + '\')" class="inline-flex items-center gap-1.5 px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all"><i data-lucide="phone" class="w-3 h-3"></i> Tel\u00e9fono</button>';
+    if (lead.phone_is_mobile) {
+        html += '<a href="/api/lead/' + lead.id + '/r/whatsapp" data-wa-link data-lead-id="' + lead.id + '" class="contact-btn contact-btn-whatsapp inline-flex items-center gap-1.5 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-widest"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/><path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1Zm0 0a5 5 0 0 0 5 5m0 0a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1v1a.5.5 0 0 0 1 0v-1a.5.5 0 0 0-1 0Z"/><path d="M17 8a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2"/><path d="M12 12h.01"/></svg> WhatsApp</a>';
+    } else if (lead.phone_format_valid == 1) {
+        html += '<a href="sms:' + (lead.phone_e164 || lead.phone) + '?&body=' + encodeURIComponent('Hola, te contacto desde ArchEstate. Vi tu consulta y me interesa conversar.') + '" data-sms-link data-lead-id="' + lead.id + '" class="contact-btn contact-btn-sms inline-flex items-center gap-1.5 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-widest"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg> SMS</a>';
+    }
+    html += '</div>';
+
+    // Ver más
+    html += '<a href="/profesional/lead/' + lead.id + '" class="block w-full text-center px-4 py-3 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all"><i data-lucide="arrow-right" class="w-3 h-3 inline mr-1"></i> Ver detalle completo</a>';
+
+    document.getElementById('previewLeadContent').innerHTML = html;
+
+    overlay.classList.remove('hidden', 'pointer-events-none');
+    drawer.classList.remove('hidden');
+    requestAnimationFrame(function() {
+        overlay.classList.remove('opacity-0');
+        drawer.classList.remove('translate-x-full');
+    });
+
+    if (window.lucide) lucide.createIcons();
+}
+
+function closeLeadPreview() {
+    var overlay = document.getElementById('leadPreviewOverlay');
+    var drawer = document.getElementById('leadPreviewDrawer');
+    if (!overlay || !drawer) return;
+
+    overlay.classList.add('opacity-0');
+    drawer.classList.add('translate-x-full');
+    setTimeout(function() {
+        overlay.classList.add('hidden', 'pointer-events-none');
+        drawer.classList.add('hidden');
+    }, 300);
+}
 
 // ================================================================
 // MODAL REPORTE — funciones globales (fuera de if(!IS_PENDING))
@@ -769,7 +932,10 @@ document.addEventListener('click', function(e) {
 });
 
 document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeReportModal();
+    if (e.key === 'Escape') {
+        closeLeadPreview();
+        closeReportModal();
+    }
 });
 
 async function confirmReport(btn) {

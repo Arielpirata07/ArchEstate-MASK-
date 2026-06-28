@@ -125,7 +125,38 @@ window.__FORM_OPTIONS = {{ {
     {% else %}
     <!-- ===== LEADS (aprobado) ===== -->
 
-    <div id="panel-leads">
+    <div id="panel-leads" class="space-y-6">
+    <!-- Toolbar: período (encima de KPIs, como admin) -->
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+            <span class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Período:</span>
+            <div class="flex gap-1" id="timeRangeChips">
+                <button onclick="setTimeRange('')"  data-days=""   class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-midnight text-white">Todas</button>
+                <button onclick="setTimeRange('1')" data-days="1"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all">Hoy</button>
+                <button onclick="setTimeRange('7')" data-days="7"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all">7d</button>
+                <button onclick="setTimeRange('30')" data-days="30" class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all">30d</button>
+            </div>
+        </div>
+    </div>
+    <!-- KPI Bar: resumen rápido de leads (encima de filtros, como admin) -->
+    <div class="grid grid-cols-4 gap-3">
+        <div class="kpi-lead-card bg-paper-dark rounded-lg p-3 border-l-4 border-gold">
+            <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40">Nuevos</p>
+            <p id="kpiLeadsUnseen" class="text-2xl font-serif text-midnight mt-1">—</p>
+        </div>
+        <div class="kpi-lead-card bg-paper-dark rounded-lg p-3 border-l-4 border-emerald-600">
+            <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40">Contactados</p>
+            <p id="kpiLeadsContacted" class="text-2xl font-serif text-midnight mt-1">—</p>
+        </div>
+        <div class="kpi-lead-card bg-paper-dark rounded-lg p-3 border-l-4 border-blue-600">
+            <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40">Tasa Contacto</p>
+            <p id="kpiLeadsContactRate" class="text-2xl font-serif text-midnight mt-1">—</p>
+        </div>
+        <div class="kpi-lead-card bg-paper-dark rounded-lg p-3 border-l-4 border-midnight">
+            <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40">Total Leads</p>
+            <p id="kpiLeadsTotal" class="text-2xl font-serif text-midnight mt-1">—</p>
+        </div>
+    </div>
     <!-- Panel de filtros -->
     <div class="bg-white rounded-lg shadow-lg border border-midnight/5 overflow-hidden">
 
@@ -244,6 +275,8 @@ window.__FORM_OPTIONS = {{ {
                 </div>
             </div>
 
+
+
             <!-- Filtros activos + resultado -->
             <div class="flex items-center justify-between pt-2 border-t border-midnight/5">
                 <div id="activeFilterTags" class="flex flex-wrap gap-2"></div>
@@ -258,11 +291,14 @@ window.__FORM_OPTIONS = {{ {
         </div>
     </div>
 
+
+
     <!-- Tabla de Leads -->
     <div class="bg-white rounded-lg shadow-xl overflow-hidden">
         <div class="p-4 bg-paper-dark border-b border-midnight/5 flex justify-between items-center">
             <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Leads Disponibles</h3>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-3">
+                <span class="inline-flex items-center gap-1 text-[8px] text-midnight/30 font-bold uppercase tracking-widest"><i data-lucide="check-circle" class="w-2.5 h-2.5"></i> OK = Tel. válido</span>
                 <span class="text-[10px] text-midnight/60 uppercase tracking-widest">Ordenar por:</span>
                 <select id="sortSelect" aria-label="Ordenar por" class="text-[10px] px-2 py-1 border border-midnight/20 rounded focus:border-gold focus:outline-none">
                     <option value="timestamp">Fecha</option>
@@ -387,6 +423,23 @@ window.__FORM_OPTIONS = {{ {
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Lead Preview Drawer -->
+    <div id="leadPreviewOverlay" onclick="closeLeadPreview()" class="fixed inset-0 z-40 bg-midnight/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300 pointer-events-none"></div>
+    <div id="leadPreviewDrawer" class="fixed top-0 right-0 z-50 h-full w-full max-w-md bg-white shadow-2xl border-l border-midnight/10 transform translate-x-full transition-transform duration-300 ease-out overflow-y-auto hidden">
+        <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <p class="text-[9px] uppercase tracking-widest font-bold text-gold">Lead <span id="previewLeadId" class="font-mono"></span></p>
+                    <h3 id="previewLeadTitle" class="text-lg font-serif text-midnight mt-1">Vista rápida</h3>
+                </div>
+                <button onclick="closeLeadPreview()" class="p-2 text-midnight/40 hover:text-midnight rounded-lg hover:bg-paper-dark transition-all" aria-label="Cerrar vista rápida">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div id="previewLeadContent" class="space-y-4"></div>
         </div>
     </div>
     {% endif %}

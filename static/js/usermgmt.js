@@ -12,10 +12,12 @@ let searchTimeout  = null;
 async function loadUsers() {
     const search = document.getElementById('userSearchInput').value.trim();
     const role   = document.getElementById('roleFilter').value;
+    const phoneVerified = document.getElementById('phoneVerifiedFilter').value;
 
     const params = new URLSearchParams();
     if (search) params.set('search', search);
     if (role)   params.set('role', role);
+    if (phoneVerified) params.set('phone_verified', phoneVerified);
 
     const tbody = document.getElementById('usersTableBody');
     tbody.innerHTML = `
@@ -69,9 +71,9 @@ function renderUsers(users) {
         const phoneVerified = u.phone_verified === 1;
         const phone = u.phone
             ? (phoneVerified
-                ? `<span class="inline-flex items-center gap-1"><i data-lucide="smartphone" class="w-3 h-3 text-emerald-600"></i> ${escapeHtml(u.phone)}</span>`
-                : `<span class="inline-flex items-center gap-1"><i data-lucide="phone-off" class="w-3 h-3 text-midnight/30"></i> ${escapeHtml(u.phone)}</span>`)
-            : '<span class="text-midnight/25 italic">Sin teléfono</span>';
+                ? `<span class="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400"><i data-lucide="smartphone" class="w-3.5 h-3.5"></i> <span class="font-medium">${escapeHtml(u.phone)}</span><span class="text-[8px] font-bold uppercase tracking-widest text-emerald-500/60 dark:text-emerald-400/60">Verificado</span></span>`
+                : `<span class="inline-flex items-center gap-1.5 text-rose-500 dark:text-rose-400"><i data-lucide="phone-off" class="w-3.5 h-3.5"></i> <span class="font-medium">${escapeHtml(u.phone)}</span><span class="text-[8px] font-bold uppercase tracking-widest text-rose-400/70 dark:text-rose-300/70">Sin verificar</span></span>`)
+            : '<span class="text-midnight/25 dark:text-paper/25 italic">Sin teléfono</span>';
 
         const isAdmin = u.role === 'admin';
         const resetBtn = isAdmin
@@ -298,6 +300,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Filtro por rol
     document.getElementById('roleFilter').addEventListener('change', loadUsers);
+    // Filtro por verificación telefónica
+    document.getElementById('phoneVerifiedFilter').addEventListener('change', loadUsers);
 });
 
 // ---- Disable Modal ----
