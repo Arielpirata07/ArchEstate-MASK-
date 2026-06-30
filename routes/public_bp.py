@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Blueprint, jsonify, render_template, url_for
 
 import models
@@ -49,15 +51,16 @@ def landing_stats():
 
 @public_bp.route('/sitemap.xml')
 def sitemap():
+    today = datetime.utcnow().date().isoformat()
     public_urls = [
         {'loc': url_for('public.index', _external=True), 'changefreq': 'daily', 'priority': '1.0'},
-        {'loc': url_for('auth.login', _external=True), 'changefreq': 'monthly', 'priority': '0.3'},
-        {'loc': url_for('auth.register', _external=True), 'changefreq': 'monthly', 'priority': '0.4'},
+        {'loc': url_for('professional.professional_view', _external=True), 'changefreq': 'weekly', 'priority': '0.7'},
     ]
     xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     for url in public_urls:
         xml += f'  <url>\n    <loc>{url["loc"]}</loc>\n'
+        xml += f'    <lastmod>{today}</lastmod>\n'
         xml += f'    <changefreq>{url["changefreq"]}</changefreq>\n'
         xml += f'    <priority>{url["priority"]}</priority>\n'
         xml += '  </url>\n'
