@@ -48,6 +48,7 @@ def user_view():
 
 
 @client_bp.route('/api/submit', methods=['POST'])
+@login_required
 @rate_limit.check_rate_limit(limit=100, window=60)
 def submit_lead():
     data = request.json

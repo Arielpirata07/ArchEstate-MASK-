@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import session, redirect, url_for, flash
+from flask import jsonify, request, session, redirect, url_for, flash
 
 from models import get_user_by_id
 
@@ -8,6 +8,8 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
+            if request.is_json or request.accept_mimetypes.best_match(['application/json', 'text/html']) == 'application/json':
+                return jsonify({"error": "No autorizado"}), 401
             return redirect(url_for('auth.login'))
         user = get_user_by_id(session['user_id'])
         if not user or not user.get('is_active'):

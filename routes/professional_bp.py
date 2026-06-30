@@ -236,6 +236,18 @@ def get_leads_api():
 @professional_bp.route('/api/leads/filter-options')
 @professional_required
 def get_leads_filter_options():
+    conn = None
+    try:
+        conn = models.get_db_connection()
+        user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+        if user:
+            professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
+            if not professional or professional['status'] != 'approved':
+                return jsonify({"error": "Debes estar aprobado para acceder a esta información."}), 403
+    finally:
+        if conn:
+            conn.close()
+
     from app_setup import filter_cache
     cached = filter_cache.get('filter_options')
     if cached:
@@ -634,7 +646,7 @@ def export_stats_xlsx():
 
 
 @professional_bp.route('/api/leads/filter-options/invalidate', methods=['POST'])
-@login_required
+@professional_required
 def invalidate_filter_cache():
     from app_setup import filter_cache
     filter_cache.invalidate()
