@@ -44,7 +44,7 @@ class TestSMTPEmailSender:
         mock_smtp.assert_called_once_with('smtp.test.com', 587, timeout=15)
 
     @patch('services.email.smtplib.SMTP')
-    def test_send_failure_returns_false(self, mock_smtp, capsys):
+    def test_send_failure_returns_false(self, mock_smtp, caplog):
         mock_smtp.side_effect = Exception('Connection refused')
 
         sender = SMTPEmailSender(
@@ -54,8 +54,7 @@ class TestSMTPEmailSender:
         result = sender.send('recipient@test.com', 'Subject', '<p>Body</p>')
 
         assert result is False
-        captured = capsys.readouterr()
-        assert '[EMAIL ERROR]' in captured.out
+        assert 'Error al enviar email a' in caplog.text
 
     def test_send_includes_text_and_html(self, capsys):
         sender = SMTPEmailSender(host='', from_addr='')

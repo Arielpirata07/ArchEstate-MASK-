@@ -9,9 +9,12 @@ Mañana: enchufar Twilio/360dialog/Meta Cloud API creando nuevas clases
 misma interfaz OTPChannel.
 """
 
+import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 from utils import hash_phone_digits
 
@@ -127,7 +130,7 @@ class TwilioSmsVerifier(OTPChannel):
                               message=f"Codigo enviado por SMS a {phone_e164}")
         except Exception as e:
             error_str = str(e)
-            print(f"\n[TWILIO SMS ERROR] -> {phone_e164} | Error: {error_str}")
+            logger.exception('[TWILIO SMS ERROR] -> %s', phone_e164)
 
             if '21608' in error_str or 'unverified' in error_str.lower():
                 return SendResult(ok=False, channel=self.name,
@@ -182,7 +185,7 @@ class TwilioWhatsAppVerifier(OTPChannel):
                               message="Codigo enviado por WhatsApp")
         except Exception as e:
             error_str = str(e)
-            print(f"\n[TWILIO WHATSAPP ERROR] -> {phone_e164} | Error: {error_str}")
+            logger.exception('[TWILIO WHATSAPP ERROR] -> %s', phone_e164)
 
             if '21608' in error_str or 'unverified' in error_str.lower():
                 return SendResult(ok=False, channel=self.name,

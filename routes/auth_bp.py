@@ -1,9 +1,12 @@
+import logging
 import random
 import re
 import sqlite3
 import time as _time
 
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, session, url_for
+
+logger = logging.getLogger(__name__)
 from werkzeug.security import check_password_hash, generate_password_hash
 
 import config
@@ -98,8 +101,8 @@ def register():
         except sqlite3.IntegrityError:
             flash('El nombre de usuario ya está en uso. Por favor, elige otro.', 'error')
             return redirect(url_for('auth.register'))
-        except Exception as e:
-            print(f"Error al registrar usuario: {e}")
+        except Exception:
+            logger.exception('Error al registrar usuario')
             flash('Error al registrar. Por favor, intenta de nuevo.', 'error')
             return redirect(url_for('auth.register'))
         finally:
@@ -186,8 +189,8 @@ def login():
                         f"user_id={user['id']}, selector={selector[:8]}...",
                         session
                     )
-                except Exception as e:
-                    print(f"Error al crear remember token: {e}")
+                except Exception:
+                    logger.exception('Error al crear remember token')
                     remember_response = None
 
             if user['role'] == 'admin':
@@ -232,8 +235,8 @@ def api_check_username():
             conn = models.get_db_connection()
             row = conn.execute('SELECT 1 FROM users WHERE username = ?', (q,)).fetchone()
             result = {"available": row is None, "reason": "ok" if row is None else "taken"}
-        except Exception as e:
-            print(f"Error en check-username: {e}")
+        except Exception:
+            logger.exception('Error en check-username')
             result = {"available": False, "reason": "invalid"}
         finally:
             if conn:

@@ -11,6 +11,7 @@ if os.path.exists(env_file):
 
 DATABASE = os.path.join(os.path.dirname(__file__), 'database.db')
 
+DATABASE_URL = os.environ.get('DATABASE_URL', '')
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 if not SECRET_KEY:

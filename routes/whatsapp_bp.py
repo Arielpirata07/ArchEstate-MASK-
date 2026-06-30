@@ -1,7 +1,11 @@
+import logging
+
 from flask import Blueprint, request
 
 import config
 import models
+
+logger = logging.getLogger(__name__)
 
 whatsapp_bp = Blueprint('whatsapp', __name__, url_prefix='')
 
@@ -56,8 +60,8 @@ def whatsapp_webhook():
             resp.message('No se encontró un usuario con este número en ArchEstate.')
         return str(resp), 200
 
-    except Exception as e:
-        print(f'[WHATSAPP WEBHOOK] Error: {e}')
+    except Exception:
+        logger.exception('Error en whatsapp_webhook')
         resp = MessagingResponse()
         resp.message('Ocurrió un error al verificar tu teléfono. Intentá de nuevo.')
         return str(resp), 200

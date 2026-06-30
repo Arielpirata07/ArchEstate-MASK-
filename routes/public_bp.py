@@ -1,8 +1,11 @@
+import logging
 from datetime import datetime
 
 from flask import Blueprint, jsonify, render_template, url_for
 
 import models
+
+logger = logging.getLogger(__name__)
 
 public_bp = Blueprint('public', __name__, url_prefix='')
 
@@ -37,7 +40,7 @@ def landing_stats():
             'leads_this_month': leads_this_month or 0,
         })
     except Exception as e:
-        print(f"Error en landing_stats: {e}")
+        logger.exception('Error en landing_stats')
         return jsonify({
             'total_leads': 0,
             'total_professionals': 0,

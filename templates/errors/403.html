@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Acceso denegado | ArchEstate{% endblock %}
+{% block meta_robots %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block content %}
+<div class="max-w-7xl mx-auto w-full pt-24 pb-12 px-6 flex items-center justify-center min-h-[60vh]">
+    <div class="text-center">
+        <p class="text-6xl font-serif italic text-gold mb-4">403</p>
+        <h1 class="text-2xl font-serif italic text-midnight dark:text-white mb-2">Acceso denegado</h1>
+        <p class="text-sm text-midnight/50 dark:text-white/50 mb-8">No tenés permisos para acceder a esta sección.</p>
+        <a href="{{ url_for('public.index') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
+            Volver al inicio
+        </a>
+    </div>
+</div>
+{% endblock %}

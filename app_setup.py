@@ -122,6 +122,17 @@ def init_db(app):
             )
         ''')
 
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS schema_version (
+                version INTEGER PRIMARY KEY,
+                applied_at TEXT NOT NULL DEFAULT (datetime('now'))
+            )
+        ''')
+        row = cursor.execute('SELECT MAX(version) FROM schema_version').fetchone()
+        current_ver = row[0] if row and row[0] else 0
+        if current_ver < 1:
+            cursor.execute('INSERT INTO schema_version (version) VALUES (1)')
+
         cursor.execute('PRAGMA table_info(users)')
         user_columns = [row[1] for row in cursor.fetchall()]
         if 'email' not in user_columns:

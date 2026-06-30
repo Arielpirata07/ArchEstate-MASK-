@@ -1,7 +1,10 @@
+import logging
 from datetime import datetime
 import hashlib
 import urllib.parse
 import re
+
+logger = logging.getLogger(__name__)
 
 import phonenumbers
 from phonenumbers import NumberParseException, PhoneNumberType
@@ -59,8 +62,8 @@ def convert_to_argentina_time(timestamp_str):
         argentina_tz = pytz.timezone('America/Argentina/Buenos_Aires')
         argentina_time = utc_time.astimezone(argentina_tz)
         return argentina_time.strftime('%d/%m/%Y %H:%M:%S')
-    except Exception as e:
-        print(f"Error al convertir timestamp: {e}")
+    except Exception:
+        logger.exception('Error al convertir timestamp')
         return timestamp_str
 
 
@@ -276,8 +279,8 @@ def log_action(action, target, session=None, conn=None):
             (safe_action, safe_target, safe_username, user_id)
         )
         conn.commit()
-    except Exception as e:
-        print(f"Error al registrar auditoria: {e}")
+    except Exception:
+        logger.exception('Error al registrar auditoria')
     finally:
         if own_conn and conn:
             conn.close()
@@ -313,8 +316,8 @@ def log_event(user_id=None, lead_id=None, event='', props=None, ip=None, conn=No
         )
         conn.commit()
         return True
-    except Exception as e:
-        print(f"Error al registrar evento: {e}")
+    except Exception:
+        logger.exception('Error al registrar evento')
         return False
     finally:
         if own_conn and conn:
@@ -372,8 +375,8 @@ def validate_remember_token(selector, validator):
             conn.commit()
             return None
         return row['user_id']
-    except Exception as e:
-        print(f"Error al validar remember token: {e}")
+    except Exception:
+        logger.exception('Error al validar remember token')
         return None
     finally:
         if conn:
@@ -391,8 +394,8 @@ def revoke_remember_token(selector):
         cursor = conn.execute('DELETE FROM remember_tokens WHERE selector = ?', (selector,))
         conn.commit()
         return cursor.rowcount > 0
-    except Exception as e:
-        print(f"Error al revocar remember token: {e}")
+    except Exception:
+        logger.exception('Error al revocar remember token')
         return False
     finally:
         if conn:
@@ -411,8 +414,8 @@ def purge_expired_remember_tokens():
         )
         conn.commit()
         return cursor.rowcount
-    except Exception as e:
-        print(f"Error al purgar remember tokens: {e}")
+    except Exception:
+        logger.exception('Error al purgar remember tokens')
         return 0
     finally:
         if conn:

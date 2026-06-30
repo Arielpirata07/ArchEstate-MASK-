@@ -1,3 +1,5 @@
+import logging
+
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, session, url_for
 
 import models
@@ -5,6 +7,8 @@ import rate_limit
 import utils
 import validators
 from decorators import login_required
+
+logger = logging.getLogger(__name__)
 
 client_bp = Blueprint('client', __name__, url_prefix='')
 
@@ -188,7 +192,7 @@ def submit_lead():
         })
 
     except Exception as e:
-        print(f"Error en BD: {e}")
+        logger.exception('Error en BD')
         return jsonify({"status": "error", "message": "Error al procesar la solicitud."}), 500
     finally:
         if conn:

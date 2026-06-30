@@ -1,3 +1,4 @@
+import logging
 import uuid
 
 from flask import g, request, session
@@ -6,6 +7,8 @@ import config
 import models
 import rate_limit
 import utils
+
+logger = logging.getLogger(__name__)
 
 
 def security_headers(response):
@@ -83,8 +86,8 @@ def restore_session_from_remember_cookie():
             user_id=user['id'], event='remember_session_restored',
             props={'selector_prefix': selector[:8]}
         )
-    except Exception as e:
-        print(f"Error al restaurar sesión desde remember token: {e}")
+    except Exception:
+        logger.exception('Error al restaurar sesión desde remember token')
     finally:
         if conn:
             conn.close()

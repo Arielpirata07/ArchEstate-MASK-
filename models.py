@@ -1,15 +1,26 @@
+import logging
 import sqlite3
 
 import config
 import utils
 
+logger = logging.getLogger(__name__)
+
+
+class DatabaseError(Exception):
+    pass
+
 
 def get_db_connection():
-    conn = sqlite3.connect(config.DATABASE)
-    conn.row_factory = sqlite3.Row
-    conn.execute('PRAGMA journal_mode=WAL')
-    conn.execute('PRAGMA busy_timeout=5000')
-    return conn
+    try:
+        conn = sqlite3.connect(config.DATABASE)
+        conn.row_factory = sqlite3.Row
+        conn.execute('PRAGMA journal_mode=WAL')
+        conn.execute('PRAGMA busy_timeout=5000')
+        return conn
+    except sqlite3.Error:
+        logger.exception('Error al conectar a la base de datos')
+        raise DatabaseError('No se pudo conectar a la base de datos')
 
 
 def get_user_by_id(user_id):

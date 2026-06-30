@@ -1,10 +1,13 @@
 import csv
 import io
+import logging
 import os
 import re
 
 from datetime import datetime
 from io import StringIO
+
+logger = logging.getLogger(__name__)
 
 import openpyxl
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side, numbers
@@ -226,7 +229,7 @@ def get_leads_api():
             "total": len(leads_list)
         })
     except Exception as e:
-        print(f"Error en get_leads_api: {e}")
+        logger.exception('Error en get_leads_api')
         return jsonify({"status": "error", "message": "Error interno del servidor"}), 500
     finally:
         if conn:
@@ -382,7 +385,7 @@ def get_leads_stats():
         stats = _query_leads_stats(conn, session['user_id'], my_leads, month)
         return jsonify({'status': 'success', 'stats': stats, 'month': month})
     except Exception as e:
-        print(f'Error en get_leads_stats: {e}')
+        logger.exception('Error en get_leads_stats')
         return jsonify({'status': 'error', 'message': 'Error interno del servidor'}), 500
     finally:
         if conn:
@@ -461,7 +464,7 @@ def export_stats_csv():
             headers={'Content-Disposition': f'attachment; filename="{filename}"'}
         )
     except Exception as e:
-        print(f'Error en export_stats_csv: {e}')
+        logger.exception('Error en export_stats_csv')
         return 'Error interno del servidor', 500
     finally:
         if conn:
@@ -638,7 +641,7 @@ def export_stats_xlsx():
             mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
     except Exception as e:
-        print(f'Error en export_stats_xlsx: {e}')
+        logger.exception('Error en export_stats_xlsx')
         return 'Error interno del servidor', 500
     finally:
         if conn:
@@ -1023,7 +1026,7 @@ def toggle_lead_status(lead_id):
             'timestamp': now if new_value else None
         })
     except Exception as e:
-        print(f"Error en toggle_lead_status: {e}")
+        logger.exception('Error en toggle_lead_status')
         return jsonify({'error': 'Error interno'}), 500
     finally:
         if conn:
@@ -1079,7 +1082,7 @@ def report_lead(lead_id):
             'message': 'Pedido reportado correctamente'
         })
     except Exception as e:
-        print(f"Error en report_lead: {e}")
+        logger.exception('Error en report_lead')
         return jsonify({'error': 'Error interno'}), 500
     finally:
         if conn:
@@ -1111,7 +1114,7 @@ def get_doc_status():
             "display_name": re.sub(r'^user_\d+_', '', doc_path) if has_doc and doc_path else None,
         })
     except Exception as e:
-        print(f"Error en get_doc_status: {e}")
+        logger.exception('Error en get_doc_status')
         return jsonify({"error": "Error interno"}), 500
     finally:
         if conn:
@@ -1210,7 +1213,7 @@ def download_own_doc():
         return send_from_directory(directory, filename, as_attachment=True)
 
     except Exception as e:
-        print(f"Error en download_professional_doc: {e}")
+        logger.exception('Error en download_professional_doc')
         flash('Error interno del servidor.', 'error')
         return redirect(url_for('professional.professional_view'))
     finally:

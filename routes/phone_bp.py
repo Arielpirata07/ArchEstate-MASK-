@@ -1,9 +1,12 @@
+import logging
 import secrets
 
 from datetime import datetime, timedelta, timezone
 import datetime as dt_module
 
 from flask import Blueprint, jsonify, request, session
+
+logger = logging.getLogger(__name__)
 
 import config
 import models
@@ -77,7 +80,7 @@ def update_user_phone():
             "phone_verified": 0 if invalidate_otp else (current['phone_verified'] if current else 0),
         })
     except Exception as e:
-        print(f"Error en update_user_phone: {e}")
+        logger.exception('Error en update_user_phone')
         return jsonify({"error": "Error al actualizar el teléfono."}), 500
     finally:
         if conn:
@@ -174,7 +177,7 @@ def send_verification_code():
             "deep_link": (result.meta or {}).get('deep_link'),
         })
     except Exception as e:
-        print(f"Error en send_verification_code: {e}")
+        logger.exception('Error en send_verification_code')
         return jsonify({"error": "Error al enviar el código."}), 500
     finally:
         if conn:
@@ -286,7 +289,7 @@ def verify_phone_code():
                         "channel": verified_channel})
 
     except Exception as e:
-        print(f"Error en verify_phone_code: {e}")
+        logger.exception('Error en verify_phone_code')
         return jsonify({"error": "Error al verificar el código."}), 500
     finally:
         if conn:

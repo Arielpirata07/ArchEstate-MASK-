@@ -4,10 +4,13 @@ Capa de envío de emails vía SMTP.
 Si SMTP_HOST no está configurado, imprime en consola (fallback dev).
 """
 
+import logging
 import smtplib
 import ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+
+logger = logging.getLogger(__name__)
 from typing import Optional
 
 import config
@@ -74,8 +77,8 @@ class SMTPEmailSender:
             print(f'[EMAIL ENVIADO] -> {to} | Asunto: {subject}')
             return True
 
-        except Exception as e:
-            print(f'[EMAIL ERROR] -> {to} | Error: {e}')
+        except Exception:
+            logger.exception('Error al enviar email a %s', to)
             return False
 
 

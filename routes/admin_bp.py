@@ -1,3 +1,4 @@
+import logging
 import os
 
 from datetime import datetime
@@ -5,6 +6,8 @@ from datetime import datetime
 import pytz
 
 from flask import Blueprint, jsonify, redirect, render_template, request, send_from_directory, session, url_for
+
+logger = logging.getLogger(__name__)
 from werkzeug.security import generate_password_hash
 
 import models
@@ -99,7 +102,7 @@ def get_professionals_api():
             "total": len(pros_list)
         })
     except Exception as e:
-        print(f"Error en get_professionals_api: {e}")
+        logger.exception('Error en get_professionals_api')
         return jsonify({"status": "error", "message": "Error interno del servidor"}), 500
     finally:
         if conn:
@@ -216,7 +219,7 @@ def admin_stats():
             'phone_clicks': phone_clicks,
         })
     except Exception as e:
-        print(f"Error en admin_stats: {e}")
+        logger.exception('Error en admin_stats')
         return jsonify({"error": "Error interno"}), 500
     finally:
         if conn:
@@ -241,7 +244,7 @@ def admin_lead_detail(lead_id):
             'lead': lead_dict
         })
     except Exception as e:
-        print(f"Error en admin_lead_detail: {e}")
+        logger.exception('Error en admin_lead_detail')
         return jsonify({'error': 'Error interno'}), 500
     finally:
         if conn:
@@ -320,7 +323,7 @@ def get_lead_reports():
             'status_counts': status_counts
         })
     except Exception as e:
-        print(f"Error en get_lead_reports: {e}")
+        logger.exception('Error en get_lead_reports')
         return jsonify({'error': 'Error interno'}), 500
     finally:
         if conn:
@@ -413,7 +416,7 @@ def get_telemetry():
             'top_professionals': top_pros,
         })
     except Exception as e:
-        print(f"Error en get_telemetry: {e}")
+        logger.exception('Error en get_telemetry')
         return jsonify({'error': 'Error interno'}), 500
     finally:
         if conn:
@@ -519,7 +522,7 @@ def admin_phone_audit():
             'per_page': per_page,
         })
     except Exception as e:
-        print(f"Error en admin_phone_audit: {e}")
+        logger.exception('Error en admin_phone_audit')
         return jsonify({'error': 'Error interno'}), 500
     finally:
         if conn:
@@ -564,7 +567,7 @@ def delete_reported_lead(report_id):
             'message': 'Lead eliminado correctamente'
         })
     except Exception as e:
-        print(f"Error en delete_reported_lead: {e}")
+        logger.exception('Error en delete_reported_lead')
         return jsonify({'error': 'Error interno'}), 500
     finally:
         if conn:
@@ -599,7 +602,7 @@ def dismiss_report(report_id):
             'message': 'Reporte descartado'
         })
     except Exception as e:
-        print(f"Error en dismiss_report: {e}")
+        logger.exception('Error en dismiss_report')
         return jsonify({'error': 'Error interno'}), 500
     finally:
         if conn:
@@ -634,7 +637,7 @@ def restore_report(report_id):
             'message': 'Reporte restaurado correctamente'
         })
     except Exception as e:
-        print(f"Error en restore_report: {e}")
+        logger.exception('Error en restore_report')
         return jsonify({'error': 'Error interno'}), 500
     finally:
         if conn:
@@ -663,7 +666,7 @@ def download_professional_doc(user_id):
         return send_from_directory(directory, filename, as_attachment=True)
 
     except Exception as e:
-        print(f"Error en download_professional_doc: {e}")
+        logger.exception('Error en download_professional_doc')
         return jsonify({"error": "Error interno del servidor"}), 500
     finally:
         if conn:
@@ -714,8 +717,8 @@ def get_all_users():
             'users': [dict(u) for u in users],
             'total': len(users)
         })
-    except Exception as e:
-        print(f"Error en get_all_users: {e}")
+    except Exception:
+        logger.exception('Error en get_all_users')
         return jsonify({"error": "Error interno"}), 500
     finally:
         if conn:

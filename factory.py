@@ -1,8 +1,15 @@
+import logging
 import os
 
-from flask import Flask
+from flask import Flask, jsonify
 
 import config
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S',
+)
 
 
 def create_app():
@@ -34,6 +41,17 @@ def create_app():
         for opt in options:
             grouped.setdefault(opt['category'], []).append(opt)
         return dict(form_options=grouped)
+
+    @app.route('/health')
+    def health():
+        try:
+            from models import get_db_connection
+            conn = get_db_connection()
+            conn.execute('SELECT 1').fetchone()
+            conn.close()
+            return jsonify({'status': 'ok', 'db': 'connected'})
+        except Exception:
+            return jsonify({'status': 'error', 'db': 'disconnected'}), 503
 
     from routes.auth_bp import auth_bp
     from routes.public_bp import public_bp
