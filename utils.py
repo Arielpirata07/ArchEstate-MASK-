@@ -13,6 +13,41 @@ import pytz
 import config
 
 
+def parse_budget(raw):
+    """Intenta parsear un presupuesto a float, manejando formatos AR e intl."""
+    if raw is None:
+        return 0
+    raw = str(raw).strip()
+    raw = raw.replace('$', '').replace(' ', '')
+    nums = re.findall(r'[\d.,]+', raw)
+    if not nums:
+        return 0
+    raw = nums[0]
+    dots = raw.count('.')
+    commas = raw.count(',')
+    if dots == 0 and commas == 0:
+        return float(raw)
+    if dots > 0 and commas > 0:
+        if raw.rfind(',') > raw.rfind('.'):
+            raw = raw.replace('.', '').replace(',', '.')
+        else:
+            raw = raw.replace(',', '')
+    elif commas > 0:
+        parts = raw.split(',')
+        if len(parts) == 2 and len(parts[1]) == 2:
+            raw = raw.replace(',', '.')
+        else:
+            raw = raw.replace(',', '')
+    elif dots > 0:
+        parts = raw.split('.')
+        if not (len(parts) == 2 and len(parts[1]) == 2):
+            raw = raw.replace('.', '')
+    try:
+        return float(raw)
+    except ValueError:
+        return 0
+
+
 MIME_MAGIC_BYTES = {
     'pdf':  [b'%PDF'],
     'jpg':  [b'\xff\xd8\xff'],

@@ -132,6 +132,96 @@ class TestNotifyLeadCreated:
         notify_lead_created(99999)
         mock_email.assert_not_called()
 
+    @patch('services.notifications._send_email_notification')
+    @patch('services.notifications._send_lead_whatsapp')
+    def test_budget_matching_in_range(self, mock_whatsapp, mock_email, db, professional_user, sample_lead):
+        db.execute(
+            'INSERT INTO user_preferences (user_id, lead_alerts, budget_min, budget_max) VALUES (?, 1, 100000, 300000)',
+            (professional_user,)
+        )
+        db.commit()
+        notify_lead_created(sample_lead)
+        assert mock_email.call_count >= 1
+
+    @patch('services.notifications._send_email_notification')
+    def test_budget_matching_below_min(self, mock_email, db, professional_user, sample_lead):
+        db.execute(
+            'INSERT INTO user_preferences (user_id, lead_alerts, budget_min, budget_max) VALUES (?, 1, 300000, 500000)',
+            (professional_user,)
+        )
+        db.commit()
+        notify_lead_created(sample_lead)
+        # The professional with budget_min=300k should not receive email for a 200k lead
+        for call_args, _ in mock_email.call_args_list:
+            assert call_args[0] != professional_user
+
+    @patch('services.notifications._send_email_notification')
+    def test_budget_matching_above_max(self, mock_email, db, professional_user, sample_lead):
+        db.execute(
+            'INSERT INTO user_preferences (user_id, lead_alerts, budget_min, budget_max) VALUES (?, 1, 10000, 50000)',
+            (professional_user,)
+        )
+        db.commit()
+        notify_lead_created(sample_lead)
+        for call_args, _ in mock_email.call_args_list:
+            assert call_args[0] != professional_user
+
+    @patch('services.notifications._send_email_notification')
+    def test_budget_matching_zero_bounds(self, mock_email, db, professional_user, sample_lead):
+        """budget_min=0 o budget_max=0 no deben filtrar."""
+        db.execute(
+            'INSERT INTO user_preferences (user_id, lead_alerts, budget_min, budget_max) VALUES (?, 1, 0, 0)',
+            (professional_user,)
+        )
+        db.commit()
+        notify_lead_created(sample_lead)
+        # professional with zero bounds should receive notification
+        found = any(call_args[0] == professional_user for call_args, _ in mock_email.call_args_list)
+        assert found, f'Professional {professional_user} should have been notified'
+
+    @patch('services.notifications._send_email_notification')
+    @patch('services.notifications._send_lead_whatsapp')
+    def test_channel_email_only(self, mock_whatsapp, mock_email, db, professional_user, sample_lead):
+        db.execute(
+            'INSERT INTO user_preferences (user_id, lead_alerts, preferred_channel) VALUES (?, 1, \'email\')',
+            (professional_user,)
+        )
+        db.commit()
+        notify_lead_created(sample_lead)
+        found_email = any(call_args[0] == professional_user for call_args, _ in mock_email.call_args_list)
+        assert found_email
+        # whatsapp should not be called for this professional
+        for call_args, _ in mock_whatsapp.call_args_list:
+            assert call_args[0] != professional_user
+
+    @patch('services.notifications._send_email_notification')
+    @patch('services.notifications._send_lead_whatsapp')
+    def test_channel_whatsapp_only(self, mock_whatsapp, mock_email, db, professional_user, sample_lead):
+        db.execute(
+            'INSERT INTO user_preferences (user_id, lead_alerts, preferred_channel) VALUES (?, 1, \'whatsapp\')',
+            (professional_user,)
+        )
+        db.commit()
+        notify_lead_created(sample_lead)
+        for call_args, _ in mock_email.call_args_list:
+            assert call_args[0] != professional_user
+        found_wa = any(call_args[0] == professional_user for call_args, _ in mock_whatsapp.call_args_list)
+        assert found_wa
+
+    @patch('services.notifications._send_email_notification')
+    @patch('services.notifications._send_lead_whatsapp')
+    def test_channel_ambos(self, mock_whatsapp, mock_email, db, professional_user, sample_lead):
+        db.execute(
+            'INSERT INTO user_preferences (user_id, lead_alerts, preferred_channel) VALUES (?, 1, \'ambos\')',
+            (professional_user,)
+        )
+        db.commit()
+        notify_lead_created(sample_lead)
+        found_email = any(call_args[0] == professional_user for call_args, _ in mock_email.call_args_list)
+        found_wa = any(call_args[0] == professional_user for call_args, _ in mock_whatsapp.call_args_list)
+        assert found_email
+        assert found_wa
+
 
 class TestNotifyLeadStatusChange:
     @patch('services.notifications._send_email_notification')

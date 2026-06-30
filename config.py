@@ -13,6 +13,7 @@ DATABASE = os.path.join(os.path.dirname(__file__), 'database.db')
 
 DATABASE_URL = os.environ.get('DATABASE_URL', '')
 SECRET_KEY = os.environ.get('SECRET_KEY')
+SITE_URL = os.environ.get('SITE_URL', '')
 
 if not SECRET_KEY:
     raise ValueError("SECRET_KEY must be set in .env file")
@@ -43,6 +44,7 @@ TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER', '')
 TWILIO_WHATSAPP_FROM = os.environ.get('TWILIO_WHATSAPP_FROM', '')
 TWILIO_WHATSAPP_CONTENT_SID = os.environ.get('TWILIO_WHATSAPP_CONTENT_SID', '')
 TWILIO_WHATSAPP_BUTTON_CONTENT_SID = os.environ.get('TWILIO_WHATSAPP_BUTTON_CONTENT_SID', '')
+TWILIO_WHATSAPP_LEAD_CONTENT_SID = os.environ.get('TWILIO_WHATSAPP_LEAD_CONTENT_SID', '')
 TWILIO_SIMULATE = os.environ.get('TWILIO_SIMULATE', 'false').lower() == 'true'
 
 SMTP_HOST = os.environ.get('SMTP_HOST', '')

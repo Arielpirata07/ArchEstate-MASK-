@@ -399,6 +399,29 @@ def init_db(app):
         up_prefs_cols = [r[1] for r in cursor.fetchall()]
         if 'preferred_channel' not in up_prefs_cols:
             cursor.execute("ALTER TABLE user_preferences ADD COLUMN preferred_channel TEXT NOT NULL DEFAULT 'auto'")
+        if 'notification_filters' not in up_prefs_cols:
+            cursor.execute("ALTER TABLE user_preferences ADD COLUMN notification_filters TEXT DEFAULT ''")
+        if 'budget_min' not in up_prefs_cols:
+            cursor.execute("ALTER TABLE user_preferences ADD COLUMN budget_min REAL DEFAULT 0")
+        if 'budget_max' not in up_prefs_cols:
+            cursor.execute("ALTER TABLE user_preferences ADD COLUMN budget_max REAL DEFAULT 0")
+        if 'whatsapp_notifications' not in up_prefs_cols:
+            cursor.execute("ALTER TABLE user_preferences ADD COLUMN whatsapp_notifications INTEGER NOT NULL DEFAULT 1")
+
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS notifications (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL REFERENCES users(id),
+                lead_id INTEGER REFERENCES leads(id),
+                type TEXT NOT NULL DEFAULT 'lead',
+                title TEXT NOT NULL,
+                body TEXT DEFAULT '',
+                is_read INTEGER NOT NULL DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, is_read)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_notifications_created ON notifications(created_at)')
 
         cursor.execute('''
             SELECT id, phone FROM users

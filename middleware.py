@@ -1,4 +1,5 @@
 import logging
+import os
 import uuid
 
 from flask import g, request, session
@@ -18,15 +19,29 @@ def security_headers(response):
         response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
         response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
         response.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=()'
-        response.headers['Content-Security-Policy'] = (
-            "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://unpkg.com; "
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-            "font-src https://fonts.gstatic.com; "
-            "img-src 'self' data: blob: https:; "
-            "connect-src 'self' https://unpkg.com; "
-            "frame-ancestors 'none'"
-        )
+
+        is_dev = os.environ.get('FLASK_DEBUG', '0') == '1'
+        if is_dev:
+            csp = (
+                "default-src 'self'; "
+                "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://unpkg.com; "
+                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+                "font-src https://fonts.gstatic.com; "
+                "img-src 'self' data: blob: https:; "
+                "connect-src 'self' https://unpkg.com; "
+                "frame-ancestors 'none'"
+            )
+        else:
+            csp = (
+                "default-src 'self'; "
+                "script-src 'self' 'unsafe-inline' https://unpkg.com; "
+                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+                "font-src https://fonts.gstatic.com; "
+                "img-src 'self' data: blob: https:; "
+                "connect-src 'self'; "
+                "frame-ancestors 'none'"
+            )
+        response.headers['Content-Security-Policy'] = csp
     return rate_limit.add_rate_limit_headers(response)
 
 
@@ -110,6 +125,17 @@ def inject_theme():
     return dict(user_theme=theme)
 
 
+def inject_notifications():
+    user_id = session.get('user_id')
+    count = 0
+    if user_id:
+        try:
+            count = models.get_unread_notification_count(user_id)
+        except Exception:
+            pass
+    return dict(unread_notifications=count)
+
+
 def register_middleware(app):
     app.after_request(security_headers)
     app.before_request(assign_request_id)
@@ -117,3 +143,4 @@ def register_middleware(app):
     app.before_request(restore_session_from_remember_cookie)
     app.context_processor(inject_request_id)
     app.context_processor(inject_theme)
+    app.context_processor(inject_notifications)

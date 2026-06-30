@@ -1,21 +1,28 @@
 """
-Servicio de notificaciones por email y SMS.
+Servicio de notificaciones por email, SMS y WhatsApp.
 
-Lee las preferencias del usuario (email_notifications, sms_notifications,
-lead_alerts) y envía notificaciones cuando los toggles están activados.
+Lee las preferencias del usuario y envía notificaciones cuando los toggles
+están activados. El dispatch es asíncrono para no bloquear al cliente.
 """
 
+import json
+import logging
 from typing import Optional
 
+import config
 import models
 import utils
 from services.email import get_email_sender
 from services.verifier import get_default_router
+from utils import parse_budget
 
 try:
     from flask import render_template
 except ImportError:
     render_template = None
+
+
+logger = logging.getLogger(__name__)
 
 
 def _send_email_notification(user_id: int, subject: str, html_body: str, text_body: str = '') -> bool:
@@ -79,21 +86,36 @@ def _lead_to_dict(lead) -> dict:
     return {k: v for k, v in d.items() if v is not None and v != '' and v != 0}
 
 
-def notify_lead_created(lead_id: int) -> None:
+def _load_notification_filters(user_id: int) -> dict:
+    """Loads notification_filters JSON from user_preferences."""
+    prefs = models.get_user_preferences(user_id)
+    raw = prefs.get('notification_filters', '')
+    if not raw:
+        return {}
+    try:
+        return json.loads(raw) if isinstance(raw, str) else raw
+    except (json.JSONDecodeError, TypeError):
+        return {}
+
+
+def notify_lead_created(lead_id: int) -> list:
     """
     Notifica a profesionales cuando se crea un lead nuevo.
-    Filtra por provincia y zona de cobertura del profesional.
-    Si el profesional no tiene provincia/zona configurada, recibe todos los leads.
+    Filtra por provincia, zona, tipo de operación, tipo de propiedad
+    y rango de presupuesto configurados en las preferencias del profesional.
     """
     conn = None
     try:
         conn = models.get_db_connection()
         lead = conn.execute('SELECT * FROM leads WHERE id = ?', (lead_id,)).fetchone()
         if not lead:
-            return
+            return []
 
         lead_province = (lead['province'] or '').strip()
         lead_zone = (lead['zone'] or '').strip()
+        lead_type = (lead['type'] or '').strip()
+        lead_property_type = (lead['property_type'] or '').strip()
+        lead_budget = parse_budget(lead.get('budget'))
 
         professionals = conn.execute('''
             SELECT u.id, u.email, u.phone, u.phone_e164, p.name, p.specialty, p.province, p.zone
@@ -106,55 +128,133 @@ def notify_lead_created(lead_id: int) -> None:
             conn.close()
 
     lead_data = _lead_to_dict(lead)
+    notified = []
 
     for pro in professionals:
         prefs = models.get_user_preferences(pro['id'])
         if not prefs.get('lead_alerts'):
             continue
 
+        # Geo filtering
         pro_province = (pro['province'] or '').strip()
         pro_zone = (pro['zone'] or '').strip()
-
         if pro_province and lead_province and pro_province != lead_province:
             continue
         if pro_zone and lead_zone and pro_zone.lower() not in lead_zone.lower():
             continue
 
-        subject = f'Nuevo lead disponible: {lead["type"]} en {lead["zone"]}'
-        html, _ = _render_email('lead_assigned',
-            lead_type=lead['type'],
-            zone=lead['zone'],
-            budget=lead['budget'],
-            currency=lead['currency'],
-            property_type=lead['property_type'],
-            professional_name=pro['name'],
-            province=lead_data.get('province', ''),
-            bedrooms=lead_data.get('bedrooms', 0),
-            bathrooms=lead_data.get('bathrooms', 0),
-            ambientes=lead_data.get('ambientes', 0),
-            total_area=lead_data.get('total_area', 0),
-            usable_m2=lead_data.get('usable_m2', 0),
-            land_area=lead_data.get('land_area', 0),
-            built_area=lead_data.get('built_area', 0),
-            parking=lead_data.get('parking', ''),
-            orientation=lead_data.get('orientation', ''),
-            property_condition=lead_data.get('property_condition', ''),
-            property_age=lead_data.get('property_age', ''),
-            architectural_style=lead_data.get('architectural_style', ''),
-            elevator=lead_data.get('elevator', ''),
-            pool=lead_data.get('pool', ''),
-            community_pool=lead_data.get('community_pool', ''),
-            floor_block=lead_data.get('floor_block', ''),
-            amenities=lead_data.get('amenities', ''),
-            additional_features=lead_data.get('additional_features', ''),
-        )
-        _send_email_notification(pro['id'], subject, html)
+        # Advanced filter matching from notification_filters
+        nf = _load_notification_filters(pro['id'])
+        filter_types = nf.get('types', [])
+        filter_property_types = nf.get('property_types', [])
+        if filter_types and lead_type not in filter_types:
+            continue
+        if filter_property_types and lead_property_type not in filter_property_types:
+            continue
 
+        # Budget range matching
+        budget_min = prefs.get('budget_min') or 0
+        budget_max = prefs.get('budget_max') or 0
+        if budget_min > 0 and lead_budget < budget_min:
+            continue
+        if budget_max > 0 and lead_budget > budget_max:
+            continue
+
+        # Always create in-app notification
+        _create_notification(pro['id'], lead_id,
+            title=f'Nuevo lead: {lead["type"]} en {lead["zone"]}',
+            body=f'{lead["property_type"]} — {lead.get("currency", "")} {lead.get("budget", "")}'
+        )
+
+        # Route channel: email / whatsapp / ambos / auto
+        channel = (prefs.get('preferred_channel') or 'email').strip().lower()
+        sent_email = False
+        sent_whatsapp = False
+
+        if channel in ('email', 'ambos', 'auto'):
+            _send_lead_email(pro, lead, lead_data, lead_id)
+            sent_email = True
+
+        if channel in ('whatsapp', 'ambos') or (channel == 'auto' and not sent_email):
+            whatsapp_ok = _send_lead_whatsapp(pro['id'], pro.get('phone_e164'), lead_data)
+            if whatsapp_ok:
+                sent_whatsapp = True
+
+        # Fallback: if auto tried WhatsApp only and it failed, send email
+        if channel == 'auto' and not sent_whatsapp and not sent_email:
+            _send_lead_email(pro, lead, lead_data, lead_id)
+
+        notified.append(pro['name'])
         utils.log_action(
-            'Notificación lead asignado',
-            f'Lead #{lead_id} -> {pro["name"]}',
+            'Notificaci\u00f3n lead asignado',
+            f'Lead #{lead_id} -> {pro["name"]} (canal: {channel})',
             None
         )
+
+    return notified
+
+
+def _send_lead_email(pro, lead, lead_data, lead_id):
+    """Send lead notification email to a professional."""
+    subject = f'Nuevo lead disponible: {lead["type"]} en {lead["zone"]}'
+    html, _ = _render_email('lead_assigned',
+        lead_type=lead['type'],
+        zone=lead['zone'],
+        budget=lead['budget'],
+        currency=lead['currency'],
+        property_type=lead['property_type'],
+        professional_name=pro['name'],
+        province=lead_data.get('province', ''),
+        bedrooms=lead_data.get('bedrooms', 0),
+        bathrooms=lead_data.get('bathrooms', 0),
+        ambientes=lead_data.get('ambientes', 0),
+        total_area=lead_data.get('total_area', 0),
+        usable_m2=lead_data.get('usable_m2', 0),
+        land_area=lead_data.get('land_area', 0),
+        built_area=lead_data.get('built_area', 0),
+        parking=lead_data.get('parking', ''),
+        orientation=lead_data.get('orientation', ''),
+        property_condition=lead_data.get('property_condition', ''),
+        property_age=lead_data.get('property_age', ''),
+        architectural_style=lead_data.get('architectural_style', ''),
+        elevator=lead_data.get('elevator', ''),
+        pool=lead_data.get('pool', ''),
+        community_pool=lead_data.get('community_pool', ''),
+        floor_block=lead_data.get('floor_block', ''),
+        amenities=lead_data.get('amenities', ''),
+        additional_features=lead_data.get('additional_features', ''),
+        site_url=config.SITE_URL,
+    )
+    _send_email_notification(pro['id'], subject, html)
+
+
+def _send_lead_whatsapp(user_id, phone_e164, lead_data):
+    """Send lead notification via WhatsApp. Returns True on success."""
+    if not phone_e164:
+        return False
+    prefs = models.get_user_preferences(user_id)
+    if not prefs.get('whatsapp_notifications', 1):
+        return False
+    from services.whatsapp_notifier import WhatsAppLeadNotifier
+    notifier = WhatsAppLeadNotifier()
+    return notifier.send_lead_alert(phone_e164, lead_data)
+
+
+def _create_notification(user_id: int, lead_id: int, title: str, body: str = '') -> None:
+    """Inserta una notificación en la tabla notifications."""
+    conn = None
+    try:
+        conn = models.get_db_connection()
+        conn.execute(
+            'INSERT INTO notifications (user_id, lead_id, title, body) VALUES (?, ?, ?, ?)',
+            (user_id, lead_id, title[:255], body[:500])
+        )
+        conn.commit()
+    except Exception:
+        pass
+    finally:
+        if conn:
+            conn.close()
 
 
 def notify_lead_status_change(lead_id: int, professional_id: int, new_status: str) -> None:

@@ -4,6 +4,7 @@ from datetime import datetime
 from flask import Blueprint, jsonify, render_template, url_for
 
 import models
+from services.database import date_format_sql, now_sql
 
 logger = logging.getLogger(__name__)
 
@@ -28,9 +29,9 @@ def landing_stats():
         total_zones = conn.execute(
             'SELECT COUNT(DISTINCT zone) FROM leads WHERE zone != ""'
         ).fetchone()[0]
-        leads_this_month = conn.execute('''
+        leads_this_month = conn.execute(f'''
             SELECT COUNT(*) FROM leads
-            WHERE strftime('%Y-%m', timestamp) = strftime('%Y-%m', 'now')
+            WHERE {date_format_sql('timestamp', '%Y-%m')} = {now_sql()}
         ''').fetchone()[0]
 
         return jsonify({

@@ -300,9 +300,194 @@
                         </label>
                     </div>
 
+                    <div class="mt-6 pt-4 border-t" style="border-color:var(--border)">
+                        <label class="text-xs font-semibold mb-2 block" style="color:var(--text-primary)">Canal de notificación preferido</label>
+                        <select id="notif-channel" onchange="saveNotifChannel()"
+                                class="w-full max-w-xs px-3 py-1.5 text-xs rounded border"
+                                style="border-color:var(--border);color:var(--text-primary);background:var(--bg-card)">
+                            <option value="email">Email</option>
+                            <option value="whatsapp">WhatsApp</option>
+                            <option value="ambos">Email + WhatsApp</option>
+                            <option value="auto">Automático (WhatsApp si disponible)</option>
+                        </select>
+                        <span id="channel-save-msg" class="hidden text-xs font-medium text-emerald-600 ml-3" aria-live="polite">Guardado</span>
+                    </div>
+
                     <div class="flex items-center gap-4 pt-6 mt-6 border-t" style="border-color:var(--border)">
                         <span id="notif-save-msg" class="text-sm font-medium text-emerald-600" aria-live="polite">Se guarda automaticamente</span>
                     </div>
+
+                    {% if session.get('role') == 'professional' %}
+                    <!-- Filtros de notificaciones para profesionales -->
+                    <div class="mt-8 pt-6 border-t" style="border-color:var(--border)">
+                        <h3 class="text-xs font-bold uppercase tracking-widest mb-4" style="color:var(--accent)">Filtros de notificaciones</h3>
+                        <p class="text-xs mb-4" style="color:var(--text-secondary)">Seleccioná qué tipos de leads querés recibir por email y en la app. Si no seleccionás ninguno, recibís todos.</p>
+
+                        <div class="mb-4">
+                            <label class="text-xs font-semibold mb-2 block" style="color:var(--text-primary)">Tipo de operación</label>
+                            <div id="filter-types" class="flex flex-wrap gap-2">
+                            {% for opt in form_options.get('operation_type', []) %}
+                                <label class="filter-chip cursor-pointer px-3 py-1.5 rounded-full text-xs font-medium border transition-colors" style="border-color:var(--border);color:var(--text-secondary)" data-value="{{ opt.value }}">
+                                    <input type="checkbox" class="hidden filter-checkbox" value="{{ opt.value }}">
+                                    {{ opt.label }}
+                                </label>
+                            {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="text-xs font-semibold mb-2 block" style="color:var(--text-primary)">Tipo de propiedad</label>
+                            <div id="filter-property-types" class="flex flex-wrap gap-2">
+                            {% for opt in form_options.get('property_type', []) %}
+                                <label class="filter-chip cursor-pointer px-3 py-1.5 rounded-full text-xs font-medium border transition-colors" style="border-color:var(--border);color:var(--text-secondary)" data-value="{{ opt.value }}">
+                                    <input type="checkbox" class="hidden filter-checkbox" value="{{ opt.value }}">
+                                    {{ opt.label }}
+                                </label>
+                            {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Budget range -->
+                        <div class="mb-4">
+                            <label class="text-xs font-semibold mb-2 block" style="color:var(--text-primary)">Rango de presupuesto (opcional)</label>
+                            <div class="flex items-center gap-3">
+                                <input type="number" id="filter-budget-min" placeholder="Desde"
+                                       class="w-28 px-3 py-1.5 text-xs rounded border" min="0" step="0.01"
+                                       style="border-color:var(--border);color:var(--text-primary);background:var(--bg-card)">
+                                <span class="text-xs" style="color:var(--text-secondary)">a</span>
+                                <input type="number" id="filter-budget-max" placeholder="Hasta"
+                                       class="w-28 px-3 py-1.5 text-xs rounded border" min="0" step="0.01"
+                                       style="border-color:var(--border);color:var(--text-primary);background:var(--bg-card)">
+                                <span class="text-xs font-medium" style="color:var(--text-secondary)">USD</span>
+                            </div>
+                        </div>
+
+                        <button onclick="saveNotifFilters()" class="btn-primary text-xs mt-2">
+                            <i data-lucide="save" class="w-3 h-3" aria-hidden="true"></i>
+                            Guardar filtros
+                        </button>
+                        <span id="filter-save-msg" class="hidden text-xs font-medium text-emerald-600 ml-3" aria-live="polite">Filtros guardados</span>
+                        <span id="filter-error-msg" class="hidden text-xs font-medium text-rose-600 ml-3" role="alert"></span>
+                    </div>
+
+                    <script>
+                    function loadNotifFilters() {
+                        fetch('{{ url_for("profile.get_notification_filters") }}')
+                            .then(function(r) { return r.json(); })
+                            .then(function(data) {
+                                if (!data.success) return;
+                                var filters = data.filters || {};
+                                var types = filters.types || [];
+                                var propTypes = filters.property_types || [];
+                                document.querySelectorAll('#filter-types .filter-checkbox').forEach(function(cb) {
+                                    cb.checked = types.indexOf(cb.value) !== -1;
+                                    updateChipState(cb);
+                                });
+                                document.querySelectorAll('#filter-property-types .filter-checkbox').forEach(function(cb) {
+                                    cb.checked = propTypes.indexOf(cb.value) !== -1;
+                                    updateChipState(cb);
+                                });
+                                var minInput = document.getElementById('filter-budget-min');
+                                var maxInput = document.getElementById('filter-budget-max');
+                                if (minInput) minInput.value = data.budget_min || '';
+                                if (maxInput) maxInput.value = data.budget_max || '';
+                            })
+                            .catch(function() {});
+                    }
+
+                    function loadNotifChannel() {
+                        fetch('{{ url_for("profile.get_notification_channel") }}')
+                            .then(function(r) { return r.json(); })
+                            .then(function(data) {
+                                if (!data.success) return;
+                                var sel = document.getElementById('notif-channel');
+                                if (sel) sel.value = data.channel || 'email';
+                            })
+                            .catch(function() {});
+                    }
+
+                    function updateChipState(checkbox) {
+                        var chip = checkbox.closest('.filter-chip');
+                        var isDark = document.documentElement.classList.contains('dark');
+                        if (checkbox.checked) {
+                            chip.style.borderColor = isDark ? '#A68A64' : '#735A3A';
+                            chip.style.backgroundColor = isDark ? '#A68A64' : '#735A3A';
+                            chip.style.color = '#ffffff';
+                        } else {
+                            chip.style.borderColor = '';
+                            chip.style.backgroundColor = '';
+                            chip.style.color = '';
+                        }
+                    }
+
+                    function saveNotifFilters() {
+                        var types = [];
+                        var propTypes = [];
+                        document.querySelectorAll('#filter-types .filter-checkbox:checked').forEach(function(cb) {
+                            types.push(cb.value);
+                        });
+                        document.querySelectorAll('#filter-property-types .filter-checkbox:checked').forEach(function(cb) {
+                            propTypes.push(cb.value);
+                        });
+                        var minInput = document.getElementById('filter-budget-min');
+                        var maxInput = document.getElementById('filter-budget-max');
+                        var body = {types: types, property_types: propTypes};
+                        if (minInput) body.budget_min = parseFloat(minInput.value) || 0;
+                        if (maxInput) body.budget_max = parseFloat(maxInput.value) || 0;
+                        var msg = document.getElementById('filter-save-msg');
+                        var err = document.getElementById('filter-error-msg');
+                        msg.classList.add('hidden');
+                        err.classList.add('hidden');
+                        fetch('{{ url_for("profile.update_notification_filters") }}', {
+                            method: 'PUT',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify(body)
+                        })
+                        .then(function(r) { return r.json(); })
+                        .then(function(data) {
+                            if (data.success) {
+                                msg.classList.remove('hidden');
+                                setTimeout(function() { msg.classList.add('hidden'); }, 3000);
+                            } else {
+                                err.textContent = data.error || 'Error al guardar';
+                                err.classList.remove('hidden');
+                            }
+                        })
+                        .catch(function() {
+                            err.textContent = 'Error de red';
+                            err.classList.remove('hidden');
+                        });
+                    }
+
+                    function saveNotifChannel() {
+                        var sel = document.getElementById('notif-channel');
+                        if (!sel) return;
+                        var msg = document.getElementById('channel-save-msg');
+                        msg.classList.add('hidden');
+                        fetch('{{ url_for("profile.update_notification_channel") }}', {
+                            method: 'PUT',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({channel: sel.value})
+                        })
+                        .then(function(r) { return r.json(); })
+                        .then(function(data) {
+                            if (data.success) {
+                                msg.classList.remove('hidden');
+                                setTimeout(function() { msg.classList.add('hidden'); }, 3000);
+                            }
+                        })
+                        .catch(function() {});
+                    }
+
+                    document.addEventListener('DOMContentLoaded', function() {
+                        loadNotifFilters();
+                        loadNotifChannel();
+                        document.querySelectorAll('.filter-checkbox').forEach(function(cb) {
+                            cb.addEventListener('change', function() { updateChipState(this); });
+                        });
+                    });
+                    </script>
+                    {% endif %}
                 </div>
             </div>
 
@@ -574,6 +759,20 @@
                         </button>
                         <span id="pro-full-save-msg" class="hidden text-sm font-medium text-emerald-600" aria-live="polite">Guardado correctamente</span>
                         <span id="pro-full-error-msg" class="hidden text-sm font-medium text-rose-600" role="alert"></span>
+                    </div>
+
+                    <div class="flex items-center gap-4 pt-6 mt-6 border-t" style="border-color:var(--border)">
+                        <span class="text-xs font-bold uppercase tracking-widest" style="color:var(--text-secondary)">Exportar Historial</span>
+                        <a href="{{ url_for('profile.profile_export_history_xlsx') }}"
+                           class="flex items-center gap-2 px-4 py-2 bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all rounded text-[10px] font-bold uppercase tracking-widest border border-midnight/5 dark:border-white/10">
+                            <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5" aria-hidden="true"></i>
+                            XLSX
+                        </a>
+                        <a href="{{ url_for('profile.profile_export_history_pdf') }}"
+                           class="flex items-center gap-2 px-4 py-2 bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all rounded text-[10px] font-bold uppercase tracking-widest border border-midnight/5 dark:border-white/10">
+                            <i data-lucide="file-text" class="w-3.5 h-3.5" aria-hidden="true"></i>
+                            PDF
+                        </a>
                     </div>
                 </div>
             </div>

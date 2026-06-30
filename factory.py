@@ -20,8 +20,10 @@ def create_app():
     app.config['PERMANENT_SESSION_LIFETIME'] = config.PERMANENT_SESSION_LIFETIME
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     is_dev = os.environ.get('FLASK_DEBUG', '0') == '1' or os.environ.get('PYTEST_CURRENT_TEST')
-    app.config['SESSION_COOKIE_SECURE'] = not is_dev
+    is_secure = config.REMEMBER_COOKIE_SECURE
+    app.config['SESSION_COOKIE_SECURE'] = is_secure or not is_dev
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+    app.config['SESSION_COOKIE_NAME'] = '__Host-session' if is_secure else 'session'
     app.jinja_env.autoescape = True
 
     from middleware import register_middleware

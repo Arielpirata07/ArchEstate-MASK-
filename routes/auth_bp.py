@@ -1,7 +1,6 @@
 import logging
 import random
 import re
-import sqlite3
 import time as _time
 
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, session, url_for
@@ -63,7 +62,7 @@ def register():
             return redirect(url_for('auth.register'))
 
         if raw_role == 'admin':
-            print(f"⚠️ ALERTA DE SEGURIDAD: Intento de registro ilegal como admin por {username}")
+            logger.warning('Intento de registro ilegal como admin por %s', username)
             flash('Acceso denegado. Solo administradores pueden asignarse ese rol.', 'error')
             return redirect(url_for('auth.register'))
 
@@ -98,12 +97,13 @@ def register():
             flash('Registro exitoso. Por favor, inicia sesión.', 'success')
             return redirect(url_for('auth.login'))
 
-        except sqlite3.IntegrityError:
-            flash('El nombre de usuario ya está en uso. Por favor, elige otro.', 'error')
-            return redirect(url_for('auth.register'))
-        except Exception:
-            logger.exception('Error al registrar usuario')
-            flash('Error al registrar. Por favor, intenta de nuevo.', 'error')
+        except Exception as exc:
+            from services.database import is_integrity_error
+            if is_integrity_error(exc):
+                flash('El nombre de usuario ya está en uso. Por favor, elige otro.', 'error')
+            else:
+                logger.exception('Error al registrar usuario')
+                flash('Error al registrar. Por favor, intenta de nuevo.', 'error')
             return redirect(url_for('auth.register'))
         finally:
             conn.close()

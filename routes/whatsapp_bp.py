@@ -21,7 +21,7 @@ def whatsapp_webhook():
     url = request.url
 
     if config.TWILIO_AUTH_TOKEN and not validator.validate(url, params, signature):
-        print(f'[WHATSAPP WEBHOOK] Invalid signature from {request.remote_addr}')
+        logger.warning('Invalid signature from %s', request.remote_addr)
         resp = MessagingResponse()
         return str(resp), 403
 
@@ -37,7 +37,7 @@ def whatsapp_webhook():
         return str(resp), 200
 
     phone_e164 = from_number.replace('whatsapp:', '', 1).replace(' ', '')
-    print(f'[WHATSAPP WEBHOOK] Verify request from {phone_e164}')
+    logger.info('Verify request from %s', phone_e164)
 
     conn = None
     try:
@@ -52,7 +52,7 @@ def whatsapp_webhook():
             conn.execute('UPDATE users SET phone_verified = 1 WHERE id = ?', (user['id'],))
             conn.commit()
             msg = f'✅ Teléfono verificado correctamente. Gracias, {user["username"]}.'
-            print(f'[WHATSAPP WEBHOOK] Verified user {user["username"]} (id={user["id"]})')
+            logger.info('Verified user %s (id=%s)', user['username'], user['id'])
             resp.message(msg)
         elif user and user['phone_verified'] == 1:
             resp.message('✅ Tu teléfono ya estaba verificado.')

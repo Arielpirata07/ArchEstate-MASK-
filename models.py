@@ -1,5 +1,4 @@
 import logging
-import sqlite3
 
 import config
 import utils
@@ -12,13 +11,10 @@ class DatabaseError(Exception):
 
 
 def get_db_connection():
+    from services.database import get_db_connection as _get_db
     try:
-        conn = sqlite3.connect(config.DATABASE)
-        conn.row_factory = sqlite3.Row
-        conn.execute('PRAGMA journal_mode=WAL')
-        conn.execute('PRAGMA busy_timeout=5000')
-        return conn
-    except sqlite3.Error:
+        return _get_db()
+    except Exception:
         logger.exception('Error al conectar a la base de datos')
         raise DatabaseError('No se pudo conectar a la base de datos')
 
@@ -334,6 +330,9 @@ def get_user_preferences(user_id):
             'sms_notifications': 1,
             'lead_alerts': 1,
             'preferred_channel': 'auto',
+            'whatsapp_notifications': 1,
+            'budget_min': 0,
+            'budget_max': 0,
         }
     finally:
         conn.close()
@@ -475,12 +474,12 @@ def get_user_login_history(user_id, limit=20):
 def delete_login_history_entry(entry_id, user_id):
     conn = get_db_connection()
     try:
-        conn.execute(
+        cursor = conn.execute(
             'DELETE FROM user_login_history WHERE id = ? AND user_id = ?',
             (entry_id, user_id)
         )
         conn.commit()
-        return conn.total_changes > 0
+        return cursor.rowcount > 0
     finally:
         conn.close()
 
@@ -628,6 +627,59 @@ def update_form_option(option_id, data):
         except Exception:
             conn.rollback()
             raise
+    finally:
+        conn.close()
+
+
+def get_user_notifications(user_id: int, limit: int = 20, unread_only: bool = False) -> list:
+    conn = get_db_connection()
+    try:
+        query = 'SELECT * FROM notifications WHERE user_id = ?'
+        params = [user_id]
+        if unread_only:
+            query += ' AND is_read = 0'
+        query += ' ORDER BY created_at DESC LIMIT ?'
+        params.append(limit)
+        rows = conn.execute(query, params).fetchall()
+        return [dict(r) for r in rows]
+    finally:
+        conn.close()
+
+
+def get_unread_notification_count(user_id: int) -> int:
+    conn = get_db_connection()
+    try:
+        row = conn.execute(
+            'SELECT COUNT(*) as cnt FROM notifications WHERE user_id = ? AND is_read = 0',
+            (user_id,)
+        ).fetchone()
+        return row['cnt'] if row else 0
+    finally:
+        conn.close()
+
+
+def mark_notification_read(notification_id: int, user_id: int) -> bool:
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute(
+            'UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?',
+            (notification_id, user_id)
+        )
+        conn.commit()
+        return cursor.rowcount > 0
+    finally:
+        conn.close()
+
+
+def mark_all_notifications_read(user_id: int) -> bool:
+    conn = get_db_connection()
+    try:
+        conn.execute(
+            'UPDATE notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0',
+            (user_id,)
+        )
+        conn.commit()
+        return True
     finally:
         conn.close()
 

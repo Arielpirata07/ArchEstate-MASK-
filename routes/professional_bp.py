@@ -22,6 +22,7 @@ import models
 import rate_limit
 import utils
 from decorators import login_required, professional_required
+from services.database import date_format_sql, now_sql
 from utils import allowed_file, convert_to_argentina_time
 
 professional_bp = Blueprint('professional', __name__, url_prefix='')
@@ -304,7 +305,7 @@ def _query_leads_stats(conn, user_id, my_leads, month):
         SELECT
             COUNT(*) as total,
             AVG(CAST(SUBSTR(budget, 1, INSTR(budget, ' ') - 1) AS REAL)) as avg_budget
-        FROM leads WHERE {where_sql} AND strftime('%Y-%m', timestamp) = ?
+        FROM leads WHERE {where_sql} AND {date_format_sql('timestamp', '%Y-%m')} = ?
     ''', cur_params).fetchone()
 
     cur_year, cur_mon = month.split('-')
@@ -315,39 +316,39 @@ def _query_leads_stats(conn, user_id, my_leads, month):
     prev_params = params + [prev_month]
     prev_stats = conn.execute(f'''
         SELECT COUNT(*) as total FROM leads
-        WHERE {where_sql} AND strftime('%Y-%m', timestamp) = ?
+        WHERE {where_sql} AND {date_format_sql('timestamp', '%Y-%m')} = ?
     ''', prev_params).fetchone()
 
     pt_params = params + [month]
     by_property_type = conn.execute(f'''
         SELECT property_type, COUNT(*) as count
-        FROM leads WHERE {where_sql} AND strftime('%Y-%m', timestamp) = ?
+        FROM leads WHERE {where_sql} AND {date_format_sql('timestamp', '%Y-%m')} = ?
         GROUP BY property_type ORDER BY count DESC
     ''', pt_params).fetchall()
 
     z_params = params + [month]
     by_zone = conn.execute(f'''
         SELECT zone, COUNT(*) as count
-        FROM leads WHERE {where_sql} AND strftime('%Y-%m', timestamp) = ?
+        FROM leads WHERE {where_sql} AND {date_format_sql('timestamp', '%Y-%m')} = ?
         GROUP BY zone ORDER BY count DESC LIMIT 10
     ''', z_params).fetchall()
 
     ot_params = params + [month]
     by_operation_type = conn.execute(f'''
         SELECT type, COUNT(*) as count
-        FROM leads WHERE {where_sql} AND strftime('%Y-%m', timestamp) = ?
+        FROM leads WHERE {where_sql} AND {date_format_sql('timestamp', '%Y-%m')} = ?
         GROUP BY type ORDER BY count DESC
     ''', ot_params).fetchall()
 
     trend = conn.execute(f'''
-        SELECT strftime('%Y-%m', timestamp) as month, COUNT(*) as count
+        SELECT {date_format_sql('timestamp', '%Y-%m')} as month, COUNT(*) as count
         FROM leads WHERE {where_sql}
         GROUP BY month ORDER BY month DESC LIMIT 6
     ''', params).fetchall()
 
     active_zone_count = conn.execute(f'''
         SELECT COUNT(DISTINCT zone) as cnt
-        FROM leads WHERE {where_sql} AND strftime('%Y-%m', timestamp) = ? AND zone != ''
+        FROM leads WHERE {where_sql} AND {date_format_sql('timestamp', '%Y-%m')} = ? AND zone != ''
     ''', params + [month]).fetchone()[0]
 
     return {

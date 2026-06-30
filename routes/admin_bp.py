@@ -14,6 +14,7 @@ import models
 import rate_limit
 import utils
 from decorators import admin_required, login_required
+from services.database import date_format_sql, now_sql
 from utils import convert_to_argentina_time
 
 admin_bp = Blueprint('admin', __name__, url_prefix='')
@@ -180,7 +181,7 @@ def admin_stats():
             f'SELECT budget, COUNT(*) as count FROM leads {leads_where} GROUP BY budget ORDER BY count DESC'
         ).fetchall()
         leads_by_month = conn.execute(f'''
-            SELECT strftime('%Y-%m', timestamp) as month, COUNT(*) as count
+            SELECT {date_format_sql('timestamp', '%Y-%m')} as month, COUNT(*) as count
             FROM leads {leads_where}
             GROUP BY month
             ORDER BY month DESC
@@ -368,7 +369,7 @@ def get_telemetry():
 
         phone_daily = []
         for row in conn.execute(
-            f"SELECT strftime('%Y-%m-%d', ts) as day, COUNT(*) as c "
+            f"SELECT {date_format_sql('ts', '%Y-%m-%d')} as day, COUNT(*) as c "
             f"FROM events WHERE event = 'phone_revealed' {since_filter} "
             f"GROUP BY day ORDER BY day ASC"
         ).fetchall():

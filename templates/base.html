@@ -153,6 +153,13 @@
                 {% elif session.get('role') == 'professional' %}
                     {% set active_role = 'Profesional' %}
                 {% endif %}
+                <!-- Notifications bell -->
+                <button id="notif-bell" class="relative p-2 text-white/60 hover:text-gold transition-colors" aria-label="Notificaciones" onclick="toggleNotifications()">
+                    <i data-lucide="bell" class="w-4 h-4" aria-hidden="true"></i>
+                    {% if unread_notifications > 0 %}
+                    <span id="notif-badge" class="absolute -top-0.5 -right-0.5 flex items-center justify-center w-4 h-4 text-[9px] font-bold text-white bg-rose-500 rounded-full">{{ unread_notifications }}</span>
+                    {% endif %}
+                </button>
                 <span class="text-[10px] text-white/40 uppercase font-bold tracking-tighter">{{ active_role }}: {{ session.get('username') }}</span>
                 <a href="{{ url_for('auth.logout') }}" class="hidden sm:flex items-center gap-2 text-rose-400 dark:text-rose-500 hover:text-rose-300 dark:hover:text-rose-200 transition-colors text-[10px] font-bold uppercase tracking-widest">
                     <i data-lucide="log-out" class="w-4 h-4" aria-hidden="true"></i>
@@ -229,6 +236,19 @@
         </div>
     </div>
 
+    <!-- Notifications dropdown -->
+    {% if session.get('user_id') %}
+    <div id="notif-dropdown" class="hidden fixed right-4 top-20 z-50 w-80 bg-white dark:!bg-[#1a2332] border border-gold/20 dark:border-gold-light/20 rounded-lg shadow-xl overflow-hidden" role="dialog" aria-label="Notificaciones">
+        <div class="flex items-center justify-between px-4 py-3 border-b border-gold/20 dark:border-gold-light/20 bg-midnight-light">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-gold dark:text-gold-light">Notificaciones</h3>
+            <button onclick="markAllRead()" class="text-[9px] uppercase tracking-wider text-white/40 hover:text-gold dark:hover:text-gold-light transition-colors">Marcar leídas</button>
+        </div>
+        <div id="notif-list" class="max-h-80 overflow-y-auto">
+            <div class="p-4 text-center text-xs text-midnight/40 dark:text-white/40">Cargando...</div>
+        </div>
+    </div>
+    {% endif %}
+
     {% with messages = get_flashed_messages(with_categories=True) %}
     {% if messages %}
     <div class="pt-24 px-6 max-w-7xl mx-auto w-full" role="alert" aria-live="polite">
@@ -278,6 +298,86 @@
     <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/form-options.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/dark-mode.js') }}" defer></script>
+
+    <script>
+    /* Notification dropdown */
+    var notifDropdownOpen = false;
+
+    function toggleNotifications() {
+        var dd = document.getElementById('notif-dropdown');
+        if (!dd) return;
+        notifDropdownOpen = !notifDropdownOpen;
+        dd.classList.toggle('hidden', !notifDropdownOpen);
+        if (notifDropdownOpen) loadNotifications();
+    }
+
+    function loadNotifications() {
+        var list = document.getElementById('notif-list');
+        if (!list) return;
+        list.innerHTML = '<div class="p-4 text-center text-xs text-midnight/40 dark:text-white/40">Cargando...</div>';
+        fetch('{{ url_for("profile.profile_notifications") }}')
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (!data.notifications || data.notifications.length === 0) {
+                    list.innerHTML = '<div class="p-4 text-center text-xs text-midnight/40 dark:text-white/40">Sin notificaciones</div>';
+                    return;
+                }
+                var html = '';
+                data.notifications.forEach(function(n) {
+                    html += '<div class="px-4 py-3 border-b border-midnight/10 dark:border-white/10 hover:bg-midnight/5 dark:hover:bg-white/5 transition-colors ' + (n.is_read ? '' : 'bg-gold/5 dark:bg-gold-light/10') + '">' +
+                        '<div class="flex items-start justify-between gap-2">' +
+                        '<div class="min-w-0">' +
+                        '<p class="text-xs font-semibold text-midnight dark:text-white truncate">' + escapeHtml(n.title) + '</p>' +
+                        (n.body ? '<p class="text-[11px] text-midnight/50 dark:text-white/50 mt-0.5">' + escapeHtml(n.body) + '</p>' : '') +
+                        '<p class="text-[9px] text-midnight/30 dark:text-white/30 mt-1">' + n.created_at + '</p>' +
+                        '</div>' +
+                        (!n.is_read ? '<button onclick="markRead(' + n.id + ')" class="shrink-0 text-[9px] uppercase tracking-wider text-gold dark:text-gold-light hover:text-white dark:hover:text-white transition-colors">Leído</button>' : '') +
+                        '</div></div>';
+                });
+                list.innerHTML = html;
+                var badge = document.getElementById('notif-badge');
+                if (badge && data.unread > 0) {
+                    badge.textContent = data.unread;
+                } else if (badge) {
+                    badge.remove();
+                }
+            })
+            .catch(function() {
+                list.innerHTML = '<div class="p-4 text-center text-xs text-rose-400">Error al cargar</div>';
+            });
+    }
+
+    function markRead(nid) {
+        fetch('{{ url_for("profile.mark_notification_read") }}', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({notification_id: nid})
+        }).then(function(r) { return r.json(); }).then(function(data) {
+            if (data.success) loadNotifications();
+        }).catch(function() {});
+    }
+
+    function markAllRead() {
+        fetch('{{ url_for("profile.mark_all_notifications_read") }}', {method: 'POST'})
+            .then(function(r) { return r.json(); }).then(function(data) {
+                if (data.success) {
+                    loadNotifications();
+                    var badge = document.getElementById('notif-badge');
+                    if (badge) badge.remove();
+                }
+            }).catch(function() {});
+    }
+
+    /* Close dropdown on click outside */
+    document.addEventListener('click', function(e) {
+        var dd = document.getElementById('notif-dropdown');
+        var bell = document.getElementById('notif-bell');
+        if (notifDropdownOpen && dd && !dd.contains(e.target) && !bell.contains(e.target)) {
+            dd.classList.add('hidden');
+            notifDropdownOpen = false;
+        }
+    });
+    </script>
 
     {% block scripts %}{% endblock %}
 </body>

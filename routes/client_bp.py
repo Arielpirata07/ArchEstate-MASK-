@@ -138,7 +138,7 @@ def submit_lead():
 
         province = data.get('province', '')
 
-        conn.execute('''
+        cursor = conn.execute('''
             INSERT INTO leads (
                 type, property_type, zone, province, budget, currency,
                 phone, email, user_id, floor_block, usable_m2, elevator,
@@ -182,7 +182,9 @@ def submit_lead():
 
         from services.notifications import notify_lead_created
         try:
-            notify_lead_created(conn.execute('SELECT last_insert_rowid()').fetchone()[0])
+            if cursor.lastrowid:
+                import threading
+                threading.Thread(target=notify_lead_created, args=(cursor.lastrowid,), daemon=True).start()
         except Exception:
             pass
 
