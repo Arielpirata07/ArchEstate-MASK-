@@ -129,7 +129,7 @@ window.__FORM_OPTIONS = {{ {
     <!-- Toolbar: período (encima de KPIs, como admin) -->
     <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
-            <span class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Período:</span>
+            <span class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Período:</span>
             <div class="flex gap-1" id="timeRangeChips">
                 <button onclick="setTimeRange('')"  data-days=""   class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-midnight text-white">Todas</button>
                 <button onclick="setTimeRange('1')" data-days="1"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all">Hoy</button>
@@ -141,19 +141,19 @@ window.__FORM_OPTIONS = {{ {
     <!-- KPI Bar: resumen rápido de leads (encima de filtros, como admin) -->
     <div class="grid grid-cols-4 gap-3">
         <div class="kpi-lead-card bg-paper-dark rounded-lg p-3 border-l-4 border-gold">
-            <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40">Nuevos</p>
+            <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60">Nuevos</p>
             <p id="kpiLeadsUnseen" class="text-2xl font-serif text-midnight mt-1">—</p>
         </div>
         <div class="kpi-lead-card bg-paper-dark rounded-lg p-3 border-l-4 border-emerald-600">
-            <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40">Contactados</p>
+            <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60">Contactados</p>
             <p id="kpiLeadsContacted" class="text-2xl font-serif text-midnight mt-1">—</p>
         </div>
         <div class="kpi-lead-card bg-paper-dark rounded-lg p-3 border-l-4 border-blue-600">
-            <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40">Tasa Contacto</p>
+            <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60">Tasa Contacto</p>
             <p id="kpiLeadsContactRate" class="text-2xl font-serif text-midnight mt-1">—</p>
         </div>
         <div class="kpi-lead-card bg-paper-dark rounded-lg p-3 border-l-4 border-midnight">
-            <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40">Total Leads</p>
+            <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60">Total Leads</p>
             <p id="kpiLeadsTotal" class="text-2xl font-serif text-midnight mt-1">—</p>
         </div>
     </div>
@@ -176,7 +176,7 @@ window.__FORM_OPTIONS = {{ {
                     </button>
                 </div>
                 <span id="activeFiltersCount" class="hidden text-[9px] font-bold uppercase tracking-widest text-gold bg-gold/10 px-2 py-0.5 rounded-full"></span>
-                <button id="clearFilters" class="text-[10px] font-bold uppercase tracking-widest text-midnight/40 hover:text-rose-500 transition-colors flex items-center gap-1">
+                <button id="clearFilters" class="text-[10px] font-bold uppercase tracking-widest text-midnight/60 hover:text-rose-500 transition-colors flex items-center gap-1">
                     <i data-lucide="x" class="w-3 h-3"></i> Limpiar todo
                 </button>
             </div>
@@ -306,7 +306,7 @@ window.__FORM_OPTIONS = {{ {
                     <option value="zone">Zona</option>
                     <option value="type">Tipo</option>
                 </select>
-                <button id="sortOrder" class="p-1 text-midnight/40 hover:text-gold" aria-label="Cambiar orden">
+                <button id="sortOrder" class="p-1 text-midnight/60 hover:text-gold" aria-label="Cambiar orden">
                     <i data-lucide="arrow-down" class="w-3 h-3"></i>
                 </button>
             </div>
@@ -359,66 +359,185 @@ window.__FORM_OPTIONS = {{ {
 
     <!-- ===== STATS PANEL ===== -->
     <div id="panel-stats" class="hidden">
-        <div class="bg-white rounded-lg shadow-lg border border-midnight/5 overflow-hidden">
-            <div class="p-6 space-y-6">
-                <!-- Month selector -->
-                <div class="flex items-center gap-3">
-                    <label for="statsMonthSelect" class="text-[10px] uppercase tracking-widest font-bold text-midnight/50">Mes</label>
-                    <select id="statsMonthSelect" onchange="loadMarketStats()"
-                        class="px-3 py-1.5 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none text-midnight/70">
-                    </select>
-                </div>
+        <div class="bg-white rounded-2xl shadow-lg border border-midnight/5 overflow-hidden">
+            <!-- Decorative header gradient bar -->
+            <div class="h-1 w-full bg-gradient-to-r from-gold via-gold-light to-gold/30"></div>
 
-                <!-- KPIs -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div class="metric-card bg-paper-dark rounded-lg p-4">
-                        <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Leads del Mes</p>
-                        <p id="kpiTotal" class="text-3xl font-serif text-midnight">—</p>
-                        <p id="kpiTotalGrowth" class="text-[10px] font-bold mt-1 hidden"></p>
-                    </div>
-                    <div class="metric-card bg-paper-dark rounded-lg p-4">
-                        <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Vs. Mes Anterior</p>
-                        <p id="kpiPrevTotal" class="text-3xl font-serif text-midnight">—</p>
-                        <p id="kpiPrevLabel" class="text-[10px] text-midnight/40 mt-1"></p>
-                    </div>
-                    <div class="metric-card bg-paper-dark rounded-lg p-4">
-                        <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Presupuesto Promedio</p>
-                        <p id="kpiAvgBudget" class="text-3xl font-serif text-midnight">—</p>
-                    </div>
-                    <div class="metric-card bg-paper-dark rounded-lg p-4">
-                        <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Zonas Activas</p>
-                        <p id="kpiZones" class="text-3xl font-serif text-midnight">—</p>
-                    </div>
-                </div>
-
-                <!-- Charts: row 1 -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-paper-dark rounded-lg p-4">
-                        <h4 class="text-[10px] font-bold uppercase tracking-widest text-midnight/50 mb-3">Tipo de Propiedad</h4>
-                        <div class="chart-container" style="position:relative;height:220px">
-                            <canvas id="chart-prop-type"></canvas>
+            <div class="p-8 space-y-8">
+                <!-- Header: title + month selector -->
+                <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+                    <div class="stats-entrance stagger-1">
+                        <div class="flex items-center gap-3 mb-1">
+                            <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center shadow-inner">
+                                <i data-lucide="trending-up" class="w-4 h-4 text-gold"></i>
+                            </div>
+                            <h3 class="text-2xl font-serif text-midnight">Tendencias del <span class="serif-italic">Mercado</span></h3>
                         </div>
+                        <p class="text-[11px] text-midnight/60 ml-11">Solicitudes de clientes en tu zona — lo más buscado del período</p>
                     </div>
-                    <div class="bg-paper-dark rounded-lg p-4">
-                        <h4 class="text-[10px] font-bold uppercase tracking-widest text-midnight/50 mb-3">Zonas (Top 10)</h4>
-                        <div class="chart-container" style="position:relative;height:220px">
-                            <canvas id="chart-zones"></canvas>
+                    <div class="flex items-center gap-3 stats-entrance stagger-2">
+                        <label for="statsMonthSelect" class="text-[10px] uppercase tracking-widest font-bold text-midnight/50">Mes</label>
+                        <div class="relative">
+                            <select id="statsMonthSelect" onchange="loadMarketStats()"
+                                class="appearance-none px-4 py-2 pr-10 border border-midnight/10 rounded-xl text-sm focus:border-gold focus:ring-2 focus:ring-gold/10 focus:outline-none text-midnight/70 bg-paper-dark transition-all cursor-pointer">
+                            </select>
+                            <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-midnight/30 pointer-events-none"></i>
                         </div>
                     </div>
                 </div>
 
-                <!-- Charts: row 2 -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-paper-dark rounded-lg p-4">
-                        <h4 class="text-[10px] font-bold uppercase tracking-widest text-midnight/50 mb-3">Tendencia Mensual</h4>
-                        <div class="chart-container" style="position:relative;height:220px">
-                            <canvas id="chart-trend"></canvas>
+                <!-- Lo más buscado: premium highlight cards -->
+                <div>
+                    <div class="flex items-center gap-2 mb-4 stats-entrance stagger-3">
+                        <div class="h-px flex-1 bg-gradient-to-r from-gold/40 to-transparent"></div>
+                        <div class="flex items-center gap-1.5 px-3">
+                            <i data-lucide="flame" class="w-4 h-4 text-gold"></i>
+                            <span class="text-[10px] uppercase tracking-widest font-bold text-gold">Lo más solicitado</span>
+                        </div>
+                        <div class="h-px flex-1 bg-gradient-to-l from-gold/40 to-transparent"></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <div class="top-searched-card stats-entrance stagger-4" data-index="0">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center shadow-inner icon-glow">
+                                        <i data-lucide="building" class="w-4 h-4 text-gold"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/35">Tipo de Propiedad</p>
+                                    </div>
+                                </div>
+                                <span id="topPropertyTypePct" class="text-[11px] font-bold text-gold"></span>
+                            </div>
+                            <p id="topPropertyType" class="text-xl font-serif text-midnight mb-2">—</p>
+                            <div class="stats-bar-track">
+                                <div id="topPropertyTypeBar" class="stats-bar-fill" style="width:0%"></div>
+                            </div>
+                            <p id="topPropertyTypeSub" class="text-[10px] text-midnight/25 mt-2 font-medium"></p>
+                        </div>
+                        <div class="top-searched-card stats-entrance stagger-5" data-index="1">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center shadow-inner icon-glow">
+                                        <i data-lucide="map-pin" class="w-4 h-4 text-gold"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/35">Zona</p>
+                                    </div>
+                                </div>
+                                <span id="topZonePct" class="text-[11px] font-bold text-gold"></span>
+                            </div>
+                            <p id="topZone" class="text-xl font-serif text-midnight mb-2">—</p>
+                            <div class="stats-bar-track">
+                                <div id="topZoneBar" class="stats-bar-fill" style="width:0%"></div>
+                            </div>
+                            <p id="topZoneSub" class="text-[10px] text-midnight/25 mt-2 font-medium"></p>
+                        </div>
+                        <div class="top-searched-card stats-entrance stagger-6" data-index="2">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center shadow-inner icon-glow">
+                                        <i data-lucide="arrow-left-right" class="w-4 h-4 text-gold"></i>
+                                    </div>
+                                    <div>
+                                        <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/35">Operación</p>
+                                    </div>
+                                </div>
+                                <span id="topOperationTypePct" class="text-[11px] font-bold text-gold"></span>
+                            </div>
+                            <p id="topOperationType" class="text-xl font-serif text-midnight mb-2">—</p>
+                            <div class="stats-bar-track">
+                                <div id="topOperationTypeBar" class="stats-bar-fill" style="width:0%"></div>
+                            </div>
+                            <p id="topOperationTypeSub" class="text-[10px] text-midnight/25 mt-2 font-medium"></p>
                         </div>
                     </div>
-                    <div class="bg-paper-dark rounded-lg p-4">
-                        <h4 class="text-[10px] font-bold uppercase tracking-widest text-midnight/50 mb-3">Tipo de Operación</h4>
-                        <div class="chart-container" style="position:relative;height:220px">
-                            <canvas id="chart-op-type"></canvas>
+                </div>
+
+                <!-- KPI Row -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="kpi-card stats-entrance stagger-7">
+                        <div class="kpi-card-accent bg-gradient-to-r from-gold to-gold-light"></div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <i data-lucide="file-text" class="w-3.5 h-3.5 text-gold"></i>
+                            <span class="text-[9px] uppercase tracking-widest font-bold text-midnight/35">Solicitudes</span>
+                        </div>
+                        <p id="kpiTotal" class="kpi-value">—</p>
+                        <p id="kpiTotalGrowth" class="kpi-trend hidden"></p>
+                    </div>
+                    <div class="kpi-card stats-entrance stagger-8">
+                        <div class="kpi-card-accent bg-gradient-to-r from-blue-400 to-blue-500"></div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <i data-lucide="calendar-arrow-left" class="w-3.5 h-3.5 text-blue-500"></i>
+                            <span class="text-[9px] uppercase tracking-widest font-bold text-midnight/35">Mes Anterior</span>
+                        </div>
+                        <p id="kpiPrevTotal" class="kpi-value">—</p>
+                        <p id="kpiPrevLabel" class="text-[10px] text-midnight/30 mt-1"></p>
+                    </div>
+                    <div class="kpi-card stats-entrance stagger-9">
+                        <div class="kpi-card-accent bg-gradient-to-r from-emerald-400 to-emerald-500"></div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <i data-lucide="wallet" class="w-3.5 h-3.5 text-emerald-500"></i>
+                            <span class="text-[9px] uppercase tracking-widest font-bold text-midnight/35">Presupuesto Prom.</span>
+                        </div>
+                        <p id="kpiAvgBudget" class="kpi-value">—</p>
+                    </div>
+                    <div class="kpi-card stats-entrance stagger-10">
+                        <div class="kpi-card-accent bg-gradient-to-r from-violet-400 to-violet-500"></div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <i data-lucide="layers" class="w-3.5 h-3.5 text-violet-500"></i>
+                            <span class="text-[9px] uppercase tracking-widest font-bold text-midnight/35">Zonas Distintas</span>
+                        </div>
+                        <p id="kpiZones" class="kpi-value">—</p>
+                    </div>
+                </div>
+
+                <!-- Charts -->
+                <div>
+                    <div class="flex items-center gap-2 mb-4 stats-entrance stagger-11">
+                        <div class="h-px flex-1 bg-gradient-to-r from-gold/20 to-transparent"></div>
+                        <div class="flex items-center gap-1.5 px-3">
+                            <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-midnight/30"></i>
+                            <span class="text-[10px] uppercase tracking-widest font-bold text-midnight/30">Distribución detallada</span>
+                        </div>
+                        <div class="h-px flex-1 bg-gradient-to-l from-gold/20 to-transparent"></div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="chart-card stats-entrance stagger-12">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest text-midnight/50">Tipo de Propiedad</h4>
+                                <span id="chartPropTypeCount" class="chart-count-badge"></span>
+                            </div>
+                            <div class="chart-container" style="position:relative;height:220px">
+                                <canvas id="chart-prop-type"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card stats-entrance stagger-13">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest text-midnight/50">Zonas</h4>
+                                <span id="chartZonesCount" class="chart-count-badge"></span>
+                            </div>
+                            <div class="chart-container" style="position:relative;height:220px">
+                                <canvas id="chart-zones"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card stats-entrance stagger-14">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest text-midnight/50">Evolución Mensual</h4>
+                                <span id="chartTrendCount" class="chart-count-badge"></span>
+                            </div>
+                            <div class="chart-container" style="position:relative;height:220px">
+                                <canvas id="chart-trend"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card stats-entrance stagger-15">
+                            <div class="flex items-center justify-between mb-4">
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest text-midnight/50">Tipo de Operación</h4>
+                                <span id="chartOpTypeCount" class="chart-count-badge"></span>
+                            </div>
+                            <div class="chart-container" style="position:relative;height:220px">
+                                <canvas id="chart-op-type"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -435,7 +554,7 @@ window.__FORM_OPTIONS = {{ {
                     <p class="text-[9px] uppercase tracking-widest font-bold text-gold">Lead <span id="previewLeadId" class="font-mono"></span></p>
                     <h3 id="previewLeadTitle" class="text-lg font-serif text-midnight mt-1">Vista rápida</h3>
                 </div>
-                <button onclick="closeLeadPreview()" class="p-2 text-midnight/40 hover:text-midnight rounded-lg hover:bg-paper-dark transition-all" aria-label="Cerrar vista rápida">
+                <button onclick="closeLeadPreview()" class="p-2 text-midnight/60 hover:text-midnight rounded-lg hover:bg-paper-dark transition-all" aria-label="Cerrar vista rápida">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -478,8 +597,8 @@ window.__FORM_OPTIONS = {{ {
                         class="px-4 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight hover:text-white transition-all">
                         Cancelar
                     </button>
-                    <button id="confirmReportBtn"
-                        class="px-4 py-2 bg-rose-600 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
+<button id="confirmReportBtn"
+                            class="px-4 py-2 bg-rose-600 dark:bg-rose-700 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-rose-700 dark:hover:bg-rose-800 transition-all">
                         Confirmar Reporte
                     </button>
                 </div>

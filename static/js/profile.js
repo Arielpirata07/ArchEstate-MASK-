@@ -771,12 +771,23 @@ function loadUserLeads() {
 
         tbody.innerHTML = data.leads.map(lead => {
             const sym = lead.currency === 'USD' ? 'US$' : lead.currency === 'EUR' ? 'EUR' : '$';
+            const seenCount = lead.seen_count || 0;
+            const trackingHtml = seenCount > 0
+                ? `<span class="tracking-badge" title="${seenCount} ${seenCount === 1 ? 'inmobiliaria ha visto' : 'inmobiliarias han visto'} tu solicitud">
+                    <i data-lucide="eye" class="w-3 h-3 tracking-eye"></i>
+                    ${seenCount} ${seenCount === 1 ? 'vista' : 'vistas'}
+                </span>`
+                : `<span class="tracking-empty">
+                    <i data-lucide="hourglass" class="w-3 h-3"></i>
+                    En revisión
+                </span>`;
             return `<tr style="border-bottom:1px solid var(--border)">
                 <td class="px-4 py-3 text-[13px] font-semibold" style="color:var(--text-primary)">#${lead.id}</td>
                 <td class="px-4 py-3 text-[13px]" style="color:var(--text-secondary)">${escapeHtml(lead.type || '-')}</td>
                 <td class="px-4 py-3 text-[13px]" style="color:var(--text-secondary)">${escapeHtml(lead.zone || '-')}</td>
                 <td class="px-4 py-3 text-[13px]" style="color:var(--text-secondary)">${escapeHtml(sym)} ${escapeHtml(lead.budget || '-')}</td>
                 <td class="px-4 py-3 text-[13px]" style="color:var(--text-secondary)">${escapeHtml(lead.timestamp || '-')}</td>
+                <td class="px-4 py-3">${trackingHtml}</td>
                 <td class="px-4 py-3">
                     <a href="/mi-perfil/lead/${lead.id}/editar" class="inline-flex items-center gap-1 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-widest transition-all" style="background:var(--accent);color:white">
                         <i data-lucide="edit-3" class="w-3 h-3"></i>
@@ -789,7 +800,7 @@ function loadUserLeads() {
         if (window.lucide) lucide.createIcons();
     })
     .catch(() => {
-        tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-rose-600">Error al cargar solicitudes</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-rose-600">Error al cargar solicitudes</td></tr>';
     });
 }
 

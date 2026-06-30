@@ -13,6 +13,9 @@ function showConfirm(message) {
     return new Promise(function (resolve) {
         var overlay = document.createElement('div');
         overlay.className = 'fixed inset-0 z-50 bg-midnight/60 backdrop-blur-sm flex items-center justify-center';
+        overlay.setAttribute('role', 'dialog');
+        overlay.setAttribute('aria-modal', 'true');
+        overlay.setAttribute('aria-label', message);
 
         var modal = document.createElement('div');
         modal.className = 'bg-white rounded-lg shadow-2xl border-t-4 border-gold overflow-hidden w-full max-w-md mx-4';
@@ -29,7 +32,17 @@ function showConfirm(message) {
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
 
-        function cleanup() { overlay.remove(); }
+        function onKeydown(e) {
+            if (e.key === 'Escape') { cleanup(); resolve(false); }
+        }
+        document.addEventListener('keydown', onKeydown);
+
+        function cleanup() {
+            document.removeEventListener('keydown', onKeydown);
+            overlay.remove();
+        }
+
+        setTimeout(function () { modal.querySelector('.confirm-ok').focus(); }, 50);
 
         modal.querySelector('.confirm-cancel').onclick = function () { cleanup(); resolve(false); };
         modal.querySelector('.confirm-ok').onclick = function () { cleanup(); resolve(true); };
@@ -90,6 +103,8 @@ function showToast(message, type = 'success') {
     const icon = type === 'success' ? 'check-circle' : type === 'error' ? 'alert-circle' : 'info';
 
     toast.className = `${bgColor} text-white px-6 py-4 rounded shadow-2xl flex items-center gap-4 transform transition-all duration-500 translate-y-10 opacity-0 border border-white/10 relative overflow-hidden`;
+    toast.setAttribute('role', 'alert');
+    toast.setAttribute('aria-live', 'assertive');
     toast.style.minWidth = '300px';
 
     toast.innerHTML = `
@@ -328,12 +343,9 @@ function initUserForm() {
 
             // Validacion rapida en cliente
             var submitBtn = form.querySelector('button[type="submit"]');
-            var originalBtnContent = submitBtn ? submitBtn.innerHTML : '';
 
             if (!validateEmail(data.email)) {
-                submitBtn.innerHTML = originalBtnContent;
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('opacity-70');
+                setLoading(submitBtn, false);
                 if (window.lucide) lucide.createIcons();
                 showToast('El email no es válido o está vacío. Verificá tu perfil.', 'error');
                 return;
@@ -342,19 +354,14 @@ function initUserForm() {
             // Validacion cruzada de moneda vs presupuesto
             var budgetValidation = validateBudgetForCurrency(data.budget, data.currency);
             if (!budgetValidation.isValid) {
-                showToast(budgetValidation.message, 'error');
-                submitBtn.innerHTML = originalBtnContent;
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('opacity-70');
+                setLoading(submitBtn, false);
                 if (window.lucide) lucide.createIcons();
+                showToast(budgetValidation.message, 'error');
                 return;
             }
 
             // Estado de carga
-            submitBtn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Procesando...`;
-            submitBtn.disabled = true;
-            submitBtn.classList.add('opacity-70');
-            if (window.lucide) lucide.createIcons();
+            setLoading(submitBtn, true, 'Procesando...');
 
             try {
                 const response = await fetch('/api/submit', {
@@ -371,16 +378,12 @@ function initUserForm() {
                         window.location.href = "/";
                     }, 1500);
                 } else {
-                    submitBtn.innerHTML = originalBtnContent;
-                    submitBtn.disabled = false;
-                    submitBtn.classList.remove('opacity-70');
+                    setLoading(submitBtn, false);
                     if (window.lucide) lucide.createIcons();
                     showToast(result.message, 'error');
                 }
             } catch (error) {
-                submitBtn.innerHTML = originalBtnContent;
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('opacity-70');
+                setLoading(submitBtn, false);
                 if (window.lucide) lucide.createIcons();
                 console.error("Error al enviar el formulario:", error);
                 showToast("Error de conexion con el servidor", 'error');

@@ -14,7 +14,7 @@
         <div>
             <div class="flex items-center gap-3 mb-1">
                 <a href="{{ url_for('admin.admin_view') }}"
-                   class="text-[10px] uppercase tracking-widest font-bold text-midnight/40 hover:text-gold transition-colors flex items-center gap-1">
+                   class="text-[10px] uppercase tracking-widest font-bold text-midnight/60 hover:text-gold transition-colors flex items-center gap-1">
                     <i data-lucide="arrow-left" class="w-3 h-3"></i> Panel Admin
                 </a>
             </div>
@@ -25,12 +25,12 @@
         <!-- Buscador y filtro de rol -->
         <div class="flex items-end gap-3">
             <div>
-                <label for="userSearchInput" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/40 mb-2">Buscar</label>
+                <label for="userSearchInput" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Buscar</label>
                 <input id="userSearchInput" type="text" placeholder="Nombre o email..."
                        class="px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none w-48">
             </div>
             <div>
-                <label for="roleFilter" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/40 mb-2">Rol</label>
+                <label for="roleFilter" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Rol</label>
                 <select id="roleFilter" class="px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
                     <option value="">Todos</option>
                     <option value="client">Cliente</option>
@@ -39,7 +39,7 @@
                 </select>
             </div>
             <div>
-                <label for="phoneVerifiedFilter" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/40 mb-2">Teléfono</label>
+                <label for="phoneVerifiedFilter" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Teléfono</label>
                 <select id="phoneVerifiedFilter" class="px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
                     <option value="">Todos</option>
                     <option value="1">Verificado</option>
@@ -53,7 +53,7 @@
     <div class="bg-white rounded-lg shadow-xl overflow-hidden">
         <div class="p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between">
             <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Directorio de Usuarios</h3>
-            <span class="text-[10px] text-midnight/40 font-bold uppercase tracking-widest">
+            <span class="text-[10px] text-midnight/60 font-bold uppercase tracking-widest">
                 <span id="usersCount">0</span> usuarios
             </span>
         </div>
@@ -79,7 +79,7 @@
             </thead>
             <tbody id="usersTableBody" class="stagger-rows">
                 <tr>
-                    <td colspan="7" class="p-8 text-center text-midnight/40">
+                    <td colspan="7" class="p-8 text-center text-midnight/60">
                         <div class="flex justify-center items-center gap-2">
                             <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gold"></div>
                             Cargando usuarios...
@@ -164,7 +164,7 @@
                         <div id="s3" class="h-1 flex-1 rounded bg-midnight/10 transition-colors"></div>
                         <div id="s4" class="h-1 flex-1 rounded bg-midnight/10 transition-colors"></div>
                     </div>
-                    <p id="strengthLabel" class="text-[9px] text-midnight/40 font-bold uppercase tracking-widest"></p>
+                    <p id="strengthLabel" class="text-[9px] text-midnight/60 font-bold uppercase tracking-widest"></p>
                 </div>
 
                 <!-- Acciones -->

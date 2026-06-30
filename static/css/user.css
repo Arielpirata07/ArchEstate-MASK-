@@ -286,44 +286,11 @@
     box-shadow: 0 4px 12px rgba(115, 90, 58, 0.06);
 }
 
-/* --- Form Section Progress --- */
-.form-progress {
-    position: relative;
-}
-
-.form-progress::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: var(--progress, 0%);
-    height: 3px;
-    background: #735A3A;
-    transition: width 0.4s ease;
-}
-
-/* --- Property Type Chip Active --- */
-.chip-active {
-    border-color: #000410 !important;
-    background: #000410 !important;
-    color: #fff !important;
-}
-
-.dark .chip-active {
-    border-color: var(--accent) !important;
-    background: var(--accent) !important;
-    color: var(--text-primary) !important;
-}
-
 /* --- Form Validation --- */
 .field-error {
     color: #e11d48;
     font-size: 0.75rem;
     margin-top: 0.25rem;
-}
-
-.field-success {
-    color: #059669;
 }
 
 /* ============================================

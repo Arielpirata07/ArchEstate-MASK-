@@ -22,7 +22,7 @@ async function loadUsers() {
     const tbody = document.getElementById('usersTableBody');
     tbody.innerHTML = `
         <tr>
-            <td colspan="7" class="p-8 text-center text-midnight/40">
+            <td colspan="7" class="p-8 text-center text-midnight/60">
                 <div class="flex justify-center items-center gap-2">
                     <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gold"></div>
                     Cargando...
@@ -57,7 +57,7 @@ function renderUsers(users) {
     if (!users.length) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" class="p-8 text-center text-midnight/40">
+                <td colspan="7" class="p-8 text-center text-midnight/60">
                     <i data-lucide="search" class="w-8 h-8 mx-auto mb-2 opacity-30"></i>
                     <p>No se encontraron usuarios.</p>
                 </td>
@@ -103,7 +103,7 @@ function renderUsers(users) {
 
         return `
             <tr class="border-b border-midnight/[0.03] hover:bg-paper transition-colors">
-                <td class="px-4 py-3 font-mono text-[11px] text-midnight/40">#${u.id}</td>
+                <td class="px-4 py-3 font-mono text-[11px] text-midnight/60">#${u.id}</td>
                 <td class="px-4 py-3 text-[13px]">
                     <div class="font-medium text-midnight">${escapeHtml(u.username)}</div>
                 </td>

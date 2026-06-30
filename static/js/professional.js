@@ -28,7 +28,7 @@ function renderUploadWidget(cid) {
                     <i data-lucide="upload-cloud" class="w-7 h-7 text-midnight/30 group-hover:text-gold transition-colors"></i>
                 </div>
                 <p class="text-sm font-semibold text-midnight/70 group-hover:text-midnight transition-colors">Arrastrá tu archivo aquí</p>
-                <p class="text-[10px] text-midnight/40 mt-1 uppercase tracking-widest font-bold">o hacé clic para seleccionar</p>
+                <p class="text-[10px] text-midnight/60 mt-1 uppercase tracking-widest font-bold">o hacé clic para seleccionar</p>
                 <p class="text-[9px] text-midnight/30 mt-3 uppercase tracking-widest">PDF · JPG · PNG &nbsp;·&nbsp; Máx. ${MAX_MB} MB</p>
             </div>
 
@@ -40,7 +40,7 @@ function renderUploadWidget(cid) {
                     </div>
                     <div class="flex-grow min-w-0">
                         <p id="fileName-${cid}" class="text-sm font-semibold text-midnight truncate"></p>
-                        <p id="fileSize-${cid}" class="text-[10px] text-midnight/40 mt-0.5 uppercase tracking-widest font-bold"></p>
+                        <p id="fileSize-${cid}" class="text-[10px] text-midnight/60 mt-0.5 uppercase tracking-widest font-bold"></p>
                     </div>
                     <button onclick="clearFile('${cid}')" class="p-2 text-midnight/30 hover:text-rose-500 transition-colors flex-shrink-0" title="Quitar archivo">
                         <i data-lucide="x" class="w-4 h-4"></i>
@@ -73,7 +73,7 @@ function renderUploadWidget(cid) {
                     </a>
                 </div>
                 <button onclick="replaceDoc('${cid}')"
-                    class="w-full text-[10px] text-midnight/40 hover:text-gold transition-colors font-bold uppercase tracking-widest py-1 flex items-center justify-center gap-1">
+                    class="w-full text-[10px] text-midnight/60 hover:text-gold transition-colors font-bold uppercase tracking-widest py-1 flex items-center justify-center gap-1">
                     <i data-lucide="refresh-cw" class="w-3 h-3"></i> Reemplazar documento
                 </button>
             </div>
@@ -514,7 +514,7 @@ function renderLeads(leads) {
         tbody.innerHTML = `
             <tr><td colspan="8" class="p-12 text-center text-midnight/60">
                 <i data-lucide="search-x" class="w-10 h-10 mx-auto mb-3 text-midnight/20"></i>
-                <p class="font-semibold text-midnight/40">Sin resultados para estos filtros</p>
+                <p class="font-semibold text-midnight/60">Sin resultados para estos filtros</p>
                 <p class="text-xs text-midnight/30 mt-1">Probá ajustando el tipo de vivienda o el rango de inversión</p>
             </td></tr>`;
         if (window.lucide) lucide.createIcons();
@@ -541,7 +541,7 @@ function renderLeads(leads) {
         if (lead.land_area > 0)      specs.push(`${lead.land_area} m² terreno`);
 
         const specLine = specs.length
-            ? `<div class="text-[9px] text-midnight/40 font-bold uppercase tracking-widest mt-0.5">${specs.join(' · ')}</div>`
+            ? `<div class="text-[9px] text-midnight/60 font-bold uppercase tracking-widest mt-0.5">${specs.join(' · ')}</div>`
             : '';
 
         // Badges extra
@@ -571,7 +571,7 @@ function renderLeads(leads) {
         var unseenClass = tracking.seen ? '' : ' lead-row-unseen';
         return `
             <tr class="border-b border-midnight/[0.03] hover:bg-paper transition-colors group cursor-pointer${unseenClass}" data-lead-id="${lead.id}" data-seen="${tracking.seen}" data-contacted="${tracking.contacted}">
-                <td class="px-4 py-3 font-mono text-[11px] text-midnight/40">${lead.id}</td>
+                <td class="px-4 py-3 font-mono text-[11px] text-midnight/60">${lead.id}</td>
                 <td class="px-4 py-3">
                     <div class="flex flex-col gap-1.5">
                         <button type="button" class="status-btn status-btn-seen ${tracking.seen ? 'status-active' : ''}"
@@ -839,15 +839,15 @@ function openLeadPreview(leadId) {
 
     // Info grid
     html += '<div class="grid grid-cols-2 gap-3">';
-    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Operaci\u00f3n</p><p class="text-[13px] font-medium text-midnight">' + escapeHtml(lead.type) + '</p></div>';
-    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Vivienda</p><p class="text-[13px] font-medium text-midnight">' + propLabel + '</p></div>';
-    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Zona</p><p class="text-[13px] font-medium text-midnight">' + escapeHtml(lead.zone) + '</p></div>';
-    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Presupuesto</p><p class="text-[13px] font-medium text-midnight">' + sym + ' ' + escapeHtml(lead.budget) + '</p></div>';
+    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/60 mb-1">Operaci\u00f3n</p><p class="text-[13px] font-medium text-midnight">' + escapeHtml(lead.type) + '</p></div>';
+    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/60 mb-1">Vivienda</p><p class="text-[13px] font-medium text-midnight">' + propLabel + '</p></div>';
+    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/60 mb-1">Zona</p><p class="text-[13px] font-medium text-midnight">' + escapeHtml(lead.zone) + '</p></div>';
+    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/60 mb-1">Presupuesto</p><p class="text-[13px] font-medium text-midnight">' + sym + ' ' + escapeHtml(lead.budget) + '</p></div>';
     html += '</div>';
 
     // Specs
     if (specs.length) {
-        html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/40 mb-1">Especificaciones</p><p class="text-xs text-midnight/70">' + specs.join(' \u00b7 ') + '</p></div>';
+        html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/60 mb-1">Especificaciones</p><p class="text-xs text-midnight/70">' + specs.join(' \u00b7 ') + '</p></div>';
     }
 
     // Status buttons
@@ -1139,12 +1139,15 @@ async function loadMarketStats(tryAutoSelect) {
                         if (monthLabel) monthLabel.textContent = formatMonthLabel(opt.value);
                         renderStatsKpis(d.stats);
                         renderStatsCharts(d.stats);
+                        renderTopSearched(d.stats);
                         return;
                     }
                 }
             }
             renderStatsKpis(data.stats);
             renderStatsCharts(data.stats);
+            renderTopSearched(data.stats);
+            triggerStatsEntrance();
         } else {
             showToast(data.message || 'Error al cargar estadísticas', 'error');
         }
@@ -1152,6 +1155,16 @@ async function loadMarketStats(tryAutoSelect) {
         console.error('Error loading market stats:', err);
         showToast('Error de conexión al cargar estadísticas', 'error');
     }
+}
+
+function triggerStatsEntrance() {
+    var els = document.querySelectorAll('.stats-entrance');
+    els.forEach(function(el, i) {
+        el.classList.remove('stats-entrance-in');
+        void el.offsetWidth;
+        el.style.setProperty('--stagger-order', i);
+        el.classList.add('stats-entrance-in');
+    });
 }
 
 function formatCurrency(value) {
@@ -1421,6 +1434,57 @@ function renderStatsCharts(stats) {
             }
         });
     }
+
+    // Update chart count badges
+    var ptCount = document.getElementById('chartPropTypeCount');
+    if (ptCount) ptCount.textContent = (stats.by_property_type || []).length + ' tipos';
+
+    var zCount = document.getElementById('chartZonesCount');
+    if (zCount) zCount.textContent = (stats.by_zone || []).length + ' zonas';
+
+    var tCount = document.getElementById('chartTrendCount');
+    if (tCount) tCount.textContent = (stats.trend || []).length + ' meses';
+
+    var otCount = document.getElementById('chartOpTypeCount');
+    if (otCount) otCount.textContent = (stats.by_operation_type || []).length + ' tipos';
+}
+
+function renderTopSearched(stats) {
+    var total = stats.total || 0;
+
+    function renderCard(data, nameElId, pctElId, barElId, subElId) {
+        var items = data || [];
+        var nameEl = document.getElementById(nameElId);
+        var pctEl = document.getElementById(pctElId);
+        var barEl = document.getElementById(barElId);
+        var subEl = document.getElementById(subElId);
+
+        if (items.length && nameEl && total > 0) {
+            nameEl.textContent = items[0].label || 'Sin datos';
+            var pct = ((items[0].value / total) * 100).toFixed(1);
+            if (pctEl) pctEl.textContent = pct + '%';
+            if (subEl) subEl.textContent = items[0].value + ' solicitudes en total';
+
+            // Animate progress bar
+            if (barEl) {
+                barEl.style.width = '0%';
+                requestAnimationFrame(function() {
+                    requestAnimationFrame(function() {
+                        barEl.style.width = pct + '%';
+                    });
+                });
+            }
+        } else {
+            if (nameEl) nameEl.textContent = '—';
+            if (pctEl) pctEl.textContent = '';
+            if (subEl) subEl.textContent = '';
+            if (barEl) barEl.style.width = '0%';
+        }
+    }
+
+    renderCard(stats.by_property_type, 'topPropertyType', 'topPropertyTypePct', 'topPropertyTypeBar', 'topPropertyTypeSub');
+    renderCard(stats.by_zone, 'topZone', 'topZonePct', 'topZoneBar', 'topZoneSub');
+    renderCard(stats.by_operation_type, 'topOperationType', 'topOperationTypePct', 'topOperationTypeBar', 'topOperationTypeSub');
 }
 
 

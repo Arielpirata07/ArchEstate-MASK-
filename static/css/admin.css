@@ -30,48 +30,6 @@
     animation: auditFadeIn 0.3s ease-out forwards;
 }
 
-/* --- Timeline Audit Log --- */
-.timeline-item {
-    position: relative;
-    padding-left: 1.5rem;
-}
-
-.timeline-item::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0.5rem;
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 50%;
-}
-
-.timeline-item.approved::before {
-    background: #059669;
-}
-
-.timeline-item.rejected::before {
-    background: #e11d48;
-}
-
-.timeline-item.other::before {
-    background: #735A3A;
-}
-
-.timeline-item::after {
-    content: '';
-    position: absolute;
-    left: 0.2rem;
-    top: 1rem;
-    bottom: -0.5rem;
-    width: 1px;
-    background: rgba(0, 4, 16, 0.1);
-}
-
-.timeline-item:last-child::after {
-    display: none;
-}
-
 /* --- KPI Card Hover --- */
 .kpi-card {
     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
@@ -138,7 +96,7 @@
     letter-spacing: 0.08em;
     cursor: pointer;
     transition: all 0.2s ease;
-    font-family: 'Manrope', sans-serif;
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', Arial, sans-serif;
 }
 
 .report-filter-chip:hover {

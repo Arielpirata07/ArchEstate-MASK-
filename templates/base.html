@@ -90,7 +90,10 @@
     <!-- Tailwind CSS (compilado a static/css/tailwind.css por scripts/tailwindcss) -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind.css') }}">
 
-    <!-- Google Fonts -->
+    <!-- Google Fonts: preconnect para carga rápida -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Manrope:wght@200..800&display=swap">
     <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Manrope:wght@200..800&display=swap" rel="stylesheet">
 
     <!-- Lucide Icons -->
@@ -258,8 +261,7 @@
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-[10px] uppercase tracking-widest font-bold">
             <div>© 2026 ArchEstate Private Ledger. Todos los derechos reservados.</div>
             <div class="flex gap-8">
-                <a href="#" onclick="return false" class="hover:text-gold transition-colors">Terminos</a>
-                <a href="#" onclick="return false" class="hover:text-gold transition-colors">Privacidad</a>
+                <a href="mailto:info@archestate.com.ar" class="hover:text-gold transition-colors">Contacto</a>
             </div>
         </div>
     </footer>

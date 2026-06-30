@@ -704,9 +704,9 @@ function renderProfessionals(pros) {
             <tr class="border-b border-midnight/[0.03] hover:bg-paper transition-colors ${rowOpacity}">
                 <td class="px-4 py-3 text-[13px]">
                     <div class="font-medium text-midnight">${escapeHtml(pro.name)} ${accountBadge}</div>
-                    <div class="text-[11px] text-midnight/40 italic">${escapeHtml(pro.specialty || '')}</div>
+                    <div class="text-[11px] text-midnight/60 italic">${escapeHtml(pro.specialty || '')}</div>
                 </td>
-                <td class="px-4 py-3 font-mono text-[11px] text-midnight/40">${escapeHtml(pro.license)}</td>
+                <td class="px-4 py-3 font-mono text-[11px] text-midnight/60">${escapeHtml(pro.license)}</td>
                 <td class="px-4 py-3">${statusBadge}</td>
                 <td class="px-4 py-3">${docCell}</td>
                 <td class="px-4 py-3 text-right">
@@ -1012,7 +1012,7 @@ function renderReports(reports) {
         tbody.innerHTML = `
             <tr><td colspan="10" class="p-12 text-center text-midnight/60">
                 <i data-lucide="check-circle" class="w-10 h-10 mx-auto mb-3 text-emerald-200"></i>
-                <p class="font-semibold text-midnight/40">No hay reportes para mostrar</p>
+                <p class="font-semibold text-midnight/60">No hay reportes para mostrar</p>
             </td></tr>`;
         if (window.lucide) lucide.createIcons();
         return;
@@ -1022,7 +1022,7 @@ function renderReports(reports) {
         const statusBadge = r.status === 'pending'
             ? '<span class="px-2 py-1 bg-amber-50 text-amber-700 text-[9px] font-bold uppercase tracking-widest rounded">Pendiente</span>'
             : r.status === 'dismissed'
-            ? '<span class="px-2 py-1 bg-paper-dark text-midnight/40 text-[9px] font-bold uppercase tracking-widest rounded">Descartado</span>'
+            ? '<span class="px-2 py-1 bg-paper-dark text-midnight/60 text-[9px] font-bold uppercase tracking-widest rounded">Descartado</span>'
             : '<span class="px-2 py-1 bg-rose-50 text-rose-600 text-[9px] font-bold uppercase tracking-widest rounded">Eliminado</span>';
 
         let actions;
@@ -1049,7 +1049,7 @@ function renderReports(reports) {
 
         return `
             <tr class="border-b border-midnight/[0.03] hover:bg-paper transition-colors ${r.status === 'deleted' ? 'opacity-60' : ''}">
-                <td class="px-4 py-3 font-mono text-[11px] text-midnight/40">#${r.lead_id}</td>
+                <td class="px-4 py-3 font-mono text-[11px] text-midnight/60">#${r.lead_id}</td>
                 <td class="px-4 py-3 text-[13px] text-midnight/50">${r.lead_type ? escapeHtml(r.lead_type) : '<span class="text-midnight/30">Lead eliminado</span>'}</td>
                 <td class="px-4 py-3 text-[13px] text-midnight/50">${r.lead_property_type ? escapeHtml(r.lead_property_type) : '—'}</td>
                 <td class="px-4 py-3 text-[13px] text-midnight/50">${r.lead_zone ? escapeHtml(r.lead_zone) : '—'}</td>
@@ -1109,9 +1109,9 @@ function renderLeadDetail(lead) {
             <div class="border-t border-midnight/10 pt-5 mt-5">
                 <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-3">Detalles del Departamento</p>
                 <div class="grid grid-cols-2 gap-4">
-                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Piso/Bloque</p><p class="text-sm text-midnight">${escapeHtml(lead.floor_block || 'No especificado')}</p></div>
-                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Metros Utiles</p><p class="text-sm text-midnight">${lead.usable_m2 ? lead.usable_m2 + ' m²' : 'No especificado'}</p></div>
-                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Ascensor</p><p class="text-sm text-midnight">${escapeHtml(lead.elevator || 'No especificado')}</p></div>
+                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">Piso/Bloque</p><p class="text-sm text-midnight">${escapeHtml(lead.floor_block || 'No especificado')}</p></div>
+                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">Metros Utiles</p><p class="text-sm text-midnight">${lead.usable_m2 ? lead.usable_m2 + ' m²' : 'No especificado'}</p></div>
+                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">Ascensor</p><p class="text-sm text-midnight">${escapeHtml(lead.elevator || 'No especificado')}</p></div>
                 </div>
             </div>`;
     } else if (lead.property_type === 'casa') {
@@ -1119,9 +1119,9 @@ function renderLeadDetail(lead) {
             <div class="border-t border-midnight/10 pt-5 mt-5">
                 <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-3">Detalles de la Casa</p>
                 <div class="grid grid-cols-2 gap-4">
-                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Terreno</p><p class="text-sm text-midnight">${lead.land_area ? lead.land_area + ' m²' : 'No especificado'}</p></div>
-                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Construida</p><p class="text-sm text-midnight">${lead.built_area ? lead.built_area + ' m²' : 'No especificado'}</p></div>
-                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Piscina</p><p class="text-sm text-midnight">${escapeHtml(lead.pool || 'No especificado')}</p></div>
+                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">Terreno</p><p class="text-sm text-midnight">${lead.land_area ? lead.land_area + ' m²' : 'No especificado'}</p></div>
+                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">Construida</p><p class="text-sm text-midnight">${lead.built_area ? lead.built_area + ' m²' : 'No especificado'}</p></div>
+                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">Piscina</p><p class="text-sm text-midnight">${escapeHtml(lead.pool || 'No especificado')}</p></div>
                 </div>
             </div>`;
     }
@@ -1155,9 +1155,9 @@ function renderLeadDetail(lead) {
                     <div class="text-center"><p class="text-[9px] uppercase tracking-widest text-gold font-bold mb-1">Metros</p><p class="text-2xl font-serif text-midnight">${lead.total_area || lead.land_area || lead.usable_m2 || '-'}</p>${(lead.total_area || lead.land_area || lead.usable_m2) ? '<p class="text-[9px] text-midnight/60">m²</p>' : ''}</div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
-                    ${lead.usable_m2 ? `<div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Metros Utiles</p><p class="text-sm text-midnight">${lead.usable_m2} m²</p></div>` : ''}
-                    ${lead.built_area ? `<div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Construida</p><p class="text-sm text-midnight">${lead.built_area} m²</p></div>` : ''}
-                    ${lead.land_area ? `<div><p class="text-[9px] uppercase tracking-widest text-midnight/40 font-bold">Terreno</p><p class="text-sm text-midnight">${lead.land_area} m²</p></div>` : ''}
+                    ${lead.usable_m2 ? `<div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">Metros Utiles</p><p class="text-sm text-midnight">${lead.usable_m2} m²</p></div>` : ''}
+                    ${lead.built_area ? `<div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">Construida</p><p class="text-sm text-midnight">${lead.built_area} m²</p></div>` : ''}
+                    ${lead.land_area ? `<div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">Terreno</p><p class="text-sm text-midnight">${lead.land_area} m²</p></div>` : ''}
                 </div>
                 <div class="border-t border-midnight/10 pt-4">
                     <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-3">Extras y Comodidades</p>
@@ -1339,7 +1339,7 @@ function renderIconPicker(selectedIcon) {
         '<input id="fo-icon-search" type="text" placeholder="Buscar icono..." oninput="filterIcons(this.value)" class="icon-search w-full px-2 py-1.5 text-xs border-0 border-b border-midnight/10 outline-none bg-paper-dark/50">' +
         '<div id="icon-picker-grid" class="grid grid-cols-6 gap-0.5 p-1.5 max-h-32 overflow-y-auto">';
     html += '<button type="button" data-icon="" data-search="ninguno" onclick="selectIconOption(this)" aria-label="Sin icono" class="icon-pick p-1 rounded border text-[10px] flex flex-col items-center gap-px transition-all ' +
-        (!selectedIcon ? 'border-gold bg-gold/10 text-gold' : 'border-transparent text-midnight/40 hover:border-midnight/20') + '" title="Sin icono">' +
+        (!selectedIcon ? 'border-gold bg-gold/10 text-gold' : 'border-transparent text-midnight/60 hover:border-midnight/20') + '" title="Sin icono">' +
         '<i data-lucide="x" class="w-3 h-3"></i><span class="leading-none">Ninguno</span></button>';
     FORM_OPTION_ICONS.forEach(function(icon) {
         var active = selectedIcon === icon.name;
@@ -1434,14 +1434,14 @@ function renderFormOptions() {
     var tbody = document.getElementById('form-options-tbody');
     var liveRegion = document.getElementById('fo-results-count');
     if (!filtered.length) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-midnight/40">Sin opciones</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-midnight/60">Sin opciones</td></tr>';
         if (liveRegion) liveRegion.textContent = '0 opciones encontradas';
         return;
     }
     tbody.innerHTML = filtered.map(function(o) {
         return '<tr class="hover:bg-paper-dark/30 ' + (o.is_active ? '' : 'opacity-40') + '">' +
             '<td class="px-4 py-3 text-[13px]"><span class="text-[10px] font-bold uppercase tracking-widest text-gold bg-gold/10 px-2 py-1 rounded">' + escapeHtml(o.category) + '</span></td>' +
-            '<td class="px-4 py-3 font-mono text-[11px] text-midnight/40">' + escapeHtml(o.value) + '</td>' +
+            '<td class="px-4 py-3 font-mono text-[11px] text-midnight/60">' + escapeHtml(o.value) + '</td>' +
             '<td class="px-4 py-3 text-[13px] text-midnight/50">' + escapeHtml(o.label) + '</td>' +
             '<td class="px-4 py-3 text-[13px] text-midnight/50">' + (o.icon ? '<i data-lucide="' + escapeHtml(o.icon) + '" class="w-4 h-4 inline-block"></i> <span class="text-[11px]">' + escapeHtml(o.icon) + '</span>' : '<span class="text-[11px]">-</span>') + '</td>' +
             '<td class="px-4 py-3 text-[13px] text-midnight/50">' + o.sort_order + '</td>' +
@@ -1471,16 +1471,16 @@ function openCreateOptionModal() {
         '<h3 id="fo-modal-title" class="text-2xl font-serif">Nueva <span class="serif-italic">Opcion</span></h3>' +
         '</div>' +
         '<div class="px-4 sm:px-6 pb-6 space-y-3 overflow-y-auto min-h-0">' +
-        '<div><label for="fo-category" class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Categoria</label>' +
+        '<div><label for="fo-category" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Categoria</label>' +
         '<select id="fo-category" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm">' + catOptions + '</select></div>' +
-        '<div><label for="fo-value" class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Valor</label>' +
+        '<div><label for="fo-value" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Valor</label>' +
         '<input id="fo-value" type="text" maxlength="100" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" placeholder="ej: departamento"></div>' +
-        '<div><label for="fo-label" class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Etiqueta</label>' +
+        '<div><label for="fo-label" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Etiqueta</label>' +
         '<input id="fo-label" type="text" maxlength="200" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" placeholder="ej: Departamento"></div>' +
-        '<div><label for="fo-icon-search" class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Icono (opcional)</label>' +
+        '<div><label for="fo-icon-search" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Icono (opcional)</label>' +
         '<input id="fo-icon" type="hidden" value="">' +
         renderIconPicker('') + '</div>' +
-        '<div><label for="fo-order" class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Orden</label>' +
+        '<div><label for="fo-order" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Orden</label>' +
         '<input id="fo-order" type="number" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" value="0"></div>' +
         '<div class="flex gap-3 pt-2">' +
         '<button onclick="closeFormOptionModal()" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-all">Cancelar</button>' +
@@ -1567,16 +1567,16 @@ function editFormOption(id) {
         '<h3 id="fo-modal-title" class="text-2xl font-serif">Editar <span class="serif-italic">Opcion</span></h3>' +
         '</div>' +
         '<div class="px-4 sm:px-6 pb-6 space-y-3 overflow-y-auto min-h-0">' +
-        '<div><label for="fo-category" class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Categoria</label>' +
+        '<div><label for="fo-category" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Categoria</label>' +
         '<select id="fo-category" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" disabled>' + catOptions + '</select></div>' +
-        '<div><label for="fo-value" class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Valor</label>' +
+        '<div><label for="fo-value" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Valor</label>' +
         '<input id="fo-value" type="text" maxlength="100" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" value="' + escapeHtml(opt.value) + '"></div>' +
-        '<div><label for="fo-label" class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Etiqueta</label>' +
+        '<div><label for="fo-label" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Etiqueta</label>' +
         '<input id="fo-label" type="text" maxlength="200" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" value="' + escapeHtml(opt.label) + '"></div>' +
-        '<div><label for="fo-icon-search" class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Icono</label>' +
+        '<div><label for="fo-icon-search" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Icono</label>' +
         '<input id="fo-icon" type="hidden" value="' + escapeHtml(opt.icon || '') + '">' +
         renderIconPicker(opt.icon || '') + '</div>' +
-        '<div><label for="fo-order" class="text-[10px] uppercase tracking-widest font-bold text-midnight/40">Orden</label>' +
+        '<div><label for="fo-order" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Orden</label>' +
         '<input id="fo-order" type="number" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" value="' + opt.sort_order + '"></div>' +
         '<div class="flex gap-3 pt-2">' +
         '<button onclick="closeFormOptionModal()" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-all">Cancelar</button>' +
@@ -1771,7 +1771,7 @@ function renderPhoneAuditRow(entry) {
     }
     var leadCell = entry.lead_id
         ? '<div class="font-medium text-midnight">#' + entry.lead_id + ' ' + escapeHtml(entry.lead_tipo || '') + '</div>' +
-          '<div class="text-[11px] text-midnight/40">' + escapeHtml(entry.lead_zona || '') + '</div>'
+          '<div class="text-[11px] text-midnight/60">' + escapeHtml(entry.lead_zona || '') + '</div>'
         : '<span class="text-midnight/30 italic">Lead eliminado</span>';
     var phoneCell = entry.lead_telefono
         ? '<span class="font-mono text-[11px] text-midnight/70">' + escapeHtml(entry.lead_telefono) + '</span>'

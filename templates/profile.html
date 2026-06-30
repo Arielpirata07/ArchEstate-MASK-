@@ -174,12 +174,12 @@
                                     <div class="flex items-center justify-between">
                                         <div>
                                             <span class="text-midnight/50 line-through" id="correction-from"></span>
-                                            <span class="mx-1 text-midnight/40">&rarr;</span>
+                                            <span class="mx-1 text-midnight/60">&rarr;</span>
                                             <span class="text-amber-700 font-medium" id="correction-to"></span>
                                         </div>
                                         <div class="flex gap-2 ml-2">
                                             <button type="button" onclick="applyPhoneCorrection()" class="text-[9px] font-bold text-emerald-600 hover:text-emerald-800 dark:hover:text-emerald-300">Aplicar</button>
-                                            <button type="button" onclick="dismissPhoneCorrection()" class="text-[9px] font-bold text-midnight/40 hover:text-midnight/60">Cancelar</button>
+                                            <button type="button" onclick="dismissPhoneCorrection()" class="text-[9px] font-bold text-midnight/60 hover:text-midnight/60">Cancelar</button>
                                         </div>
                                     </div>
                                 </div>
@@ -206,7 +206,7 @@
                                     {% endif %}
                                 </div>
                                 <div class="flex items-center gap-2 mt-1" id="channel-preference-area">
-                                    <label class="text-[9px] text-midnight/40 font-bold uppercase tracking-widest">Canal:</label>
+                                    <label class="text-[9px] text-midnight/60 font-bold uppercase tracking-widest">Canal:</label>
                                     <select id="preferred-channel-select" onchange="savePreferredChannel(); toggleWhatsappHint()"
                                         class="px-2 py-1 border border-midnight/20 rounded text-[10px] bg-white text-midnight focus:border-gold focus:outline-none">
                                         <option value="auto">Auto (detectar)</option>
@@ -373,12 +373,18 @@
                                     <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold" style="color:var(--accent)">Zona</th>
                                     <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold" style="color:var(--accent)">Presupuesto</th>
                                     <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold" style="color:var(--accent)">Fecha</th>
+                                    <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold" style="color:var(--accent)">
+                                        <span class="inline-flex items-center gap-1.5">
+                                            <i data-lucide="trending-up" class="w-3 h-3"></i>
+                                            Seguimiento
+                                        </span>
+                                    </th>
                                     <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold" style="color:var(--accent)">Accion</th>
                                 </tr>
                             </thead>
                             <tbody id="leads-tbody" class="stagger-rows">
                                 <tr>
-                                    <td colspan="6" class="p-8 text-center text-sm hint-text">Cargando solicitudes...</td>
+                                    <td colspan="7" class="p-8 text-center text-sm hint-text">Cargando solicitudes...</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -458,7 +464,7 @@
                                 <div>
                                     <label for="pro-zone" class="input-label">Zona de Cobertura</label>
                                     <input id="pro-zone" type="text" class="input-field" placeholder="Ej: Palermo, Recoleta, Belgrano...">
-                                    <p class="text-[9px] text-midnight/40 mt-1">Barrios o zonas donde trabajás</p>
+                                    <p class="text-[9px] text-midnight/60 mt-1">Barrios o zonas donde trabajás</p>
                                 </div>
                             </div>
 
@@ -634,7 +640,7 @@
                         onclick="resendVerificationCode()">
                         Reenviar código
                     </button>
-                    <span id="resend-cooldown" class="hidden text-[10px] text-midnight/40 ml-2">(60s)</span>
+                    <span id="resend-cooldown" class="hidden text-[10px] text-midnight/60 ml-2">(60s)</span>
                 </p>
             </div>
         </div>

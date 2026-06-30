@@ -37,7 +37,7 @@
     background: transparent;
     border: none;
     cursor: pointer;
-    font-family: 'Manrope', sans-serif;
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', Arial, sans-serif;
 }
 
 .settings-tab:hover {
@@ -92,7 +92,7 @@
     background: var(--bg-card);
     color: var(--text-primary);
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    font-family: 'Manrope', sans-serif;
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', Arial, sans-serif;
 }
 
 .input-field:focus {
@@ -132,7 +132,7 @@
     font-size: 0.75rem;
     cursor: pointer;
     transition: all 0.3s ease;
-    font-family: 'Manrope', sans-serif;
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', Arial, sans-serif;
 }
 
 .btn-primary:hover {
@@ -301,7 +301,7 @@
     transition: all 0.2s ease;
     background: var(--bg-card);
     color: var(--text-primary);
-    font-family: 'Manrope', sans-serif;
+    font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', Arial, sans-serif;
 }
 
 .theme-option:hover {
@@ -358,12 +358,6 @@
 .chip-checkbox input:focus-visible + .chip-label {
     outline: 2px solid #735A3A;
     outline-offset: 2px;
-}
-
-/* --- Save Button States --- */
-.save-btn-saving {
-    opacity: 0.7;
-    pointer-events: none;
 }
 
 /* --- Timeline Activity --- */
@@ -483,5 +477,74 @@
 .dark .btn-primary:hover {
     background: var(--accent-light);
     color: var(--text-primary);
+}
+
+/* --- Tracking Badge --- */
+.tracking-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    background: rgba(115, 90, 58, 0.1);
+    color: #735A3A;
+    border-left: 2px solid #735A3A;
+    cursor: default;
+    transition: all 0.2s ease;
+}
+
+.dark .tracking-badge {
+    background: rgba(166, 138, 100, 0.15);
+    color: #A68A64;
+    border-left-color: #A68A64;
+}
+
+.tracking-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(115, 90, 58, 0.15);
+}
+
+@keyframes trackingPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.tracking-eye {
+    animation: trackingPulse 2s ease-in-out infinite;
+}
+
+/* --- Tracking Empty State --- */
+.tracking-empty {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 10px;
+    font-style: italic;
+    color: var(--text-secondary);
+    opacity: 0.6;
+    animation: trackingBreathing 3s ease-in-out infinite;
+}
+
+@keyframes trackingBreathing {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 0.3; }
+}
+
+/* --- Profile Leads Table Row Hover --- */
+#leads-tbody tr {
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#leads-tbody tr:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    position: relative;
+    z-index: 1;
+}
+
+.dark #leads-tbody tr:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 

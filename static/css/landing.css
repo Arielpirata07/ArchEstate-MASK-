@@ -2,16 +2,6 @@
    ARCHESTATE - LANDING PAGE STYLES
    ============================================ */
 
-/* --- Hero --- */
-.hero-overlay {
-    background: rgba(0, 4, 16, 0.4);
-}
-
-.hero-text-box {
-    backdrop-filter: blur(4px);
-    background: rgba(0, 4, 16, 0.2);
-}
-
 /* --- Title Reveal Animation --- */
 .title-reveal {
     opacity: 0;
@@ -36,51 +26,6 @@
         transform: translateY(0) scale(1);
         filter: blur(0);
     }
-}
-
-/* Split text animation for title words */
-.title-word {
-    display: inline-block;
-    opacity: 0;
-    transform: translateY(100%);
-}
-
-.title-word.animate {
-    animation: wordReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes wordReveal {
-    0% {
-        opacity: 0;
-        transform: translateY(100%) rotateX(-40deg);
-        filter: blur(4px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0) rotateX(0);
-        filter: blur(0);
-    }
-}
-
-/* Title underline animation */
-.title-underline {
-    position: relative;
-    display: inline-block;
-}
-
-.title-underline::after {
-    content: '';
-    position: absolute;
-    bottom: -4px;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background: linear-gradient(90deg, #735A3A, #A68A64);
-    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.title-underline.animate::after {
-    width: 100%;
 }
 
 /* Subtitle fade in */
@@ -208,51 +153,6 @@
     }
 }
 
-@keyframes typing {
-    from { width: 0; }
-    to { width: 100%; }
-}
-
-@keyframes blink {
-    50% { border-color: transparent; }
-}
-
-@keyframes ctaPulse {
-    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(115, 90, 58, 0.4); }
-    50% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(115, 90, 58, 0); }
-}
-
-.gold-shimmer {
-    background: linear-gradient(
-        90deg,
-        #735A3A 0%,
-        #A68A64 25%,
-        #D4B896 50%,
-        #A68A64 75%,
-        #735A3A 100%
-    );
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    animation: shimmer 4s linear infinite;
-}
-
-/* Scale in animation */
-@keyframes scaleIn {
-    from {
-        opacity: 0;
-        transform: scale(0.8);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-.scale-in {
-    animation: scaleIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
 /* --- Animation Classes --- */
 .fade-in-up {
     animation: fadeInUp 0.8s ease-out forwards;
@@ -290,14 +190,6 @@
     overflow: hidden;
     white-space: nowrap;
     border-right: 2px solid #735A3A;
-}
-
-.typing-animated {
-    animation: typing 3.5s steps(40, end), blink 0.75s step-end infinite;
-}
-
-.cta-pulse {
-    animation: ctaPulse 2s ease-in-out infinite;
 }
 
 /* --- Delays --- */
@@ -390,36 +282,6 @@
     }
 }
 
-/* --- Testimonial Carousel --- */
-.carousel-container {
-    position: relative;
-    overflow: hidden;
-}
-
-.carousel-track {
-    display: flex;
-    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.carousel-slide {
-    min-width: 100%;
-    flex-shrink: 0;
-}
-
-.carousel-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: rgba(0, 4, 16, 0.2);
-    transition: background 0.2s ease, transform 0.2s ease;
-    cursor: pointer;
-}
-
-.carousel-dot.active {
-    background: #735A3A;
-    transform: scale(1.3);
-}
-
 /* --- Parallax --- */
 .parallax {
     transform: translateZ(0);
@@ -451,44 +313,6 @@
     }
 }
 
-/* --- Counter Number Animation --- */
-@keyframes countUp {
-    from {
-        opacity: 0;
-        transform: translateY(10px) scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
-}
-
-.counter-animating {
-    animation: countUp 0.3s ease-out;
-}
-
-/* --- Counter Completion Glow --- */
-@keyframes counterCompleteGlow {
-    0% { text-shadow: 0 0 0 rgba(115, 90, 58, 0); }
-    30% { text-shadow: 0 0 18px rgba(115, 90, 58, 0.4), 0 0 40px rgba(115, 90, 58, 0.15); }
-    100% { text-shadow: 0 0 0 rgba(115, 90, 58, 0); }
-}
-
-.counter-glow-flash {
-    animation: counterCompleteGlow 0.8s ease-out;
-}
-
-/* --- Step Connector SVG Draw --- */
-.step-line-svg {
-    stroke-dasharray: 100;
-    stroke-dashoffset: 100;
-    transition: stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.step-line-svg.drawn {
-    stroke-dashoffset: 0;
-}
-
 /* --- Navbar Shrink on Scroll --- */
 #main-navbar {
     transition: height 0.35s cubic-bezier(0.16, 1, 0.3, 1),
@@ -503,16 +327,6 @@
     background-color: rgba(16, 30, 51, 0.92);
     backdrop-filter: blur(12px);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-/* --- Decorative Line Pulse --- */
-@keyframes lineGlow {
-    0%, 100% { opacity: 0.3; }
-    50% { opacity: 0.6; }
-}
-
-.line-glow {
-    animation: lineGlow 3s ease-in-out infinite;
 }
 
 /* --- Hero Image Reveal --- */
@@ -533,45 +347,6 @@
     background-color: rgba(16, 30, 51, 0.95) !important;
     backdrop-filter: blur(12px);
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
-/* --- Feature Card Hover --- */
-.feature-card {
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-                box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.feature-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 24px 48px rgba(0, 4, 16, 0.12);
-}
-
-.feature-card:hover .feature-icon {
-    transform: scale(1.1);
-    color: #735A3A;
-}
-
-.feature-icon {
-    transition: transform 0.3s ease, color 0.3s ease;
-}
-
-/* Dark mode feature card hover */
-.dark .feature-card:hover {
-    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
-}
-
-/* CTA Button enhanced hover */
-.cta-btn {
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.cta-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 30px rgba(115, 90, 58, 0.3);
-}
-
-.cta-btn:active {
-    transform: scale(0.97);
 }
 
 /* --- How It Works Section --- */
@@ -603,14 +378,6 @@
 }
 
 /* --- Dark Mode Overrides --- */
-.dark .title-underline::after {
-    background: linear-gradient(90deg, var(--accent), var(--accent-light));
-}
-
-.dark .carousel-dot.active {
-    background: var(--accent);
-}
-
 .dark .step-connector::after {
     background: linear-gradient(to right, var(--accent), transparent);
 }

@@ -60,7 +60,7 @@ window.__FORM_OPTIONS = {{ {
                         <input type="hidden" id="property-type-input" name="property_type" value="departamento">
                     </div>
 
-                    <div class="grid grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Tipo de Operación -->
                         <div>
                             <label for="operation-select" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Tipo de Operación</label>
@@ -88,7 +88,7 @@ window.__FORM_OPTIONS = {{ {
                                     <div class="flex items-center justify-between mb-6">
                                         <h3 class="text-lg font-serif">Presupuesto</h3>
                                         <button type="button" id="budget-popup-close" aria-label="Cerrar selector de presupuesto"
-                                                class="w-10 h-10 rounded-full flex items-center justify-center text-midnight/40 hover:text-midnight hover:bg-midnight/5 transition-all">
+                                                class="w-10 h-10 rounded-full flex items-center justify-center text-midnight/60 hover:text-midnight hover:bg-midnight/5 transition-all">
                                             <i data-lucide="x" class="w-5 h-5"></i>
                                         </button>
                                     </div>
@@ -111,15 +111,15 @@ window.__FORM_OPTIONS = {{ {
                                         <input type="range" id="budget-max-slider" aria-label="Presupuesto máximo" class="budget-range-slider absolute inset-x-0" min="0" max="10000000000" value="10000000000" step="10000000">
                                     </div>
 
-                                    <div class="grid grid-cols-2 gap-4 mb-6">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                                         <div>
-                                            <label class="block text-[10px] uppercase tracking-widest font-medium text-midnight/40 mb-1">Mínimo</label>
+                                            <label class="block text-[10px] uppercase tracking-widest font-medium text-midnight/60 mb-1">Mínimo</label>
                                             <input type="number" id="budget-min-input"
                                                    class="w-full bg-paper-dark border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 text-sm"
                                                     min="0" max="10000000000" value="0">
                                         </div>
                                         <div>
-                                            <label class="block text-[10px] uppercase tracking-widest font-medium text-midnight/40 mb-1">Máximo</label>
+                                            <label class="block text-[10px] uppercase tracking-widest font-medium text-midnight/60 mb-1">Máximo</label>
                                             <input type="number" id="budget-max-input"
                                                    class="w-full bg-paper-dark border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 text-sm"
                                                     min="0" max="10000000000" value="10000000000">
@@ -190,29 +190,29 @@ window.__FORM_OPTIONS = {{ {
                             <div>
                                 <label for="ambientes-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Ambientes</label>
                                 <div class="flex items-center gap-3">
-                                    <button type="button" onclick="stepNum('ambientes',-1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">−</button>
+                                    <button type="button" onclick="stepNum('ambientes',-1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-base md:text-lg leading-none">−</button>
                                     <input id="ambientes-input" name="ambientes" type="number" min="1" max="20" value="" placeholder="—"
                                            class="w-12 text-center bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-1 text-sm font-semibold">
-                                    <button type="button" onclick="stepNum('ambientes',1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">+</button>
+                                    <button type="button" onclick="stepNum('ambientes',1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-base md:text-lg leading-none">+</button>
                                 </div>
                                 <p class="text-[9px] text-midnight/30 mt-1">Incluye living, cocina</p>
                             </div>
                             <div>
                                 <label for="bedrooms-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Habitaciones</label>
                                 <div class="flex items-center gap-3">
-                                    <button type="button" onclick="stepNum('bedrooms',-1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">−</button>
+                                    <button type="button" onclick="stepNum('bedrooms',-1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-base md:text-lg leading-none">−</button>
                                     <input id="bedrooms-input" name="bedrooms" type="number" min="0" max="20" value="" placeholder="—"
                                            class="w-12 text-center bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-1 text-sm font-semibold">
-                                    <button type="button" onclick="stepNum('bedrooms',1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">+</button>
+                                    <button type="button" onclick="stepNum('bedrooms',1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-base md:text-lg leading-none">+</button>
                                 </div>
                             </div>
                             <div>
                                 <label for="bathrooms-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Baños</label>
                                 <div class="flex items-center gap-3">
-                                    <button type="button" onclick="stepNum('bathrooms',-1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">−</button>
+                                    <button type="button" onclick="stepNum('bathrooms',-1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-base md:text-lg leading-none">−</button>
                                     <input id="bathrooms-input" name="bathrooms" type="number" min="0" max="20" value="" placeholder="—"
                                            class="w-12 text-center bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-1 text-sm font-semibold">
-                                    <button type="button" onclick="stepNum('bathrooms',1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">+</button>
+                                    <button type="button" onclick="stepNum('bathrooms',1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-base md:text-lg leading-none">+</button>
                                 </div>
                             </div>
                         </div>
@@ -243,7 +243,7 @@ window.__FORM_OPTIONS = {{ {
                         </div>
 
                         <!-- Estado + Antigüedad -->
-                        <div class="grid grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label for="condition-chips" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Estado de la Propiedad</label>
                                 <div class="space-y-2" id="condition-chips">
@@ -267,8 +267,8 @@ window.__FORM_OPTIONS = {{ {
                         <!-- DETALLES DE DEPARTAMENTO -->
                         <div id="department-details" class="space-y-5 hidden">
                             <div class="border-t border-midnight/10 pt-6">
-                                <h4 class="text-[10px] uppercase tracking-widest font-bold text-midnight/40 mb-4">Detalles del Departamento</h4>
-                                <div class="grid grid-cols-2 gap-6">
+                                <h4 class="text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">Detalles del Departamento</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Piso/Bloque</label>
                                         <input name="floor_block" type="text" placeholder="5º A" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
@@ -302,8 +302,8 @@ window.__FORM_OPTIONS = {{ {
                         <!-- DETALLES DE CASA -->
                         <div id="house-details" class="space-y-5 hidden">
                             <div class="border-t border-midnight/10 pt-6">
-                                <h4 class="text-[10px] uppercase tracking-widest font-bold text-midnight/40 mb-4">Detalles de la Casa</h4>
-                                <div class="grid grid-cols-2 gap-6">
+                                <h4 class="text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">Detalles de la Casa</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label for="house-land-area" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Superficie de Terreno (m²)</label>
                                         <input id="house-land-area" name="land_area" type="number" min="0" placeholder="600" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
@@ -367,8 +367,8 @@ window.__FORM_OPTIONS = {{ {
                         <!-- DETALLES DE DÚPLEX -->
                         <div id="duplex-details" class="space-y-5 hidden">
                             <div class="border-t border-midnight/10 pt-6">
-                                <h4 class="text-[10px] uppercase tracking-widest font-bold text-midnight/40 mb-4">Detalles del Dúplex</h4>
-                                <div class="grid grid-cols-2 gap-6">
+                                <h4 class="text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">Detalles del Dúplex</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label for="duplex-land-area" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Superficie de Terreno (m²)</label>
                                         <input id="duplex-land-area" name="land_area" type="number" min="0" placeholder="300" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
@@ -403,8 +403,8 @@ window.__FORM_OPTIONS = {{ {
                         <!-- DETALLES DE PENTHOUSE -->
                         <div id="penthouse-details" class="space-y-5 hidden">
                             <div class="border-t border-midnight/10 pt-6">
-                                <h4 class="text-[10px] uppercase tracking-widest font-bold text-midnight/40 mb-4">Detalles del Penthouse</h4>
-                                <div class="grid grid-cols-2 gap-6">
+                                <h4 class="text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">Detalles del Penthouse</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Piso</label>
                                         <input name="floor_block" type="text" placeholder="Piso 20" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
@@ -438,8 +438,8 @@ window.__FORM_OPTIONS = {{ {
                         <!-- DETALLES DE LOCAL COMERCIAL -->
                         <div id="local-details" class="space-y-5 hidden">
                             <div class="border-t border-midnight/10 pt-6">
-                                <h4 class="text-[10px] uppercase tracking-widest font-bold text-midnight/40 mb-4">Detalles del Local Comercial</h4>
-                                <div class="grid grid-cols-2 gap-6">
+                                <h4 class="text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">Detalles del Local Comercial</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Superficie Total (m²)</label>
                                         <input name="usable_m2" type="number" min="0" placeholder="120" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
@@ -449,7 +449,7 @@ window.__FORM_OPTIONS = {{ {
                                         <input name="floor_block" type="text" placeholder="8m" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                     </div>
                                 </div>
-                                <div class="grid grid-cols-2 gap-6 mt-4">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                                     <div>
                                         <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Piso / Planta</label>
                                         <input name="built_area" type="text" placeholder="Planta baja" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
@@ -508,7 +508,7 @@ window.__FORM_OPTIONS = {{ {
                         <h3 class="text-lg font-serif italic text-midnight">Identidad & Contacto</h3>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Email Profesional -->
                         <div>
                             <label for="email-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Email Profesional</label>
@@ -589,7 +589,7 @@ window.__FORM_OPTIONS = {{ {
                                     class="flex-1 bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm"
                                 >
                             </div>
-                            <p class="text-[9px] text-midnight/40 mt-1">El código de país se incluirá automáticamente</p>
+                            <p class="text-[9px] text-midnight/60 mt-1">El código de país se incluirá automáticamente</p>
                             <div class="mt-2 flex items-center justify-between">
                                 <p id="phone-error-msg" class="hidden text-[10px] text-rose-500 font-medium"></p>
                                 <button
@@ -630,7 +630,7 @@ window.__FORM_OPTIONS = {{ {
 
                 <!-- Botón Enviar -->
                 <div class="pt-6">
-                    <button type="submit" class="w-full bg-gold hover:bg-gold/90 text-white py-4 rounded font-bold uppercase tracking-widest text-[11px] transition-all flex items-center justify-center gap-3 group shadow-lg">
+                    <button type="submit" class="btn-submit w-full bg-gold hover:bg-midnight text-white py-4 rounded font-bold uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-3 group shadow-lg">
                         Enviar Solicitud
                         <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
                     </button>
@@ -699,7 +699,7 @@ window.__FORM_OPTIONS = {{ {
                     onclick="resendVerificationCode()">
                     Reenviar código
                 </button>
-                <span id="resend-cooldown" class="hidden text-[10px] text-midnight/40 ml-2">(60s)</span>
+                <span id="resend-cooldown" class="hidden text-[10px] text-midnight/60 ml-2">(60s)</span>
             </p>
         </div>
     </div>
