@@ -124,10 +124,21 @@ def get_professional_by_name(name):
 def get_user_leads(user_id):
     conn = get_db_connection()
     try:
-        leads = conn.execute(
-            'SELECT * FROM leads WHERE user_id = ? ORDER BY timestamp DESC',
-            (user_id,)
-        ).fetchall()
+        leads = conn.execute('''
+            SELECT l.*,
+                   COALESCE(lt.seen_count, 0) AS seen_count,
+                   COALESCE(lt.contacted_count, 0) AS contacted_count
+            FROM leads l
+            LEFT JOIN (
+                SELECT lead_id,
+                       SUM(seen) AS seen_count,
+                       SUM(contacted) AS contacted_count
+                FROM lead_tracking
+                GROUP BY lead_id
+            ) lt ON l.id = lt.lead_id
+            WHERE l.user_id = ?
+            ORDER BY l.timestamp DESC
+        ''', (user_id,)).fetchall()
         return [dict(l) for l in leads]
     finally:
         conn.close()

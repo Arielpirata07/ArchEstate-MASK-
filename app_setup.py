@@ -436,6 +436,7 @@ def init_db(app):
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_professionals_name ON professionals(name)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_professionals_status ON professionals(status)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_lead_tracking_professional ON lead_tracking(professional_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_lead_tracking_lead ON lead_tracking(lead_id)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_lead_reports_status ON lead_reports(status)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_audit_log_user ON audit_log(user_id)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_login_history_user ON user_login_history(user_id)')
