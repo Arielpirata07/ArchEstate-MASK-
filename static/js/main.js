@@ -386,7 +386,7 @@ function initUserForm() {
                 setLoading(submitBtn, false);
                 if (window.lucide) lucide.createIcons();
                 console.error("Error al enviar el formulario:", error);
-                showToast("Error de conexion con el servidor", 'error');
+                showToast("Error de conexión con el servidor", 'error');
             }
         });
     }
@@ -406,12 +406,12 @@ function selectPropertyType(propertyType) {
 
     const departmentOptions = [
         { value: 'Comprar Propiedad', text: 'Comprar' },
-        { value: 'Remodelacion Integral', text: 'Remodelacion' }
+        { value: 'Remodelación Integral', text: 'Remodelacion' }
     ];
     const houseOptions = [
         { value: 'Comprar Propiedad', text: 'Comprar' },
         { value: 'Construir desde Cero', text: 'Construir' },
-        { value: 'Remodelacion Integral', text: 'Remodelacion' }
+        { value: 'Remodelación Integral', text: 'Remodelacion' }
     ];
 
     const options = propertyType === 'casa' ? houseOptions : departmentOptions;
@@ -899,7 +899,7 @@ async function togglePhone(btn, leadId) {
 async function updateProStatus(proId, status, btn) {
     var isRejection = status === 'rejected';
     var confirmMsg = isRejection
-        ? "¡ADVERTENCIA! Esta a punto de RECHAZAR a este profesional. Esta accion quedara registrada permanentemente. ¿Esta completamente seguro?"
+        ? "¡ADVERTENCIA! Esta a punto de RECHAZAR a este profesional. Esta acción quedará registrada permanentemente. ¿Está completamente seguro?"
         : "¿Desea aprobar a este profesional para que pueda acceder a la plataforma?";
 
     if (!(await showConfirm(confirmMsg))) {

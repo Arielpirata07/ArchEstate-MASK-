@@ -153,27 +153,27 @@ def validate_username(username):
     if not username or len(username) < 3 or len(username) > 30:
         return False, 'El nombre de usuario debe tener entre 3 y 30 caracteres.'
     if not re.match(r'^[a-zA-Z0-9_]+$', username):
-        return False, 'El usuario solo puede contener letras, numeros y guion bajo.'
+        return False, 'El usuario solo puede contener letras, números y guión bajo.'
     return True, None
 
 
 def validate_password(password):
     if not password or len(password) < 6:
-        return False, 'La contrasena debe tener al menos 6 caracteres.'
+        return False, 'La contraseña debe tener al menos 6 caracteres.'
     if not re.search(r'[A-Za-z]', password) or not re.search(r'[0-9]', password):
-        return False, 'La contrasena debe contener al menos una letra y un numero.'
+        return False, 'La contraseña debe contener al menos una letra y un número.'
     return True, None
 
 
 def validate_property_type(ptype):
     valid = get_valid_property_types()
     if not ptype or ptype not in valid:
-        return False, 'Tipo de propiedad no valido.'
+        return False, 'Tipo de propiedad no válido.'
     return True, None
 
 
 def validate_operation_type(otype):
     valid = get_valid_operation_types()
     if not otype or otype not in valid:
-        return False, 'Tipo de operacion no valido.'
+        return False, 'Tipo de operación no válido.'
     return True, None

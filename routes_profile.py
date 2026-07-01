@@ -185,7 +185,7 @@ def api_change_password():
 
     user = models.get_user_by_id(user_id)
     if not user or not check_password_hash(user['hash'], current_password):
-        return jsonify({'error': 'La contrasena actual es incorrecta'}), 400
+        return jsonify({'error': 'La contraseña actual es incorrecta'}), 400
 
     is_valid, error = validators.validate_password(new_password)
     if not is_valid:
@@ -908,7 +908,7 @@ def profile_export_history_pdf():
         pdf.cell(0, 6, pdf_safe(prof_name), ln=True, align='L')
         pdf.set_font('Helvetica', '', 8)
         pdf.set_text_color(100, 100, 100)
-        pdf.cell(0, 5, 'Leads contactados en los ultimos 30 dias', ln=True, align='L')
+        pdf.cell(0, 5, 'Leads contactados en los últimos 30 días', ln=True, align='L')
         pdf.ln(6)
 
         # ─── Summary cards (2x2) ───
@@ -983,7 +983,7 @@ def profile_export_history_pdf():
             pdf.set_font('Helvetica', '', 9)
             pdf.ln(2)
 
-        section_header('Distribucion por Moneda')
+        section_header('Distribución por Moneda')
         pdf.set_font('Helvetica', 'B', 8)
         pdf.set_fill_color(*gray_bg)
         cw = [30, 30, 50, 50, 30]
@@ -1004,7 +1004,7 @@ def profile_export_history_pdf():
         pdf.ln(5)
 
         # ─── Property type breakdown ───
-        section_header('Distribucion por Tipo de Propiedad')
+        section_header('Distribución por Tipo de Propiedad')
         pdf.set_font('Helvetica', 'B', 8)
         pdf.set_fill_color(*gray_bg)
         cw2 = [80, 40, 40, 30]
@@ -1033,7 +1033,7 @@ def profile_export_history_pdf():
         pdf.ln(5)
 
         # ─── Zone breakdown ───
-        section_header('Zonas con Mayor Captacion')
+        section_header('Zonas con Mayor Captación')
         pdf.set_font('Helvetica', 'B', 8)
         pdf.set_fill_color(*gray_bg)
         cw3 = [90, 40, 40, 22]
@@ -1060,7 +1060,7 @@ def profile_export_history_pdf():
         pdf.ln(5)
 
         # ─── Leads detail table ───
-        section_header('Detalle de Leads (ultimos 30)')
+        section_header('Detalle de Leads (últimos 30)')
         pdf.set_font('Helvetica', 'B', 7)
         pdf.set_fill_color(*midnight)
         pdf.set_text_color(*white)

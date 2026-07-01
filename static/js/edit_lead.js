@@ -95,7 +95,7 @@ function syncEditAgeToCondition(condition) {
             btn.style.cursor = isForced ? 'default' : 'not-allowed';
         });
         if (ageSection) ageSection.classList.remove('hidden');
-    } else if (condition === 'En construccion') {
+    } else if (condition === 'En construcción') {
         selectEditChip('age', '');
         if (ageSection) ageSection.classList.add('hidden');
     } else if (condition === 'A reciclar') {
@@ -178,7 +178,7 @@ function submitEditLead() {
         }
     })
     .catch(function() {
-        if (err) { err.textContent = 'Error de conexion'; err.classList.remove('hidden'); }
+        if (err) { err.textContent = 'Error de conexión'; err.classList.remove('hidden'); }
     })
     .finally(function() {
         btn.disabled = false;

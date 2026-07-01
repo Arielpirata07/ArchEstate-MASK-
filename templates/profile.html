@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Configuracion | ArchEstate{% endblock %}
+{% block title %}Configuración | ArchEstate{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
@@ -10,7 +10,7 @@
 <div class="max-w-7xl mx-auto pt-8">
     <div class="flex items-center justify-between mb-8 header-entrance">
         <div>
-            <h1 class="text-3xl font-serif italic" style="color:var(--text-primary)">Configuracion</h1>
+            <h1 class="text-3xl font-serif italic" style="color:var(--text-primary)">Configuración</h1>
             <p class="text-sm mt-1" style="color:var(--text-secondary)">Administra tu cuenta y preferencias</p>
         </div>
         <a href="{{ url_for('public.index') }}" class="text-[10px] uppercase tracking-widest font-bold" style="color:var(--accent);" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--accent)'">
@@ -21,7 +21,7 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-0 rounded-lg shadow-xl overflow-hidden settings-page">
         <!-- Sidebar -->
-        <aside class="lg:col-span-1 settings-sidebar p-6 lg:min-h-[600px]" role="tablist" aria-label="Configuracion">
+        <aside class="lg:col-span-1 settings-sidebar p-6 lg:min-h-[600px]" role="tablist" aria-label="Configuración">
             <nav class="space-y-1">
                 <button role="tab" aria-selected="true" aria-controls="panel-cuenta" id="tab-cuenta" tabindex="0"
                     class="settings-tab active" onclick="showSettingsTab('cuenta')">
@@ -106,13 +106,13 @@
                                 <label for="profile-email" class="input-label">Email</label>
                                 <input id="profile-email" type="email" value="{{ user.email if user else '' }}" class="input-field" oninput="validateProfileEmail()">
                                 <div class="flex items-center justify-between mt-1">
-                                    <p id="profile-email-hint" class="text-[9px] hint-text">Ingresa un email valido</p>
-                                    <p id="profile-email-valid" class="hidden text-[9px] font-medium text-emerald-600">Email valido</p>
-                                    <p id="profile-email-invalid" class="hidden text-[9px] font-medium text-rose-600">Email invalido</p>
+                                    <p id="profile-email-hint" class="text-[9px] hint-text">Ingresa un email válido</p>
+                                    <p id="profile-email-valid" class="hidden text-[9px] font-medium text-emerald-600">Email válido</p>
+                                    <p id="profile-email-invalid" class="hidden text-[9px] font-medium text-rose-600">Email inválido</p>
                                 </div>
                             </div>
                             <div>
-                                <label for="profile-phone" class="input-label">Telefono</label>
+                                <label for="profile-phone" class="input-label">Teléfono</label>
                                 <div class="flex gap-2">
                                     <select id="profile-country-code" aria-label="Código de país" onchange="updateProfilePhoneFormat()" class="px-2 py-2 border border-midnight/20 rounded text-sm bg-white text-midnight w-14 flex-shrink-0">
                                         <option value="+54">+54</option>
@@ -161,13 +161,13 @@
                                     <input id="profile-phone" type="tel" value="{{ user.phone if user and user.phone else '' }}" class="input-field flex-1" placeholder="9 11 1234 5678" maxlength="16" oninput="validateProfilePhone()">
                                 </div>
                                 <div class="flex items-center justify-between mt-1">
-                                    <p id="profile-phone-hint" class="text-[9px] hint-text">El codigo de pais se incluira automaticamente</p>
-                                    <p id="profile-phone-valid" class="hidden text-[9px] font-medium text-emerald-600">Formato valido</p>
-                                    <p id="profile-phone-invalid" class="hidden text-[9px] font-medium text-rose-600">Formato invalido</p>
+                                    <p id="profile-phone-hint" class="text-[9px] hint-text">El código de país se incluirá automáticamente</p>
+                                    <p id="profile-phone-valid" class="hidden text-[9px] font-medium text-emerald-600">Formato válido</p>
+                                    <p id="profile-phone-invalid" class="hidden text-[9px] font-medium text-rose-600">Formato inválido</p>
                                 </div>
                                 <div id="profile-phone-suggestion" class="hidden mt-1">
                                     <button type="button" onclick="showPhoneCorrection()" class="text-[9px] text-amber-600 hover:text-amber-800 dark:hover:text-amber-300 transition-colors cursor-pointer">
-                                        &iquest;Corregir numero?
+                                        &iquest;Corregir número?
                                     </button>
                                 </div>
                                 <div id="phone-correction-preview" class="hidden mt-1 p-2 bg-amber-50 border border-amber-200 rounded text-[10px]">
@@ -220,7 +220,7 @@
                                 </div>
                             </div>
                             <div>
-                                <label for="profile-bio" class="input-label">Biografia</label>
+                                <label for="profile-bio" class="input-label">Biografía</label>
                                 <textarea id="profile-bio" rows="3" class="input-field resize-none" placeholder="Contanos sobre vos...">{{ user.bio if user and user.bio else '' }}</textarea>
                             </div>
                         </div>
@@ -498,27 +498,27 @@
 
                     <!-- Cambiar contraseña -->
                     <div class="settings-section">
-                        <h3 class="text-xs font-bold uppercase tracking-widest mb-4" style="color:var(--accent)">Cambiar Contrasena</h3>
+                        <h3 class="text-xs font-bold uppercase tracking-widest mb-4" style="color:var(--accent)">Cambiar Contraseña</h3>
                         <div class="space-y-4 max-w-md">
                             <div>
-                                <label for="current-password" class="input-label">Contrasena Actual</label>
+                                <label for="current-password" class="input-label">Contraseña Actual</label>
                                 <input id="current-password" type="password" autocomplete="current-password" class="input-field">
                             </div>
                             <div>
-                                <label for="new-password" class="input-label">Nueva Contrasena</label>
+                                <label for="new-password" class="input-label">Nueva Contraseña</label>
                                 <input id="new-password" type="password" autocomplete="new-password" class="input-field">
-                                <p class="text-[9px] mt-1 hint-text">Minimo 6 caracteres, al menos una letra y un numero</p>
+                                <p class="text-[9px] mt-1 hint-text">Mínimo 6 caracteres, al menos una letra y un número</p>
                             </div>
                             <div>
-                                <label for="confirm-password" class="input-label">Confirmar Nueva Contrasena</label>
+                                <label for="confirm-password" class="input-label">Confirmar Nueva Contraseña</label>
                                 <input id="confirm-password" type="password" autocomplete="new-password" class="input-field">
                             </div>
                             <div class="flex items-center gap-4">
                                 <button id="save-password-btn" onclick="changePassword()" class="btn-primary">
                                     <i data-lucide="lock" class="w-4 h-4" aria-hidden="true"></i>
-                                    Cambiar Contrasena
+                                    Cambiar Contraseña
                                 </button>
-                                <span id="password-save-msg" class="hidden text-sm font-medium text-emerald-600" aria-live="polite">Contrasena actualizada</span>
+                                <span id="password-save-msg" class="hidden text-sm font-medium text-emerald-600" aria-live="polite">Contraseña actualizada</span>
                                 <span id="password-error-msg" class="hidden text-sm font-medium text-rose-600" role="alert"></span>
                             </div>
                         </div>
@@ -564,7 +564,7 @@
                                             Seguimiento
                                         </span>
                                     </th>
-                                    <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold" style="color:var(--accent)">Accion</th>
+                                    <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold" style="color:var(--accent)">Acción</th>
                                 </tr>
                             </thead>
                             <tbody id="leads-tbody" class="stagger-rows">
@@ -607,7 +607,7 @@
                             </div>
 
                             <div>
-                                <label class="input-label">Matricula</label>
+                                <label class="input-label">Matrícula</label>
                                 <p id="pro-license" class="text-sm font-mono font-semibold" style="color:var(--text-primary)"></p>
                                 <p id="pro-license-status" class="text-[10px] font-bold uppercase tracking-widest mt-1"></p>
                             </div>
@@ -622,7 +622,7 @@
                         <div class="lg:col-span-2 space-y-5">
                             <div>
                                 <label for="pro-bio" class="input-label">Bio Profesional</label>
-                                <textarea id="pro-bio" rows="4" class="input-field resize-none" placeholder="Describi tu experiencia y especializacion..."></textarea>
+                                <textarea id="pro-bio" rows="4" class="input-field resize-none" placeholder="Describí tu experiencia y especialización..."></textarea>
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -631,7 +631,7 @@
                                     <input id="pro-experience" type="number" min="0" max="50" class="input-field" placeholder="0">
                                 </div>
                                 <div>
-                                    <label for="pro-address" class="input-label">Direccion Profesional</label>
+                                    <label for="pro-address" class="input-label">Dirección Profesional</label>
                                     <input id="pro-address" type="text" class="input-field" placeholder="Ej: Av. Corrientes 1234, CABA">
                                 </div>
                             </div>
@@ -658,15 +658,15 @@
                                 <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2" id="services-container">
                                     <label class="chip-checkbox">
                                         <input type="checkbox" value="tasacion" onchange="updateServicesOffered()">
-                                        <span class="chip-label">Tasacion</span>
+                                        <span class="chip-label">Tasación</span>
                                     </label>
                                     <label class="chip-checkbox">
                                         <input type="checkbox" value="proyecto" onchange="updateServicesOffered()">
-                                        <span class="chip-label">Proyecto Arquitectonico</span>
+                                        <span class="chip-label">Proyecto Arquitectónico</span>
                                     </label>
                                     <label class="chip-checkbox">
                                         <input type="checkbox" value="direccion_obra" onchange="updateServicesOffered()">
-                                        <span class="chip-label">Direccion de Obra</span>
+                                        <span class="chip-label">Dirección de Obra</span>
                                     </label>
                                     <label class="chip-checkbox">
                                         <input type="checkbox" value="venta" onchange="updateServicesOffered()">
@@ -682,7 +682,7 @@
                                     </label>
                                     <label class="chip-checkbox">
                                         <input type="checkbox" value="decoracion" onchange="updateServicesOffered()">
-                                        <span class="chip-label">Decoracion</span>
+                                        <span class="chip-label">Decoración</span>
                                     </label>
                                     <label class="chip-checkbox">
                                         <input type="checkbox" value="otro" onchange="updateServicesOffered()">
@@ -693,11 +693,11 @@
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
-                                    <label for="pro-fee-min" class="input-label">Honorarios Minimos</label>
+                                    <label for="pro-fee-min" class="input-label">Honorarios Mínimos</label>
                                     <input id="pro-fee-min" type="number" min="0" class="input-field" placeholder="$0">
                                 </div>
                                 <div>
-                                    <label for="pro-fee-max" class="input-label">Honorarios Maximos</label>
+                                    <label for="pro-fee-max" class="input-label">Honorarios Máximos</label>
                                     <input id="pro-fee-max" type="number" min="0" class="input-field" placeholder="$0">
                                 </div>
                             </div>

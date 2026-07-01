@@ -107,7 +107,7 @@ function saveUserProfile() {
         }
     })
     .catch(() => {
-        if (err) { err.textContent = 'Error de conexion'; err.classList.remove('hidden'); }
+        if (err) { err.textContent = 'Error de conexión'; err.classList.remove('hidden'); }
     })
     .finally(() => {
         btn.disabled = false;
@@ -160,7 +160,7 @@ function uploadAvatar(input) {
         input.value = '';
     })
     .catch(() => {
-        if (status) { status.textContent = 'Error de conexion'; status.className = 'text-[9px] mt-1 text-rose-500'; }
+        if (status) { status.textContent = 'Error de conexión'; status.className = 'text-[9px] mt-1 text-rose-500'; }
         input.value = '';
     });
 }
@@ -185,7 +185,7 @@ function deleteAvatar() {
             }
         })
         .catch(function () {
-            if (status) { status.textContent = 'Error de conexion'; status.className = 'text-[9px] mt-1 text-rose-500'; }
+            if (status) { status.textContent = 'Error de conexión'; status.className = 'text-[9px] mt-1 text-rose-500'; }
         });
     });
 }
@@ -607,7 +607,7 @@ function saveSettings() {
         }
     })
     .catch(() => {
-        if (err) { err.textContent = 'Error de conexion'; err.classList.remove('hidden'); }
+        if (err) { err.textContent = 'Error de conexión'; err.classList.remove('hidden'); }
     });
 }
 
@@ -658,7 +658,7 @@ function changePassword() {
         }
     })
     .catch(() => {
-        if (err) { err.textContent = 'Error de conexion'; err.classList.remove('hidden'); }
+        if (err) { err.textContent = 'Error de conexión'; err.classList.remove('hidden'); }
     })
     .finally(() => {
         resetBtn(btn, '<i data-lucide="lock" class="w-4 h-4"></i> Cambiar Contrasena');
@@ -958,7 +958,7 @@ function saveProfessionalFullProfile() {
         }
     })
     .catch(() => {
-        if (err) { err.textContent = 'Error de conexion'; err.classList.remove('hidden'); }
+        if (err) { err.textContent = 'Error de conexión'; err.classList.remove('hidden'); }
     })
     .finally(() => {
         btn.disabled = false;
@@ -1000,7 +1000,7 @@ function uploadProfessionalPhoto(input) {
         input.value = '';
     })
     .catch(() => {
-        if (status) { status.textContent = 'Error de conexion'; status.className = 'text-[9px] mt-1 text-rose-500'; }
+        if (status) { status.textContent = 'Error de conexión'; status.className = 'text-[9px] mt-1 text-rose-500'; }
         input.value = '';
     });
 }
@@ -1025,7 +1025,7 @@ function deleteProfessionalPhoto() {
             }
         })
         .catch(function () {
-            if (status) { status.textContent = 'Error de conexion'; status.className = 'text-[9px] mt-1 text-rose-500'; }
+            if (status) { status.textContent = 'Error de conexión'; status.className = 'text-[9px] mt-1 text-rose-500'; }
         });
     });
 }

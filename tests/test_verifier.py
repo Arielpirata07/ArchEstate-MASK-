@@ -72,7 +72,7 @@ def test_whatsapp_simulated_does_not_leak_otp_in_meta():
     res = v.send("+5491144445555", "999888")
     assert res.meta is not None
     # El código sólo debe aparecer en deep_link (debug-only)
-    assert res.message == "Codigo enviado por WhatsApp"
+    assert res.message == "Código enviado por WhatsApp"
     assert "999888" not in res.message
 
 
@@ -222,7 +222,7 @@ class TestTwilioSmsVerifier:
         assert res.ok is True
         assert res.channel == "sms"
         mock_client.messages.create.assert_called_once_with(
-            body="Tu codigo de verificacion de ArchEstate es: 123456 (valido 10 min)",
+            body="Tu código de verificación de ArchEstate es: 123456 (válido 10 min)",
             from_='+15022519153',
             to='+5491144445555'
         )

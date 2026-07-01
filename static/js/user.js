@@ -119,7 +119,7 @@ function syncAgeToCondition(condition) {
         });
         if (ageSection) ageSection.classList.remove('hidden');
 
-    } else if (condition === 'En construccion') {
+    } else if (condition === 'En construcción') {
         // Sin antigüedad aplicable → ocultar la sección
         selectChip('age', '');
         if (ageSection) ageSection.classList.add('hidden');

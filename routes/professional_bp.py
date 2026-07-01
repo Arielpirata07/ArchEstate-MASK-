@@ -835,7 +835,7 @@ def download_lead_pdf(lead_id):
 
     pdf.set_font('Helvetica', '', 10)
     pdf.set_text_color(100, 100, 100)
-    pdf.cell(0, 8, f'Lead #{lead["id"]} - Informacion completa enviada por el cliente', ln=True, align='C')
+    pdf.cell(0, 8, f'Lead #{lead["id"]} - Información completa enviada por el cliente', ln=True, align='C')
     pdf.ln(10)
 
     def section_header(title):
@@ -847,7 +847,7 @@ def download_lead_pdf(lead_id):
         pdf.set_font('Helvetica', '', 10)
         pdf.ln(2)
 
-    section_header('Tipo de Operacion')
+    section_header('Tipo de Operación')
     pdf.cell(0, 6, pdf_val(lead['type']), ln=True)
 
     prop_type = pdf_safe(lead.get('property_type', '')).lower()
@@ -864,7 +864,7 @@ def download_lead_pdf(lead_id):
     budget_symbol = 'USD' if lead['currency'] == 'USD' else 'EUR' if lead['currency'] == 'EUR' else '$'
     pdf.cell(0, 6, f"{budget_symbol} {pdf_val(lead['budget'])}", ln=True)
 
-    section_header('Estilo Arquitectonico')
+    section_header('Estilo Arquitectónico')
     pdf.cell(0, 6, pdf_val(lead.get('architectural_style'), 'No especificado'), ln=True)
 
     section_header('Contacto Directo')
@@ -884,18 +884,18 @@ def download_lead_pdf(lead_id):
     pdf.cell(60, 8, 'Habitaciones:', border=1)
     pdf.cell(0, 8, pdf_val(lead['bedrooms']), ln=True, border=1)
 
-    pdf.cell(60, 8, 'Banios:', border=1)
+    pdf.cell(60, 8, 'Baños:', border=1)
     pdf.cell(0, 8, pdf_val(lead['bathrooms']), ln=True, border=1)
 
     pdf.cell(60, 8, 'Estacionamiento:', border=1)
     pdf.cell(0, 8, pdf_val(lead.get('parking'), 'No especificado'), ln=True, border=1)
 
-    pdf.cell(60, 8, 'Orientacion:', border=1)
+    pdf.cell(60, 8, 'Orientación:', border=1)
     pdf.cell(0, 8, pdf_val(lead.get('orientation'), 'No especificada'), ln=True, border=1)
 
     pdf.ln(2)
 
-    pdf.cell(60, 8, 'Metros Utiles:', border=1)
+    pdf.cell(60, 8, 'Metros Útiles:', border=1)
     pdf.cell(0, 8, f"{pdf_val(lead.get('usable_m2'))} m2" if lead.get('usable_m2') else '-', ln=True, border=1)
 
     pdf.cell(60, 8, 'Superficie Total:', border=1)

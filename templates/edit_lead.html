@@ -26,7 +26,7 @@ window.__FORM_OPTIONS = {{ {
             <div>
                 <h1 class="text-5xl lg:text-6xl font-serif italic mb-4">Editar<br/><span class="font-serif italic">Solicitud</span></h1>
                 <p class="text-lg text-white/70 leading-relaxed">
-                    Modifica los parametros de tu solicitud. Los campos marcados como inmutables no pueden ser alterados.
+                    Modifica los parámetros de tu solicitud. Los campos marcados como inmutables no pueden ser alterados.
                 </p>
             </div>
             <div class="mt-8 p-4 bg-white/5 rounded-lg border border-white/10">
@@ -38,7 +38,7 @@ window.__FORM_OPTIONS = {{ {
         <div class="space-y-2">
             <a href="{{ url_for('profile.profile_view') }}" class="text-[10px] uppercase tracking-widest text-gold hover:text-white transition-colors flex items-center gap-2">
                 <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                Volver a Configuracion
+                Volver a Configuración
             </a>
         </div>
     </div>
@@ -46,7 +46,7 @@ window.__FORM_OPTIONS = {{ {
     <!-- LADO DERECHO - Formulario -->
     <div class="bg-white p-12 lg:p-16 overflow-y-auto max-h-[85vh]">
         <div class="max-w-2xl">
-            <h2 class="text-2xl font-serif italic text-midnight mb-2">Parametros Editables</h2>
+            <h2 class="text-2xl font-serif italic text-midnight mb-2">Parámetros Editables</h2>
             <p class="text-sm text-midnight/60 mb-8">Edita solo las secciones que necesites actualizar.</p>
 
             <form id="editLeadForm" class="space-y-6">
@@ -59,7 +59,7 @@ window.__FORM_OPTIONS = {{ {
                     </summary>
                     <div class="p-5 grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Tipo de Operacion</label>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Tipo de Operación</label>
                             <input type="text" value="{{ lead.type }}" readonly class="w-full px-3 py-2 border border-midnight/10 rounded text-sm field-readonly">
                         </div>
                         <div>
@@ -81,7 +81,7 @@ window.__FORM_OPTIONS = {{ {
                 <details class="group border border-midnight/10 rounded-lg overflow-hidden" open>
                     <summary class="flex items-center gap-3 px-5 py-4 bg-paper-dark cursor-pointer hover:bg-midnight/5 transition-colors">
                         <span class="text-[14px] font-serif italic text-gold">01.</span>
-                        <span class="text-sm font-serif italic text-midnight">Parametros Principales</span>
+                        <span class="text-sm font-serif italic text-midnight">Parámetros Principales</span>
                         <i data-lucide="chevron-down" class="w-4 h-4 ml-auto text-midnight/30 transition-transform group-open:rotate-180"></i>
                     </summary>
                     <div class="p-5 space-y-6">
@@ -117,17 +117,17 @@ window.__FORM_OPTIONS = {{ {
 
                         <div class="grid grid-cols-1 md:grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label for="edit-architectural-style" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Estilo Arquitectonico</label>
+                                <label for="edit-architectural-style" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Estilo Arquitectónico</label>
                                 <input id="edit-architectural-style" name="architectural_style" type="text" value="{{ lead.architectural_style if lead.architectural_style else '' }}"
-                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm" placeholder="Ej. Moderno, Clasico">
+                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm" placeholder="Ej. Moderno, Clásico">
                             </div>
                             <div>
-                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Telefono</label>
+                                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Teléfono</label>
                                 <input type="text" value="{{ lead.phone if lead.phone else '' }}" readonly
                                     class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 text-midnight/50 text-sm cursor-not-allowed">
                                 <a href="{{ url_for('profile.profile_view') }}" class="inline-flex items-center gap-1 mt-1 text-[9px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors">
                                     <i data-lucide="settings" class="w-3 h-3"></i>
-                                    Editar en Configuracion
+                                    Editar en Configuración
                                 </a>
                             </div>
                         </div>
@@ -184,7 +184,7 @@ window.__FORM_OPTIONS = {{ {
                     <div class="p-5 space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label for="edit-usable-m2" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Metros Utiles (m2)</label>
+                                <label for="edit-usable-m2" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Metros Útiles (m2)</label>
                                 <input id="edit-usable-m2" name="usable_m2" type="number" min="0" value="{{ lead.usable_m2 if lead.usable_m2 else '' }}"
                                     class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                             </div>
@@ -205,7 +205,7 @@ window.__FORM_OPTIONS = {{ {
                                 <input id="edit-built-area" name="built_area" type="number" min="0" value="{{ lead.built_area if lead.built_area else '' }}"
                                     class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                 <p id="edit-area-warning" class="hidden text-[10px] text-rose-500 font-medium mt-1">Los metros construidos superan el 80% del terreno.</p>
-                                <p id="edit-area-hint" class="text-[9px] text-midnight/30 mt-1">Maximo 80% del terreno</p>
+                                <p id="edit-area-hint" class="text-[9px] text-midnight/30 mt-1">Máximo 80% del terreno</p>
                             </div>
                         </div>
                         <div>
@@ -216,11 +216,11 @@ window.__FORM_OPTIONS = {{ {
                     </div>
                 </details>
 
-                <!-- 04. Caracteristicas -->
+                <!-- 04. Características -->
                 <details class="group border border-midnight/10 rounded-lg overflow-hidden">
                     <summary class="flex items-center gap-3 px-5 py-4 bg-paper-dark cursor-pointer hover:bg-midnight/5 transition-colors">
                         <span class="text-[14px] font-serif italic text-gold">04.</span>
-                        <span class="text-sm font-serif italic text-midnight">Caracteristicas</span>
+                        <span class="text-sm font-serif italic text-midnight">Características</span>
                         <i data-lucide="chevron-down" class="w-4 h-4 ml-auto text-midnight/30 transition-transform group-open:rotate-180"></i>
                     </summary>
                     <div class="p-5 space-y-6">
@@ -257,7 +257,7 @@ window.__FORM_OPTIONS = {{ {
                         </div>
 
                         <div>
-                            <label for="edit-orientation-chips" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Orientacion</label>
+                            <label for="edit-orientation-chips" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Orientación</label>
                             {% set orient_short = {'': '', 'Norte': 'N', 'Sur': 'S', 'Este': 'E', 'Oeste': 'O', 'Noreste': 'NE', 'Noroeste': 'NO', 'Sureste': 'SE', 'Suroeste': 'SO'} %}
                             <div class="flex flex-wrap gap-2" id="edit-orientation-chips">
                                 {% for opt in form_options.get('orientation', []) %}
@@ -318,7 +318,7 @@ window.__FORM_OPTIONS = {{ {
                             </label>
                             <label class="flex items-center gap-3 cursor-pointer">
                                 <input type="checkbox" name="edit-amenity" value="Domotica Avanzada" class="amenity-checkbox w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
-                                <span class="text-sm text-midnight">Domotica Avanzada</span>
+                                <span class="text-sm text-midnight">Domótica Avanzada</span>
                             </label>
                             <label class="flex items-center gap-3 cursor-pointer">
                                 <input type="checkbox" name="edit-amenity" value="Helipad" class="amenity-checkbox w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
@@ -338,7 +338,7 @@ window.__FORM_OPTIONS = {{ {
                             </label>
                             <label class="flex items-center gap-3 cursor-pointer">
                                 <input type="checkbox" name="edit-amenity" value="Jardin" class="amenity-checkbox w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
-                                <span class="text-sm text-midnight">Jardin</span>
+                                <span class="text-sm text-midnight">Jardín</span>
                             </label>
                             <label class="flex items-center gap-3 cursor-pointer">
                                 <input type="checkbox" name="edit-amenity" value="Jacuzzi" class="amenity-checkbox w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0">
@@ -382,7 +382,7 @@ window.__FORM_OPTIONS = {{ {
                         {% for v in versions %}
                         <div class="p-3 bg-paper-dark rounded border border-midnight/5 text-sm">
                             <div class="flex items-center justify-between">
-                                <span class="font-semibold text-midnight">Version {{ v.version }}</span>
+                                <span class="font-semibold text-midnight">Versión {{ v.version }}</span>
                                 <span class="text-midnight/60 text-[10px]">{{ v.edited_at }}</span>
                             </div>
                             <p class="text-midnight/50 text-xs mt-1">{{ v.change_summary or 'Sin resumen de cambios' }}</p>

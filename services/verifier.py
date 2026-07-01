@@ -52,11 +52,11 @@ class SmsSimulatedVerifier(OTPChannel):
     def send(self, phone_e164, code, ttl_minutes=10, username=None):
         try:
             print(f"\n[SMS SIMULADO] -> {phone_e164}")
-            print(f"[SMS SIMULADO] Codigo: {code} (valido {ttl_minutes} min)\n")
+            print(f"[SMS SIMULADO] Código: {code} (válido {ttl_minutes} min)\n")
             if self._audit:
                 self._audit("OTP enviado por SMS", f"phone_hash={hash_phone_digits(phone_e164)} channel=sms ttl={ttl_minutes}m")
             return SendResult(ok=True, channel=self.name,
-                              message=f"Codigo enviado por SMS a {phone_e164}")
+                              message=f"Código enviado por SMS a {phone_e164}")
         except Exception as e:
             return SendResult(ok=False, channel=self.name,
                               message=f"Error al enviar SMS: {e}")
@@ -84,16 +84,16 @@ class WhatsAppSimulatedVerifier(OTPChannel):
             from urllib.parse import quote_plus
             digits = phone_e164.lstrip('+')
             label = f" {username}," if username else ""
-            text = quote_plus(f"Hola{label} tu codigo de verificacion de ArchEstate es: {code} (valido {ttl_minutes} min)")
+            text = quote_plus(f"Hola{label} tu código de verificación de ArchEstate es: {code} (válido {ttl_minutes} min)")
             link = f"{self._base_url}/{digits}?text={text}"
             print(f"\n[WHATSAPP SIMULADO] -> {phone_e164}")
-            print(f"[WHATSAPP SIMULADO] Link wa.me con codigo prellenado (no enviado): {link}\n")
+            print(f"[WHATSAPP SIMULADO] Link wa.me con código prellenado (no enviado): {link}\n")
             if self._audit:
                 self._audit("OTP enviado por WhatsApp",
                             f"phone_hash={hash_phone_digits(phone_e164)} channel=whatsapp ttl={ttl_minutes}m")
             meta = {"deep_link": link} if self._include_deep_link else None
             return SendResult(ok=True, channel=self.name,
-                              message="Codigo enviado por WhatsApp",
+                              message="Código enviado por WhatsApp",
                               meta=meta)
         except Exception as e:
             return SendResult(ok=False, channel=self.name,
@@ -116,7 +116,7 @@ class TwilioSmsVerifier(OTPChannel):
 
     def send(self, phone_e164, code, ttl_minutes=10, username=None):
         try:
-            body = f"Tu codigo de verificacion de ArchEstate es: {code} (valido {ttl_minutes} min)"
+            body = f"Tu código de verificación de ArchEstate es: {code} (válido {ttl_minutes} min)"
             message = self._client.messages.create(
                 body=body,
                 from_=self._from,
@@ -127,7 +127,7 @@ class TwilioSmsVerifier(OTPChannel):
                 self._audit("OTP enviado por SMS (Twilio)",
                             f"phone_hash={hash_phone_digits(phone_e164)} channel=sms sid={message.sid} ttl={ttl_minutes}m")
             return SendResult(ok=True, channel=self.name,
-                              message=f"Codigo enviado por SMS a {phone_e164}")
+                              message=f"Código enviado por SMS a {phone_e164}")
         except Exception as e:
             error_str = str(e)
             logger.exception('[TWILIO SMS ERROR] -> %s', phone_e164)
@@ -182,7 +182,7 @@ class TwilioWhatsAppVerifier(OTPChannel):
                 self._audit("OTP enviado por WhatsApp (Twilio)",
                             f"phone_hash={hash_phone_digits(phone_e164)} channel=whatsapp sid={message.sid} ttl={ttl_minutes}m")
             return SendResult(ok=True, channel=self.name,
-                              message="Codigo enviado por WhatsApp")
+                              message="Código enviado por WhatsApp")
         except Exception as e:
             error_str = str(e)
             logger.exception('[TWILIO WHATSAPP ERROR] -> %s', phone_e164)

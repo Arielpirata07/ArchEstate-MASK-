@@ -57,7 +57,7 @@ class TestFormOptionsPublic:
         data = res.get_json()
         values = [o['value'] for o in data['options']['operation_type']]
         assert 'Comprar Propiedad' in values
-        assert 'Remodelacion Integral' in values
+        assert 'Remodelación Integral' in values
         assert 'Construir desde Cero' in values
 
     def test_seed_has_currencies(self, client):

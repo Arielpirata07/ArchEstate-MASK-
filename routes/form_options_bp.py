@@ -43,7 +43,7 @@ def create_option():
         return jsonify({'error': 'La etiqueta no puede superar 200 caracteres'}), 400
     existing = models.get_form_option_by_id_value(data['category'], data['value'])
     if existing:
-        return jsonify({'error': 'Ya existe una opcion con ese valor en esta categoria'}), 409
+        return jsonify({'error': 'Ya existe una opción con ese valor en esta categoría'}), 409
     opt_id = models.create_form_option(data)
     _invalidate_caches()
     return jsonify({'id': opt_id, 'status': 'ok'})
@@ -65,7 +65,7 @@ def update_option(option_id):
     if 'value' in data and data['value'] != existing['value']:
         duplicate = models.get_form_option_by_id_value(existing['category'], data['value'])
         if duplicate:
-            return jsonify({'error': 'Ya existe una opcion con ese valor en esta categoria'}), 409
+            return jsonify({'error': 'Ya existe una opción con ese valor en esta categoría'}), 409
     success = models.update_form_option(option_id, data)
     if not success:
         return jsonify({'error': 'Error al actualizar'}), 500

@@ -282,6 +282,23 @@ document.addEventListener('DOMContentLoaded', () => {
 // ================================================================
 // LEADS (solo si está aprobado)
 // ================================================================
+
+// ---- Labels legibles para los filtros activos ----
+const PROP_LABELS = {
+    departamento: 'Departamento', casa: 'Casa', duplex: 'Dúplex',
+    penthouse: 'Penthouse', local_comercial: 'Local Comercial',
+};
+const BUDGET_LABELS = {
+    hasta_200k: 'Hasta $200k', '200k_500k': '$200k–$500k',
+    '500k_1m': '$500k–$1M', '1m_2m': '$1M–$2M', mas_2m: 'Más de $2M',
+};
+
+// ---- Íconos por tipo de propiedad ----
+const PROP_ICONS = {
+    departamento: 'building', casa: 'home', duplex: 'layers',
+    penthouse: 'crown', local_comercial: 'store',
+};
+
 if (!IS_PENDING) {
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -311,22 +328,6 @@ function setMyLeads(myLeads) {
     }
     loadLeads();
 }
-
-// ---- Labels legibles para los filtros activos ----
-const PROP_LABELS = {
-    departamento: 'Departamento', casa: 'Casa', duplex: 'Dúplex',
-    penthouse: 'Penthouse', local_comercial: 'Local Comercial',
-};
-const BUDGET_LABELS = {
-    hasta_200k: 'Hasta $200k', '200k_500k': '$200k–$500k',
-    '500k_1m': '$500k–$1M', '1m_2m': '$1M–$2M', mas_2m: 'Más de $2M',
-};
-
-// ---- Íconos por tipo de propiedad ----
-const PROP_ICONS = {
-    departamento: 'building', casa: 'home', duplex: 'layers',
-    penthouse: 'crown', local_comercial: 'store',
-};
 
 function setupLeadEventListeners() {
     document.getElementById('applyFilters').addEventListener('click', applyFilters);
@@ -546,7 +547,7 @@ function renderLeads(leads) {
 
         // Badges extra
         const parkingLabels = { sin_cochera:'Sin cochera', simple_cubierta:'Coch. simple', doble_cubierta:'Coch. doble', descubierta:'Desc.', garage:'Garage' };
-        const conditionColors = { 'A estrenar':'bg-emerald-50 text-emerald-700', 'Usado':'bg-paper-dark text-midnight/60', 'A reciclar':'bg-amber-50 text-amber-700', 'En construccion':'bg-blue-50 text-blue-700' };
+        const conditionColors = { 'A estrenar':'bg-emerald-50 text-emerald-700', 'Usado':'bg-paper-dark text-midnight/60', 'A reciclar':'bg-amber-50 text-amber-700', 'En construcción':'bg-blue-50 text-blue-700' };
 
         const extraBadges = [];
         if (lead.parking && lead.parking !== '' && parkingLabels[lead.parking]) {
@@ -655,66 +656,6 @@ function renderLeads(leads) {
     if (window.lucide) lucide.createIcons();
 }
 
-/**
- * Toggle estado de un lead (visto / contactado)
- */
-async function toggleLeadStatus(leadId, statusType, btn) {
-    if (btn.disabled) return;
-    const isActive = btn.classList.contains('status-active');
-    const label = btn.querySelector('span');
-    const originalText = label ? label.textContent : '';
-    const pendingText = isActive ? (statusType === 'seen' ? 'Ver' : 'Contactar') : (statusType === 'seen' ? 'Visto' : 'Contactado');
-
-    btn.disabled = true;
-    btn.classList.add('status-toggling');
-    if (label) label.textContent = pendingText;
-
-    try {
-        const response = await fetch(`/api/lead/${leadId}/toggle-status`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: statusType })
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-            // Confirmar estado desde servidor (coerce to number for safety)
-            const serverValue = Number(data.value);
-            if (serverValue === 1) {
-                btn.classList.add('status-active');
-            } else {
-                btn.classList.remove('status-active');
-            }
-            btn.classList.remove('status-toggling');
-
-            // Actualizar data attributes del row para filtrado
-            const row = document.querySelector(`tr[data-lead-id="${leadId}"]`);
-            if (row) {
-                row.dataset[statusType] = serverValue === 1 ? 'true' : 'false';
-            }
-        } else {
-            // Revertir en caso de error
-            btn.classList.remove('status-active');
-            btn.classList.remove('status-toggling');
-            if (label) label.textContent = originalText;
-            if (typeof showToast === 'function') showToast(data.error || 'Error al actualizar estado', 'error');
-        }
-    } catch (error) {
-        console.error('Error toggling lead status:', error);
-        // Revertir en caso de error de red
-        if (isActive) btn.classList.add('status-active');
-        else btn.classList.remove('status-active');
-        btn.classList.remove('status-toggling');
-        if (label) label.textContent = isActive
-            ? (statusType === 'seen' ? 'Visto' : 'Contactado')
-            : (statusType === 'seen' ? 'Ver' : 'Contactar');
-        if (typeof showToast === 'function') showToast('Error de conexion', 'error');
-    } finally {
-        btn.disabled = false;
-    }
-}
-
 function applyFilters() {
     currentFilters.search = document.getElementById('searchInput').value.trim();
     currentFilters.type   = document.getElementById('typeFilter').value;
@@ -767,6 +708,77 @@ function showLeadError(msg) {
 }
 
 } // end if (!IS_PENDING)
+
+/**
+ * Toggle estado de un lead (visto / contactado)
+ */
+async function toggleLeadStatus(leadId, statusType, btn) {
+    if (btn.disabled) return;
+    const isActive = btn.classList.contains('status-active');
+    const label = btn.querySelector('span');
+    const originalText = label ? label.textContent : '';
+    const pendingText = isActive ? (statusType === 'seen' ? 'Ver' : 'Contactar') : (statusType === 'seen' ? 'Visto' : 'Contactado');
+
+    btn.disabled = true;
+    btn.classList.add('status-toggling');
+    if (label) label.textContent = pendingText;
+
+    try {
+        const response = await fetch(`/api/lead/${leadId}/toggle-status`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: statusType })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            // Confirmar estado desde servidor (coerce to number for safety)
+            const serverValue = Number(data.value);
+            if (serverValue === 1) {
+                btn.classList.add('status-active');
+            } else {
+                btn.classList.remove('status-active');
+            }
+            btn.classList.remove('status-toggling');
+
+            // Actualizar data attributes del row para filtrado
+            const row = document.querySelector(`tr[data-lead-id="${leadId}"]`);
+            if (row) {
+                row.dataset[statusType] = serverValue === 1 ? 'true' : 'false';
+            }
+
+            // Actualizar tracking local y refrescar KPIs
+            const leads = window.__leadsData || [];
+            for (var i = 0; i < leads.length; i++) {
+                if (leads[i].id === leadId) {
+                    if (!leads[i].tracking) leads[i].tracking = {};
+                    leads[i].tracking[statusType] = serverValue === 1;
+                    break;
+                }
+            }
+            renderLeadKpis(leads);
+        } else {
+            // Revertir en caso de error
+            btn.classList.remove('status-active');
+            btn.classList.remove('status-toggling');
+            if (label) label.textContent = originalText;
+            if (typeof showToast === 'function') showToast(data.error || 'Error al actualizar estado', 'error');
+        }
+    } catch (error) {
+        console.error('Error toggling lead status:', error);
+        // Revertir en caso de error de red
+        if (isActive) btn.classList.add('status-active');
+        else btn.classList.remove('status-active');
+        btn.classList.remove('status-toggling');
+        if (label) label.textContent = isActive
+            ? (statusType === 'seen' ? 'Visto' : 'Contactado')
+            : (statusType === 'seen' ? 'Ver' : 'Contactar');
+        if (typeof showToast === 'function') showToast('Error de conexión', 'error');
+    } finally {
+        btn.disabled = false;
+    }
+}
 
 // ================================================================
 // LEAD KPI BAR (leads tab header)
@@ -963,7 +975,7 @@ async function confirmReport(btn) {
         }
     } catch (error) {
         console.error('Error reporting lead:', error);
-        if (typeof showToast === 'function') showToast('Error de conexion', 'error');
+        if (typeof showToast === 'function') showToast('Error de conexión', 'error');
     } finally {
         btn.disabled = false;
         btn.textContent = originalText;

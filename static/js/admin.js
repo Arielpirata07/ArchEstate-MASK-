@@ -993,7 +993,7 @@ function renderReportsPagination(total, page, perPage) {
     var nextBtn = document.getElementById('reports-next');
     var indicator = document.getElementById('reports-page-indicator');
 
-    if (infoEl) infoEl.textContent = 'Pagina ' + page + ' de ' + totalPages + ' (' + total + ' reportes)';
+    if (infoEl) infoEl.textContent = 'Página ' + page + ' de ' + totalPages + ' (' + total + ' reportes)';
     if (prevBtn) {
         prevBtn.disabled = page <= 1;
         prevBtn.classList.toggle('disabled\\:opacity-30', page <= 1);
@@ -1087,7 +1087,7 @@ function viewLeadDetail(leadId) {
         })
         .catch(() => {
             document.getElementById('leadDetailContent').innerHTML = `
-                <p class="text-center text-rose-600 py-8">Error de conexion</p>`;
+                <p class="text-center text-rose-600 py-8">Error de conexión</p>`;
         });
 }
 
@@ -1129,15 +1129,15 @@ function renderLeadDetail(lead) {
     document.getElementById('leadDetailContent').innerHTML = `
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-4">
-                <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Tipo de Operacion</p><p class="text-base font-semibold text-midnight">${escapeHtml(lead.type)}</p></div>
+                <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Tipo de Operación</p><p class="text-base font-semibold text-midnight">${escapeHtml(lead.type)}</p></div>
                 <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Tipo de Vivienda</p><p class="text-base text-midnight">${escapeHtml(lead.property_type || 'No especificado')}</p></div>
                 <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Zona</p><p class="text-base text-midnight">${escapeHtml(lead.zone)}</p></div>
                 ${lead.province ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Provincia</p><p class="text-base text-midnight">${escapeHtml(lead.province)}</p></div>` : ''}
                 <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Presupuesto</p><p class="text-base font-serif italic text-gold">${budget}</p></div>
-                <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Estilo Arquitectonico</p><p class="text-base text-midnight">${escapeHtml(style)}</p></div>
+                <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Estilo Arquitectónico</p><p class="text-base text-midnight">${escapeHtml(style)}</p></div>
                 ${lead.ambientes ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Ambientes</p><p class="text-base text-midnight">${escapeHtml(String(lead.ambientes))}</p></div>` : ''}
                 ${lead.parking ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Cochera</p><p class="text-base text-midnight">${escapeHtml(lead.parking)}</p></div>` : ''}
-                ${lead.orientation ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Orientacion</p><p class="text-base text-midnight">${escapeHtml(lead.orientation)}</p></div>` : ''}
+                ${lead.orientation ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Orientación</p><p class="text-base text-midnight">${escapeHtml(lead.orientation)}</p></div>` : ''}
                 ${lead.property_condition ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Estado</p><p class="text-base text-midnight">${escapeHtml(lead.property_condition)}</p></div>` : ''}
                 ${lead.property_age ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Antiguedad</p><p class="text-base text-midnight">${escapeHtml(lead.property_age)}</p></div>` : ''}
                 <div class="border-t border-midnight/10 pt-4">
@@ -1175,7 +1175,7 @@ function closeLeadDetailModal() {
 }
 
 function deleteLead(reportId, leadId) {
-    var promise = typeof showConfirm === 'function' ? showConfirm('Eliminar permanentemente el lead #' + leadId + '? Esta accion no se puede deshacer.') : Promise.resolve(true);
+    var promise = typeof showConfirm === 'function' ? showConfirm('Eliminar permanentemente el lead #' + leadId + '? Esta acción no se puede deshacer.') : Promise.resolve(true);
     promise.then(function (ok) {
         if (!ok) return;
     fetch('/api/admin/report/' + reportId + '/delete', { method: 'POST' })
@@ -1190,7 +1190,7 @@ function deleteLead(reportId, leadId) {
             }
         })
         .catch(() => {
-            if (typeof showToast === 'function') showToast('Error de conexion', 'error');
+            if (typeof showToast === 'function') showToast('Error de conexión', 'error');
         });
     });
 }
@@ -1207,7 +1207,7 @@ function dismissReport(reportId) {
             }
         })
         .catch(() => {
-            if (typeof showToast === 'function') showToast('Error de conexion', 'error');
+            if (typeof showToast === 'function') showToast('Error de conexión', 'error');
         });
 }
 
@@ -1227,7 +1227,7 @@ function restoreReport(reportId) {
             }
         })
         .catch(function () {
-            if (typeof showToast === 'function') showToast('Error de conexion', 'error');
+            if (typeof showToast === 'function') showToast('Error de conexión', 'error');
         });
     });
 }
@@ -1269,13 +1269,13 @@ var FORM_OPTION_ICONS = [
     { name: 'arrow-down', label: 'Sur' },
     { name: 'arrow-right', label: 'Este' },
     { name: 'arrow-left', label: 'Oeste' },
-    { name: 'compass', label: 'Orientacion' },
+    { name: 'compass', label: 'Orientación' },
     { name: 'sparkles', label: 'Nuevo' },
     { name: 'hard-hat', label: 'Obra' },
     { name: 'clock', label: 'Antiguedad' },
     { name: 'timer', label: 'Tiempo' },
     { name: 'calendar', label: 'Fecha' },
-    { name: 'map-pin', label: 'Ubicacion' },
+    { name: 'map-pin', label: 'Ubicación' },
     { name: 'map', label: 'Mapa' },
     { name: 'globe', label: 'Global' },
     { name: 'bed', label: 'Dormitorio' },
@@ -1454,7 +1454,7 @@ function renderFormOptions() {
             '<button onclick="deleteFormOption(' + o.id + ')" aria-label="Eliminar ' + escapeHtml(o.label) + '" class="p-1.5 rounded hover:bg-rose-50 text-rose-600" title="Eliminar"><i data-lucide="trash-2" class="w-3 h-3"></i></button>' +
             '</div></td></tr>';
     }).join('');
-    if (liveRegion) liveRegion.textContent = filtered.length + ' opcion' + (filtered.length !== 1 ? 'es' : '') + ' encontrada' + (filtered.length !== 1 ? 's' : '');
+    if (liveRegion) liveRegion.textContent = filtered.length + ' opción' + (filtered.length !== 1 ? 'es' : '') + ' encontrada' + (filtered.length !== 1 ? 's' : '');
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
@@ -1468,10 +1468,10 @@ function openCreateOptionModal() {
         '<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md max-h-[90vh] mx-4 sm:mx-0 flex flex-col">' +
         '<div class="bg-white rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-full">' +
         '<div class="border-t-4 border-gold px-4 sm:px-6 pt-6 pb-3 flex-shrink-0">' +
-        '<h3 id="fo-modal-title" class="text-2xl font-serif">Nueva <span class="serif-italic">Opcion</span></h3>' +
+        '<h3 id="fo-modal-title" class="text-2xl font-serif">Nueva <span class="serif-italic">Opción</span></h3>' +
         '</div>' +
         '<div class="px-4 sm:px-6 pb-6 space-y-3 overflow-y-auto min-h-0">' +
-        '<div><label for="fo-category" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Categoria</label>' +
+        '<div><label for="fo-category" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Categoría</label>' +
         '<select id="fo-category" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm">' + catOptions + '</select></div>' +
         '<div><label for="fo-value" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Valor</label>' +
         '<input id="fo-value" type="text" maxlength="100" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" placeholder="ej: departamento"></div>' +
@@ -1537,13 +1537,13 @@ function saveFormOption(editId) {
             if (res.error) {
                 if (typeof showToast === 'function') showToast(res.error, 'error');
             } else {
-                if (typeof showToast === 'function') showToast(editId ? 'Opcion actualizada' : 'Opcion creada', 'success');
+                if (typeof showToast === 'function') showToast(editId ? 'Opción actualizada' : 'Opción creada', 'success');
                 closeFormOptionModal();
                 loadFormOptions();
             }
         })
         .catch(function(err) {
-            if (typeof showToast === 'function') showToast(err.message || 'Error de conexion', 'error');
+            if (typeof showToast === 'function') showToast(err.message || 'Error de conexión', 'error');
         })
         .finally(function() {
             isFormOptionSaving = false;
@@ -1564,10 +1564,10 @@ function editFormOption(id) {
         '<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md max-h-[90vh] mx-4 sm:mx-0 flex flex-col">' +
         '<div class="bg-white rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-full">' +
         '<div class="border-t-4 border-gold px-4 sm:px-6 pt-6 pb-3 flex-shrink-0">' +
-        '<h3 id="fo-modal-title" class="text-2xl font-serif">Editar <span class="serif-italic">Opcion</span></h3>' +
+        '<h3 id="fo-modal-title" class="text-2xl font-serif">Editar <span class="serif-italic">Opción</span></h3>' +
         '</div>' +
         '<div class="px-4 sm:px-6 pb-6 space-y-3 overflow-y-auto min-h-0">' +
-        '<div><label for="fo-category" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Categoria</label>' +
+        '<div><label for="fo-category" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Categoría</label>' +
         '<select id="fo-category" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" disabled>' + catOptions + '</select></div>' +
         '<div><label for="fo-value" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Valor</label>' +
         '<input id="fo-value" type="text" maxlength="100" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" value="' + escapeHtml(opt.value) + '"></div>' +
@@ -1599,17 +1599,17 @@ function toggleFormOption(id, newActive) {
             if (res.error) {
                 if (typeof showToast === 'function') showToast(res.error, 'error');
             } else {
-                if (typeof showToast === 'function') showToast(newActive ? 'Opcion activada' : 'Opcion desactivada', 'success');
+                if (typeof showToast === 'function') showToast(newActive ? 'Opción activada' : 'Opción desactivada', 'success');
                 loadFormOptions();
             }
         })
         .catch(function(err) {
-            if (typeof showToast === 'function') showToast(err.message || 'Error de conexion', 'error');
+            if (typeof showToast === 'function') showToast(err.message || 'Error de conexión', 'error');
         });
 }
 
 function deleteFormOption(id) {
-    var promise = typeof showConfirm === 'function' ? showConfirm('Eliminar esta opcion?') : Promise.resolve(true);
+    var promise = typeof showConfirm === 'function' ? showConfirm('¿Eliminar esta opción?') : Promise.resolve(true);
     promise.then(function(ok) {
         if (!ok) return;
         fetch('/api/form-options/' + id, { method: 'DELETE' })
@@ -1621,12 +1621,12 @@ function deleteFormOption(id) {
                 if (res.error) {
                     if (typeof showToast === 'function') showToast(res.error, 'error');
                 } else {
-                    if (typeof showToast === 'function') showToast('Opcion eliminada', 'success');
+                    if (typeof showToast === 'function') showToast('Opción eliminada', 'success');
                     loadFormOptions();
                 }
             })
             .catch(function(err) {
-                if (typeof showToast === 'function') showToast(err.message || 'Error de conexion', 'error');
+                if (typeof showToast === 'function') showToast(err.message || 'Error de conexión', 'error');
             });
     });
 }
