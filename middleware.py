@@ -8,6 +8,7 @@ import config
 import models
 import rate_limit
 import utils
+from i18n import t as _t, get_language as _get_language
 
 logger = logging.getLogger(__name__)
 
@@ -136,6 +137,15 @@ def inject_notifications():
     return dict(unread_notifications=count)
 
 
+def inject_language():
+    lang = _get_language()
+
+    def _translate(key, **kwargs):
+        return _t(key, lang=lang, **kwargs)
+
+    return dict(lang=lang, t=_translate)
+
+
 def register_middleware(app):
     app.after_request(security_headers)
     app.before_request(assign_request_id)
@@ -144,3 +154,4 @@ def register_middleware(app):
     app.context_processor(inject_request_id)
     app.context_processor(inject_theme)
     app.context_processor(inject_notifications)
+    app.context_processor(inject_language)

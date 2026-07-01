@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es-AR" class="{% if user_theme == 'dark' %}dark{% endif %} theme-transition">
+<html lang="{{ lang }}" class="{% if user_theme == 'dark' %}dark{% endif %} theme-transition">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -295,6 +295,7 @@
     <div class="cursor-spotlight" aria-hidden="true"></div>
 
     <!-- Scripts Globales -->
+    <script src="{{ url_for('static', filename='js/i18n.js') }}"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/form-options.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/dark-mode.js') }}" defer></script>
