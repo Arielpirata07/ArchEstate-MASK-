@@ -12,33 +12,33 @@
     <!-- Header -->
     <div class="flex justify-between items-end border-b border-midnight/10 pb-6 header-entrance">
         <div>
-            <h2 class="text-4xl font-serif">Control de <span class="serif-italic">Plataforma</span></h2>
-            <p class="text-midnight/50 mt-2">Validación de profesionales, auditoría y estadísticas del sistema.</p>
+            <h2 class="text-4xl font-serif">{{ t('admin.title') }}</h2>
+            <p class="text-midnight/50 mt-2">{{ t('admin.subtitle') }}</p>
         </div>
         <!-- Tabs -->
         <div class="flex gap-2">
             <button onclick="showTab('dashboard')" id="tab-dashboard"
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-midnight text-white">
-                <span class="flex items-center gap-2"><i data-lucide="bar-chart-2" class="w-3 h-3"></i> Dashboard</span>
+                <span class="flex items-center gap-2"><i data-lucide="bar-chart-2" class="w-3 h-3"></i> {{ t('admin.dashboard') }}</span>
             </button>
             <button onclick="showTab('management')" id="tab-management"
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white">
-                <span class="flex items-center gap-2"><i data-lucide="building-2" class="w-3 h-3"></i> Profesionales</span>
+                <span class="flex items-center gap-2"><i data-lucide="building-2" class="w-3 h-3"></i> {{ t('admin.professionals') }}</span>
             </button>
             <button onclick="showTab('reports')" id="tab-reports"
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2">
-                    <i data-lucide="flag" class="w-3 h-3"></i> Reportes
+                    <i data-lucide="flag" class="w-3 h-3"></i> {{ t('admin.reports') }}
                     <span id="reportBadge" class="hidden ml-1 px-1.5 py-0.5 bg-rose-600 dark:bg-rose-700 text-white text-[8px] font-bold rounded-full">0</span>
                 </span>
             </button>
             <button onclick="showTab('form-options')" id="tab-form-options"
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white">
-                <span class="flex items-center gap-2"><i data-lucide="list" class="w-3 h-3"></i> Opciones</span>
+                <span class="flex items-center gap-2"><i data-lucide="list" class="w-3 h-3"></i> {{ t('admin.options') }}</span>
             </button>
             <a href="{{ url_for('admin.user_management_view') }}"
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white">
-                <span class="flex items-center gap-2"><i data-lucide="users" class="w-3 h-3"></i> Usuarios</span>
+                <span class="flex items-center gap-2"><i data-lucide="users" class="w-3 h-3"></i> {{ t('admin.users') }}</span>
             </a>
         </div>
     </div>
@@ -50,7 +50,7 @@
         <!-- Toolbar: período + refresh -->
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-                <span class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Período:</span>
+                <span class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">{{ t('admin.period') }}</span>
                 <div class="flex gap-1" id="period-btns">
                     <button onclick="setPeriod(7)"   data-period="7"   class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-midnight text-white">7d</button>
                     <button onclick="setPeriod(30)"  data-period="30"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all">30d</button>
@@ -61,14 +61,14 @@
             </div>
             <button id="refresh-btn" onclick="refreshDashboard()"
                 class="flex items-center gap-2 px-4 py-2 bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all rounded text-[10px] font-bold uppercase tracking-widest">
-                <i data-lucide="refresh-cw" id="refresh-icon" class="w-3 h-3"></i> Actualizar
+                <i data-lucide="refresh-cw" id="refresh-icon" class="w-3 h-3"></i> {{ t('admin.refresh') }}
             </button>
         </div>
 
         <!-- KPI Cards -->
         <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div class="bg-white rounded-lg shadow p-5 border-l-4 border-gold group relative cursor-default">
-                <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60 mb-1">Total Leads</p>
+                <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60 mb-1">{{ t('admin.total_leads') }}</p>
                 <p id="kpi-leads" class="text-3xl font-serif text-midnight">—</p>
                 <p id="kpi-leads-delta" class="text-[10px] text-midnight/30 mt-1 font-bold"></p>
                 <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -79,7 +79,7 @@
                 </div>
             </div>
             <div class="bg-white rounded-lg shadow p-5 border-l-4 border-emerald-400 group relative cursor-default">
-                <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60 mb-1">Profesionales Aprobados</p>
+                <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60 mb-1">{{ t('admin.approved_pros') }}</p>
                 <p id="kpi-pros-approved" class="text-3xl font-serif text-midnight">—</p>
                 <p id="kpi-pros-approved-pct" class="text-[10px] text-midnight/30 mt-1 font-bold"></p>
                 <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -90,7 +90,7 @@
                 </div>
             </div>
             <div class="bg-white rounded-lg shadow p-5 border-l-4 border-amber-400 group relative cursor-default">
-                <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60 mb-1">Pendientes</p>
+                <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60 mb-1">{{ t('admin.pending') }}</p>
                 <p id="kpi-pros-pending" class="text-3xl font-serif text-midnight">—</p>
                 <p class="text-[10px] text-amber-500 mt-1 font-bold" id="kpi-pending-label"></p>
                 <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -101,7 +101,7 @@
                 </div>
             </div>
             <div class="bg-white rounded-lg shadow p-5 border-l-4 border-midnight group relative cursor-default">
-                <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60 mb-1">Acciones Auditadas</p>
+                <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60 mb-1">{{ t('admin.audited_actions') }}</p>
                 <p id="kpi-audit" class="text-3xl font-serif text-midnight">—</p>
                 <p id="kpi-audit-sub" class="text-[10px] text-midnight/30 mt-1 font-bold"></p>
                 <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -112,7 +112,7 @@
                 </div>
             </div>
             <div class="bg-white rounded-lg shadow p-5 border-l-4 border-violet-400 dark:border-violet-300 group relative cursor-default">
-                <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60 mb-1">Teléfonos Vistos</p>
+                <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60 mb-1">{{ t('admin.phones_seen') }}</p>
                 <p id="kpi-phones" class="text-3xl font-serif text-midnight">—</p>
                 <p id="kpi-phones-rate" class="text-[10px] text-midnight/30 mt-1 font-bold"></p>
                 <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -130,11 +130,11 @@
             <!-- Tipo de operación -->
             <div class="bg-white rounded-lg shadow-xl overflow-hidden">
                 <div class="p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between">
-                    <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Leads por Tipo de Operación</h3>
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('admin.leads_by_type') }}</h3>
                     <div class="flex items-center gap-2">
                         <button onclick="toggleChartType()" id="toggle-type-btn"
                             class="px-2 py-1 text-[9px] font-bold uppercase tracking-widest rounded bg-midnight/5 text-midnight/50 hover:bg-gold hover:text-white transition-all">
-                            Donut / Barra
+                            {{ t('admin.donut_bar') }}
                         </button>
                         <button onclick="exportChart('chart-type', 'leads-tipo')" class="p-1 text-midnight/30 hover:text-gold transition-colors" title="Exportar PNG" aria-label="Exportar gráfico de tipo como PNG">
                             <i data-lucide="download" class="w-3 h-3"></i>
@@ -149,7 +149,7 @@
             <!-- Top zonas con búsqueda -->
             <div class="bg-white rounded-lg shadow-xl overflow-hidden">
                 <div class="p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between">
-                    <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Top Zonas</h3>
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('admin.top_zones') }}</h3>
                     <div class="flex items-center gap-2">
                         <input id="zone-filter-input" type="text" placeholder="Filtrar zona..."
                                oninput="filterZoneChart()"
@@ -171,16 +171,16 @@
             <!-- Actividad mensual con toggle línea/área -->
             <div class="md:col-span-2 bg-white rounded-lg shadow-xl overflow-hidden">
                 <div class="p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between">
-                    <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Actividad de Leads</h3>
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('admin.leads_activity') }}</h3>
                     <div class="flex items-center gap-2">
                         <div class="flex gap-1" id="chart-month-type-btns">
                             <button onclick="setMonthChartType('line')" data-mtype="line"
                                 class="month-type-btn px-2 py-1 text-[9px] font-bold uppercase tracking-widest rounded bg-midnight text-white">
-                                Línea
+                                {{ t('admin.line') }}
                             </button>
                             <button onclick="setMonthChartType('bar')" data-mtype="bar"
                                 class="month-type-btn px-2 py-1 text-[9px] font-bold uppercase tracking-widest rounded bg-midnight/5 text-midnight/50 hover:bg-gold hover:text-white transition-all">
-                                Barras
+                                {{ t('admin.bars') }}
                             </button>
                         </div>
                         <button onclick="exportChart('chart-month', 'actividad-mensual')" class="p-1 text-midnight/30 hover:text-gold transition-colors" title="Exportar PNG" aria-label="Exportar gráfico de actividad mensual como PNG">
@@ -196,7 +196,7 @@
             <!-- Presupuesto -->
             <div class="bg-white rounded-lg shadow-xl overflow-hidden">
                 <div class="p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between">
-                    <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Por Presupuesto</h3>
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('admin.budget_chart') }}</h3>
                     <button onclick="exportChart('chart-budget', 'leads-presupuesto')" class="p-1 text-midnight/30 hover:text-gold transition-colors" title="Exportar PNG" aria-label="Exportar gráfico de presupuesto como PNG">
                         <i data-lucide="download" class="w-3 h-3"></i>
                     </button>
@@ -211,7 +211,7 @@
         <div class="bg-white rounded-lg shadow-xl overflow-hidden mt-6">
             <button onclick="toggleSection('tm')" class="w-full p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between hover:bg-midnight/5 transition-colors">
                 <h3 class="text-xs font-bold uppercase tracking-widest text-gold flex items-center gap-2">
-                    <i data-lucide="smartphone" class="w-3.5 h-3.5"></i> Telemetría de Contacto
+                    <i data-lucide="smartphone" class="w-3.5 h-3.5"></i> {{ t('admin.phone_telemetry') }}
                 </h3>
                 <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-gold transition-transform duration-200" id="tm-chevron"></i>
             </button>
@@ -223,7 +223,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="bg-paper-dark rounded-lg p-5 border-l-4 border-gold relative group">
                             <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60 mb-1 flex items-center gap-1.5">
-                                <i data-lucide="eye" class="w-3 h-3"></i> Intentos Ver Teléfono
+                                <i data-lucide="eye" class="w-3 h-3"></i> {{ t('admin.phone_clicks') }}
                             </p>
                             <p id="tm-phone-clicks" class="text-3xl font-serif text-midnight mt-2">—</p>
                             <div class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -237,7 +237,7 @@
                             <div class="flex items-start justify-between">
                                 <div class="flex-1">
                                     <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60 mb-1 flex items-center gap-1.5">
-                                        <i data-lucide="smartphone" class="w-3 h-3"></i> Teléfonos Revelados
+                                        <i data-lucide="smartphone" class="w-3 h-3"></i> {{ t('admin.phones_revealed') }}
                                     </p>
                                     <p id="tm-phone-revealed" class="text-3xl font-serif text-midnight mt-2">—</p>
                                     <p id="tm-phone-rate" class="text-[11px] text-midnight/60 mt-1 font-bold">—</p>
@@ -260,7 +260,7 @@
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <div class="bg-white rounded-lg border border-midnight/5 p-3">
                             <p class="text-[8px] uppercase tracking-widest font-bold text-midnight/30 flex items-center gap-1">
-                                <i data-lucide="message-circle" class="w-2.5 h-2.5"></i> WhatsApp Clics
+                                <i data-lucide="message-circle" class="w-2.5 h-2.5"></i> {{ t('admin.whatsapp_clicks') }}
                             </p>
                             <p id="tm-wa-clicks" class="text-lg font-serif text-midnight/60 mt-1">—</p>
                         </div>
@@ -272,13 +272,13 @@
                         </div>
                         <div class="bg-white rounded-lg border border-midnight/5 p-3">
                             <p class="text-[8px] uppercase tracking-widest font-bold text-midnight/30 flex items-center gap-1">
-                                <i data-lucide="shield" class="w-2.5 h-2.5"></i> OTP Enviados
+                                <i data-lucide="shield" class="w-2.5 h-2.5"></i> {{ t('admin.otp_sent') }}
                             </p>
                             <p id="tm-otp-sent" class="text-lg font-serif text-midnight/60 mt-1">—</p>
                         </div>
                         <div class="bg-white rounded-lg border border-midnight/5 p-3">
                             <p class="text-[8px] uppercase tracking-widest font-bold text-midnight/30 flex items-center gap-1">
-                                <i data-lucide="shield-check" class="w-2.5 h-2.5"></i> OTP Verificados
+                                <i data-lucide="shield-check" class="w-2.5 h-2.5"></i> {{ t('admin.otp_verified') }}
                             </p>
                             <p id="tm-otp-verified" class="text-lg font-serif text-midnight/60 mt-1">—</p>
                         </div>
@@ -296,7 +296,7 @@
         <div class="bg-white rounded-lg shadow-xl overflow-hidden" id="phone-audit-card">
             <button onclick="toggleSection('pa')" class="w-full p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between hover:bg-midnight/5 transition-colors">
                 <h3 class="text-xs font-bold uppercase tracking-widest text-gold flex items-center gap-2">
-                    <i data-lucide="phone" class="w-3.5 h-3.5"></i> Historial de Acceso a Teléfonos
+                    <i data-lucide="phone" class="w-3.5 h-3.5"></i> {{ t('admin.phone_history') }}
                 </h3>
                 <div class="flex items-center gap-2">
                     <span class="inline-flex items-center justify-center min-w-[22px] h-[18px] px-1.5 bg-midnight/5 text-midnight/50 rounded text-[9px] font-bold uppercase tracking-widest" id="pa-count">0</span>
@@ -309,13 +309,13 @@
                     <div>
                         <label class="block text-[9px] uppercase tracking-widest font-bold text-midnight/50 mb-1.5">Profesional</label>
                         <select id="pa-profesional" class="w-full px-2.5 py-2 border border-midnight/20 rounded text-[11px] focus:border-gold focus:outline-none bg-white">
-                            <option value="">Todos</option>
+                            <option value="">{{ t('admin.filter_all') }}</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-[9px] uppercase tracking-widest font-bold text-midnight/50 mb-1.5">Evento</label>
                         <select id="pa-evento" class="w-full px-2.5 py-2 border border-midnight/20 rounded text-[11px] focus:border-gold focus:outline-none bg-white">
-                            <option value="">Todos</option>
+                            <option value="">{{ t('admin.filter_all') }}</option>
                             <option value="phone_revealed">Revelado</option>
                             <option value="wa_link_generated">WhatsApp</option>
                         </select>
@@ -331,10 +331,10 @@
                 </div>
                 <div class="flex gap-2 mb-4">
                     <button onclick="loadPhoneAudit()" class="px-3 py-1.5 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all flex items-center gap-1.5">
-                        <i data-lucide="search" class="w-3 h-3"></i> Filtrar
+                        <i data-lucide="search" class="w-3 h-3"></i> {{ t('admin.filter') }}
                     </button>
                     <button onclick="clearPhoneAuditFilters()" class="px-3 py-1.5 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-all flex items-center gap-1.5">
-                        <i data-lucide="x" class="w-3 h-3"></i> Limpiar
+                        <i data-lucide="x" class="w-3 h-3"></i> {{ t('admin.clear') }}
                     </button>
                 </div>
 
@@ -355,14 +355,14 @@
                                 <td colspan="5" class="p-8 text-center text-midnight/60">
                                     <div class="flex justify-center items-center gap-2">
                                         <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gold"></div>
-                                        Cargando historial...
+                                        {{ t('admin.loading_history') }}
                                     </div>
                                 </td>
                             </tr>
                             <tr id="pa-empty" class="hidden">
                                 <td colspan="5" class="p-8 text-center">
                                     <i data-lucide="phone-off" class="w-8 h-8 text-midnight/20 mx-auto mb-2"></i>
-                                    <p class="text-xs text-midnight/30 font-bold tracking-wider">Ningún acceso registrado</p>
+                                    <p class="text-xs text-midnight/30 font-bold tracking-wider">{{ t('admin.no_access') }}</p>
                                     <p class="text-[10px] text-midnight/20 mt-1">Los eventos aparecerán cuando los profesionales interactúen con los teléfonos.</p>
                                 </td>
                             </tr>
@@ -398,25 +398,25 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                         <!-- Búsqueda general -->
                         <div>
-                            <label for="proSearchInput" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Buscar</label>
-                            <input type="text" id="proSearchInput" placeholder="Nombre, matrícula, especialidad..." 
+                            <label for="proSearchInput" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">{{ t('admin.pro_search') }}</label>
+                            <input type="text" id="proSearchInput" placeholder="{{ t('admin.pro_search_placeholder') }}" 
                                    class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
                         </div>
                         
                         <!-- Filtro por estado -->
                         <div>
-                            <label for="statusFilter" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Estado</label>
+                            <label for="statusFilter" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">{{ t('admin.status') }}</label>
                             <select id="statusFilter" class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
-                                <option value="">Todos los estados</option>
-                                <option value="pending">Pendiente</option>
-                                <option value="approved">Aprobado</option>
-                                <option value="rejected">Rechazado</option>
+                                <option value="">{{ t('admin.status_all') }}</option>
+                                <option value="pending">{{ t('admin.status_pending') }}</option>
+                                <option value="approved">{{ t('admin.status_approved') }}</option>
+                                <option value="rejected">{{ t('admin.status_rejected') }}</option>
                             </select>
                         </div>
                         
                         <!-- Filtro por especialidad -->
                         <div>
-                            <label for="specialtyFilter" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Especialidad</label>
+                            <label for="specialtyFilter" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">{{ t('admin.specialty') }}</label>
                             <input type="text" id="specialtyFilter" placeholder="Arquitecto, Agente..." 
                                    class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
                         </div>
@@ -425,10 +425,10 @@
                     <div class="flex justify-between items-center">
                         <div class="flex gap-2">
                             <button id="applyProFilters" class="px-4 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
-                                Aplicar Filtros
+                                {{ t('admin.apply_filters') }}
                             </button>
                             <button id="clearProFilters" class="px-4 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-all">
-                                Limpiar
+                                {{ t('admin.clear') }}
                             </button>
                         </div>
                         <div class="text-sm text-midnight/60">
@@ -440,7 +440,7 @@
                 <!-- Tabla de Profesionales (cargada dinámicamente) -->
                 <div class="bg-white rounded-lg shadow-xl overflow-hidden">
                     <div class="p-4 bg-paper-dark border-b border-midnight/5 flex justify-between items-center">
-                        <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Directorio de Profesionales</h3>
+                        <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('admin.pro_directory') }}</h3>
                         <div class="flex items-center gap-2">
                             <span class="text-[10px] text-midnight/60 uppercase tracking-widest">Ordenar por:</span>
                             <select id="proSortSelect" aria-label="Ordenar por" class="text-[10px] px-2 py-1 border border-midnight/20 rounded focus:border-gold focus:outline-none">
@@ -448,7 +448,7 @@
                                 <option value="name">Nombre</option>
                                 <option value="license">Matrícula</option>
                                 <option value="specialty">Especialidad</option>
-                                <option value="status">Estado</option>
+                                <option value="status">{{ t('admin.status') }}</option>
                             </select>
                             <button id="proSortOrder" class="p-1 text-midnight/60 hover:text-gold" title="Cambiar orden" aria-label="Cambiar orden">
                                 <i data-lucide="arrow-down" class="w-3 h-3"></i>
@@ -460,11 +460,11 @@
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="bg-paper-dark table-header-border">
-                                    <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Nombre Profesional</th>
-                                    <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Matrícula / Licencia</th>
-                                    <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Estado</th>
-                                    <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Documento</th>
-                                    <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold text-right">Acciones</th>
+                                    <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.pro_name') }}</th>
+                                    <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.license') }}</th>
+                                    <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.status') }}</th>
+                                    <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.document') }}</th>
+                                    <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold text-right">{{ t('admin.actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody id="professionalsTableBody" class="stagger-rows">
@@ -473,7 +473,7 @@
                                     <td colspan="5" class="p-8 text-center text-midnight/60">
                                         <div class="flex justify-center items-center gap-2">
                                             <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gold"></div>
-                                            Cargando profesionales...
+                                            {{ t('admin.loading_pros') }}
                                         </div>
                                     </td>
                                 </tr>
@@ -488,7 +488,7 @@
                 <div class="px-6 py-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between flex-shrink-0">
                     <div class="flex items-center gap-2">
                         <i data-lucide="shield" class="w-4 h-4 text-gold"></i>
-                        <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Log de Auditoría</h3>
+                        <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('admin.audit_log') }}</h3>
                     </div>
                     <span class="inline-flex items-center justify-center min-w-[22px] h-[18px] px-1.5 bg-midnight/5 text-midnight/50 rounded text-[9px] font-bold uppercase tracking-widest">{{ audit_log|length }}</span>
                 </div>
@@ -521,7 +521,7 @@
                         <div class="w-12 h-12 rounded-full bg-paper-dark dark:bg-midnight-light/30 flex items-center justify-center mb-3">
                             <i data-lucide="shield" class="w-6 h-6 text-midnight/20 dark:text-paper/20"></i>
                         </div>
-                        <p class="text-xs font-bold uppercase tracking-widest text-midnight/30 dark:text-paper/30">Sin registros aún</p>
+                        <p class="text-xs font-bold uppercase tracking-widest text-midnight/30 dark:text-paper/30">{{ t('admin.no_records') }}</p>
                         <p class="text-[9px] text-midnight/20 dark:text-paper/20 mt-1">Las acciones de aprobación aparecerán aquí</p>
                     </div>
                     {% endif %}
@@ -540,19 +540,19 @@
         <!-- KPIs de Reportes -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-white rounded-lg shadow p-5 border-l-4 border-rose-600">
-                <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60 mb-1">Total Reportes</p>
+                <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60 mb-1">{{ t('admin.total_reports') }}</p>
                 <p class="text-3xl font-serif text-rose-600" id="kpiTotalReports">0</p>
             </div>
             <div class="bg-white rounded-lg shadow p-5 border-l-4 border-amber-500">
-                <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60 mb-1">Pendientes</p>
+                <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60 mb-1">{{ t('admin.pending') }}</p>
                 <p class="text-3xl font-serif text-amber-500" id="kpiPendingReports">0</p>
             </div>
             <div class="bg-white rounded-lg shadow p-5 border-l-4 border-emerald-600">
-                <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60 mb-1">Descartados</p>
+                <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60 mb-1">{{ t('admin.dismissed') }}</p>
                 <p class="text-3xl font-serif text-emerald-600" id="kpiDismissedReports">0</p>
             </div>
             <div class="bg-white rounded-lg shadow p-5 border-l-4 border-midnight">
-                <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60 mb-1">Eliminados</p>
+                <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60 mb-1">{{ t('admin.deleted') }}</p>
                 <p class="text-3xl font-serif text-midnight" id="kpiDeletedReports">0</p>
             </div>
         </div>
@@ -562,13 +562,13 @@
             <div class="p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between">
                 <div class="flex items-center gap-3">
                     <i data-lucide="flag" class="w-4 h-4 text-rose-600"></i>
-                    <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Pedidos Reportados</h3>
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('admin.reported_leads') }}</h3>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="filterReports('pending')" class="report-filter-chip report-filter-active" data-filter="pending">Pendientes</button>
-                    <button onclick="filterReports('all')" class="report-filter-chip" data-filter="all">Todos</button>
-                    <button onclick="filterReports('dismissed')" class="report-filter-chip" data-filter="dismissed">Descartados</button>
-                    <button onclick="filterReports('deleted')" class="report-filter-chip" data-filter="deleted">Eliminados</button>
+                    <button onclick="filterReports('pending')" class="report-filter-chip report-filter-active" data-filter="pending">{{ t('admin.filter_pending') }}</button>
+                    <button onclick="filterReports('all')" class="report-filter-chip" data-filter="all">{{ t('admin.filter_all') }}</button>
+                    <button onclick="filterReports('dismissed')" class="report-filter-chip" data-filter="dismissed">{{ t('admin.filter_dismissed') }}</button>
+                    <button onclick="filterReports('deleted')" class="report-filter-chip" data-filter="deleted">{{ t('admin.filter_deleted') }}</button>
                 </div>
             </div>
             <div id="reportsTableContainer" class="overflow-x-auto">
@@ -582,9 +582,9 @@
                             <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Presupuesto</th>
                             <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Telefono</th>
                             <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Reportado Por</th>
-                            <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Estado</th>
+                            <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.status') }}</th>
                             <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Fecha</th>
-                            <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold text-right">Acciones</th>
+                            <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold text-right">{{ t('admin.actions') }}</th>
                         </tr>
                     </thead>
                     <tbody id="reportsTableBody" class="stagger-rows">
@@ -592,7 +592,7 @@
                             <td colspan="10" class="p-8 text-center text-midnight/60">
                                 <div class="flex justify-center items-center gap-2">
                                     <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gold"></div>
-                                    Cargando reportes...
+                                    {{ t('admin.loading_leads') }}
                                 </div>
                             </td>
                         </tr>
@@ -619,11 +619,11 @@
     <div id="panel-form-options" class="hidden space-y-6">
         <div class="flex items-center justify-between">
             <div>
-                <h3 class="text-lg font-bold text-midnight">Opciones de Formulario</h3>
-                <p class="text-xs text-midnight/50">Gestioná las opciones que aparecen en los formularios del sistema.</p>
+                <h3 class="text-lg font-bold text-midnight">{{ t('admin.form_options') }}</h3>
+                <p class="text-xs text-midnight/50">{{ t('admin.form_options_desc') }}</p>
             </div>
             <button onclick="openCreateOptionModal()" class="px-4 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all flex items-center gap-2">
-                <i data-lucide="plus" class="w-3 h-3"></i> Nueva Opción
+                <i data-lucide="plus" class="w-3 h-3"></i> {{ t('admin.new_option') }}
             </button>
         </div>
 
@@ -645,13 +645,13 @@
             <table class="w-full text-sm">
                 <thead>
                     <tr class="bg-paper-dark table-header-border">
-                        <th class="text-left px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Categoria</th>
-                        <th class="text-left px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Valor</th>
-                        <th class="text-left px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Etiqueta</th>
-                        <th class="text-left px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Icono</th>
-                        <th class="text-left px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Orden</th>
-                        <th class="text-left px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Estado</th>
-                        <th class="text-right px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Acciones</th>
+                        <th class="text-left px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.category') }}</th>
+                        <th class="text-left px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.value') }}</th>
+                        <th class="text-left px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.label') }}</th>
+                        <th class="text-left px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.icon') }}</th>
+                        <th class="text-left px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.order') }}</th>
+                        <th class="text-left px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.state') }}</th>
+                        <th class="text-right px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody id="form-options-tbody" class="divide-y divide-midnight/5">
@@ -671,7 +671,7 @@
             <!-- Header -->
             <div class="border-t-4 border-gold px-8 pt-6 pb-4 flex items-start justify-between">
                 <div>
-                    <p class="text-[10px] uppercase tracking-widest font-bold text-gold mb-1">Detalle del Pedido</p>
+                    <p class="text-[10px] uppercase tracking-widest font-bold text-gold mb-1">{{ t('admin.detail_lead') }}</p>
                     <h3 class="text-2xl font-serif">Lead <span id="leadDetailId" class="serif-italic text-gold"></span></h3>
                 </div>
                 <button onclick="closeLeadDetailModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="Cerrar">
@@ -740,7 +740,7 @@
                     <button id="confirmDeactivateBtn" onclick="confirmDeactivate()"
                         class="flex-1 py-3 bg-rose-600 dark:bg-rose-700 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-rose-700 dark:hover:bg-rose-800 transition-all flex items-center justify-center gap-2">
                         <i data-lucide="user-x" class="w-3 h-3"></i>
-                        <span id="confirmDeactivateBtnLabel">Dar de Baja</span>
+                        <span id="confirmDeactivateBtnLabel">{{ t('admin.deactivate') }}</span>
                     </button>
                 </div>
             </div>

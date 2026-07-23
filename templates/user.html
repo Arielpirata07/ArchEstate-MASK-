@@ -24,9 +24,9 @@ window.__FORM_OPTIONS = {{ {
     <div class="aside-ambient bg-gradient-to-br from-midnight via-midnight-light to-midnight text-white p-12 lg:p-16 flex flex-col justify-between">
         <div class="space-y-6 text-center header-entrance">
             <div>
-                <h1 class="aside-title text-5xl lg:text-6xl font-serif italic mb-4">Define<br/><span class="font-serif italic">Tu Legado</span></h1>
+                <h1 class="aside-title text-5xl lg:text-6xl font-serif italic mb-4">{{ t('user.define_legacy') }}<br/><span class="font-serif italic">{{ t('user.define_legacy2') }}</span></h1>
                 <p class="aside-subtitle text-lg text-white/70 leading-relaxed">
-                    Iniciamos la búsqueda de su próxima adquisición. Complete los detalles técnicos para que nuestra oficina privada pueda filtrar los activos más exclusivos.
+                    {{ t('user.form_subtitle') }}
                 </p>
             </div>
         </div>
@@ -41,8 +41,8 @@ window.__FORM_OPTIONS = {{ {
     <div class="bg-white p-12 lg:p-16 overflow-y-auto max-h-[85vh]">
         <div class="max-w-2xl">
             <!-- Encabezado del formulario -->
-            <h2 class="text-3xl font-serif mb-2">Solicitud de Propiedad</h2>
-            <p class="text-midnight/60 mb-8">Defina los parámetros de su próxima inversión con nuestra oficina privada.</p>
+            <h2 class="text-3xl font-serif mb-2">{{ t('user.form_title') }}</h2>
+            <p class="text-midnight/60 mb-8">{{ t('user.form_desc') }}</p>
 
             <form id="userForm" class="space-y-10" data-user-role="{{ session.get('role', 'user') }}">
 
@@ -50,12 +50,12 @@ window.__FORM_OPTIONS = {{ {
                 <section>
                     <div class="flex items-center gap-3 mb-6">
                         <span class="text-[14px] font-serif italic text-gold">01.</span>
-                        <h3 class="text-lg font-serif italic text-midnight">Parámetros Principales</h3>
+                        <h3 class="text-lg font-serif italic text-midnight">{{ t('user.main_params') }}</h3>
                     </div>
 
                     <!-- Tipo de Propiedad -->
                     <div class="mb-8">
-                        <label for="property-type-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">Tipo de Propiedad</label>
+                        <label for="property-type-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">{{ t('user.property_type') }}</label>
                         <div id="property-type-buttons" class="flex flex-wrap gap-3"></div>
                         <input type="hidden" id="property-type-input" name="property_type" value="departamento">
                     </div>
@@ -63,9 +63,9 @@ window.__FORM_OPTIONS = {{ {
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Tipo de Operación -->
                         <div>
-                            <label for="operation-select" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Tipo de Operación</label>
+                            <label for="operation-select" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.operation_type') }}</label>
                             <select id="operation-select" name="type" required class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
-                                <option value="">Seleccionar</option>
+                                <option value="">{{ t('user.step_select') }}</option>
                                 {% for opt in form_options.get('operation_type', []) %}
                                 <option value="{{ opt.value }}">{{ opt.label }}</option>
                                 {% endfor %}
@@ -74,10 +74,10 @@ window.__FORM_OPTIONS = {{ {
 
                         <!-- Presupuesto Estimado -->
                         <div>
-                            <label for="budget-popup-trigger" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Presupuesto Estimado</label>
+                            <label for="budget-popup-trigger" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.budget') }}</label>
                             <button type="button" id="budget-popup-trigger"
                                     class="w-full py-3 px-4 rounded border-2 border-midnight/20 bg-paper-dark text-midnight font-semibold transition-all hover:border-gold text-left">
-                                Presupuesto: $0 — $10.000.000.000
+                                {{ t('user.budget_range') }} $0 — $10.000.000.000
                             </button>
                             <input type="hidden" id="budget-hidden" name="budget" value="0 - 10000000000">
                             <input type="hidden" id="currency-hidden" name="currency" value="ARG">
@@ -147,7 +147,7 @@ window.__FORM_OPTIONS = {{ {
 
                         <!-- Zona Geográfica -->
                         <div>
-                            <label for="zone-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Zona Geográfica</label>
+                            <label for="zone-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.zone') }}</label>
                             <div class="relative">
                                 <input id="zone-input" name="zone" type="text" placeholder="Ej. Costa Brava, Madrid Centro..." class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm" required>
                                 <ul id="zone-suggestions" class="hidden absolute top-full left-0 right-0 bg-white border border-slate-200 rounded shadow-md z-10" role="listbox"></ul>
@@ -156,9 +156,9 @@ window.__FORM_OPTIONS = {{ {
 
                         <!-- Provincia -->
                         <div>
-                            <label for="province-select" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Provincia</label>
+                            <label for="province-select" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.province') }}</label>
                             <select id="province-select" name="province" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
-                                <option value="">Seleccionar provincia</option>
+                                <option value="">{{ t('user.select_province') }}</option>
                                 {% for opt in form_options.get('province', []) %}
                                 <option value="{{ opt.value }}">{{ opt.label }}</option>
                                 {% endfor %}
@@ -167,7 +167,7 @@ window.__FORM_OPTIONS = {{ {
 
                         <!-- Estilo Arquitectónico -->
                         <div>
-                            <label for="architectural-style-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Estilo Arquitectónico</label>
+                            <label for="architectural-style-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.arch_style') }}</label>
                             <div class="relative">
                                 <input id="architectural-style-input" name="architectural_style" type="text" placeholder="Ej. Moderno, Clásico, Minimalista..." class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                 <ul id="architectural-style-suggestions" class="hidden absolute top-full left-0 right-0 bg-white border border-slate-200 rounded shadow-md z-10" role="listbox"></ul>
@@ -180,7 +180,7 @@ window.__FORM_OPTIONS = {{ {
                 <section>
                     <div class="flex items-center gap-3 mb-6">
                         <span class="text-[14px] font-serif italic text-gold">02.</span>
-                        <h3 class="text-lg font-serif italic text-midnight">Especificaciones Técnicas</h3>
+                        <h3 class="text-lg font-serif italic text-midnight">{{ t('user.tech_specs') }}</h3>
                     </div>
 
                     <div class="space-y-8">
@@ -188,17 +188,17 @@ window.__FORM_OPTIONS = {{ {
                         <!-- Ambientes, Habitaciones, Baños -->
                         <div class="grid grid-cols-3 gap-6">
                             <div>
-                                <label for="ambientes-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Ambientes</label>
+                                <label for="ambientes-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.rooms') }}</label>
                                 <div class="flex items-center gap-3">
                                     <button type="button" onclick="stepNum('ambientes',-1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-base md:text-lg leading-none">−</button>
                                     <input id="ambientes-input" name="ambientes" type="number" min="1" max="20" value="" placeholder="—"
                                            class="w-12 text-center bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-1 text-sm font-semibold">
                                     <button type="button" onclick="stepNum('ambientes',1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-base md:text-lg leading-none">+</button>
                                 </div>
-                                <p class="text-[9px] text-midnight/30 mt-1">Incluye living, cocina</p>
+                                <p class="text-[9px] text-midnight/30 mt-1">{{ t('user.rooms_hint') }}</p>
                             </div>
                             <div>
-                                <label for="bedrooms-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Habitaciones</label>
+                                <label for="bedrooms-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.bedrooms') }}</label>
                                 <div class="flex items-center gap-3">
                                     <button type="button" onclick="stepNum('bedrooms',-1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-base md:text-lg leading-none">−</button>
                                     <input id="bedrooms-input" name="bedrooms" type="number" min="0" max="20" value="" placeholder="—"
@@ -207,7 +207,7 @@ window.__FORM_OPTIONS = {{ {
                                 </div>
                             </div>
                             <div>
-                                <label for="bathrooms-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Baños</label>
+                                <label for="bathrooms-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.bathrooms') }}</label>
                                 <div class="flex items-center gap-3">
                                     <button type="button" onclick="stepNum('bathrooms',-1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-base md:text-lg leading-none">−</button>
                                     <input id="bathrooms-input" name="bathrooms" type="number" min="0" max="20" value="" placeholder="—"
@@ -219,7 +219,7 @@ window.__FORM_OPTIONS = {{ {
 
                         <!-- Cochera -->
                         <div>
-                            <label for="parking-chips" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Cochera / Estacionamiento</label>
+                            <label for="parking-chips" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.parking') }}</label>
                             <div class="flex flex-wrap gap-2" id="parking-chips">
                                 {% for opt in form_options.get('parking', []) %}
                                 <button type="button" data-value="{{ opt.value }}" onclick="selectChip('parking','{{ opt.value }}')"
@@ -231,7 +231,7 @@ window.__FORM_OPTIONS = {{ {
 
                         <!-- Orientación -->
                         <div>
-                            <label for="orientation-chips" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Orientación Preferida</label>
+                            <label for="orientation-chips" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.orientation') }}</label>
                             {% set orient_short = {'': '', 'Norte': 'N', 'Sur': 'S', 'Este': 'E', 'Oeste': 'O', 'Noreste': 'NE', 'Noroeste': 'NO', 'Sureste': 'SE', 'Suroeste': 'SO'} %}
                             <div class="flex flex-wrap gap-2" id="orientation-chips">
                                 {% for opt in form_options.get('orientation', []) %}
@@ -245,7 +245,7 @@ window.__FORM_OPTIONS = {{ {
                         <!-- Estado + Antigüedad -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label for="condition-chips" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Estado de la Propiedad</label>
+                                <label for="condition-chips" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.condition') }}</label>
                                 <div class="space-y-2" id="condition-chips">
                                     {% for opt in form_options.get('condition', []) %}
                                     <button type="button" data-value="{{ opt.value }}" onclick="selectChip('condition','{{ opt.value }}')" class="condition-chip {% if loop.first %}active-chip border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all hover:border-gold">{{ opt.label }}</button>
@@ -254,7 +254,7 @@ window.__FORM_OPTIONS = {{ {
                                 <input type="hidden" id="condition-input" name="property_condition" value="">
                             </div>
                             <div id="age-section">
-                                <label for="age-chips" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Antigüedad Preferida</label>
+                                <label for="age-chips" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.age') }}</label>
                                 <div class="space-y-2" id="age-chips">
                                     {% for opt in form_options.get('age', []) %}
                                     <button type="button" data-value="{{ opt.value }}" onclick="selectChip('age','{{ opt.value }}')" class="age-chip {% if loop.first %}active-chip border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all hover:border-gold">{{ opt.label }}</button>
@@ -267,25 +267,25 @@ window.__FORM_OPTIONS = {{ {
                         <!-- DETALLES DE DEPARTAMENTO -->
                         <div id="department-details" class="space-y-5 hidden">
                             <div class="border-t border-midnight/10 pt-6">
-                                <h4 class="text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">Detalles del Departamento</h4>
+                                <h4 class="text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">{{ t('user.dept_details') }}</h4>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Piso/Bloque</label>
+                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.floor_block') }}</label>
                                         <input name="floor_block" type="text" placeholder="5º A" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Metros Útiles (m²)</label>
+                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.usable_m2') }}</label>
                                         <input name="usable_m2" type="number" min="0" placeholder="85" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                     </div>
                                 </div>
                                 <div class="flex flex-wrap gap-4 mt-4">
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" name="elevator" value="si" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
-                                        <span class="text-sm text-midnight">Ascensor</span>
+                                        <span class="text-sm text-midnight">{{ t('user.elevator') }}</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" name="community_pool" value="si" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
-                                        <span class="text-sm text-midnight">Piscina comunitaria</span>
+                                        <span class="text-sm text-midnight">{{ t('user.community_pool') }}</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" name="amenities" value="SUM" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
@@ -293,7 +293,7 @@ window.__FORM_OPTIONS = {{ {
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" name="amenities" value="Terraza" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
-                                        <span class="text-sm text-midnight">Terraza</span>
+                                        <span class="text-sm text-midnight">{{ t('user.terrace') }}</span>
                                     </label>
                                 </div>
                             </div>
@@ -302,14 +302,14 @@ window.__FORM_OPTIONS = {{ {
                         <!-- DETALLES DE CASA -->
                         <div id="house-details" class="space-y-5 hidden">
                             <div class="border-t border-midnight/10 pt-6">
-                                <h4 class="text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">Detalles de la Casa</h4>
+                                <h4 class="text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">{{ t('user.house_details') }}</h4>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label for="house-land-area" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Superficie de Terreno (m²)</label>
+                                        <label for="house-land-area" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.land_area') }}</label>
                                         <input id="house-land-area" name="land_area" type="number" min="0" placeholder="600" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                     </div>
                                     <div>
-                                        <label for="house-built-area" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Superficie Construida (m²)</label>
+                                        <label for="house-built-area" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.built_area') }}</label>
                                         <input id="house-built-area" name="built_area" type="number" min="0" placeholder="300" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                         <p id="house-area-warning" class="hidden text-[10px] text-rose-500 font-medium mt-1">Los metros construidos superan el 80% del terreno.</p>
                                     </div>
@@ -317,15 +317,15 @@ window.__FORM_OPTIONS = {{ {
                                 <div class="flex flex-wrap gap-4 mt-4">
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input id="pool-checkbox" type="checkbox" name="pool" value="si" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
-                                        <span class="text-sm text-midnight">Piscina</span>
+                                        <span class="text-sm text-midnight">{{ t('user.pool') }}</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" name="amenities" value="Quincho" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
-                                        <span class="text-sm text-midnight">Quincho / Parrilla</span>
+                                        <span class="text-sm text-midnight">{{ t('user.quincho') }}</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" name="amenities" value="Jardin" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
-                                        <span class="text-sm text-midnight">Jardín</span>
+                                        <span class="text-sm text-midnight">{{ t('user.garden') }}</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" name="amenities" value="Pileta cubierta" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
@@ -337,14 +337,14 @@ window.__FORM_OPTIONS = {{ {
                                     <div class="flex items-center justify-between mb-3">
                                         <label class="flex items-center gap-2 cursor-pointer">
                                             <input id="gated-community-check" type="checkbox" name="amenities" value="Barrio privado" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0" onchange="toggleGatedCommunity(this.checked)">
-                                            <span class="text-sm font-semibold text-midnight">¿Barrio Privado / Countries?</span>
+                                            <span class="text-sm font-semibold text-midnight">{{ t('user.gated_community') }}</span>
                                         </label>
                                     </div>
                                     <div id="gated-community-details" class="hidden space-y-3 pt-2 border-t border-midnight/10">
                                         <div class="grid grid-cols-2 gap-4">
                                             <label class="flex items-center gap-2 cursor-pointer text-sm text-midnight/70">
                                                 <input type="checkbox" name="amenities" value="Seguridad 24h barrio" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
-                                                Seguridad 24h
+                                                {{ t('user.security_24h') }}
                                             </label>
                                             <label class="flex items-center gap-2 cursor-pointer text-sm text-midnight/70">
                                                 <input type="checkbox" name="amenities" value="Club house" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
@@ -367,14 +367,14 @@ window.__FORM_OPTIONS = {{ {
                         <!-- DETALLES DE DÚPLEX -->
                         <div id="duplex-details" class="space-y-5 hidden">
                             <div class="border-t border-midnight/10 pt-6">
-                                <h4 class="text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">Detalles del Dúplex</h4>
+                                <h4 class="text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">{{ t('user.duplex_details') }}</h4>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label for="duplex-land-area" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Superficie de Terreno (m²)</label>
+                                        <label for="duplex-land-area" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.land_area') }}</label>
                                         <input id="duplex-land-area" name="land_area" type="number" min="0" placeholder="300" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                     </div>
                                     <div>
-                                        <label for="duplex-built-area" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Superficie Construida (m²)</label>
+                                        <label for="duplex-built-area" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.built_area') }}</label>
                                         <input id="duplex-built-area" name="built_area" type="number" min="0" placeholder="180" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                         <p id="duplex-area-warning" class="hidden text-[10px] text-rose-500 font-medium mt-1">Los metros construidos superan el 80% del terreno.</p>
                                     </div>
@@ -382,19 +382,19 @@ window.__FORM_OPTIONS = {{ {
                                 <div class="flex flex-wrap gap-4 mt-4">
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" name="elevator" value="si" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
-                                        <span class="text-sm text-midnight">Ascensor</span>
+                                        <span class="text-sm text-midnight">{{ t('user.elevator') }}</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" name="amenities" value="Terraza" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
-                                        <span class="text-sm text-midnight">Terraza</span>
+                                        <span class="text-sm text-midnight">{{ t('user.terrace') }}</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" name="amenities" value="Jardin" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
-                                        <span class="text-sm text-midnight">Jardín</span>
+                                        <span class="text-sm text-midnight">{{ t('user.garden') }}</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" name="amenities" value="Quincho" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
-                                        <span class="text-sm text-midnight">Quincho / Parrilla</span>
+                                        <span class="text-sm text-midnight">{{ t('user.quincho') }}</span>
                                     </label>
                                 </div>
                             </div>
@@ -403,25 +403,25 @@ window.__FORM_OPTIONS = {{ {
                         <!-- DETALLES DE PENTHOUSE -->
                         <div id="penthouse-details" class="space-y-5 hidden">
                             <div class="border-t border-midnight/10 pt-6">
-                                <h4 class="text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">Detalles del Penthouse</h4>
+                                <h4 class="text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">{{ t('user.penthouse_details') }}</h4>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Piso</label>
                                         <input name="floor_block" type="text" placeholder="Piso 20" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Metros Útiles (m²)</label>
+                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.usable_m2') }}</label>
                                         <input name="usable_m2" type="number" min="0" placeholder="150" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                     </div>
                                 </div>
                                 <div class="flex flex-wrap gap-4 mt-4">
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" name="elevator" value="si" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
-                                        <span class="text-sm text-midnight">Ascensor privado</span>
+                                        <span class="text-sm text-midnight">{{ t('user.private_elevator') }}</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" name="amenities" value="Terraza panorámica" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
-                                        <span class="text-sm text-midnight">Terraza panorámica</span>
+                                        <span class="text-sm text-midnight">{{ t('user.panoramic_terrace') }}</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" name="amenities" value="Jacuzzi" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
@@ -438,43 +438,43 @@ window.__FORM_OPTIONS = {{ {
                         <!-- DETALLES DE LOCAL COMERCIAL -->
                         <div id="local-details" class="space-y-5 hidden">
                             <div class="border-t border-midnight/10 pt-6">
-                                <h4 class="text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">Detalles del Local Comercial</h4>
+                                <h4 class="text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">{{ t('user.local_details') }}</h4>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Superficie Total (m²)</label>
+                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.total_area') }}</label>
                                         <input name="usable_m2" type="number" min="0" placeholder="120" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Frente (metros lineales)</label>
+                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.frontage') }}</label>
                                         <input name="floor_block" type="text" placeholder="8m" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                                     <div>
-                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Piso / Planta</label>
+                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.local_floor') }}</label>
                                         <input name="built_area" type="text" placeholder="Planta baja" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Altura del local (m)</label>
+                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.local_height') }}</label>
                                         <input name="land_area" type="number" min="0" placeholder="3.5" step="0.1" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                     </div>
                                 </div>
                                 <div class="flex flex-wrap gap-4 mt-4">
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" name="amenities" value="Vitrina" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
-                                        <span class="text-sm text-midnight">Vitrina / Vidriera</span>
+                                        <span class="text-sm text-midnight">{{ t('user.showcase') }}</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" name="amenities" value="Depósito" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
-                                        <span class="text-sm text-midnight">Depósito</span>
+                                        <span class="text-sm text-midnight">{{ t('user.storage') }}</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" name="amenities" value="Baño comercial" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
-                                        <span class="text-sm text-midnight">Baño comercial</span>
+                                        <span class="text-sm text-midnight">{{ t('user.commercial_bath') }}</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" name="amenities" value="Aire acondicionado" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
-                                        <span class="text-sm text-midnight">Aire acondicionado</span>
+                                        <span class="text-sm text-midnight">{{ t('user.ac') }}</span>
                                     </label>
                                 </div>
                             </div>
@@ -482,20 +482,20 @@ window.__FORM_OPTIONS = {{ {
 
                         <!-- Extras -->
                         <div>
-                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">Extras y Comodidades</label>
+                            <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">{{ t('user.extras') }}</label>
                             <div class="grid grid-cols-2 gap-4">
                                 <label id="infinity-pool-label" class="flex items-center gap-3 pool-dependent hidden opacity-50 cursor-not-allowed"><input id="infinity-pool-checkbox" type="checkbox" name="amenities" value="Piscina Infinity" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0" disabled><span class="text-sm text-midnight">Piscina Infinity</span></label>
-                                <label class="flex items-center gap-3"><input type="checkbox" name="amenities" value="Seguridad 24h" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0"><span class="text-sm text-midnight">Seguridad 24h</span></label>
-                                <label class="flex items-center gap-3"><input type="checkbox" name="amenities" value="Bodega" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0"><span class="text-sm text-midnight">Bodega</span></label>
-                                <label class="flex items-center gap-3"><input type="checkbox" name="amenities" value="Gimnasio Privado" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0"><span class="text-sm text-midnight">Gimnasio Privado</span></label>
-                                <label class="flex items-center gap-3"><input type="checkbox" name="amenities" value="Domotica Avanzada" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0"><span class="text-sm text-midnight">Domótica Avanzada</span></label>
-                                <label class="flex items-center gap-3"><input type="checkbox" name="amenities" value="Helipad" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0"><span class="text-sm text-midnight">Helipad</span></label>
+                                <label class="flex items-center gap-3"><input type="checkbox" name="amenities" value="Seguridad 24h" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0"><span class="text-sm text-midnight">{{ t('user.security_24h') }}</span></label>
+                                <label class="flex items-center gap-3"><input type="checkbox" name="amenities" value="Bodega" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0"><span class="text-sm text-midnight">{{ t('user.wine_cellar') }}</span></label>
+                                <label class="flex items-center gap-3"><input type="checkbox" name="amenities" value="Gimnasio Privado" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0"><span class="text-sm text-midnight">{{ t('user.gym') }}</span></label>
+                                <label class="flex items-center gap-3"><input type="checkbox" name="amenities" value="Domotica Avanzada" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0"><span class="text-sm text-midnight">{{ t('user.home_automation') }}</span></label>
+                                <label class="flex items-center gap-3"><input type="checkbox" name="amenities" value="Helipad" class="w-4 h-4 text-gold bg-white border-midnight/20 rounded focus:ring-0"><span class="text-sm text-midnight">{{ t('user.helipad') }}</span></label>
                             </div>
                         </div>
 
                         <!-- Características adicionales -->
                         <div>
-                                        <label for="additional_features" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Características Adicionales</label>
+                                        <label for="additional_features" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.additional_features') }}</label>
                                         <textarea id="additional_features" name="additional_features" placeholder="Vistas, materiales preferidos, detalles de diseño, requerimientos especiales..." rows="3" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm resize-none"></textarea>
                         </div>
 
@@ -505,30 +505,30 @@ window.__FORM_OPTIONS = {{ {
                 <section>
                     <div class="flex items-center gap-3 mb-6">
                         <span class="text-[14px] font-serif italic text-gold">03.</span>
-                        <h3 class="text-lg font-serif italic text-midnight">Identidad & Contacto</h3>
+                        <h3 class="text-lg font-serif italic text-midnight">{{ t('user.contact_info') }}</h3>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Email Profesional -->
                         <div>
-                            <label for="email-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Email Profesional</label>
+                            <label for="email-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.email_pro') }}</label>
                             <input id="email-input" type="email" name="email" value="{{ user.email if user and user.email else session.get('email', '') }}" {% if user and user.email %}readonly{% endif %} class="w-full bg-white border-0 border-b-2 border-midnight/20 py-2 {% if user and user.email %}text-midnight/50 cursor-not-allowed{% endif %} text-sm">
                             {% if user and user.email %}
                             <a href="{{ url_for('profile.profile_view') }}" class="inline-flex items-center gap-1 mt-2 text-[9px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors">
                                 <i data-lucide="settings" class="w-3 h-3"></i>
-                                Editar en Configuración
+                                {{ t('user.edit_in_settings') }}
                             </a>
                             {% endif %}
                         </div>
 
                         <!-- Teléfono -->
                         <div>
-                            <label for="phone-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Teléfono</label>
+                            <label for="phone-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.phone') }}</label>
                             {% if not is_first_lead %}
                             <input id="phone-input" type="tel" name="phone" value="{{ session.get('phone', '') }}" readonly class="w-full bg-white border-0 border-b-2 border-midnight/20 py-2 text-midnight/50 text-sm cursor-not-allowed">
                             <a href="{{ url_for('profile.profile_view') }}" class="inline-flex items-center gap-1 mt-2 text-[9px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors">
                                 <i data-lucide="settings" class="w-3 h-3"></i>
-                                Editar en Configuración
+                                {{ t('user.edit_in_settings') }}
                             </a>
                             {% else %}
                             <div class="flex gap-2">
@@ -589,7 +589,7 @@ window.__FORM_OPTIONS = {{ {
                                     class="flex-1 bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm"
                                 >
                             </div>
-                            <p class="text-[9px] text-midnight/60 mt-1">El código de país se incluirá automáticamente</p>
+                            <p class="text-[9px] text-midnight/60 mt-1">{{ t('user.phone_hint') }}</p>
                             <div class="mt-2 flex items-center justify-between">
                                 <p id="phone-error-msg" class="hidden text-[10px] text-rose-500 font-medium"></p>
                                 <button
@@ -599,7 +599,7 @@ window.__FORM_OPTIONS = {{ {
                                     class="ml-auto text-[9px] uppercase tracking-widest font-bold text-midnight/30 hover:text-gold transition-colors flex items-center gap-1"
                                 >
                                     <i data-lucide="save" class="w-3 h-3"></i>
-                                    Guardar como predeterminado
+                                    {{ t('user.save_default') }}
                                 </button>
                             </div>
                             {% endif %}
@@ -608,18 +608,18 @@ window.__FORM_OPTIONS = {{ {
                                 {% if user and user.phone_verified == 1 %}
                                 <span class="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-700 inline-flex items-center gap-1">
                                     {% if user.verification_channel == 'whatsapp' %}
-                                    <i data-lucide="message-circle" class="w-3 h-3"></i> Verificado por WhatsApp
+                                    <i data-lucide="message-circle" class="w-3 h-3"></i> {{ t('user.verified_whatsapp') }}
                                     {% else %}
-                                    <i data-lucide="smartphone" class="w-3 h-3"></i> Verificado por SMS
+                                    <i data-lucide="smartphone" class="w-3 h-3"></i> {{ t('user.verified_sms') }}
                                     {% endif %}
                                 </span>
                                 {% else %}
                                 <span class="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/60 inline-flex items-center gap-1">
-                                    <i data-lucide="phone-off" class="w-3 h-3"></i> No verificado
+                                    <i data-lucide="phone-off" class="w-3 h-3"></i> {{ t('user.not_verified') }}
                                 </span>
                                 <button type="button" onclick="openPhoneVerifyModal()"
                                     class="text-[10px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors">
-                                    Verificar
+                                    {{ t('user.verify') }}
                                 </button>
                                 {% endif %}
                             </div>
@@ -631,14 +631,14 @@ window.__FORM_OPTIONS = {{ {
                 <!-- Botón Enviar -->
                 <div class="pt-6">
                     <button type="submit" class="btn-submit w-full bg-gold hover:bg-midnight text-white py-4 rounded font-bold uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-3 group shadow-lg">
-                        Enviar Solicitud
+                        {{ t('user.submit_lead') }}
                         <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
                     </button>
                 </div>
 
                 <!-- Nota de privacidad -->
                 <p class="text-[9px] text-midnight/50 text-center border-t border-midnight/10 pt-6">
-                    Al enviar esta solicitud, acepta nuestra política de privacidad para el manejo exclusivo y confidencial de sus datos en <strong>ArchEstate Private Ledger</strong>. Un asesor se contactará en menos de 24 horas.
+                    {{ t('user.privacy_note') }}
                 </p>
             </form>
         </div>
@@ -656,9 +656,9 @@ window.__FORM_OPTIONS = {{ {
             </button>
 
             <i data-lucide="shield" class="w-8 h-8 text-gold mb-4"></i>
-            <h3 id="verify-phone-title" class="text-xl font-serif text-midnight mb-1">Verificar Teléfono</h3>
+            <h3 id="verify-phone-title" class="text-xl font-serif text-midnight mb-1">{{ t('user.verify_phone') }}</h3>
             <p class="text-[10px] uppercase tracking-widest font-bold text-gold mb-6">
-                Ingresá el código de 6 dígitos
+                {{ t('user.verify_code_hint') }}
             </p>
 
             <div class="flex gap-2 justify-center mb-6" id="verify-code-inputs" role="group" aria-label="Código de verificación de 6 dígitos">
@@ -684,7 +684,7 @@ window.__FORM_OPTIONS = {{ {
 
             <p id="verify-error" class="hidden text-[10px] text-rose-600 font-bold uppercase tracking-widest text-center mb-4"></p>
             <p id="verify-success" class="hidden text-[10px] text-emerald-600 font-bold uppercase tracking-widest text-center mb-4">
-                <i data-lucide="check-circle" class="w-3 h-3 inline"></i> Teléfono verificado correctamente
+                <i data-lucide="check-circle" class="w-3 h-3 inline"></i>                 {{ t('user.phone_verified_success') }}
             </p>
 
             <button id="verify-submit-btn"
@@ -697,7 +697,7 @@ window.__FORM_OPTIONS = {{ {
                 <button type="button" id="resend-code-btn"
                     class="text-[10px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors"
                     onclick="resendVerificationCode()">
-                    Reenviar código
+                    {{ t('user.resend_code') }}
                 </button>
                 <span id="resend-cooldown" class="hidden text-[10px] text-midnight/60 ml-2">(60s)</span>
             </p>

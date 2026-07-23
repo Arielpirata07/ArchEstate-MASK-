@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Panel Profesional | ArchEstate{% endblock %}
+{% block title %}{{ t('pro.title') }} | ArchEstate{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/professional.css') }}">
@@ -20,19 +20,19 @@ window.__FORM_OPTIONS = {{ {
     <!-- ===== HEADER ===== -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-midnight/10 pb-6 header-entrance gap-4">
         <div>
-            <h2 class="text-4xl font-serif">Panel <span class="serif-italic">Profesional</span></h2>
-            <p class="text-midnight/50 mt-2">Gestiona tus oportunidades de negocio exclusivas.</p>
+            <h2 class="text-4xl font-serif">{{ t('pro.title') }}</h2>
+            <p class="text-midnight/50 mt-2">{{ t('pro.subtitle') }}</p>
         </div>
         {% if not pending %}
         <div class="flex flex-wrap items-center gap-3">
             <div class="flex gap-2">
                 <button onclick="showProTab('leads')" id="tab-leads"
                     class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-midnight text-white">
-                    <span class="flex items-center gap-2"><i data-lucide="layout-dashboard" class="w-3 h-3"></i> Leads</span>
+                    <span class="flex items-center gap-2"><i data-lucide="layout-dashboard" class="w-3 h-3"></i> {{ t('pro.leads_tab') }}</span>
                 </button>
                 <button onclick="showProTab('stats')" id="tab-stats"
                     class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white">
-                    <span class="flex items-center gap-2"><i data-lucide="trending-up" class="w-3 h-3"></i> Estadísticas</span>
+                    <span class="flex items-center gap-2"><i data-lucide="trending-up" class="w-3 h-3"></i> {{ t('pro.stats_tab') }}</span>
                 </button>
             </div>
             <a id="exportCsvBtn"
@@ -64,9 +64,9 @@ window.__FORM_OPTIONS = {{ {
                 <div class="w-12 h-12 rounded-full bg-gold/20 flex items-center justify-center mb-6">
                     <i data-lucide="clock" class="w-6 h-6 text-gold"></i>
                 </div>
-                <h3 class="text-2xl font-serif text-white mb-3">Validación en <span class="font-serif italic">Proceso</span></h3>
+                <h3 class="text-2xl font-serif text-white mb-3">{{ t('pro.validation_in_process') }}</h3>
                 <p class="text-white/60 text-sm leading-relaxed mb-8">
-                    Tu cuenta está siendo revisada. Subí tu documentación para agilizar la aprobación.
+                    {{ t('pro.pending_desc') }}
                 </p>
 
                 <div class="space-y-5">
@@ -76,8 +76,8 @@ window.__FORM_OPTIONS = {{ {
                             <i data-lucide="check" class="w-3 h-3 text-white"></i>
                         </div>
                         <div>
-                            <p class="text-white text-xs font-bold uppercase tracking-widest">Registro completado</p>
-                            <p class="text-white/40 text-[10px] mt-0.5">Cuenta creada correctamente</p>
+                            <p class="text-white text-xs font-bold uppercase tracking-widest">{{ t('pro.step1_done') }}</p>
+                            <p class="text-white/40 text-[10px] mt-0.5">{{ t('pro.step1_desc') }}</p>
                         </div>
                     </div>
                     <!-- Paso 2 -->
@@ -86,8 +86,8 @@ window.__FORM_OPTIONS = {{ {
                             <span class="text-white/60 text-[10px] font-bold">2</span>
                         </div>
                         <div>
-                            <p id="step2-label" class="text-white/60 text-xs font-bold uppercase tracking-widest">Documentación pendiente</p>
-                            <p id="step2-sub" class="text-white/30 text-[10px] mt-0.5">Subí tu matrícula o habilitación</p>
+                            <p id="step2-label" class="text-white/60 text-xs font-bold uppercase tracking-widest">{{ t('pro.step2_pending') }}</p>
+                            <p id="step2-sub" class="text-white/30 text-[10px] mt-0.5">{{ t('pro.step2_desc') }}</p>
                         </div>
                     </div>
                     <!-- Paso 3 -->
@@ -96,8 +96,8 @@ window.__FORM_OPTIONS = {{ {
                             <span class="text-white/60 text-[10px] font-bold">3</span>
                         </div>
                         <div>
-                            <p class="text-white/60 text-xs font-bold uppercase tracking-widest">Revisión del equipo</p>
-                            <p class="text-white/30 text-[10px] mt-0.5">Aprobación en menos de 24 hs</p>
+                            <p class="text-white/60 text-xs font-bold uppercase tracking-widest">{{ t('pro.step3_team') }}</p>
+                            <p class="text-white/30 text-[10px] mt-0.5">{{ t('pro.step3_desc') }}</p>
                         </div>
                     </div>
                 </div>
@@ -112,8 +112,8 @@ window.__FORM_OPTIONS = {{ {
         <div class="lg:col-span-3">
             <div class="bg-white rounded-lg shadow-xl overflow-hidden h-full flex flex-col">
                 <div class="p-6 border-b border-midnight/5">
-                    <h3 class="text-xs font-bold uppercase tracking-widest text-gold mb-1">Documentación Profesional</h3>
-                    <p class="text-sm text-midnight/50">Subí tu matrícula, habilitación o certificado profesional. Solo el equipo de administración tendrá acceso.</p>
+                    <h3 class="text-xs font-bold uppercase tracking-widest text-gold mb-1">{{ t('pro.doc_upload_title') }}</h3>
+                    <p class="text-sm text-midnight/50">{{ t('pro.doc_upload_desc') }}</p>
                 </div>
                 <div class="p-6 flex-grow">
                     <div id="uploadWidgetPending"></div>
@@ -129,10 +129,10 @@ window.__FORM_OPTIONS = {{ {
     <!-- Toolbar: período (encima de KPIs, como admin) -->
     <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
-            <span class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Período:</span>
+            <span class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">{{ t('pro.period') }}</span>
             <div class="flex gap-1" id="timeRangeChips">
-                <button onclick="setTimeRange('')"  data-days=""   class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-midnight text-white">Todas</button>
-                <button onclick="setTimeRange('1')" data-days="1"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all">Hoy</button>
+                <button onclick="setTimeRange('')"  data-days=""   class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-midnight text-white">{{ t('pro.period_all') }}</button>
+                <button onclick="setTimeRange('1')" data-days="1"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all">{{ t('pro.period_today') }}</button>
                 <button onclick="setTimeRange('7')" data-days="7"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all">7d</button>
                 <button onclick="setTimeRange('30')" data-days="30" class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all">30d</button>
             </div>
@@ -141,19 +141,19 @@ window.__FORM_OPTIONS = {{ {
     <!-- KPI Bar: resumen rápido de leads (encima de filtros, como admin) -->
     <div class="grid grid-cols-4 gap-3">
         <div class="kpi-lead-card bg-paper-dark rounded-lg p-3 border-l-4 border-gold">
-            <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60">Nuevos</p>
+            <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60">{{ t('pro.kpi_new') }}</p>
             <p id="kpiLeadsUnseen" class="text-2xl font-serif text-midnight mt-1">—</p>
         </div>
         <div class="kpi-lead-card bg-paper-dark rounded-lg p-3 border-l-4 border-emerald-600">
-            <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60">Contactados</p>
+            <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60">{{ t('pro.kpi_contacted') }}</p>
             <p id="kpiLeadsContacted" class="text-2xl font-serif text-midnight mt-1">—</p>
         </div>
         <div class="kpi-lead-card bg-paper-dark rounded-lg p-3 border-l-4 border-blue-600">
-            <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60">Tasa Contacto</p>
+            <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60">{{ t('pro.kpi_contact_rate') }}</p>
             <p id="kpiLeadsContactRate" class="text-2xl font-serif text-midnight mt-1">—</p>
         </div>
         <div class="kpi-lead-card bg-paper-dark rounded-lg p-3 border-l-4 border-midnight">
-            <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60">Total Leads</p>
+            <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60">{{ t('pro.kpi_total') }}</p>
             <p id="kpiLeadsTotal" class="text-2xl font-serif text-midnight mt-1">—</p>
         </div>
     </div>
@@ -164,20 +164,20 @@ window.__FORM_OPTIONS = {{ {
         <div class="px-6 py-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <i data-lucide="sliders-horizontal" class="w-4 h-4 text-gold"></i>
-                <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Filtros</h3>
+                <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('pro.filters') }}</h3>
             </div>
             <div class="flex items-center gap-3">
                 <div class="flex items-center bg-midnight/5 rounded-lg p-0.5">
                     <button id="btnMyLeads" onclick="setMyLeads(true)" class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all bg-gold text-white">
-                        <i data-lucide="user" class="w-3 h-3 inline -mt-0.5 mr-1"></i>Mis Leads
+                        <i data-lucide="user" class="w-3 h-3 inline -mt-0.5 mr-1"></i>{{ t('pro.my_leads') }}
                     </button>
                     <button id="btnAllLeads" onclick="setMyLeads(false)" class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all text-midnight/50 hover:text-midnight">
-                        <i data-lucide="globe" class="w-3 h-3 inline -mt-0.5 mr-1"></i>Todos
+                        <i data-lucide="globe" class="w-3 h-3 inline -mt-0.5 mr-1"></i>{{ t('pro.all_leads') }}
                     </button>
                 </div>
                 <span id="activeFiltersCount" class="hidden text-[9px] font-bold uppercase tracking-widest text-gold bg-gold/10 px-2 py-0.5 rounded-full"></span>
                 <button id="clearFilters" class="text-[10px] font-bold uppercase tracking-widest text-midnight/60 hover:text-rose-500 transition-colors flex items-center gap-1">
-                    <i data-lucide="x" class="w-3 h-3"></i> Limpiar todo
+                    <i data-lucide="x" class="w-3 h-3"></i> {{ t('pro.clear_all') }}
                 </button>
             </div>
         </div>
@@ -190,24 +190,24 @@ window.__FORM_OPTIONS = {{ {
                     <label for="searchInput" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">Búsqueda rápida</label>
                     <div class="relative">
                         <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-midnight/30"></i>
-                        <input type="text" id="searchInput" placeholder="Zona, email, presupuesto..."
+                        <input type="text" id="searchInput" placeholder="{{ t('pro.search_placeholder') }}"
                                class="w-full pl-8 pr-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
                     </div>
                 </div>
                 <div>
                     <label for="typeFilter" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">Tipo de Operación</label>
                     <select id="typeFilter" class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
-                        <option value="">Todas las operaciones</option>
+                        <option value="">{{ t('pro.all_operations') }}</option>
                         <option value="Comprar Propiedad">Comprar Propiedad</option>
                         <option value="Remodelación Integral">Remodelación Integral</option>
                         <option value="Construir desde Cero">Construir desde Cero</option>
                     </select>
                 </div>
                 <div>
-                    <label for="zoneFilter" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">Zona</label>
+                    <label for="zoneFilter" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">{{ t('pro.zone_label') }}</label>
                     <div class="relative">
                         <i data-lucide="map-pin" class="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-midnight/30"></i>
-                        <input type="text" id="zoneFilter" placeholder="Ej: Palermo, CABA..."
+                        <input type="text" id="zoneFilter" placeholder="{{ t('pro.zone_placeholder') }}"
                                class="w-full pl-8 pr-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
                     </div>
                 </div>
@@ -215,11 +215,11 @@ window.__FORM_OPTIONS = {{ {
 
             <!-- Fila 2: Tipo de Vivienda (chips) -->
             <div>
-                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">Tipo de Vivienda</label>
+                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">{{ t('pro.prop_type') }}</label>
                 <div class="flex flex-wrap gap-2" id="propTypeChips">
                     <button data-value="" onclick="setPropType('')"
                         class="prop-chip active px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight bg-midnight text-white">
-                        Todos
+                        {{ t('pro.all_types') }}
                     </button>
                     <button data-value="departamento" onclick="setPropType('departamento')"
                         class="prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
@@ -246,11 +246,11 @@ window.__FORM_OPTIONS = {{ {
 
             <!-- Fila 3: Rango de Inversión (chips) -->
             <div>
-                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">Rango de Inversión</label>
+                <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">{{ t('pro.budget_range_label') }}</label>
                 <div class="flex flex-wrap gap-2" id="budgetRangeChips">
                     <button data-range="" onclick="setBudgetRange('')"
                         class="budget-chip active px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight bg-midnight text-white">
-                        Cualquier monto
+                        {{ t('pro.any_amount') }}
                     </button>
                     <button data-range="hasta_200k" onclick="setBudgetRange('hasta_200k')"
                         class="budget-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
@@ -296,15 +296,15 @@ window.__FORM_OPTIONS = {{ {
     <!-- Tabla de Leads -->
     <div class="bg-white rounded-lg shadow-xl overflow-hidden">
         <div class="p-4 bg-paper-dark border-b border-midnight/5 flex justify-between items-center">
-            <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Leads Disponibles</h3>
+            <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('pro.leads_available') }}</h3>
             <div class="flex items-center gap-3">
                 <span class="inline-flex items-center gap-1 text-[8px] text-midnight/30 font-bold uppercase tracking-widest"><i data-lucide="check-circle" class="w-2.5 h-2.5"></i> OK = Tel. válido</span>
-                <span class="text-[10px] text-midnight/60 uppercase tracking-widest">Ordenar por:</span>
-                <select id="sortSelect" aria-label="Ordenar por" class="text-[10px] px-2 py-1 border border-midnight/20 rounded focus:border-gold focus:outline-none">
-                    <option value="timestamp">Fecha</option>
-                    <option value="budget">Presupuesto</option>
-                    <option value="zone">Zona</option>
-                    <option value="type">Tipo</option>
+                <span class="text-[10px] text-midnight/60 uppercase tracking-widest">{{ t('pro.sort_by') }}</span>
+                <select id="sortSelect" aria-label="{{ t('pro.sort_by') }}" class="text-[10px] px-2 py-1 border border-midnight/20 rounded focus:border-gold focus:outline-none">
+                    <option value="timestamp">{{ t('pro.sort_date') }}</option>
+                    <option value="budget">{{ t('pro.sort_budget') }}</option>
+                    <option value="zone">{{ t('pro.sort_zone') }}</option>
+                    <option value="type">{{ t('pro.sort_type') }}</option>
                 </select>
                 <button id="sortOrder" class="p-1 text-midnight/60 hover:text-gold" aria-label="Cambiar orden">
                     <i data-lucide="arrow-down" class="w-3 h-3"></i>
@@ -330,7 +330,7 @@ window.__FORM_OPTIONS = {{ {
                         <td colspan="8" class="p-8 text-center text-midnight/60">
                             <div class="flex justify-center items-center gap-2">
                                 <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gold"></div>
-                                Cargando leads...
+                                {{ t('pro.loading_leads') }}
                             </div>
                         </td>
                     </tr>
@@ -346,12 +346,12 @@ window.__FORM_OPTIONS = {{ {
             onclick="toggleDocPanel()">
             <div class="flex items-center gap-3">
                 <i data-lucide="file-check" class="w-4 h-4 text-gold"></i>
-                <h3 class="text-xs font-bold uppercase tracking-widest text-gold">Mi Documentación Profesional</h3>
+                <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('pro.my_docs') }}</h3>
             </div>
             <i data-lucide="chevron-down" id="docChevron" class="w-4 h-4 text-midnight/30 transition-transform duration-200"></i>
         </button>
         <div id="docPanel" class="hidden p-6">
-            <p class="text-sm text-midnight/50 mb-6">Podés actualizar tu matrícula o documentación en cualquier momento. El nuevo archivo reemplazará al anterior.</p>
+            <p class="text-sm text-midnight/50 mb-6">{{ t('pro.doc_desc') }}</p>
             <div id="docApproved" data-download-url="{{ url_for('professional.download_own_doc') }}"></div>
         </div>
     </div>
@@ -371,12 +371,12 @@ window.__FORM_OPTIONS = {{ {
                             <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center shadow-inner">
                                 <i data-lucide="trending-up" class="w-4 h-4 text-gold"></i>
                             </div>
-                            <h3 class="text-2xl font-serif text-midnight">Tendencias del <span class="serif-italic">Mercado</span></h3>
+                            <h3 class="text-2xl font-serif text-midnight">{{ t('pro.market_trends') }}</h3>
                         </div>
-                        <p class="text-[11px] text-midnight/60 ml-11">Solicitudes de clientes en tu zona — lo más buscado del período</p>
+                        <p class="text-[11px] text-midnight/60 ml-11">{{ t('pro.market_desc') }}</p>
                     </div>
                     <div class="flex items-center gap-3 stats-entrance stagger-2">
-                        <label for="statsMonthSelect" class="text-[10px] uppercase tracking-widest font-bold text-midnight/50">Mes</label>
+                        <label for="statsMonthSelect" class="text-[10px] uppercase tracking-widest font-bold text-midnight/50">{{ t('pro.month') }}</label>
                         <div class="relative">
                             <select id="statsMonthSelect" onchange="loadMarketStats()"
                                 class="appearance-none px-4 py-2 pr-10 border border-midnight/10 rounded-xl text-sm focus:border-gold focus:ring-2 focus:ring-gold/10 focus:outline-none text-midnight/70 bg-paper-dark transition-all cursor-pointer">
@@ -392,7 +392,7 @@ window.__FORM_OPTIONS = {{ {
                         <div class="h-px flex-1 bg-gradient-to-r from-gold/40 to-transparent"></div>
                         <div class="flex items-center gap-1.5 px-3">
                             <i data-lucide="flame" class="w-4 h-4 text-gold"></i>
-                            <span class="text-[10px] uppercase tracking-widest font-bold text-gold">Lo más solicitado</span>
+                            <span class="text-[10px] uppercase tracking-widest font-bold text-gold">{{ t('pro.most_requested') }}</span>
                         </div>
                         <div class="h-px flex-1 bg-gradient-to-l from-gold/40 to-transparent"></div>
                     </div>
@@ -404,7 +404,7 @@ window.__FORM_OPTIONS = {{ {
                                         <i data-lucide="building" class="w-4 h-4 text-gold"></i>
                                     </div>
                                     <div>
-                                        <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/35">Tipo de Propiedad</p>
+                                        <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/35">{{ t('pro.property_type') }}</p>
                                     </div>
                                 </div>
                                 <span id="topPropertyTypePct" class="text-[11px] font-bold text-gold"></span>
@@ -422,7 +422,7 @@ window.__FORM_OPTIONS = {{ {
                                         <i data-lucide="map-pin" class="w-4 h-4 text-gold"></i>
                                     </div>
                                     <div>
-                                        <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/35">Zona</p>
+                                        <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/35">{{ t('pro.zone_label') }}</p>
                                     </div>
                                 </div>
                                 <span id="topZonePct" class="text-[11px] font-bold text-gold"></span>
@@ -440,7 +440,7 @@ window.__FORM_OPTIONS = {{ {
                                         <i data-lucide="arrow-left-right" class="w-4 h-4 text-gold"></i>
                                     </div>
                                     <div>
-                                        <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/35">Operación</p>
+                                        <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/35">{{ t('pro.operation_label') }}</p>
                                     </div>
                                 </div>
                                 <span id="topOperationTypePct" class="text-[11px] font-bold text-gold"></span>
@@ -460,7 +460,7 @@ window.__FORM_OPTIONS = {{ {
                         <div class="kpi-card-accent bg-gradient-to-r from-gold to-gold-light"></div>
                         <div class="flex items-center gap-2 mb-2">
                             <i data-lucide="file-text" class="w-3.5 h-3.5 text-gold"></i>
-                            <span class="text-[9px] uppercase tracking-widest font-bold text-midnight/35">Solicitudes</span>
+                            <span class="text-[9px] uppercase tracking-widest font-bold text-midnight/35">{{ t('pro.requests') }}</span>
                         </div>
                         <p id="kpiTotal" class="kpi-value">—</p>
                         <p id="kpiTotalGrowth" class="kpi-trend hidden"></p>
@@ -469,7 +469,7 @@ window.__FORM_OPTIONS = {{ {
                         <div class="kpi-card-accent bg-gradient-to-r from-blue-400 to-blue-500"></div>
                         <div class="flex items-center gap-2 mb-2">
                             <i data-lucide="calendar-arrow-left" class="w-3.5 h-3.5 text-blue-500"></i>
-                            <span class="text-[9px] uppercase tracking-widest font-bold text-midnight/35">Mes Anterior</span>
+                            <span class="text-[9px] uppercase tracking-widest font-bold text-midnight/35">{{ t('pro.prev_month') }}</span>
                         </div>
                         <p id="kpiPrevTotal" class="kpi-value">—</p>
                         <p id="kpiPrevLabel" class="text-[10px] text-midnight/30 mt-1"></p>
@@ -478,7 +478,7 @@ window.__FORM_OPTIONS = {{ {
                         <div class="kpi-card-accent bg-gradient-to-r from-emerald-400 to-emerald-500"></div>
                         <div class="flex items-center gap-2 mb-2">
                             <i data-lucide="wallet" class="w-3.5 h-3.5 text-emerald-500"></i>
-                            <span class="text-[9px] uppercase tracking-widest font-bold text-midnight/35">Presupuesto Prom.</span>
+                            <span class="text-[9px] uppercase tracking-widest font-bold text-midnight/35">{{ t('pro.avg_budget') }}</span>
                         </div>
                         <p id="kpiAvgBudget" class="kpi-value">—</p>
                     </div>
@@ -486,7 +486,7 @@ window.__FORM_OPTIONS = {{ {
                         <div class="kpi-card-accent bg-gradient-to-r from-violet-400 to-violet-500"></div>
                         <div class="flex items-center gap-2 mb-2">
                             <i data-lucide="layers" class="w-3.5 h-3.5 text-violet-500"></i>
-                            <span class="text-[9px] uppercase tracking-widest font-bold text-midnight/35">Zonas Distintas</span>
+                            <span class="text-[9px] uppercase tracking-widest font-bold text-midnight/35">{{ t('pro.distinct_zones') }}</span>
                         </div>
                         <p id="kpiZones" class="kpi-value">—</p>
                     </div>
@@ -498,14 +498,14 @@ window.__FORM_OPTIONS = {{ {
                         <div class="h-px flex-1 bg-gradient-to-r from-gold/20 to-transparent"></div>
                         <div class="flex items-center gap-1.5 px-3">
                             <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-midnight/30"></i>
-                            <span class="text-[10px] uppercase tracking-widest font-bold text-midnight/30">Distribución detallada</span>
+                            <span class="text-[10px] uppercase tracking-widest font-bold text-midnight/30">{{ t('pro.detailed_dist') }}</span>
                         </div>
                         <div class="h-px flex-1 bg-gradient-to-l from-gold/20 to-transparent"></div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="chart-card stats-entrance stagger-12">
                             <div class="flex items-center justify-between mb-4">
-                                <h4 class="text-[10px] font-bold uppercase tracking-widest text-midnight/50">Tipo de Propiedad</h4>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest text-midnight/50">{{ t('pro.property_type') }}</h4>
                                 <span id="chartPropTypeCount" class="chart-count-badge"></span>
                             </div>
                             <div class="chart-container" style="position:relative;height:220px">
@@ -523,7 +523,7 @@ window.__FORM_OPTIONS = {{ {
                         </div>
                         <div class="chart-card stats-entrance stagger-14">
                             <div class="flex items-center justify-between mb-4">
-                                <h4 class="text-[10px] font-bold uppercase tracking-widest text-midnight/50">Evolución Mensual</h4>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest text-midnight/50">{{ t('pro.monthly_evolution') }}</h4>
                                 <span id="chartTrendCount" class="chart-count-badge"></span>
                             </div>
                             <div class="chart-container" style="position:relative;height:220px">
@@ -573,33 +573,32 @@ window.__FORM_OPTIONS = {{ {
                         <i data-lucide="flag" class="w-5 h-5 text-rose-600"></i>
                     </div>
                     <div>
-                        <h3 id="reportModalTitle" class="text-lg font-serif italic text-midnight">Reportar Pedido</h3>
+                        <h3 id="reportModalTitle" class="text-lg font-serif italic text-midnight">{{ t('pro.report_lead') }}</h3>
                         <p class="text-xs text-midnight/50">Pedido <span id="reportLeadId" class="font-mono"></span></p>
                     </div>
                 </div>
 
                 <p class="text-sm text-midnight/70 mb-6 leading-relaxed">
-                    Estas por reportar este pedido como <strong>telefono inexistente</strong>.
-                    Esta acción quedará registrada y será visible para el equipo de administración.
+                    {{ t('pro.report_desc') }}
                 </p>
 
                 <div class="mb-6">
                     <label for="reportNotes" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">
-                        Notas adicionales (opcional)
+                        {{ t('pro.report_notes') }}
                     </label>
                     <textarea id="reportNotes" rows="3"
                         class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-rose-600 focus:outline-none resize-none"
-                        placeholder="Ej: El número no existe, contesta otra persona..."></textarea>
+                        placeholder="{{ t('pro.report_placeholder') }}"></textarea>
                 </div>
 
                 <div class="flex gap-3 justify-end">
                     <button data-close-report
                         class="px-4 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight hover:text-white transition-all">
-                        Cancelar
+                        {{ t('pro.report_cancel') }}
                     </button>
 <button id="confirmReportBtn"
                             class="px-4 py-2 bg-rose-600 dark:bg-rose-700 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-rose-700 dark:hover:bg-rose-800 transition-all">
-                        Confirmar Reporte
+                        {{ t('pro.report_confirm') }}
                     </button>
                 </div>
             </div>

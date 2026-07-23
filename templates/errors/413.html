@@ -8,7 +8,7 @@
         <h1 class="text-2xl font-serif italic text-midnight dark:text-white mb-2">Archivo demasiado grande</h1>
         <p class="text-sm text-midnight/50 dark:text-white/50 mb-8">El archivo que intentás subir excede el tamaño máximo permitido.</p>
         <a href="{{ url_for('public.index') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
-            Volver al inicio
+            {{ t('error.go_home') }}
         </a>
     </div>
 </div>

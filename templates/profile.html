@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Configuración | ArchEstate{% endblock %}
+{% block title %}{{ t('profile.title') }} | ArchEstate{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
@@ -10,54 +10,54 @@
 <div class="max-w-7xl mx-auto pt-8">
     <div class="flex items-center justify-between mb-8 header-entrance">
         <div>
-            <h1 class="text-3xl font-serif italic" style="color:var(--text-primary)">Configuración</h1>
-            <p class="text-sm mt-1" style="color:var(--text-secondary)">Administra tu cuenta y preferencias</p>
+            <h1 class="text-3xl font-serif italic" style="color:var(--text-primary)">{{ t('profile.title') }}</h1>
+            <p class="text-sm mt-1" style="color:var(--text-secondary)">{{ t('profile.subtitle') }}</p>
         </div>
         <a href="{{ url_for('public.index') }}" class="text-[10px] uppercase tracking-widest font-bold" style="color:var(--accent);" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--accent)'">
             <i data-lucide="arrow-left" class="w-4 h-4 inline -mt-0.5"></i>
-            Volver al sitio
+            {{ t('profile.back_to_site') }}
         </a>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-5 gap-0 rounded-lg shadow-xl overflow-hidden settings-page">
         <!-- Sidebar -->
-        <aside class="lg:col-span-1 settings-sidebar p-6 lg:min-h-[600px]" role="tablist" aria-label="Configuración">
+        <aside class="lg:col-span-1 settings-sidebar p-6 lg:min-h-[600px]" role="tablist" aria-label="{{ t('profile.title') }}">
             <nav class="space-y-1">
                 <button role="tab" aria-selected="true" aria-controls="panel-cuenta" id="tab-cuenta" tabindex="0"
                     class="settings-tab active" onclick="showSettingsTab('cuenta')">
                     <i data-lucide="user" class="w-4 h-4" aria-hidden="true"></i>
-                    <span>Cuenta</span>
+                    <span>{{ t('profile.account') }}</span>
                 </button>
                 <button role="tab" aria-selected="false" aria-controls="panel-apariencia" id="tab-apariencia" tabindex="-1"
                     class="settings-tab" onclick="showSettingsTab('apariencia')">
                     <i data-lucide="palette" class="w-4 h-4" aria-hidden="true"></i>
-                    <span>Apariencia</span>
+                    <span>{{ t('profile.appearance') }}</span>
                 </button>
                 <button role="tab" aria-selected="false" aria-controls="panel-notificaciones" id="tab-notificaciones" tabindex="-1"
                     class="settings-tab" onclick="showSettingsTab('notificaciones')">
                     <i data-lucide="bell" class="w-4 h-4" aria-hidden="true"></i>
-                    <span>Notificaciones</span>
+                    <span>{{ t('profile.notifications') }}</span>
                 </button>
                 <button role="tab" aria-selected="false" aria-controls="panel-seguridad" id="tab-seguridad" tabindex="-1"
                     class="settings-tab" onclick="showSettingsTab('seguridad')">
                     <i data-lucide="shield" class="w-4 h-4" aria-hidden="true"></i>
-                    <span>Seguridad</span>
+                    <span>{{ t('profile.security') }}</span>
                 </button>
                 <button role="tab" aria-selected="false" aria-controls="panel-actividad" id="tab-actividad" tabindex="-1"
                     class="settings-tab" onclick="showSettingsTab('actividad')">
                     <i data-lucide="activity" class="w-4 h-4" aria-hidden="true"></i>
-                    <span>Actividad</span>
+                    <span>{{ t('profile.activity') }}</span>
                 </button>
                 <button role="tab" aria-selected="false" aria-controls="panel-solicitudes" id="tab-solicitudes" tabindex="-1"
                     class="settings-tab" onclick="showSettingsTab('solicitudes')">
                     <i data-lucide="file-text" class="w-4 h-4" aria-hidden="true"></i>
-                    <span>Solicitudes</span>
+                    <span>{{ t('profile.leads') }}</span>
                 </button>
                 {% if user and user.role == 'professional' %}
                 <button role="tab" aria-selected="false" aria-controls="panel-profesional" id="tab-profesional" tabindex="-1"
                     class="settings-tab" onclick="showSettingsTab('profesional')">
                     <i data-lucide="briefcase" class="w-4 h-4" aria-hidden="true"></i>
-                    <span>Profesional</span>
+                    <span>{{ t('profile.professional_tab') }}</span>
                 </button>
                 {% endif %}
             </nav>
@@ -72,7 +72,7 @@
                     <div class="flex items-start gap-8 mb-8">
                         <!-- Avatar -->
                         <div class="flex-shrink-0 text-center">
-                            <div class="avatar-upload relative mx-auto" id="avatar-container" onclick="document.getElementById('avatar-input').click()" role="button" tabindex="0" aria-label="Cambiar foto de perfil" onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
+                            <div class="avatar-upload relative mx-auto" id="avatar-container" onclick="document.getElementById('avatar-input').click()" role="button" tabindex="0" aria-label="{{ t('profile.avatar_change') }}" onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
                                 <div class="avatar-ring" id="avatar-ring"></div>
                                 <img id="avatar-preview" src="{% if user and user.avatar_path %}{{ url_for('static', filename=user.avatar_path) }}{% else %}{{ url_for('static', filename='img/default-avatar.svg') }}{% endif %}" alt="Foto de perfil" class="w-full h-full rounded-full object-cover border-4" style="border-color:var(--border)">
                                 <div class="avatar-overlay">
@@ -81,7 +81,7 @@
                             </div>
                             <input type="file" id="avatar-input" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" onchange="uploadAvatar(this)">
                             <button onclick="deleteAvatar()" class="text-[9px] uppercase tracking-widest font-bold mt-2 hover:text-rose-500 transition-colors" style="color:var(--text-secondary)" type="button">
-                                <span class="sr-only">Eliminar</span>Eliminar foto
+                                <span class="sr-only">{{ t('profile.avatar_delete') }}</span>{{ t('profile.avatar_delete') }}
                             </button>
                             <p id="avatar-status" class="text-[9px] mt-1" aria-live="polite"></p>
                         </div>
@@ -89,30 +89,30 @@
                         <!-- Personal data -->
                         <div class="flex-grow space-y-5">
                             <div>
-                                <label for="profile-username" class="input-label">Usuario</label>
+                                <label for="profile-username" class="input-label">{{ t('profile.username') }}</label>
                                 <input id="profile-username" type="text" value="{{ user.username if user else '' }}" readonly class="input-field field-readonly">
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
-                                    <label for="profile-first-name" class="input-label">Nombre</label>
+                                    <label for="profile-first-name" class="input-label">{{ t('profile.first_name') }}</label>
                                     <input id="profile-first-name" type="text" value="{{ user.first_name if user and user.first_name else '' }}" class="input-field" placeholder="Tu nombre">
                                 </div>
                                 <div>
-                                    <label for="profile-last-name" class="input-label">Apellido</label>
+                                    <label for="profile-last-name" class="input-label">{{ t('profile.last_name') }}</label>
                                     <input id="profile-last-name" type="text" value="{{ user.last_name if user and user.last_name else '' }}" class="input-field" placeholder="Tu apellido">
                                 </div>
                             </div>
                             <div>
-                                <label for="profile-email" class="input-label">Email</label>
+                                <label for="profile-email" class="input-label">{{ t('profile.email') }}</label>
                                 <input id="profile-email" type="email" value="{{ user.email if user else '' }}" class="input-field" oninput="validateProfileEmail()">
                                 <div class="flex items-center justify-between mt-1">
-                                    <p id="profile-email-hint" class="text-[9px] hint-text">Ingresa un email válido</p>
-                                    <p id="profile-email-valid" class="hidden text-[9px] font-medium text-emerald-600">Email válido</p>
-                                    <p id="profile-email-invalid" class="hidden text-[9px] font-medium text-rose-600">Email inválido</p>
+                                    <p id="profile-email-hint" class="text-[9px] hint-text">{{ t('profile.email_hint') }}</p>
+                                    <p id="profile-email-valid" class="hidden text-[9px] font-medium text-emerald-600">{{ t('profile.email_valid') }}</p>
+                                    <p id="profile-email-invalid" class="hidden text-[9px] font-medium text-rose-600">{{ t('profile.email_invalid') }}</p>
                                 </div>
                             </div>
                             <div>
-                                <label for="profile-phone" class="input-label">Teléfono</label>
+                                <label for="profile-phone" class="input-label">{{ t('profile.phone') }}</label>
                                 <div class="flex gap-2">
                                     <select id="profile-country-code" aria-label="Código de país" onchange="updateProfilePhoneFormat()" class="px-2 py-2 border border-midnight/20 rounded text-sm bg-white text-midnight w-14 flex-shrink-0">
                                         <option value="+54">+54</option>
@@ -161,13 +161,13 @@
                                     <input id="profile-phone" type="tel" value="{{ user.phone if user and user.phone else '' }}" class="input-field flex-1" placeholder="9 11 1234 5678" maxlength="16" oninput="validateProfilePhone()">
                                 </div>
                                 <div class="flex items-center justify-between mt-1">
-                                    <p id="profile-phone-hint" class="text-[9px] hint-text">El código de país se incluirá automáticamente</p>
-                                    <p id="profile-phone-valid" class="hidden text-[9px] font-medium text-emerald-600">Formato válido</p>
-                                    <p id="profile-phone-invalid" class="hidden text-[9px] font-medium text-rose-600">Formato inválido</p>
+                                    <p id="profile-phone-hint" class="text-[9px] hint-text">{{ t('profile.phone_hint') }}</p>
+                                    <p id="profile-phone-valid" class="hidden text-[9px] font-medium text-emerald-600">{{ t('profile.phone_valid') }}</p>
+                                    <p id="profile-phone-invalid" class="hidden text-[9px] font-medium text-rose-600">{{ t('profile.phone_invalid') }}</p>
                                 </div>
                                 <div id="profile-phone-suggestion" class="hidden mt-1">
                                     <button type="button" onclick="showPhoneCorrection()" class="text-[9px] text-amber-600 hover:text-amber-800 dark:hover:text-amber-300 transition-colors cursor-pointer">
-                                        &iquest;Corregir número?
+                                        {{ t('profile.phone_correct') }}
                                     </button>
                                 </div>
                                 <div id="phone-correction-preview" class="hidden mt-1 p-2 bg-amber-50 border border-amber-200 rounded text-[10px]">
@@ -178,8 +178,8 @@
                                             <span class="text-amber-700 font-medium" id="correction-to"></span>
                                         </div>
                                         <div class="flex gap-2 ml-2">
-                                            <button type="button" onclick="applyPhoneCorrection()" class="text-[9px] font-bold text-emerald-600 hover:text-emerald-800 dark:hover:text-emerald-300">Aplicar</button>
-                                            <button type="button" onclick="dismissPhoneCorrection()" class="text-[9px] font-bold text-midnight/60 hover:text-midnight/60">Cancelar</button>
+                                            <button type="button" onclick="applyPhoneCorrection()" class="text-[9px] font-bold text-emerald-600 hover:text-emerald-800 dark:hover:text-emerald-300">{{ t('profile.phone_apply') }}</button>
+                                            <button type="button" onclick="dismissPhoneCorrection()" class="text-[9px] font-bold text-midnight/60 hover:text-midnight/60">{{ t('profile.phone_dismiss') }}</button>
                                         </div>
                                     </div>
                                 </div>
@@ -188,30 +188,30 @@
                                         {% if user.phone_verified == 1 %}
                                         <span class="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-700 inline-flex items-center gap-1">
                                             {% if user.verification_channel == 'whatsapp' %}
-                                            <i data-lucide="message-circle" class="w-3 h-3"></i> Verificado por WhatsApp
+                                            <i data-lucide="message-circle" class="w-3 h-3"></i> {{ t('profile.phone_verified_whatsapp') }}
                                             {% else %}
-                                            <i data-lucide="smartphone" class="w-3 h-3"></i> Verificado por SMS
+                                            <i data-lucide="smartphone" class="w-3 h-3"></i> {{ t('profile.phone_verified_sms') }}
                                             {% endif %}
                                         </span>
                                         {% else %}
                                         <span class="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/60 inline-flex items-center gap-1">
-                                            <i data-lucide="phone-off" class="w-3 h-3"></i> No verificado
+                                            <i data-lucide="phone-off" class="w-3 h-3"></i> {{ t('profile.phone_not_verified') }}
                                         </span>
                                         <button type="button" id="verify-phone-btn"
                                             class="text-[10px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors"
                                             onclick="openPhoneVerifyModal()">
-                                            Verificar
+                                            {{ t('profile.verify') }}
                                         </button>
                                         {% endif %}
                                     {% endif %}
                                 </div>
                                 <div class="flex items-center gap-2 mt-1" id="channel-preference-area">
-                                    <label class="text-[9px] text-midnight/60 font-bold uppercase tracking-widest">Canal:</label>
+                                    <label class="text-[9px] text-midnight/60 font-bold uppercase tracking-widest">{{ t('profile.channel') }}</label>
                                     <select id="preferred-channel-select" onchange="savePreferredChannel(); toggleWhatsappHint()"
                                         class="px-2 py-1 border border-midnight/20 rounded text-[10px] bg-white text-midnight focus:border-gold focus:outline-none">
-                                        <option value="auto">Auto (detectar)</option>
-                                        <option value="sms">SMS</option>
-                                        <option value="whatsapp">WhatsApp</option>
+                                        <option value="auto">{{ t('profile.channel_auto') }}</option>
+                                        <option value="sms">{{ t('profile.channel_sms') }}</option>
+                                        <option value="whatsapp">{{ t('profile.channel_whatsapp') }}</option>
                                     </select>
                                     <p id="whatsapp-hint" class="hidden text-[9px] text-amber-600 font-medium mt-1">
                                         <i data-lucide="alert-triangle" class="w-3 h-3 inline"></i>
@@ -220,7 +220,7 @@
                                 </div>
                             </div>
                             <div>
-                                <label for="profile-bio" class="input-label">Biografía</label>
+                                <label for="profile-bio" class="input-label">{{ t('profile.bio') }}</label>
                                 <textarea id="profile-bio" rows="3" class="input-field resize-none" placeholder="Contanos sobre vos...">{{ user.bio if user and user.bio else '' }}</textarea>
                             </div>
                         </div>
@@ -229,9 +229,9 @@
                     <div class="flex items-center gap-4 pt-6 border-t" style="border-color:var(--border)">
                         <button id="save-profile-btn" onclick="saveUserProfile()" class="btn-primary">
                             <i data-lucide="save" class="w-4 h-4" aria-hidden="true"></i>
-                            Guardar Cambios
+                            {{ t('profile.save_changes') }}
                         </button>
-                        <span id="profile-save-msg" class="hidden text-sm font-medium text-emerald-600" aria-live="polite">Guardado correctamente</span>
+                        <span id="profile-save-msg" class="hidden text-sm font-medium text-emerald-600" aria-live="polite">{{ t('profile.saved') }}</span>
                         <span id="profile-error-msg" class="hidden text-sm font-medium text-rose-600" role="alert"></span>
                     </div>
                 </div>
@@ -240,25 +240,25 @@
             <!-- ==================== PANEL: APARIENCIA ==================== -->
             <div role="tabpanel" id="panel-apariencia" aria-labelledby="tab-apariencia" hidden>
                 <div class="settings-card">
-                    <h2 class="text-xl font-serif italic mb-6" style="color:var(--text-primary)">Apariencia</h2>
+                    <h2 class="text-xl font-serif italic mb-6" style="color:var(--text-primary)">{{ t('profile.appearance_title') }}</h2>
 
                     <div class="space-y-6">
                         <div>
-                            <label class="input-label">Tema</label>
+                            <label class="input-label">{{ t('profile.theme') }}</label>
                             <div class="flex gap-4 mt-2">
                                 <button id="theme-light-btn" onclick="setTheme('light')" class="theme-option active" data-theme="light" aria-pressed="true">
                                     <i data-lucide="sun" class="w-5 h-5" aria-hidden="true"></i>
-                                    <span class="text-xs font-bold uppercase tracking-widest">Claro</span>
+                                    <span class="text-xs font-bold uppercase tracking-widest">{{ t('profile.theme_light') }}</span>
                                 </button>
                                 <button id="theme-dark-btn" onclick="setTheme('dark')" class="theme-option" data-theme="dark" aria-pressed="false">
                                     <i data-lucide="moon" class="w-5 h-5" aria-hidden="true"></i>
-                                    <span class="text-xs font-bold uppercase tracking-widest">Oscuro</span>
+                                    <span class="text-xs font-bold uppercase tracking-widest">{{ t('profile.theme_dark') }}</span>
                                 </button>
                             </div>
                         </div>
 
                         <div>
-                            <label for="settings-language" class="input-label">Idioma</label>
+                            <label for="settings-language" class="input-label">{{ t('profile.language') }}</label>
                             <select id="settings-language" class="input-field max-w-xs">
                                 <option value="es">Español</option>
                                 <option value="en">English</option>
@@ -269,9 +269,9 @@
                     <div class="flex items-center gap-4 pt-6 mt-6 border-t" style="border-color:var(--border)">
                         <button onclick="saveSettings()" class="btn-primary">
                             <i data-lucide="save" class="w-4 h-4" aria-hidden="true"></i>
-                            Guardar Preferencias
+                            {{ t('profile.save_preferences') }}
                         </button>
-                        <span id="settings-save-msg" class="hidden text-sm font-medium text-emerald-600" aria-live="polite">Preferencias guardadas</span>
+                        <span id="settings-save-msg" class="hidden text-sm font-medium text-emerald-600" aria-live="polite">{{ t('profile.preferences_saved') }}</span>
                         <span id="settings-error-msg" class="hidden text-sm font-medium text-rose-600" role="alert"></span>
                     </div>
                 </div>
@@ -280,51 +280,51 @@
             <!-- ==================== PANEL: NOTIFICACIONES ==================== -->
             <div role="tabpanel" id="panel-notificaciones" aria-labelledby="tab-notificaciones" hidden>
                 <div class="settings-card">
-                    <h2 class="text-xl font-serif italic mb-6" style="color:var(--text-primary)">Notificaciones</h2>
+                    <h2 class="text-xl font-serif italic mb-6" style="color:var(--text-primary)">{{ t('profile.notif_title') }}</h2>
 
                     <div class="space-y-5">
                         <label class="toggle-row">
-                            <span class="toggle-label">Notificaciones por email</span>
+                            <span class="toggle-label">{{ t('profile.notif_email') }}</span>
                             <input type="checkbox" id="notif-email" class="toggle-input" checked onchange="saveSettings()">
                             <span class="toggle-slider" aria-hidden="true"></span>
                         </label>
                         <label class="toggle-row">
-                            <span class="toggle-label">Notificaciones por SMS</span>
+                            <span class="toggle-label">{{ t('profile.notif_sms') }}</span>
                             <input type="checkbox" id="notif-sms" class="toggle-input" checked onchange="saveSettings()">
                             <span class="toggle-slider" aria-hidden="true"></span>
                         </label>
                         <label class="toggle-row">
-                            <span class="toggle-label">Alertas de nuevos leads</span>
+                            <span class="toggle-label">{{ t('profile.notif_leads') }}</span>
                             <input type="checkbox" id="notif-leads" class="toggle-input" checked onchange="saveSettings()">
                             <span class="toggle-slider" aria-hidden="true"></span>
                         </label>
                     </div>
 
                     <div class="mt-6 pt-4 border-t" style="border-color:var(--border)">
-                        <label class="text-xs font-semibold mb-2 block" style="color:var(--text-primary)">Canal de notificación preferido</label>
+                        <label class="text-xs font-semibold mb-2 block" style="color:var(--text-primary)">{{ t('profile.notif_channel') }}</label>
                         <select id="notif-channel" onchange="saveNotifChannel()"
                                 class="w-full max-w-xs px-3 py-1.5 text-xs rounded border"
                                 style="border-color:var(--border);color:var(--text-primary);background:var(--bg-card)">
                             <option value="email">Email</option>
                             <option value="whatsapp">WhatsApp</option>
                             <option value="ambos">Email + WhatsApp</option>
-                            <option value="auto">Automático (WhatsApp si disponible)</option>
+                            <option value="auto">{{ t('profile.notif_channel_auto') }}</option>
                         </select>
-                        <span id="channel-save-msg" class="hidden text-xs font-medium text-emerald-600 ml-3" aria-live="polite">Guardado</span>
+                        <span id="channel-save-msg" class="hidden text-xs font-medium text-emerald-600 ml-3" aria-live="polite">{{ t('profile.notif_saved') }}</span>
                     </div>
 
                     <div class="flex items-center gap-4 pt-6 mt-6 border-t" style="border-color:var(--border)">
-                        <span id="notif-save-msg" class="text-sm font-medium text-emerald-600" aria-live="polite">Se guarda automaticamente</span>
+                        <span id="notif-save-msg" class="text-sm font-medium text-emerald-600" aria-live="polite">{{ t('profile.notif_auto_save') }}</span>
                     </div>
 
                     {% if session.get('role') == 'professional' %}
                     <!-- Filtros de notificaciones para profesionales -->
                     <div class="mt-8 pt-6 border-t" style="border-color:var(--border)">
-                        <h3 class="text-xs font-bold uppercase tracking-widest mb-4" style="color:var(--accent)">Filtros de notificaciones</h3>
-                        <p class="text-xs mb-4" style="color:var(--text-secondary)">Seleccioná qué tipos de leads querés recibir por email y en la app. Si no seleccionás ninguno, recibís todos.</p>
+                        <h3 class="text-xs font-bold uppercase tracking-widest mb-4" style="color:var(--accent)">{{ t('profile.notif_filters_title') }}</h3>
+                        <p class="text-xs mb-4" style="color:var(--text-secondary)">{{ t('profile.notif_filters_desc') }}</p>
 
                         <div class="mb-4">
-                            <label class="text-xs font-semibold mb-2 block" style="color:var(--text-primary)">Tipo de operación</label>
+                            <label class="text-xs font-semibold mb-2 block" style="color:var(--text-primary)">{{ t('profile.filter_op_type') }}</label>
                             <div id="filter-types" class="flex flex-wrap gap-2">
                             {% for opt in form_options.get('operation_type', []) %}
                                 <label class="filter-chip cursor-pointer px-3 py-1.5 rounded-full text-xs font-medium border transition-colors" style="border-color:var(--border);color:var(--text-secondary)" data-value="{{ opt.value }}">
@@ -336,7 +336,7 @@
                         </div>
 
                         <div class="mb-4">
-                            <label class="text-xs font-semibold mb-2 block" style="color:var(--text-primary)">Tipo de propiedad</label>
+                            <label class="text-xs font-semibold mb-2 block" style="color:var(--text-primary)">{{ t('profile.filter_prop_type') }}</label>
                             <div id="filter-property-types" class="flex flex-wrap gap-2">
                             {% for opt in form_options.get('property_type', []) %}
                                 <label class="filter-chip cursor-pointer px-3 py-1.5 rounded-full text-xs font-medium border transition-colors" style="border-color:var(--border);color:var(--text-secondary)" data-value="{{ opt.value }}">
@@ -349,7 +349,7 @@
 
                         <!-- Budget range -->
                         <div class="mb-4">
-                            <label class="text-xs font-semibold mb-2 block" style="color:var(--text-primary)">Rango de presupuesto (opcional)</label>
+                            <label class="text-xs font-semibold mb-2 block" style="color:var(--text-primary)">{{ t('profile.filter_budget_range') }}</label>
                             <div class="flex items-center gap-3">
                                 <input type="number" id="filter-budget-min" placeholder="Desde"
                                        class="w-28 px-3 py-1.5 text-xs rounded border" min="0" step="0.01"
@@ -364,9 +364,9 @@
 
                         <button onclick="saveNotifFilters()" class="btn-primary text-xs mt-2">
                             <i data-lucide="save" class="w-3 h-3" aria-hidden="true"></i>
-                            Guardar filtros
+                            {{ t('profile.filter_save') }}
                         </button>
-                        <span id="filter-save-msg" class="hidden text-xs font-medium text-emerald-600 ml-3" aria-live="polite">Filtros guardados</span>
+                        <span id="filter-save-msg" class="hidden text-xs font-medium text-emerald-600 ml-3" aria-live="polite">{{ t('profile.filter_saved') }}</span>
                         <span id="filter-error-msg" class="hidden text-xs font-medium text-rose-600 ml-3" role="alert"></span>
                     </div>
 
@@ -494,31 +494,31 @@
             <!-- ==================== PANEL: SEGURIDAD ==================== -->
             <div role="tabpanel" id="panel-seguridad" aria-labelledby="tab-seguridad" hidden>
                 <div class="settings-card">
-                    <h2 class="text-xl font-serif italic mb-6" style="color:var(--text-primary)">Seguridad</h2>
+                    <h2 class="text-xl font-serif italic mb-6" style="color:var(--text-primary)">{{ t('profile.security_title') }}</h2>
 
                     <!-- Cambiar contraseña -->
                     <div class="settings-section">
-                        <h3 class="text-xs font-bold uppercase tracking-widest mb-4" style="color:var(--accent)">Cambiar Contraseña</h3>
+                        <h3 class="text-xs font-bold uppercase tracking-widest mb-4" style="color:var(--accent)">{{ t('profile.change_password') }}</h3>
                         <div class="space-y-4 max-w-md">
                             <div>
-                                <label for="current-password" class="input-label">Contraseña Actual</label>
+                                <label for="current-password" class="input-label">{{ t('profile.current_password') }}</label>
                                 <input id="current-password" type="password" autocomplete="current-password" class="input-field">
                             </div>
                             <div>
-                                <label for="new-password" class="input-label">Nueva Contraseña</label>
+                                <label for="new-password" class="input-label">{{ t('profile.new_password') }}</label>
                                 <input id="new-password" type="password" autocomplete="new-password" class="input-field">
-                                <p class="text-[9px] mt-1 hint-text">Mínimo 6 caracteres, al menos una letra y un número</p>
+                                <p class="text-[9px] mt-1 hint-text">{{ t('profile.new_password_hint') }}</p>
                             </div>
                             <div>
-                                <label for="confirm-password" class="input-label">Confirmar Nueva Contraseña</label>
+                                <label for="confirm-password" class="input-label">{{ t('profile.confirm_password') }}</label>
                                 <input id="confirm-password" type="password" autocomplete="new-password" class="input-field">
                             </div>
                             <div class="flex items-center gap-4">
                                 <button id="save-password-btn" onclick="changePassword()" class="btn-primary">
                                     <i data-lucide="lock" class="w-4 h-4" aria-hidden="true"></i>
-                                    Cambiar Contraseña
+                                    {{ t('profile.change_password') }}
                                 </button>
-                                <span id="password-save-msg" class="hidden text-sm font-medium text-emerald-600" aria-live="polite">Contraseña actualizada</span>
+                                <span id="password-save-msg" class="hidden text-sm font-medium text-emerald-600" aria-live="polite">{{ t('profile.password_updated') }}</span>
                                 <span id="password-error-msg" class="hidden text-sm font-medium text-rose-600" role="alert"></span>
                             </div>
                         </div>
@@ -526,9 +526,9 @@
 
                     <!-- Sesiones activas -->
                     <div>
-                        <h3 class="text-xs font-bold uppercase tracking-widest mb-4" style="color:var(--accent)">Sesiones Activas</h3>
+                        <h3 class="text-xs font-bold uppercase tracking-widest mb-4" style="color:var(--accent)">{{ t('profile.active_sessions') }}</h3>
                         <div id="sessions-container">
-                            <div class="text-sm hint-text">Cargando sesiones...</div>
+                            <div class="text-sm hint-text">{{ t('profile.loading_sessions') }}</div>
                         </div>
                     </div>
                 </div>
@@ -537,9 +537,9 @@
             <!-- ==================== PANEL: ACTIVIDAD ==================== -->
             <div role="tabpanel" id="panel-actividad" aria-labelledby="tab-actividad" hidden>
                 <div class="settings-card">
-                    <h2 class="text-xl font-serif italic mb-6" style="color:var(--text-primary)">Actividad Reciente</h2>
+                    <h2 class="text-xl font-serif italic mb-6" style="color:var(--text-primary)">{{ t('profile.activity_title') }}</h2>
                     <div id="activity-container">
-                        <div class="text-sm hint-text">Cargando actividad...</div>
+                        <div class="text-sm hint-text">{{ t('profile.loading_activity') }}</div>
                     </div>
                 </div>
             </div>
@@ -547,38 +547,38 @@
             <!-- ==================== PANEL: SOLICITUDES ==================== -->
             <div role="tabpanel" id="panel-solicitudes" aria-labelledby="tab-solicitudes" hidden>
                 <div class="settings-card">
-                    <h2 class="text-xl font-serif italic mb-6" style="color:var(--text-primary)">Mis Solicitudes</h2>
+                    <h2 class="text-xl font-serif italic mb-6" style="color:var(--text-primary)">{{ t('profile.my_leads') }}</h2>
 
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse profile-leads-table" id="leads-table">
                             <thead>
                                 <tr>
                                     <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold" style="color:var(--accent)">ID</th>
-                                    <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold" style="color:var(--accent)">Tipo</th>
-                                    <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold" style="color:var(--accent)">Zona</th>
-                                    <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold" style="color:var(--accent)">Presupuesto</th>
-                                    <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold" style="color:var(--accent)">Fecha</th>
+                                    <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold" style="color:var(--accent)">{{ t('leads.type') }}</th>
+                                    <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold" style="color:var(--accent)">{{ t('leads.zone') }}</th>
+                                    <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold" style="color:var(--accent)">{{ t('leads.budget') }}</th>
+                                    <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold" style="color:var(--accent)">{{ t('leads.date') }}</th>
                                     <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold" style="color:var(--accent)">
                                         <span class="inline-flex items-center gap-1.5">
                                             <i data-lucide="trending-up" class="w-3 h-3"></i>
-                                            Seguimiento
+                                            {{ t('leads.follow_up') }}
                                         </span>
                                     </th>
-                                    <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold" style="color:var(--accent)">Acción</th>
+                                    <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold" style="color:var(--accent)">{{ t('leads.action') }}</th>
                                 </tr>
                             </thead>
                             <tbody id="leads-tbody" class="stagger-rows">
                                 <tr>
-                                    <td colspan="7" class="p-8 text-center text-sm hint-text">Cargando solicitudes...</td>
+                                    <td colspan="7" class="p-8 text-center text-sm hint-text">{{ t('profile.loading_leads') }}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                     <div id="no-leads-msg" class="hidden p-8 text-center empty-pulse">
                         <i data-lucide="inbox" class="w-12 h-12 mx-auto mb-4" style="color:var(--text-secondary)"></i>
-                        <p class="text-sm hint-text">No tenes solicitudes registradas aun.</p>
+                        <p class="text-sm hint-text">{{ t('profile.no_leads') }}</p>
                         <a href="{{ url_for('client.user_view') }}" class="inline-block mt-4 text-[10px] uppercase tracking-widest font-bold" style="color:var(--accent)">
-                            Crear una solicitud
+                            {{ t('profile.create_lead') }}
                         </a>
                     </div>
                 </div>
@@ -588,13 +588,13 @@
             {% if user and user.role == 'professional' %}
             <div role="tabpanel" id="panel-profesional" aria-labelledby="tab-profesional" hidden>
                 <div class="settings-card">
-                    <h2 class="text-xl font-serif italic mb-6" style="color:var(--text-primary)">Perfil Profesional</h2>
+                    <h2 class="text-xl font-serif italic mb-6" style="color:var(--text-primary)">{{ t('profile.pro_profile') }}</h2>
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         <!-- Columna izquierda: foto + datos básicos -->
                         <div class="space-y-6">
                             <div class="text-center">
-                                <div class="avatar-upload relative mx-auto" id="pro-photo-container" onclick="document.getElementById('pro-photo-input').click()" role="button" tabindex="0" aria-label="Cambiar foto profesional" onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
+                                <div class="avatar-upload relative mx-auto" id="pro-photo-container" onclick="document.getElementById('pro-photo-input').click()" role="button" tabindex="0" aria-label="{{ t('profile.pro_photo_change') }}" onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
                                     <div class="avatar-ring" id="pro-photo-ring"></div>
                                     <img id="pro-photo-preview" src="{{ url_for('static', filename='img/default-avatar.svg') }}" alt="Foto profesional" class="w-full h-full rounded-full object-cover border-4" style="border-color:var(--border)">
                                     <div class="avatar-overlay">
@@ -602,18 +602,18 @@
                                     </div>
                                 </div>
                                 <input type="file" id="pro-photo-input" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" onchange="uploadProfessionalPhoto(this)">
-                                <button onclick="deleteProfessionalPhoto()" class="text-[9px] uppercase tracking-widest font-bold mt-2 hover:text-rose-500 transition-colors" style="color:var(--text-secondary)" type="button">Eliminar foto</button>
+                                <button onclick="deleteProfessionalPhoto()" class="text-[9px] uppercase tracking-widest font-bold mt-2 hover:text-rose-500 transition-colors" style="color:var(--text-secondary)" type="button">{{ t('profile.avatar_delete') }}</button>
                                 <p id="pro-photo-status" class="text-[9px] mt-1" aria-live="polite"></p>
                             </div>
 
                             <div>
-                                <label class="input-label">Matrícula</label>
+                                <label class="input-label">{{ t('profile.pro_license') }}</label>
                                 <p id="pro-license" class="text-sm font-mono font-semibold" style="color:var(--text-primary)"></p>
                                 <p id="pro-license-status" class="text-[10px] font-bold uppercase tracking-widest mt-1"></p>
                             </div>
 
                             <div>
-                                <label class="input-label">Estado</label>
+                                <label class="input-label">{{ t('profile.pro_status') }}</label>
                                 <p id="pro-status" class="text-sm font-semibold"></p>
                             </div>
                         </div>
@@ -621,89 +621,89 @@
                         <!-- Columnas derechas: formulario -->
                         <div class="lg:col-span-2 space-y-5">
                             <div>
-                                <label for="pro-bio" class="input-label">Bio Profesional</label>
+                                <label for="pro-bio" class="input-label">{{ t('profile.pro_bio') }}</label>
                                 <textarea id="pro-bio" rows="4" class="input-field resize-none" placeholder="Describí tu experiencia y especialización..."></textarea>
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
-                                    <label for="pro-experience" class="input-label">Años de Experiencia</label>
+                                    <label for="pro-experience" class="input-label">{{ t('profile.pro_experience') }}</label>
                                     <input id="pro-experience" type="number" min="0" max="50" class="input-field" placeholder="0">
                                 </div>
                                 <div>
-                                    <label for="pro-address" class="input-label">Dirección Profesional</label>
+                                    <label for="pro-address" class="input-label">{{ t('profile.pro_address') }}</label>
                                     <input id="pro-address" type="text" class="input-field" placeholder="Ej: Av. Corrientes 1234, CABA">
                                 </div>
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
-                                    <label for="pro-province" class="input-label">Provincia</label>
+                                    <label for="pro-province" class="input-label">{{ t('profile.pro_province') }}</label>
                                     <select id="pro-province" class="input-field">
-                                        <option value="">Todas las provincias</option>
+                                        <option value="">{{ t('profile.pro_all_provinces') }}</option>
                                         {% for opt in form_options.get('province', []) %}
                                         <option value="{{ opt.value }}">{{ opt.label }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
                                 <div>
-                                    <label for="pro-zone" class="input-label">Zona de Cobertura</label>
+                                    <label for="pro-zone" class="input-label">{{ t('profile.pro_zone') }}</label>
                                     <input id="pro-zone" type="text" class="input-field" placeholder="Ej: Palermo, Recoleta, Belgrano...">
-                                    <p class="text-[9px] text-midnight/60 mt-1">Barrios o zonas donde trabajás</p>
+                                    <p class="text-[9px] text-midnight/60 mt-1">{{ t('profile.pro_zone_desc') }}</p>
                                 </div>
                             </div>
 
                             <div>
-                                <label class="input-label">Servicios Ofrecidos</label>
+                                <label class="input-label">{{ t('profile.pro_services') }}</label>
                                 <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2" id="services-container">
                                     <label class="chip-checkbox">
                                         <input type="checkbox" value="tasacion" onchange="updateServicesOffered()">
-                                        <span class="chip-label">Tasación</span>
+                                        <span class="chip-label">{{ t('profile.pro_valuation') }}</span>
                                     </label>
                                     <label class="chip-checkbox">
                                         <input type="checkbox" value="proyecto" onchange="updateServicesOffered()">
-                                        <span class="chip-label">Proyecto Arquitectónico</span>
+                                        <span class="chip-label">{{ t('profile.pro_project') }}</span>
                                     </label>
                                     <label class="chip-checkbox">
                                         <input type="checkbox" value="direccion_obra" onchange="updateServicesOffered()">
-                                        <span class="chip-label">Dirección de Obra</span>
+                                        <span class="chip-label">{{ t('profile.pro_direction') }}</span>
                                     </label>
                                     <label class="chip-checkbox">
                                         <input type="checkbox" value="venta" onchange="updateServicesOffered()">
-                                        <span class="chip-label">Venta</span>
+                                        <span class="chip-label">{{ t('profile.pro_sale') }}</span>
                                     </label>
                                     <label class="chip-checkbox">
                                         <input type="checkbox" value="alquiler" onchange="updateServicesOffered()">
-                                        <span class="chip-label">Alquiler</span>
+                                        <span class="chip-label">{{ t('profile.pro_rent') }}</span>
                                     </label>
                                     <label class="chip-checkbox">
                                         <input type="checkbox" value="property_management" onchange="updateServicesOffered()">
-                                        <span class="chip-label">Property Management</span>
+                                        <span class="chip-label">{{ t('profile.pro_mgmt') }}</span>
                                     </label>
                                     <label class="chip-checkbox">
                                         <input type="checkbox" value="decoracion" onchange="updateServicesOffered()">
-                                        <span class="chip-label">Decoración</span>
+                                        <span class="chip-label">{{ t('profile.pro_decor') }}</span>
                                     </label>
                                     <label class="chip-checkbox">
                                         <input type="checkbox" value="otro" onchange="updateServicesOffered()">
-                                        <span class="chip-label">Otro</span>
+                                        <span class="chip-label">{{ t('profile.pro_other') }}</span>
                                     </label>
                                 </div>
                             </div>
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
-                                    <label for="pro-fee-min" class="input-label">Honorarios Mínimos</label>
+                                    <label for="pro-fee-min" class="input-label">{{ t('profile.pro_fee_min') }}</label>
                                     <input id="pro-fee-min" type="number" min="0" class="input-field" placeholder="$0">
                                 </div>
                                 <div>
-                                    <label for="pro-fee-max" class="input-label">Honorarios Máximos</label>
+                                    <label for="pro-fee-max" class="input-label">{{ t('profile.pro_fee_max') }}</label>
                                     <input id="pro-fee-max" type="number" min="0" class="input-field" placeholder="$0">
                                 </div>
                             </div>
 
                             <div>
-                                <label class="input-label">Disponibilidad</label>
+                                <label class="input-label">{{ t('profile.pro_availability') }}</label>
                                 <div class="flex flex-wrap gap-3 mt-2" id="availability-container">
                                     <label class="chip-checkbox">
                                         <input type="checkbox" value="lun" onchange="updateAvailability()">
@@ -755,9 +755,9 @@
                     <div class="flex items-center gap-4 pt-6 mt-6 border-t" style="border-color:var(--border)">
                         <button onclick="saveProfessionalFullProfile()" class="btn-primary">
                             <i data-lucide="save" class="w-4 h-4" aria-hidden="true"></i>
-                            Guardar Perfil Profesional
+                            {{ t('profile.save_changes') }}
                         </button>
-                        <span id="pro-full-save-msg" class="hidden text-sm font-medium text-emerald-600" aria-live="polite">Guardado correctamente</span>
+                        <span id="pro-full-save-msg" class="hidden text-sm font-medium text-emerald-600" aria-live="polite">{{ t('profile.saved') }}</span>
                         <span id="pro-full-error-msg" class="hidden text-sm font-medium text-rose-600" role="alert"></span>
                     </div>
 
@@ -791,9 +791,9 @@
                 </button>
 
                 <i data-lucide="shield" class="w-8 h-8 text-gold mb-4"></i>
-                <h3 id="verify-phone-title" class="text-xl font-serif text-midnight mb-1">Verificar Teléfono</h3>
+                <h3 id="verify-phone-title" class="text-xl font-serif text-midnight mb-1">{{ t('profile.verify') }}</h3>
                 <p class="text-[10px] uppercase tracking-widest font-bold text-gold mb-6">
-                    Ingresá el código de 6 dígitos
+                    {{ t('profile.verify') }}
                 </p>
 
                 <p id="modal-whatsapp-hint" class="hidden text-[9px] text-amber-600 font-medium text-center mb-4">
@@ -824,13 +824,13 @@
 
                 <p id="verify-error" class="hidden text-[10px] text-rose-600 font-bold uppercase tracking-widest text-center mb-4"></p>
                 <p id="verify-success" class="hidden text-[10px] text-emerald-600 font-bold uppercase tracking-widest text-center mb-4">
-                    <i data-lucide="check-circle" class="w-3 h-3 inline"></i> Teléfono verificado correctamente
+                    <i data-lucide="check-circle" class="w-3 h-3 inline"></i> {{ t('profile.phone_verified_sms') }}
                 </p>
 
                 <button id="verify-submit-btn"
                     class="w-full bg-gold text-white py-4 rounded font-bold uppercase tracking-widest text-xs hover:bg-midnight transition-all duration-300"
                     onclick="submitVerificationCode()">
-                    Verificar
+                    {{ t('profile.verify') }}
                 </button>
 
                 <p class="text-center mt-4">
