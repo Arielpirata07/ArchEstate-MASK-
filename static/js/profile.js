@@ -582,6 +582,7 @@ function setThemeUI(theme) {
 function saveSettings() {
     const langEl = document.getElementById('settings-language');
     const themeBtn = document.querySelector('.theme-option.active');
+    const currentLang = document.documentElement.lang || 'es';
     const data = {
         theme: themeBtn ? themeBtn.dataset.theme : 'light',
         language: langEl ? langEl.value : 'es',
@@ -604,6 +605,10 @@ function saveSettings() {
             if (err) { err.textContent = result.error; err.classList.remove('hidden'); }
         } else {
             if (msg) { msg.classList.remove('hidden'); setTimeout(() => msg.classList.add('hidden'), 3000); }
+            // Recargar si cambió el idioma
+            if (data.language !== currentLang) {
+                setTimeout(() => window.location.reload(), 500);
+            }
         }
     })
     .catch(() => {
