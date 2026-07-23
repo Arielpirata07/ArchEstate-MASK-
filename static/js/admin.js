@@ -240,9 +240,9 @@ function renderMonthChart() {
     charts['month'] = new Chart(document.getElementById('chart-month'), {
         type: isLine ? 'line' : 'bar',
         data: {
-            labels: labels.length ? labels : ['Este mes'],
+            labels: labels.length ? labels : [t('dashboard.this_month')],
             datasets: [{
-                label: 'Leads',
+                label: t('dashboard.leads'),
                 data:  values.length ? values : [data.total_leads],
                 borderColor: getPalette().gold[0],
                 backgroundColor: isLine
@@ -321,8 +321,8 @@ async function initDashboard() {
         animateCounter(document.getElementById('kpi-pros-pending'),  pending?.value  || 0);
 
         const pct = totalPros ? Math.round((approved?.value || 0) / totalPros * 100) : 0;
-        document.getElementById('kpi-pros-approved-pct').textContent = totalPros ? `${pct}% del total` : '';
-        document.getElementById('kpi-pending-label').textContent     = (pending?.value || 0) > 0 ? '⚠ Requieren revisión' : '';
+        document.getElementById('kpi-pros-approved-pct').textContent = totalPros ? t('dashboard.pct_of_total', {pct: pct}) : '';
+        document.getElementById('kpi-pending-label').textContent     = (pending?.value || 0) > 0 ? t('dashboard.requires_review') : '';
 
         const totalAudit = data.audit_actions.reduce((sum, a) => sum + a.value, 0);
         animateCounter(document.getElementById('kpi-audit'), totalAudit);
@@ -333,7 +333,7 @@ async function initDashboard() {
         const phoneClicks = data.phone_clicks || 0;
         const phoneReveals = data.phone_reveals || 0;
         const phoneRate = phoneClicks ? Math.round(phoneReveals / phoneClicks * 100) : 0;
-        document.getElementById('kpi-phones-rate').textContent = phoneClicks ? `${phoneRate}% de intentos exitosos` : '';
+        document.getElementById('kpi-phones-rate').textContent = phoneClicks ? t('dashboard.phone_success_rate', {rate: phoneRate}) : '';
 
         // Gráficos (solo si Chart.js cargó correctamente)
         if (typeof Chart !== 'undefined') {
@@ -346,7 +346,7 @@ async function initDashboard() {
                 data: {
                     labels: data.leads_by_zone.map(d => d.label),
                     datasets: [{
-                        label: 'Leads',
+                        label: t('dashboard.leads'),
                         data: data.leads_by_zone.map(d => d.value),
                         backgroundColor: getPalette().dark,
                         borderRadius: 4,
@@ -395,7 +395,7 @@ async function initDashboard() {
                 data: {
                     labels: data.leads_by_budget.map(d => d.label),
                     datasets: [{
-                        label: 'Leads',
+                        label: t('dashboard.leads'),
                         data: data.leads_by_budget.map(d => d.value),
                         backgroundColor: getPalette().mixed,
                         borderRadius: 4,
@@ -473,9 +473,9 @@ async function loadTelemetry() {
         animateCounter(document.getElementById('tm-phone-revealed'), r);
         var rateEl = document.getElementById('tm-phone-rate');
         var rate = m.phone_success_rate_pct != null ? m.phone_success_rate_pct : 0;
-        rateEl.textContent = rate > 0 ? rate + '% de éxito' : '—';
+        rateEl.textContent = rate > 0 ? t('dashboard.success_rate', {rate: rate}) : '—';
         var telEl = document.getElementById('tm-tel-clicks');
-        telEl.innerHTML = '<i data-lucide="phone" class="w-2.5 h-2.5"></i> <span>' + tc + ' clics en Llamar</span>';
+        telEl.innerHTML = '<i data-lucide="phone" class="w-2.5 h-2.5"></i> <span>' + t('dashboard.call_clicks', {count: tc}) + '</span>';
         animateCounter(document.getElementById('tm-wa-clicks'), m.wa_button_clicks || 0);
         var ctrEl = document.getElementById('tm-wa-ctr');
         var ctr = m.wa_click_through_rate_pct != null ? m.wa_click_through_rate_pct : 0;
@@ -600,11 +600,11 @@ async function loadProfessionals() {
             renderProfessionals(data.professionals);
             updateProsCount(data.total);
         } else {
-            showProError(data.error || 'Error al cargar profesionales');
+            showProError(data.error || t('error.pros_load'));
         }
     } catch (error) {
         console.error('Error loading professionals:', error);
-        showProError('Error de conexión');
+        showProError(t('error.connection'));
     }
 }
 
@@ -617,7 +617,7 @@ function renderProfessionals(pros) {
             <tr>
                 <td colspan="5" class="p-8 text-center text-midnight/60">
                     <i data-lucide="search" class="w-8 h-8 mx-auto mb-2 text-midnight/30"></i>
-                    <p>No se encontraron profesionales con los filtros aplicados.</p>
+                    <p>${t('pros.not_found')}</p>
                 </td>
             </tr>
         `;
@@ -629,11 +629,11 @@ function renderProfessionals(pros) {
         // Badge de estado de habilitación profesional
         let statusBadge = '';
         if (pro.status === 'approved') {
-            statusBadge = '<span class="px-2 py-1 bg-emerald-50 text-emerald-700 text-[9px] font-bold uppercase tracking-widest rounded">Aprobado</span>';
+            statusBadge = '<span class="px-2 py-1 bg-emerald-50 text-emerald-700 text-[9px] font-bold uppercase tracking-widest rounded">' + t('status.approved') + '</span>';
         } else if (pro.status === 'rejected') {
-            statusBadge = '<span class="px-2 py-1 bg-rose-50 text-rose-700 text-[9px] font-bold uppercase tracking-widest rounded">Rechazado</span>';
+            statusBadge = '<span class="px-2 py-1 bg-rose-50 text-rose-700 text-[9px] font-bold uppercase tracking-widest rounded">' + t('status.rejected') + '</span>';
         } else {
-            statusBadge = '<span class="px-2 py-1 bg-amber-50 text-amber-700 text-[9px] font-bold uppercase tracking-widest rounded">Pendiente</span>';
+            statusBadge = '<span class="px-2 py-1 bg-amber-50 text-amber-700 text-[9px] font-bold uppercase tracking-widest rounded">' + t('status.pending') + '</span>';
         }
 
         // Badge de estado de cuenta (activa / baja)
@@ -645,7 +645,7 @@ function renderProfessionals(pros) {
                         : rawActive !== 0;
 
         const accountBadge = isActive === false
-            ? '<span class="ml-1 px-2 py-1 bg-midnight/10 text-midnight/50 text-[9px] font-bold uppercase tracking-widest rounded">Cuenta baja</span>'
+            ? '<span class="ml-1 px-2 py-1 bg-midnight/10 text-midnight/50 text-[9px] font-bold uppercase tracking-widest rounded">' + t('status.account_disabled') + '</span>'
             : '';
 
         // Botones de aprobación/rechazo (deshabilitados si cuenta dada de baja o sin usuario)
@@ -656,47 +656,47 @@ function renderProfessionals(pros) {
             approvalActions = `
                 <button onclick="updateProStatus('${pro.id}', 'approved', this)"
                     class="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-100 transition-colors">
-                    <i data-lucide="check" class="w-3 h-3"></i> Aprobar
+                    <i data-lucide="check" class="w-3 h-3"></i> ${t('action.approve')}
                 </button>
                 <button onclick="updateProStatus('${pro.id}', 'rejected', this)"
                     class="inline-flex items-center gap-1 px-2 py-1 bg-rose-50 text-rose-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-rose-100 transition-colors">
-                    <i data-lucide="x" class="w-3 h-3"></i> Rechazar
+                    <i data-lucide="x" class="w-3 h-3"></i> ${t('action.reject')}
                 </button>`;
         } else if (pro.status === 'approved') {
             approvalActions = `
                 <button onclick="updateProStatus('${pro.id}', 'rejected', this)"
                     class="inline-flex items-center gap-1 px-2 py-1 bg-rose-50 text-rose-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-rose-100 transition-colors">
-                    <i data-lucide="x" class="w-3 h-3"></i> Desaprobar
+                    <i data-lucide="x" class="w-3 h-3"></i> ${t('action.disapprove')}
                 </button>`;
         } else if (pro.status === 'rejected') {
             approvalActions = `
                 <button onclick="updateProStatus('${pro.id}', 'approved', this)"
                     class="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-100 transition-colors">
-                    <i data-lucide="check" class="w-3 h-3"></i> Aprobar
+                    <i data-lucide="check" class="w-3 h-3"></i> ${t('action.approve')}
                 </button>`;
         }
 
         // Botón de baja/reactivación — solo si hay usuario vinculado
         let accountBtn = '';
         if (!hasUser) {
-            accountBtn = '<span class="text-[10px] text-midnight/20 italic">Sin cuenta</span>';
+            accountBtn = '<span class="text-[10px] text-midnight/20 italic">' + t('pros.no_account') + '</span>';
         } else if (isActive !== false) {
             accountBtn = `<button data-user-id="${pro.user_id}" data-user-name="${escapeHtml(pro.name)}" data-activate="false"
                    class="toggle-active-btn inline-flex items-center gap-1 px-2 py-1 bg-midnight/5 text-midnight/50 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-rose-50 hover:text-rose-600 transition-colors">
-                   <i data-lucide="user-x" class="w-3 h-3"></i> Dar de baja
+                   <i data-lucide="user-x" class="w-3 h-3"></i> ${t('action.disable')}
                </button>`;
         } else {
             accountBtn = `<button data-user-id="${pro.user_id}" data-user-name="${escapeHtml(pro.name)}" data-activate="true"
                    class="toggle-active-btn inline-flex items-center gap-1 px-2 py-1 bg-midnight/5 text-midnight/50 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-50 hover:text-emerald-600 transition-colors">
-                   <i data-lucide="user-check" class="w-3 h-3"></i> Reactivar
+                   <i data-lucide="user-check" class="w-3 h-3"></i> ${t('action.reactivate')}
                </button>`;
         }
 
         const docCell = pro.doc_path
             ? `<a href="/admin/download_doc/${pro.user_id}" class="inline-flex items-center gap-2 px-2 py-1 bg-gold text-white rounded font-bold uppercase tracking-widest text-[9px] hover:bg-midnight transition-colors">
-                   <i data-lucide="download" class="w-3 h-3"></i> Descargar
+                   <i data-lucide="download" class="w-3 h-3"></i> ${t('action.download')}
                </a>`
-            : '<span class="text-midnight/30 text-[10px] uppercase italic">Sin documento</span>';
+            : '<span class="text-midnight/30 text-[10px] uppercase italic">' + t('pros.no_document') + '</span>';
 
         const rowOpacity = isActive === false ? 'opacity-60' : '';
 
@@ -833,30 +833,30 @@ function openDeactivateModal(userId, username, activate) {
     if (activate) {
         header.className = 'border-t-4 border-emerald-500 px-8 pt-8 pb-4';
         tag.className    = 'text-[10px] uppercase tracking-widest font-bold text-emerald-600 mb-1';
-        tag.textContent  = 'Acción administrativa';
-        title.innerHTML  = 'Reactivar <span class="serif-italic">Cuenta</span>';
+        tag.textContent  = t('admin.admin_action');
+        title.innerHTML  = t('admin.reactivate_account');
         warning.className = 'mx-8 mb-6 p-3 bg-emerald-50 border border-emerald-100 rounded flex items-start gap-3';
         warning.innerHTML = `
             <i data-lucide="info" class="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5"></i>
             <p id="deactivateModalWarningText" class="text-[10px] text-emerald-700 font-bold uppercase tracking-wider leading-relaxed">
-                El usuario recuperará el acceso a la plataforma inmediatamente. La acción quedará registrada en el log de auditoría.
+                ${t('admin.reactivate_warning')}
             </p>`;
         btn.className    = 'flex-1 py-3 bg-emerald-600 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all flex items-center justify-center gap-2';
-        btn.innerHTML    = '<i data-lucide="user-check" class="w-3 h-3"></i><span id="confirmDeactivateBtnLabel">Reactivar Cuenta</span>';
+        btn.innerHTML    = '<i data-lucide="user-check" class="w-3 h-3"></i><span id="confirmDeactivateBtnLabel">' + t('admin.reactivate_account_btn') + '</span>';
         reasonW.classList.add('hidden');
     } else {
         header.className = 'border-t-4 border-rose-500 px-8 pt-8 pb-4';
         tag.className    = 'text-[10px] uppercase tracking-widest font-bold text-rose-500 mb-1';
-        tag.textContent  = 'Acción administrativa';
-        title.innerHTML  = 'Dar de <span class="serif-italic">Baja</span>';
+        tag.textContent  = t('admin.admin_action');
+        title.innerHTML  = t('admin.disable_account');
         warning.className = 'mx-8 mb-6 p-3 bg-rose-50 border border-rose-100 rounded flex items-start gap-3';
         warning.innerHTML = `
             <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5"></i>
             <p id="deactivateModalWarningText" class="text-[10px] text-rose-700 font-bold uppercase tracking-wider leading-relaxed">
-                El usuario perderá acceso inmediatamente. Esta acción quedará registrada en el log de auditoría y puede revertirse.
+                ${t('admin.disable_warning')}
             </p>`;
         btn.className    = 'flex-1 py-3 bg-rose-600 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all flex items-center justify-center gap-2';
-        btn.innerHTML    = '<i data-lucide="user-x" class="w-3 h-3"></i><span id="confirmDeactivateBtnLabel">Dar de Baja</span>';
+        btn.innerHTML    = '<i data-lucide="user-x" class="w-3 h-3"></i><span id="confirmDeactivateBtnLabel">' + t('admin.disable_account_btn') + '</span>';
         reasonW.classList.remove('hidden');
     }
 
@@ -888,7 +888,7 @@ async function confirmDeactivate() {
     const orig   = btn.innerHTML;
     errEl.classList.add('hidden');
 
-    btn.innerHTML = '<div class="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div> Procesando...';
+    btn.innerHTML = '<div class="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div> ' + t('action.processing');
     btn.disabled  = true;
 
     try {
@@ -907,13 +907,13 @@ async function confirmDeactivate() {
             if (typeof showToast === 'function') showToast(data.message);
             loadProfessionals();   // refrescar tabla
         } else {
-            errEl.textContent = data.error || 'Error al procesar la solicitud.';
+            errEl.textContent = data.error || t('error.process_request');
             errEl.classList.remove('hidden');
             btn.innerHTML = orig;
             btn.disabled  = false;
         }
     } catch (err) {
-        errEl.textContent = 'Error de conexión. Intentá de nuevo.';
+        errEl.textContent = t('error.connection_retry');
         errEl.classList.remove('hidden');
         btn.innerHTML = orig;
         btn.disabled  = false;
@@ -993,7 +993,7 @@ function renderReportsPagination(total, page, perPage) {
     var nextBtn = document.getElementById('reports-next');
     var indicator = document.getElementById('reports-page-indicator');
 
-    if (infoEl) infoEl.textContent = 'Página ' + page + ' de ' + totalPages + ' (' + total + ' reportes)';
+    if (infoEl) infoEl.textContent = t('pagination.reports_page', {page: page, totalPages: totalPages, total: total});
     if (prevBtn) {
         prevBtn.disabled = page <= 1;
         prevBtn.classList.toggle('disabled\\:opacity-30', page <= 1);
@@ -1012,7 +1012,7 @@ function renderReports(reports) {
         tbody.innerHTML = `
             <tr><td colspan="10" class="p-12 text-center text-midnight/60">
                 <i data-lucide="check-circle" class="w-10 h-10 mx-auto mb-3 text-emerald-200"></i>
-                <p class="font-semibold text-midnight/60">No hay reportes para mostrar</p>
+                <p class="font-semibold text-midnight/60">${t('reports.empty')}</p>
             </td></tr>`;
         if (window.lucide) lucide.createIcons();
         return;
@@ -1020,29 +1020,29 @@ function renderReports(reports) {
 
     tbody.innerHTML = reports.map(r => {
         const statusBadge = r.status === 'pending'
-            ? '<span class="px-2 py-1 bg-amber-50 text-amber-700 text-[9px] font-bold uppercase tracking-widest rounded">Pendiente</span>'
+            ? '<span class="px-2 py-1 bg-amber-50 text-amber-700 text-[9px] font-bold uppercase tracking-widest rounded">' + t('status.pending') + '</span>'
             : r.status === 'dismissed'
-            ? '<span class="px-2 py-1 bg-paper-dark text-midnight/60 text-[9px] font-bold uppercase tracking-widest rounded">Descartado</span>'
-            : '<span class="px-2 py-1 bg-rose-50 text-rose-600 text-[9px] font-bold uppercase tracking-widest rounded">Eliminado</span>';
+            ? '<span class="px-2 py-1 bg-paper-dark text-midnight/60 text-[9px] font-bold uppercase tracking-widest rounded">' + t('status.dismissed') + '</span>'
+            : '<span class="px-2 py-1 bg-rose-50 text-rose-600 text-[9px] font-bold uppercase tracking-widest rounded">' + t('status.deleted') + '</span>';
 
         let actions;
         if (r.status === 'pending') {
             actions = `<div class="flex justify-end gap-2 flex-wrap">
                     <button onclick="viewLeadDetail(${r.lead_id})" class="px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">
-                        Ver Lead
+                        ${t('action.view_lead')}
                     </button>
                     <button onclick="deleteLead(${r.id}, ${r.lead_id})" class="px-3 py-2 bg-rose-600 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
-                        Eliminar
+                        ${t('action.delete')}
                     </button>
                     <button onclick="dismissReport(${r.id})" class="px-3 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-all">
-                        Descartar
+                        ${t('action.dismiss')}
                     </button>
                </div>`;
         } else {
             actions = `<div class="flex justify-end gap-2 flex-wrap">
-                    ${r.lead_id ? `<button onclick="viewLeadDetail(${r.lead_id})" class="px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">Ver Lead</button>` : ''}
+                    ${r.lead_id ? `<button onclick="viewLeadDetail(${r.lead_id})" class="px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">${t('action.view_lead')}</button>` : ''}
                     <button onclick="restoreReport(${r.id})" class="px-3 py-2 bg-emerald-600 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
-                        Restaurar
+                        ${t('action.restore')}
                     </button>
                </div>`;
         }
@@ -1050,7 +1050,7 @@ function renderReports(reports) {
         return `
             <tr class="border-b border-midnight/[0.03] hover:bg-paper transition-colors ${r.status === 'deleted' ? 'opacity-60' : ''}">
                 <td class="px-4 py-3 font-mono text-[11px] text-midnight/60">#${r.lead_id}</td>
-                <td class="px-4 py-3 text-[13px] text-midnight/50">${r.lead_type ? escapeHtml(r.lead_type) : '<span class="text-midnight/30">Lead eliminado</span>'}</td>
+                <td class="px-4 py-3 text-[13px] text-midnight/50">${r.lead_type ? escapeHtml(r.lead_type) : '<span class="text-midnight/30">' + t('reports.lead_deleted') + '</span>'}</td>
                 <td class="px-4 py-3 text-[13px] text-midnight/50">${r.lead_property_type ? escapeHtml(r.lead_property_type) : '—'}</td>
                 <td class="px-4 py-3 text-[13px] text-midnight/50">${r.lead_zone ? escapeHtml(r.lead_zone) : '—'}</td>
                 <td class="px-4 py-3 text-[13px]">${r.lead_budget ? '<span class="text-[9px] font-bold uppercase tracking-widest text-midnight/50">' + (r.lead_currency === 'USD' ? 'US$' : r.lead_currency === 'EUR' ? '€' : '$') + '</span> ' + escapeHtml(r.lead_budget) : '—'}</td>
@@ -1082,46 +1082,46 @@ function viewLeadDetail(leadId) {
                 renderLeadDetail(data.lead);
             } else {
                 document.getElementById('leadDetailContent').innerHTML = `
-                    <p class="text-center text-rose-600 py-8">${escapeHtml(data.error || 'Error al cargar')}</p>`;
+                    <p class="text-center text-rose-600 py-8">${escapeHtml(data.error || t('error.load'))}</p>`;
             }
         })
         .catch(() => {
             document.getElementById('leadDetailContent').innerHTML = `
-                <p class="text-center text-rose-600 py-8">Error de conexión</p>`;
+                <p class="text-center text-rose-600 py-8">${t('error.connection')}</p>`;
         });
 }
 
 function renderLeadDetail(lead) {
     const sym = lead.currency === 'USD' ? 'US$' : lead.currency === 'EUR' ? '€' : '$';
     const budget = `${sym}${lead.budget}`;
-    const style = lead.architectural_style || 'No especificado';
+    const style = lead.architectural_style || t('detail.not_specified');
     const amenities = lead.amenities
         ? lead.amenities.split(',').map(a => `
             <div class="flex items-center gap-2">
                 <span class="w-2 h-2 bg-gold rounded-full"></span>
                 <p class="text-sm text-midnight">${escapeHtml(a.trim())}</p>
             </div>`).join('')
-        : '<p class="text-sm text-midnight/50">No especificadas</p>';
+        : '<p class="text-sm text-midnight/50">' + t('detail.not_specified_pl') + '</p>';
 
     let typeDetails = '';
     if (lead.property_type === 'departamento') {
         typeDetails = `
             <div class="border-t border-midnight/10 pt-5 mt-5">
-                <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-3">Detalles del Departamento</p>
+                <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-3">${t('detail.department')}</p>
                 <div class="grid grid-cols-2 gap-4">
-                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">Piso/Bloque</p><p class="text-sm text-midnight">${escapeHtml(lead.floor_block || 'No especificado')}</p></div>
-                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">Metros Utiles</p><p class="text-sm text-midnight">${lead.usable_m2 ? lead.usable_m2 + ' m²' : 'No especificado'}</p></div>
-                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">Ascensor</p><p class="text-sm text-midnight">${escapeHtml(lead.elevator || 'No especificado')}</p></div>
+                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">${t('detail.floor_block')}</p><p class="text-sm text-midnight">${escapeHtml(lead.floor_block || t('detail.not_specified'))}</p></div>
+                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">${t('detail.useful_meters')}</p><p class="text-sm text-midnight">${lead.usable_m2 ? lead.usable_m2 + ' m²' : t('detail.not_specified')}</p></div>
+                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">${t('detail.elevator')}</p><p class="text-sm text-midnight">${escapeHtml(lead.elevator || t('detail.not_specified'))}</p></div>
                 </div>
             </div>`;
     } else if (lead.property_type === 'casa') {
         typeDetails = `
             <div class="border-t border-midnight/10 pt-5 mt-5">
-                <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-3">Detalles de la Casa</p>
+                <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-3">${t('detail.house')}</p>
                 <div class="grid grid-cols-2 gap-4">
-                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">Terreno</p><p class="text-sm text-midnight">${lead.land_area ? lead.land_area + ' m²' : 'No especificado'}</p></div>
-                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">Construida</p><p class="text-sm text-midnight">${lead.built_area ? lead.built_area + ' m²' : 'No especificado'}</p></div>
-                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">Piscina</p><p class="text-sm text-midnight">${escapeHtml(lead.pool || 'No especificado')}</p></div>
+                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">${t('detail.land')}</p><p class="text-sm text-midnight">${lead.land_area ? lead.land_area + ' m²' : t('detail.not_specified')}</p></div>
+                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">${t('detail.built')}</p><p class="text-sm text-midnight">${lead.built_area ? lead.built_area + ' m²' : t('detail.not_specified')}</p></div>
+                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">${t('detail.pool')}</p><p class="text-sm text-midnight">${escapeHtml(lead.pool || t('detail.not_specified'))}</p></div>
                 </div>
             </div>`;
     }
@@ -1129,38 +1129,38 @@ function renderLeadDetail(lead) {
     document.getElementById('leadDetailContent').innerHTML = `
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-4">
-                <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Tipo de Operación</p><p class="text-base font-semibold text-midnight">${escapeHtml(lead.type)}</p></div>
-                <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Tipo de Vivienda</p><p class="text-base text-midnight">${escapeHtml(lead.property_type || 'No especificado')}</p></div>
-                <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Zona</p><p class="text-base text-midnight">${escapeHtml(lead.zone)}</p></div>
-                ${lead.province ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Provincia</p><p class="text-base text-midnight">${escapeHtml(lead.province)}</p></div>` : ''}
-                <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Presupuesto</p><p class="text-base font-serif italic text-gold">${budget}</p></div>
-                <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Estilo Arquitectónico</p><p class="text-base text-midnight">${escapeHtml(style)}</p></div>
-                ${lead.ambientes ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Ambientes</p><p class="text-base text-midnight">${escapeHtml(String(lead.ambientes))}</p></div>` : ''}
-                ${lead.parking ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Cochera</p><p class="text-base text-midnight">${escapeHtml(lead.parking)}</p></div>` : ''}
-                ${lead.orientation ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Orientación</p><p class="text-base text-midnight">${escapeHtml(lead.orientation)}</p></div>` : ''}
-                ${lead.property_condition ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Estado</p><p class="text-base text-midnight">${escapeHtml(lead.property_condition)}</p></div>` : ''}
-                ${lead.property_age ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Antiguedad</p><p class="text-base text-midnight">${escapeHtml(lead.property_age)}</p></div>` : ''}
+                <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">${t('detail.operation_type')}</p><p class="text-base font-semibold text-midnight">${escapeHtml(lead.type)}</p></div>
+                <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">${t('detail.property_type')}</p><p class="text-base text-midnight">${escapeHtml(lead.property_type || t('detail.not_specified'))}</p></div>
+                <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">${t('detail.zone')}</p><p class="text-base text-midnight">${escapeHtml(lead.zone)}</p></div>
+                ${lead.province ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">${t('detail.province')}</p><p class="text-base text-midnight">${escapeHtml(lead.province)}</p></div>` : ''}
+                <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">${t('detail.budget')}</p><p class="text-base font-serif italic text-gold">${budget}</p></div>
+                <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">${t('detail.arch_style')}</p><p class="text-base text-midnight">${escapeHtml(style)}</p></div>
+                ${lead.ambientes ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">${t('detail.rooms')}</p><p class="text-base text-midnight">${escapeHtml(String(lead.ambientes))}</p></div>` : ''}
+                ${lead.parking ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">${t('detail.parking')}</p><p class="text-base text-midnight">${escapeHtml(lead.parking)}</p></div>` : ''}
+                ${lead.orientation ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">${t('detail.orientation')}</p><p class="text-base text-midnight">${escapeHtml(lead.orientation)}</p></div>` : ''}
+                ${lead.property_condition ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">${t('detail.condition')}</p><p class="text-base text-midnight">${escapeHtml(lead.property_condition)}</p></div>` : ''}
+                ${lead.property_age ? `<div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">${t('detail.age')}</p><p class="text-base text-midnight">${escapeHtml(lead.property_age)}</p></div>` : ''}
                 <div class="border-t border-midnight/10 pt-4">
-                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Contacto</p>
+                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">${t('detail.contact')}</p>
                     <div class="flex items-center gap-2 text-sm text-midnight"><i data-lucide="mail" class="w-4 h-4 text-gold flex-shrink-0"></i><span>${escapeHtml(lead.email)}</span></div>
                     <div class="flex items-center gap-2 text-sm text-midnight mt-1"><i data-lucide="phone" class="w-4 h-4 text-gold flex-shrink-0"></i><span>${escapeHtml(lead.phone)}</span></div>
                 </div>
-                <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">Registrado</p><p class="text-sm text-midnight">${lead.timestamp}</p></div>
+                <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">${t('detail.registered')}</p><p class="text-sm text-midnight">${lead.timestamp}</p></div>
             </div>
             <div class="space-y-4">
-                <p class="text-lg font-serif text-midnight">Especificaciones Tecnicas</p>
+                <p class="text-lg font-serif text-midnight">${t('detail.technical_specs')}</p>
                 <div class="grid grid-cols-3 gap-4">
-                    <div class="text-center"><p class="text-[9px] uppercase tracking-widest text-gold font-bold mb-1">Habitaciones</p><p class="text-2xl font-serif text-midnight">${lead.bedrooms || '-'}</p></div>
-                    <div class="text-center"><p class="text-[9px] uppercase tracking-widest text-gold font-bold mb-1">Banos</p><p class="text-2xl font-serif text-midnight">${lead.bathrooms || '-'}</p></div>
-                    <div class="text-center"><p class="text-[9px] uppercase tracking-widest text-gold font-bold mb-1">Metros</p><p class="text-2xl font-serif text-midnight">${lead.total_area || lead.land_area || lead.usable_m2 || '-'}</p>${(lead.total_area || lead.land_area || lead.usable_m2) ? '<p class="text-[9px] text-midnight/60">m²</p>' : ''}</div>
+                    <div class="text-center"><p class="text-[9px] uppercase tracking-widest text-gold font-bold mb-1">${t('detail.bedrooms')}</p><p class="text-2xl font-serif text-midnight">${lead.bedrooms || '-'}</p></div>
+                    <div class="text-center"><p class="text-[9px] uppercase tracking-widest text-gold font-bold mb-1">${t('detail.bathrooms')}</p><p class="text-2xl font-serif text-midnight">${lead.bathrooms || '-'}</p></div>
+                    <div class="text-center"><p class="text-[9px] uppercase tracking-widest text-gold font-bold mb-1">${t('detail.meters')}</p><p class="text-2xl font-serif text-midnight">${lead.total_area || lead.land_area || lead.usable_m2 || '-'}</p>${(lead.total_area || lead.land_area || lead.usable_m2) ? '<p class="text-[9px] text-midnight/60">m²</p>' : ''}</div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
-                    ${lead.usable_m2 ? `<div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">Metros Utiles</p><p class="text-sm text-midnight">${lead.usable_m2} m²</p></div>` : ''}
-                    ${lead.built_area ? `<div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">Construida</p><p class="text-sm text-midnight">${lead.built_area} m²</p></div>` : ''}
-                    ${lead.land_area ? `<div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">Terreno</p><p class="text-sm text-midnight">${lead.land_area} m²</p></div>` : ''}
+                    ${lead.usable_m2 ? `<div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">${t('detail.useful_meters')}</p><p class="text-sm text-midnight">${lead.usable_m2} m²</p></div>` : ''}
+                    ${lead.built_area ? `<div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">${t('detail.built')}</p><p class="text-sm text-midnight">${lead.built_area} m²</p></div>` : ''}
+                    ${lead.land_area ? `<div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">${t('detail.land')}</p><p class="text-sm text-midnight">${lead.land_area} m²</p></div>` : ''}
                 </div>
                 <div class="border-t border-midnight/10 pt-4">
-                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-3">Extras y Comodidades</p>
+                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-3">${t('detail.extras')}</p>
                     <div class="space-y-1.5">${amenities}</div>
                 </div>
                 ${typeDetails}
@@ -1175,22 +1175,22 @@ function closeLeadDetailModal() {
 }
 
 function deleteLead(reportId, leadId) {
-    var promise = typeof showConfirm === 'function' ? showConfirm('Eliminar permanentemente el lead #' + leadId + '? Esta acción no se puede deshacer.') : Promise.resolve(true);
+    var promise = typeof showConfirm === 'function' ? showConfirm(t('confirm.delete_lead', {id: leadId})) : Promise.resolve(true);
     promise.then(function (ok) {
         if (!ok) return;
     fetch('/api/admin/report/' + reportId + '/delete', { method: 'POST' })
         .then(r => r.json())
         .then(data => {
             if (data.success) {
-                if (typeof showToast === 'function') showToast('Lead eliminado correctamente', 'success');
+                if (typeof showToast === 'function') showToast(t('success.lead_deleted'), 'success');
                 loadReports(undefined, 1);
                 if (typeof refreshDashboard === 'function') refreshDashboard();
             } else {
-                if (typeof showToast === 'function') showToast(data.error || 'Error al eliminar', 'error');
+                if (typeof showToast === 'function') showToast(data.error || t('error.delete'), 'error');
             }
         })
         .catch(() => {
-            if (typeof showToast === 'function') showToast('Error de conexión', 'error');
+            if (typeof showToast === 'function') showToast(t('error.connection'), 'error');
         });
     });
 }
@@ -1200,34 +1200,34 @@ function dismissReport(reportId) {
         .then(r => r.json())
         .then(data => {
             if (data.success) {
-                if (typeof showToast === 'function') showToast('Reporte descartado', 'success');
+                if (typeof showToast === 'function') showToast(t('success.report_dismissed'), 'success');
                 loadReports(undefined, 1);
             } else {
-                if (typeof showToast === 'function') showToast(data.error || 'Error', 'error');
+                if (typeof showToast === 'function') showToast(data.error || t('error.generic'), 'error');
             }
         })
         .catch(() => {
-            if (typeof showToast === 'function') showToast('Error de conexión', 'error');
+            if (typeof showToast === 'function') showToast(t('error.connection'), 'error');
         });
 }
 
 function restoreReport(reportId) {
-    var promise = typeof showConfirm === 'function' ? showConfirm('Restaurar este reporte a estado pendiente?') : Promise.resolve(true);
+    var promise = typeof showConfirm === 'function' ? showConfirm(t('confirm.restore_report')) : Promise.resolve(true);
     promise.then(function (ok) {
         if (!ok) return;
         fetch('/api/admin/report/' + reportId + '/restore', { method: 'POST' })
         .then(function (r) { return r.json(); })
         .then(function (data) {
             if (data.success) {
-                if (typeof showToast === 'function') showToast('Reporte restaurado correctamente', 'success');
+                if (typeof showToast === 'function') showToast(t('success.report_restored'), 'success');
                 loadReports(undefined, 1);
                 if (typeof refreshDashboard === 'function') refreshDashboard();
             } else {
-                if (typeof showToast === 'function') showToast(data.error || 'Error al restaurar', 'error');
+                if (typeof showToast === 'function') showToast(data.error || t('error.restore'), 'error');
             }
         })
         .catch(function () {
-            if (typeof showToast === 'function') showToast('Error de conexión', 'error');
+            if (typeof showToast === 'function') showToast(t('error.connection'), 'error');
         });
     });
 }
@@ -1335,12 +1335,12 @@ function _setupFormOptionModalFocusTrap() {
 
 function renderIconPicker(selectedIcon) {
     var html = '<div class="icon-picker-wrap mt-1 border border-midnight/10 rounded overflow-hidden">' +
-        '<label for="fo-icon-search" class="sr-only">Buscar icono</label>' +
-        '<input id="fo-icon-search" type="text" placeholder="Buscar icono..." oninput="filterIcons(this.value)" class="icon-search w-full px-2 py-1.5 text-xs border-0 border-b border-midnight/10 outline-none bg-paper-dark/50">' +
+        '<label for="fo-icon-search" class="sr-only">' + t('icon.search') + '</label>' +
+        '<input id="fo-icon-search" type="text" placeholder="' + t('icon.search_placeholder') + '" oninput="filterIcons(this.value)" class="icon-search w-full px-2 py-1.5 text-xs border-0 border-b border-midnight/10 outline-none bg-paper-dark/50">' +
         '<div id="icon-picker-grid" class="grid grid-cols-6 gap-0.5 p-1.5 max-h-32 overflow-y-auto">';
-    html += '<button type="button" data-icon="" data-search="ninguno" onclick="selectIconOption(this)" aria-label="Sin icono" class="icon-pick p-1 rounded border text-[10px] flex flex-col items-center gap-px transition-all ' +
-        (!selectedIcon ? 'border-gold bg-gold/10 text-gold' : 'border-transparent text-midnight/60 hover:border-midnight/20') + '" title="Sin icono">' +
-        '<i data-lucide="x" class="w-3 h-3"></i><span class="leading-none">Ninguno</span></button>';
+    html += '<button type="button" data-icon="" data-search="ninguno" onclick="selectIconOption(this)" aria-label="' + t('icon.none') + '" class="icon-pick p-1 rounded border text-[10px] flex flex-col items-center gap-px transition-all ' +
+        (!selectedIcon ? 'border-gold bg-gold/10 text-gold' : 'border-transparent text-midnight/60 hover:border-midnight/20') + '" title="' + t('icon.none') + '">' +
+        '<i data-lucide="x" class="w-3 h-3"></i><span class="leading-none">' + t('icon.none_label') + '</span></button>';
     FORM_OPTION_ICONS.forEach(function(icon) {
         var active = selectedIcon === icon.name;
         html += '<button type="button" data-icon="' + icon.name + '" data-search="' + (icon.name + ' ' + icon.label).toLowerCase() + '" onclick="selectIconOption(this)" aria-label="' + escapeHtml(icon.label) + '" class="icon-pick p-1 rounded border text-[10px] flex flex-col items-center gap-px transition-all ' +
@@ -1388,7 +1388,7 @@ function loadFormOptions() {
             renderFormOptions();
         })
         .catch(function() {
-            if (typeof showToast === 'function') showToast('Error al cargar opciones', 'error');
+            if (typeof showToast === 'function') showToast(t('error.options_load'), 'error');
         });
 }
 
@@ -1399,7 +1399,7 @@ function buildCategoryFilters() {
     });
     var container = document.getElementById('category-filters');
     var html = '<button role="tab" aria-pressed="' + (!currentCategoryFilter) + '" onclick="filterCategory(\'\')" class="cat-filter px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded ' +
-        (!currentCategoryFilter ? 'bg-midnight text-white' : 'bg-paper-dark text-midnight hover:bg-gold hover:text-white') + '">Todas</button>';
+        (!currentCategoryFilter ? 'bg-midnight text-white' : 'bg-paper-dark text-midnight hover:bg-gold hover:text-white') + '">' + t('form_options.all_categories') + '</button>';
     cats.forEach(function(c) {
         html += '<button role="tab" aria-pressed="' + (currentCategoryFilter === c) + '" onclick="filterCategory(\'' + c + '\')" class="cat-filter px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded ' +
             (currentCategoryFilter === c ? 'bg-midnight text-white' : 'bg-paper-dark text-midnight hover:bg-gold hover:text-white') + '">' + c.replace(/_/g, ' ') + '</button>';
@@ -1434,8 +1434,8 @@ function renderFormOptions() {
     var tbody = document.getElementById('form-options-tbody');
     var liveRegion = document.getElementById('fo-results-count');
     if (!filtered.length) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-midnight/60">Sin opciones</td></tr>';
-        if (liveRegion) liveRegion.textContent = '0 opciones encontradas';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-midnight/60">' + t('form_options.empty') + '</td></tr>';
+        if (liveRegion) liveRegion.textContent = t('form_options.zero_found');
         return;
     }
     tbody.innerHTML = filtered.map(function(o) {
@@ -1447,14 +1447,14 @@ function renderFormOptions() {
             '<td class="px-4 py-3 text-[13px] text-midnight/50">' + o.sort_order + '</td>' +
             '<td class="px-4 py-3"><span class="px-2 py-1 text-[10px] font-bold rounded ' +
             (o.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700') + '">' +
-            (o.is_active ? 'Activo' : 'Inactivo') + '</span></td>' +
+            (o.is_active ? t('status.active') : t('status.inactive')) + '</span></td>' +
             '<td class="px-4 py-3 text-right"><div class="flex gap-1 justify-end">' +
-            '<button onclick="editFormOption(' + o.id + ')" aria-label="Editar ' + escapeHtml(o.label) + '" class="p-1.5 rounded hover:bg-paper-dark" title="Editar"><i data-lucide="pencil" class="w-3 h-3"></i></button>' +
-            '<button onclick="toggleFormOption(' + o.id + ', ' + (o.is_active ? 0 : 1) + ')" aria-label="' + (o.is_active ? 'Desactivar' : 'Activar') + ' ' + escapeHtml(o.label) + '" class="p-1.5 rounded hover:bg-paper-dark" title="' + (o.is_active ? 'Desactivar' : 'Activar') + '"><i data-lucide="' + (o.is_active ? 'eye-off' : 'eye') + '" class="w-3 h-3"></i></button>' +
-            '<button onclick="deleteFormOption(' + o.id + ')" aria-label="Eliminar ' + escapeHtml(o.label) + '" class="p-1.5 rounded hover:bg-rose-50 text-rose-600" title="Eliminar"><i data-lucide="trash-2" class="w-3 h-3"></i></button>' +
+            '<button onclick="editFormOption(' + o.id + ')" aria-label="' + t('action.edit') + ' ' + escapeHtml(o.label) + '" class="p-1.5 rounded hover:bg-paper-dark" title="' + t('action.edit') + '"><i data-lucide="pencil" class="w-3 h-3"></i></button>' +
+            '<button onclick="toggleFormOption(' + o.id + ', ' + (o.is_active ? 0 : 1) + ')" aria-label="' + (o.is_active ? t('action.deactivate') : t('action.activate')) + ' ' + escapeHtml(o.label) + '" class="p-1.5 rounded hover:bg-paper-dark" title="' + (o.is_active ? t('action.deactivate') : t('action.activate')) + '"><i data-lucide="' + (o.is_active ? 'eye-off' : 'eye') + '" class="w-3 h-3"></i></button>' +
+            '<button onclick="deleteFormOption(' + o.id + ')" aria-label="' + t('action.delete') + ' ' + escapeHtml(o.label) + '" class="p-1.5 rounded hover:bg-rose-50 text-rose-600" title="' + t('action.delete') + '"><i data-lucide="trash-2" class="w-3 h-3"></i></button>' +
             '</div></td></tr>';
     }).join('');
-    if (liveRegion) liveRegion.textContent = filtered.length + ' opción' + (filtered.length !== 1 ? 'es' : '') + ' encontrada' + (filtered.length !== 1 ? 's' : '');
+    if (liveRegion) liveRegion.textContent = t('form_options.results_count', {count: filtered.length});
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
@@ -1468,23 +1468,23 @@ function openCreateOptionModal() {
         '<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md max-h-[90vh] mx-4 sm:mx-0 flex flex-col">' +
         '<div class="bg-white rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-full">' +
         '<div class="border-t-4 border-gold px-4 sm:px-6 pt-6 pb-3 flex-shrink-0">' +
-        '<h3 id="fo-modal-title" class="text-2xl font-serif">Nueva <span class="serif-italic">Opción</span></h3>' +
+        '<h3 id="fo-modal-title" class="text-2xl font-serif">' + t('form_options.new_option') + '</h3>' +
         '</div>' +
         '<div class="px-4 sm:px-6 pb-6 space-y-3 overflow-y-auto min-h-0">' +
-        '<div><label for="fo-category" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Categoría</label>' +
+        '<div><label for="fo-category" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">' + t('form_options.category') + '</label>' +
         '<select id="fo-category" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm">' + catOptions + '</select></div>' +
-        '<div><label for="fo-value" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Valor</label>' +
-        '<input id="fo-value" type="text" maxlength="100" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" placeholder="ej: departamento"></div>' +
-        '<div><label for="fo-label" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Etiqueta</label>' +
-        '<input id="fo-label" type="text" maxlength="200" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" placeholder="ej: Departamento"></div>' +
-        '<div><label for="fo-icon-search" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Icono (opcional)</label>' +
+        '<div><label for="fo-value" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">' + t('form_options.value') + '</label>' +
+        '<input id="fo-value" type="text" maxlength="100" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" placeholder="' + t('form_options.value_placeholder') + '"></div>' +
+        '<div><label for="fo-label" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">' + t('form_options.label') + '</label>' +
+        '<input id="fo-label" type="text" maxlength="200" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" placeholder="' + t('form_options.label_placeholder') + '"></div>' +
+        '<div><label for="fo-icon-search" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">' + t('form_options.icon_optional') + '</label>' +
         '<input id="fo-icon" type="hidden" value="">' +
         renderIconPicker('') + '</div>' +
-        '<div><label for="fo-order" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Orden</label>' +
+        '<div><label for="fo-order" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">' + t('form_options.sort_order') + '</label>' +
         '<input id="fo-order" type="number" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" value="0"></div>' +
         '<div class="flex gap-3 pt-2">' +
-        '<button onclick="closeFormOptionModal()" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-all">Cancelar</button>' +
-        '<button id="fo-save-btn" onclick="saveFormOption()" class="flex-1 py-3 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">Guardar</button>' +
+        '<button onclick="closeFormOptionModal()" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-all">' + t('action.cancel') + '</button>' +
+        '<button id="fo-save-btn" onclick="saveFormOption()" class="flex-1 py-3 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">' + t('action.save') + '</button>' +
         '</div></div></div></div></div>';
     document.body.insertAdjacentHTML('beforeend', html);
     _setupFormOptionModalFocusTrap();
@@ -1520,12 +1520,12 @@ function saveFormOption(editId) {
         sort_order: parseInt(document.getElementById('fo-order').value) || 0
     };
     if (!data.value || !data.label) {
-        if (typeof showToast === 'function') showToast('Valor y etiqueta son requeridos', 'error');
+        if (typeof showToast === 'function') showToast(t('form_options.required_fields'), 'error');
         return;
     }
     isFormOptionSaving = true;
     var saveBtn = document.getElementById('fo-save-btn');
-    if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Guardando...'; }
+    if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = t('action.saving'); }
     var url = editId ? '/api/form-options/' + editId : '/api/form-options';
     var method = editId ? 'PUT' : 'POST';
     fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
@@ -1537,18 +1537,18 @@ function saveFormOption(editId) {
             if (res.error) {
                 if (typeof showToast === 'function') showToast(res.error, 'error');
             } else {
-                if (typeof showToast === 'function') showToast(editId ? 'Opción actualizada' : 'Opción creada', 'success');
+                if (typeof showToast === 'function') showToast(editId ? t('success.option_updated') : t('success.option_created'), 'success');
                 closeFormOptionModal();
                 loadFormOptions();
             }
         })
         .catch(function(err) {
-            if (typeof showToast === 'function') showToast(err.message || 'Error de conexión', 'error');
+            if (typeof showToast === 'function') showToast(err.message || t('error.connection'), 'error');
         })
         .finally(function() {
             isFormOptionSaving = false;
             var btn = document.getElementById('fo-save-btn');
-            if (btn) { btn.disabled = false; btn.textContent = editId ? 'Actualizar' : 'Guardar'; }
+            if (btn) { btn.disabled = false; btn.textContent = editId ? t('action.update') : t('action.save'); }
         });
 }
 
@@ -1564,23 +1564,23 @@ function editFormOption(id) {
         '<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md max-h-[90vh] mx-4 sm:mx-0 flex flex-col">' +
         '<div class="bg-white rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-full">' +
         '<div class="border-t-4 border-gold px-4 sm:px-6 pt-6 pb-3 flex-shrink-0">' +
-        '<h3 id="fo-modal-title" class="text-2xl font-serif">Editar <span class="serif-italic">Opción</span></h3>' +
+        '<h3 id="fo-modal-title" class="text-2xl font-serif">' + t('form_options.edit_option') + '</h3>' +
         '</div>' +
         '<div class="px-4 sm:px-6 pb-6 space-y-3 overflow-y-auto min-h-0">' +
-        '<div><label for="fo-category" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Categoría</label>' +
+        '<div><label for="fo-category" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">' + t('form_options.category') + '</label>' +
         '<select id="fo-category" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" disabled>' + catOptions + '</select></div>' +
-        '<div><label for="fo-value" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Valor</label>' +
+        '<div><label for="fo-value" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">' + t('form_options.value') + '</label>' +
         '<input id="fo-value" type="text" maxlength="100" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" value="' + escapeHtml(opt.value) + '"></div>' +
-        '<div><label for="fo-label" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Etiqueta</label>' +
+        '<div><label for="fo-label" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">' + t('form_options.label') + '</label>' +
         '<input id="fo-label" type="text" maxlength="200" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" value="' + escapeHtml(opt.label) + '"></div>' +
-        '<div><label for="fo-icon-search" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Icono</label>' +
+        '<div><label for="fo-icon-search" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">' + t('form_options.icon') + '</label>' +
         '<input id="fo-icon" type="hidden" value="' + escapeHtml(opt.icon || '') + '">' +
         renderIconPicker(opt.icon || '') + '</div>' +
-        '<div><label for="fo-order" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Orden</label>' +
+        '<div><label for="fo-order" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">' + t('form_options.sort_order') + '</label>' +
         '<input id="fo-order" type="number" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" value="' + opt.sort_order + '"></div>' +
         '<div class="flex gap-3 pt-2">' +
-        '<button onclick="closeFormOptionModal()" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-all">Cancelar</button>' +
-        '<button id="fo-save-btn" onclick="saveFormOption(' + id + ')" class="flex-1 py-3 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">Actualizar</button>' +
+        '<button onclick="closeFormOptionModal()" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-all">' + t('action.cancel') + '</button>' +
+        '<button id="fo-save-btn" onclick="saveFormOption(' + id + ')" class="flex-1 py-3 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">' + t('action.update') + '</button>' +
         '</div></div></div></div></div>';
     document.body.insertAdjacentHTML('beforeend', html);
     _setupFormOptionModalFocusTrap();
@@ -1599,17 +1599,17 @@ function toggleFormOption(id, newActive) {
             if (res.error) {
                 if (typeof showToast === 'function') showToast(res.error, 'error');
             } else {
-                if (typeof showToast === 'function') showToast(newActive ? 'Opción activada' : 'Opción desactivada', 'success');
+                if (typeof showToast === 'function') showToast(newActive ? t('success.option_activated') : t('success.option_deactivated'), 'success');
                 loadFormOptions();
             }
         })
         .catch(function(err) {
-            if (typeof showToast === 'function') showToast(err.message || 'Error de conexión', 'error');
+            if (typeof showToast === 'function') showToast(err.message || t('error.connection'), 'error');
         });
 }
 
 function deleteFormOption(id) {
-    var promise = typeof showConfirm === 'function' ? showConfirm('¿Eliminar esta opción?') : Promise.resolve(true);
+    var promise = typeof showConfirm === 'function' ? showConfirm(t('confirm.delete_option')) : Promise.resolve(true);
     promise.then(function(ok) {
         if (!ok) return;
         fetch('/api/form-options/' + id, { method: 'DELETE' })
@@ -1621,12 +1621,12 @@ function deleteFormOption(id) {
                 if (res.error) {
                     if (typeof showToast === 'function') showToast(res.error, 'error');
                 } else {
-                    if (typeof showToast === 'function') showToast('Opción eliminada', 'success');
+                    if (typeof showToast === 'function') showToast(t('success.option_deleted'), 'success');
                     loadFormOptions();
                 }
             })
             .catch(function(err) {
-                if (typeof showToast === 'function') showToast(err.message || 'Error de conexión', 'error');
+            if (typeof showToast === 'function') showToast(err.message || t('error.connection'), 'error');
             });
     });
 }
@@ -1757,11 +1757,11 @@ function renderPhoneAudit(data) {
 function renderPhoneAuditRow(entry) {
     var eventoLabel, eventoClass, eventoIcon;
     if (entry.event === 'phone_revealed') {
-        eventoLabel = 'Revelado';
+        eventoLabel = t('audit.revealed');
         eventoClass = 'bg-emerald-50 text-emerald-700';
         eventoIcon = '<i data-lucide="eye" class="w-2.5 h-2.5"></i>';
     } else if (entry.event === 'wa_link_generated') {
-        eventoLabel = 'WhatsApp';
+        eventoLabel = t('audit.whatsapp');
         eventoClass = 'bg-gold/10 text-gold';
         eventoIcon = '<i data-lucide="message-circle" class="w-2.5 h-2.5"></i>';
     } else {
@@ -1772,7 +1772,7 @@ function renderPhoneAuditRow(entry) {
     var leadCell = entry.lead_id
         ? '<div class="font-medium text-midnight">#' + entry.lead_id + ' ' + escapeHtml(entry.lead_tipo || '') + '</div>' +
           '<div class="text-[11px] text-midnight/60">' + escapeHtml(entry.lead_zona || '') + '</div>'
-        : '<span class="text-midnight/30 italic">Lead eliminado</span>';
+        : '<span class="text-midnight/30 italic">' + t('audit.lead_deleted') + '</span>';
     var phoneCell = entry.lead_telefono
         ? '<span class="font-mono text-[11px] text-midnight/70">' + escapeHtml(entry.lead_telefono) + '</span>'
         : '<span class="text-midnight/30 italic">—</span>';
@@ -1793,7 +1793,7 @@ function updatePaPagination(total, page, perPage) {
     if (!paginationEl || !total) { paginationEl.classList.add('hidden'); return; }
     var totalPages = Math.ceil(total / perPage);
     paginationEl.classList.remove('hidden');
-    if (infoEl) infoEl.textContent = 'Página ' + page + ' de ' + totalPages + ' (' + total + ' accesos)';
+    if (infoEl) infoEl.textContent = t('pagination.audit_page', {page: page, totalPages: totalPages, total: total});
     if (prevBtn) {
         prevBtn.disabled = page <= 1;
         prevBtn.classList.toggle('disabled\\:opacity-30', page <= 1);

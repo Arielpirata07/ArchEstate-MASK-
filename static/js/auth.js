@@ -134,32 +134,32 @@
 
         // required
         if (rules.required && !validators.required(val)) {
-            return { ok: false, msg: rules.messages && rules.messages.required || 'Este campo es obligatorio.' };
+            return { ok: false, msg: rules.messages && rules.messages.required || t('validator.required') };
         }
         // si está vacío y no es required, pasa
         if (!rules.required && !validators.required(val)) {
             return { ok: true, msg: null };
         }
         if (rules.usernameFormat && !validators.usernameFormat(val)) {
-            return { ok: false, msg: rules.messages && rules.messages.usernameFormat || '3-30 caracteres, solo letras, números y guión bajo.' };
+            return { ok: false, msg: rules.messages && rules.messages.usernameFormat || t('validator.username_format') };
         }
         if (rules.email && !validators.email(val)) {
-            return { ok: false, msg: rules.messages && rules.messages.email || 'Email inválido.' };
+            return { ok: false, msg: rules.messages && rules.messages.email || t('validator.email_invalid') };
         }
         if (rules.phone && !validators.phone(val)) {
-            return { ok: false, msg: rules.messages && rules.messages.phone || 'Teléfono inválido. Usá formato internacional (+54 9 11 1234 5678).' };
+            return { ok: false, msg: rules.messages && rules.messages.phone || t('validator.phone_invalid') };
         }
         if (rules.minLength && !validators.minLength(val, rules.minLength)) {
-            return { ok: false, msg: (rules.messages && rules.messages.minLength || 'Mínimo {n} caracteres.').replace('{n}', rules.minLength) };
+            return { ok: false, msg: (rules.messages && rules.messages.minLength || t('validator.password_min')).replace('{n}', rules.minLength) };
         }
         if (rules.hasLetter && !validators.hasLetter(val)) {
-            return { ok: false, msg: rules.messages && rules.messages.hasLetter || 'Debe contener al menos una letra.' };
+            return { ok: false, msg: rules.messages && rules.messages.hasLetter || t('validator.password_letter') };
         }
         if (rules.hasNumber && !validators.hasNumber(val)) {
-            return { ok: false, msg: rules.messages && rules.messages.hasNumber || 'Debe contener al menos un número.' };
+            return { ok: false, msg: rules.messages && rules.messages.hasNumber || t('validator.password_number') };
         }
         if (rules.licenseFormat && !validators.licenseFormat(val)) {
-            return { ok: false, msg: rules.messages && rules.messages.licenseFormat || '3-50 caracteres, solo letras, números y guiones.' };
+            return { ok: false, msg: rules.messages && rules.messages.licenseFormat || t('validator.license_format') };
         }
         return { ok: true, msg: null };
     }
@@ -213,7 +213,7 @@
         }
         var e164 = normalizePhoneClient(raw);
         if (e164) {
-            preview.textContent = '✓ Se enviará como ' + e164;
+            preview.textContent = t('phone.will_send_as', {e164: e164});
             preview.className = 'phone-preview phone-preview--ok text-[10px] font-mono text-green-600 dark:text-green-400';
             preview.classList.remove('hidden');
             if (status && statusIcon) {
@@ -258,7 +258,7 @@
         if (/\d/.test(v) && /[^\w\s]/.test(v)) score++;
         // Cap a 4
         if (score > 4) score = 4;
-        var labels = ['vacía', 'débil', 'aceptable', 'buena', 'fuerte'];
+        var labels = [t('password.empty'), t('password.weak'), t('password.fair'), t('password.good'), t('password.strong')];
         return { score: score, label: labels[score] };
     }
 
@@ -338,10 +338,10 @@
             hint.textContent = '3-30 caracteres, letras, números y guión bajo.';
             hint.className = 'username-hint';
         } else if (data.reason === 'taken') {
-            hint.textContent = '✗ Ese usuario ya está en uso';
+            hint.textContent = t('username.taken');
             hint.className = 'username-hint username-hint--taken';
         } else if (data.reason === 'ok') {
-            hint.textContent = '✓ Disponible';
+            hint.textContent = t('username.available');
             hint.className = 'username-hint username-hint--ok';
         } else {
             hint.textContent = '';
@@ -361,11 +361,11 @@
                 if (input.type === 'password') {
                     input.type = 'text';
                     if (icon) icon.setAttribute('data-lucide', 'eye-off');
-                    btn.setAttribute('aria-label', 'Ocultar contraseña');
+                    btn.setAttribute('aria-label', t('password.hide'));
                 } else {
                     input.type = 'password';
                     if (icon) icon.setAttribute('data-lucide', 'eye');
-                    btn.setAttribute('aria-label', 'Mostrar contraseña');
+                    btn.setAttribute('aria-label', t('password.show'));
                 }
                 if (window.lucide) lucide.createIcons();
             });
@@ -425,7 +425,7 @@
             usernamePromise = new Promise(function (resolve) {
                 checkUsernameAvailable(usernameInput.value, function (data) {
                     if (data.available === false && data.reason === 'taken') {
-                        showFieldError(usernameInput, 'Ese nombre de usuario ya está en uso.');
+                        showFieldError(usernameInput, t('username.taken'));
                         resolve(false);
                     } else {
                         resolve(true);
@@ -436,7 +436,7 @@
         return usernamePromise.then(function (uOk) {
             if (!ok || !uOk) {
                 if (firstInvalid) firstInvalid.focus();
-                showFormBanner(form, 'Revisá los campos marcados antes de continuar.', 'error');
+                showFormBanner(form, t('form.review_fields'), 'error');
                 return false;
             }
             return true;
@@ -459,8 +459,8 @@
                         required: true,
                         licenseFormat: true,
                         messages: {
-                            required: 'La matrícula es obligatoria para profesionales.',
-                            licenseFormat: '3-50 caracteres, solo letras, números y guiones.'
+                            required: t('license.required_for_pro'),
+                            licenseFormat: t('validator.license_format')
                         }
                     }));
                 } else {

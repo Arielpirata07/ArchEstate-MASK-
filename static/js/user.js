@@ -203,7 +203,7 @@ async function savePhoneToProfile() {
     errorMsg.classList.add('hidden');
 
     if (!phone) {
-        errorMsg.textContent = 'Ingresá un número antes de guardar.';
+        errorMsg.textContent = t('phone.enter_number_first');
         errorMsg.classList.remove('hidden');
         return;
     }
@@ -211,7 +211,7 @@ async function savePhoneToProfile() {
     const fullPhone = formatPhoneWithCountry(phone, countryCode);
 
     const originalContent = saveBtn.innerHTML;
-    saveBtn.innerHTML = '<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> Guardando...';
+    saveBtn.innerHTML = '<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> ' + t('action.saving');
     saveBtn.disabled  = true;
     if (window.lucide) lucide.createIcons();
 
@@ -224,10 +224,10 @@ async function savePhoneToProfile() {
         const data = await res.json();
 
         if (res.ok) {
-            saveBtn.innerHTML = '<i data-lucide="check" class="w-3 h-3"></i> Guardado';
+            saveBtn.innerHTML = '<i data-lucide="check" class="w-3 h-3"></i> ' + t('action.saved');
             saveBtn.classList.add('text-emerald-600');
             if (window.lucide) lucide.createIcons();
-            if (typeof showToast === 'function') showToast('Teléfono guardado en tu perfil.');
+            if (typeof showToast === 'function') showToast(t('phone.saved_to_profile'));
             setTimeout(() => {
                 saveBtn.innerHTML = originalContent;
                 saveBtn.classList.remove('text-emerald-600');
@@ -235,14 +235,14 @@ async function savePhoneToProfile() {
                 if (window.lucide) lucide.createIcons();
             }, 3000);
         } else {
-            errorMsg.textContent = data.error || 'Error al guardar el teléfono.';
+            errorMsg.textContent = data.error || t('error.phone_save');
             errorMsg.classList.remove('hidden');
             saveBtn.innerHTML = originalContent;
             saveBtn.disabled  = false;
             if (window.lucide) lucide.createIcons();
         }
     } catch (err) {
-        errorMsg.textContent = 'Error de conexión. Intentá de nuevo.';
+        errorMsg.textContent = t('error.connection_retry');
         errorMsg.classList.remove('hidden');
         saveBtn.innerHTML = originalContent;
         saveBtn.disabled  = false;

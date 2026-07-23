@@ -25,7 +25,7 @@
     function applyTheme(theme) {
         var isDark = theme === 'dark';
         html.classList.toggle('dark', isDark);
-        if (label) label.textContent = isDark ? 'Modo Claro' : 'Modo Oscuro';
+        if (label) label.textContent = isDark ? t('theme.light') : t('theme.dark');
     }
 
     function getSystemTheme() {

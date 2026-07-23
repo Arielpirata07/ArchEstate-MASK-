@@ -25,8 +25,8 @@ function showConfirm(message) {
             escapeHtml(message) +
             '</p></div>' +
             '<div class="flex border-t border-midnight/10">' +
-            '<button class="confirm-cancel flex-1 p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/60 hover:text-midnight transition-colors">Cancelar</button>' +
-            '<button class="confirm-ok flex-1 p-4 text-[10px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors border-l border-midnight/10">Confirmar</button>' +
+            '<button class="confirm-cancel flex-1 p-4 text-[10px] uppercase tracking-widest font-bold text-midnight/60 hover:text-midnight transition-colors">' + t('confirm.cancel') + '</button>' +
+            '<button class="confirm-ok flex-1 p-4 text-[10px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors border-l border-midnight/10">' + t('confirm.accept') + '</button>' +
             '</div>';
 
         overlay.appendChild(modal);
@@ -191,8 +191,8 @@ function validatePhone(val) {
 
     if (!isValid && val.length > 0) {
         errorEl.textContent = rules.label
-            ? `Formato inválido para ${rules.label} (mín. ${rules.min} dígitos)`
-            : `Teléfono debe tener entre 8 y 15 dígitos`;
+            ? t('validator.phone_format_country', {label: rules.label, min: rules.min})
+            : t('validator.phone_length');
         errorEl.classList.remove('hidden');
         inputEl.classList.add('border-rose-300');
     } else {
@@ -232,22 +232,22 @@ function validateBudgetForCurrency(budget, currency) {
         EUR: { min: 10000,  max: 100000000,   label: 'EUR (€)' },
     };
     var range = RANGES[currency];
-    if (!range) return { isValid: false, message: 'Moneda no válida.' };
+    if (!range) return { isValid: false, message: t('validator.currency_invalid') };
     var parts = String(budget).split(' - ');
     var minVal = parseFloat((parts[0] || '').replace(/\./g, ''));
     var maxVal = parts[1] ? parseFloat(parts[1].replace(/\./g, '')) : minVal;
     if (!Number.isFinite(minVal) || !Number.isFinite(maxVal)) {
-        return { isValid: false, message: 'Presupuesto no válido.' };
+        return { isValid: false, message: t('validator.budget_invalid') };
     }
     if (minVal === 0) return { isValid: true, message: null };
     if (minVal < range.min) {
-        return { isValid: false, message: 'El monto mínimo para ' + range.label + ' es ' + range.min.toLocaleString('es-AR') + '. Revisá la moneda seleccionada.' };
+        return { isValid: false, message: t('validator.budget_min_for_currency', {label: range.label, min: range.min.toLocaleString('es-AR')}) };
     }
     if (minVal > range.max) {
-        return { isValid: false, message: 'El monto máximo para ' + range.label + ' es ' + range.max.toLocaleString('es-AR') + '. Revisá la moneda seleccionada.' };
+        return { isValid: false, message: t('validator.budget_max_for_currency', {label: range.label, max: range.max.toLocaleString('es-AR')}) };
     }
     if (maxVal > range.max) {
-        return { isValid: false, message: 'El monto máximo para ' + range.label + ' es ' + range.max.toLocaleString('es-AR') + '. Revisá la moneda seleccionada.' };
+        return { isValid: false, message: t('validator.budget_max_for_currency', {label: range.label, max: range.max.toLocaleString('es-AR')}) };
     }
     return { isValid: true, message: null };
 }
@@ -336,7 +336,7 @@ function initUserForm() {
             const builtArea = parseFloat(data.built_area || '0');
             if (data.property_type === 'casa' && landArea > 0 && builtArea > 0) {
                 if (builtArea > landArea * 0.8) {
-                    showToast('Los metros construidos no pueden superar el 80% del terreno.', 'error');
+                    showToast(t('validator.built_area_exceeds'), 'error');
                     return;
                 }
             }
@@ -347,7 +347,7 @@ function initUserForm() {
             if (!validateEmail(data.email)) {
                 setLoading(submitBtn, false);
                 if (window.lucide) lucide.createIcons();
-                showToast('El email no es válido o está vacío. Verificá tu perfil.', 'error');
+                showToast(t('validator.email_empty_or_invalid'), 'error');
                 return;
             }
 
@@ -361,7 +361,7 @@ function initUserForm() {
             }
 
             // Estado de carga
-            setLoading(submitBtn, true, 'Procesando...');
+            setLoading(submitBtn, true, t('action.processing'));
 
             try {
                 const response = await fetch('/api/submit', {
@@ -386,7 +386,7 @@ function initUserForm() {
                 setLoading(submitBtn, false);
                 if (window.lucide) lucide.createIcons();
                 console.error("Error al enviar el formulario:", error);
-                showToast("Error de conexión con el servidor", 'error');
+                showToast(t('error.server_connection'), 'error');
             }
         });
     }
@@ -405,13 +405,13 @@ function selectPropertyType(propertyType) {
     propertyTypeInput.value = propertyType;
 
     const departmentOptions = [
-        { value: 'Comprar Propiedad', text: 'Comprar' },
-        { value: 'Remodelación Integral', text: 'Remodelacion' }
+        { value: 'Comprar Propiedad', text: t('operation.buy') },
+        { value: 'Remodelación Integral', text: t('operation.remodel') }
     ];
     const houseOptions = [
-        { value: 'Comprar Propiedad', text: 'Comprar' },
-        { value: 'Construir desde Cero', text: 'Construir' },
-        { value: 'Remodelación Integral', text: 'Remodelacion' }
+        { value: 'Comprar Propiedad', text: t('operation.buy') },
+        { value: 'Construir desde Cero', text: t('operation.build') },
+        { value: 'Remodelación Integral', text: t('operation.remodel') }
     ];
 
     const options = propertyType === 'casa' ? houseOptions : departmentOptions;
@@ -504,10 +504,10 @@ const CITY_SUGGESTIONS = [
 ];
 
 const ARCHITECTURAL_STYLES = [
-    'Moderno', 'Clasico', 'Minimalista', 'Industrial', 'Rustico',
-    'Contemporaneo', 'Vanguardista', 'Tradicional', 'Mediterraneo',
-    'Nordico', 'Colonial', 'Art Deco', 'Bauhaus', 'Organico',
-    'High-Tech', 'Neoclasic', 'Gotico', 'Barroco', 'Renacentista', 'Otro'
+    t('style.modern'), t('style.classic'), t('style.minimalist'), t('style.industrial'), t('style.rustic'),
+    t('style.contemporary'), t('style.vanguard'), t('style.traditional'), t('style.mediterranean'),
+    t('style.nordic'), t('style.colonial'), t('style.art_deco'), t('style.bauhaus'), t('style.organic'),
+    t('style.hightech'), t('style.neoclassic'), t('style.gothic'), t('style.baroque'), t('style.renaissance'), t('style.other')
 ];
 
 function initZoneAutocomplete() {
@@ -519,14 +519,14 @@ function initZoneAutocomplete() {
     const renderSuggestions = (items, query) => {
         if (!items.length && query.length > 0) {
             suggestions.innerHTML = `<li role="option" class="cursor-pointer px-4 py-3 border-b border-slate-100 hover:bg-slate-50" data-value="${query}">
-                        <strong class="text-midnight">Usar: ${query}</strong><span class="ml-2 text-[11px] text-midnight/60">(texto libre)</span>
+                        <strong class="text-midnight">' + t('autocomplete.use_query', {query: query}) + '</strong><span class="ml-2 text-[11px] text-midnight/60">' + t('autocomplete.free_text') + '</span>
                     </li>`;
             suggestions.classList.remove('hidden');
             return;
         }
 
         if (!items.length) {
-            suggestions.innerHTML = '<li role="status" class="px-4 py-3 text-sm text-midnight/60">Escribe una zona</li>';
+            suggestions.innerHTML = '<li role="status" class="px-4 py-3 text-sm text-midnight/60">' + t('autocomplete.type_zone') + '</li>';
             suggestions.classList.remove('hidden');
             return;
         }
@@ -572,7 +572,7 @@ function initArchitecturalStyleAutocomplete() {
 
     const renderSuggestions = (items) => {
         if (!items.length) {
-            suggestions.innerHTML = '<li role="status" class="px-4 py-3 text-sm text-midnight/60">Sin coincidencias</li>';
+            suggestions.innerHTML = '<li role="status" class="px-4 py-3 text-sm text-midnight/60">' + t('autocomplete.no_matches') + '</li>';
             suggestions.classList.remove('hidden');
             return;
         }
@@ -685,7 +685,7 @@ function initBudgetPopup() {
         sliderFill.style.left = `${Math.max(minPercent, 0)}%`;
         sliderFill.style.width = `${Math.max(maxPercent - minPercent, 0)}%`;
 
-        document.getElementById('budget-selected-range').textContent = `${formatMoney(minValue, currencySelect.value)} — ${isUnlimited && maxValue >= budgetData.max ? 'Ilimitado' : formatMoney(maxValue, currencySelect.value)}`;
+        document.getElementById('budget-selected-range').textContent = `${formatMoney(minValue, currencySelect.value)} — ${isUnlimited && maxValue >= budgetData.max ? t('budget.unlimited') : formatMoney(maxValue, currencySelect.value)}`;
         hiddenCurrency.value = currencySelect.value;
     };
 
@@ -716,9 +716,9 @@ function initBudgetPopup() {
         const isUnlimited = unlimitedCheckbox.checked;
         hiddenBudget.value = `${minValue} - ${maxValue}`;
         if (isUnlimited) {
-            trigger.textContent = "Presupuesto mayor a " + formatMoney(budgetData.max, currencySelect.value);
+            trigger.textContent = t('budget.greater_than') + formatMoney(budgetData.max, currencySelect.value);
         } else {
-            trigger.textContent = `Presupuesto: ${formatMoney(minValue, currencySelect.value)} — ${formatMoney(maxValue, currencySelect.value)}`;
+            trigger.textContent = `${t('budget.label')}${formatMoney(minValue, currencySelect.value)} — ${formatMoney(maxValue, currencySelect.value)}`;
         }
         setSliderPositions();
         updateManualInputs();
@@ -748,7 +748,7 @@ function initBudgetPopup() {
                 max: typeof result.max === 'number' ? result.max : budgetData.max,
                 ranges: result.ranges || []
             };
-            currencySelect.innerHTML = (result.currency_options || ['ARG','USD','EUR']).map(code => `<option value="${code}">${code === 'USD' ? 'Dolares' : code === 'EUR' ? 'Euros' : 'Pesos'}</option>`).join('');
+            currencySelect.innerHTML = (result.currency_options || ['ARG','USD','EUR']).map(code => `<option value="${code}">${code === 'USD' ? t('currency.usd_name') : code === 'EUR' ? t('currency.eur_name') : t('currency.arg_name')}</option>`).join('');
             resetBudget();
         } catch (error) {
             console.error('No se pudieron cargar las estadisticas de presupuesto:', error);
@@ -839,7 +839,7 @@ async function togglePhone(btn, leadId) {
     const isRevealed = btn.getAttribute('data-revealed') === 'true';
 
     if (isRevealed) {
-        btn.innerHTML = `<i data-lucide="eye" class="w-3 h-3"></i> Ver Telefono`;
+        btn.innerHTML = `<i data-lucide="eye" class="w-3 h-3"></i> ${t('action.view_phone')}`;
         btn.setAttribute('data-revealed', 'false');
         btn.classList.remove('bg-gold');
         btn.classList.add('bg-midnight');
@@ -859,7 +859,7 @@ async function togglePhone(btn, leadId) {
             btn.classList.add('bg-gold');
         } else {
             const originalContent = btn.innerHTML;
-            btn.innerHTML = `<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> Cargando...`;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-3 h-3 animate-spin"></i> ${t('action.loading')}`;
             btn.disabled = true;
             btn.classList.add('opacity-70');
 
@@ -875,12 +875,12 @@ async function togglePhone(btn, leadId) {
                     btn.classList.add('bg-gold');
                 } else {
                     btn.innerHTML = originalContent;
-                    showToast("No se pudo obtener el telefono", 'error');
+                    showToast(t('error.phone_fetch_failed'), 'error');
                 }
             } catch (error) {
                 btn.innerHTML = originalContent;
                 console.error("Error al obtener telefono:", error);
-                showToast("Error de red al consultar telefono", 'error');
+                showToast(t('error.phone_network'), 'error');
             } finally {
                 btn.disabled = false;
                 btn.classList.remove('opacity-70');
@@ -899,8 +899,8 @@ async function togglePhone(btn, leadId) {
 async function updateProStatus(proId, status, btn) {
     var isRejection = status === 'rejected';
     var confirmMsg = isRejection
-        ? "¡ADVERTENCIA! Esta a punto de RECHAZAR a este profesional. Esta acción quedará registrada permanentemente. ¿Está completamente seguro?"
-        : "¿Desea aprobar a este profesional para que pueda acceder a la plataforma?";
+        ? t('confirm.reject_professional_warning')
+        : t('confirm.approve_professional');
 
     if (!(await showConfirm(confirmMsg))) {
         return;
@@ -935,14 +935,14 @@ async function updateProStatus(proId, status, btn) {
                 const statusCell = row.cells[2];
                 if (statusCell) {
                     const label = status === 'approved'
-                        ? '<span class="px-2 py-1 bg-emerald-50 text-emerald-700 text-[9px] font-bold uppercase tracking-widest rounded">Aprobado</span>'
-                        : '<span class="px-2 py-1 bg-rose-50 text-rose-700 text-[9px] font-bold uppercase tracking-widest rounded">Rechazado</span>';
+                        ? '<span class="px-2 py-1 bg-emerald-50 text-emerald-700 text-[9px] font-bold uppercase tracking-widest rounded">' + t('status.approved') + '</span>'
+                        : '<span class="px-2 py-1 bg-rose-50 text-rose-700 text-[9px] font-bold uppercase tracking-widest rounded">' + t('status.rejected') + '</span>';
                     statusCell.innerHTML = label;
                 }
 
                 const actionCell = row.cells[3];
                 if (actionCell) {
-                    actionCell.innerHTML = '<span class="text-[10px] text-midnight/20 font-bold uppercase tracking-widest animate-pulse">Procesado</span>';
+                    actionCell.innerHTML = '<span class="text-[10px] text-midnight/20 font-bold uppercase tracking-widest animate-pulse">' + t('status.processed') + '</span>';
                 }
 
                 row.classList.add('transition-opacity', 'duration-1000', 'opacity-30', 'pointer-events-none');
@@ -962,7 +962,7 @@ async function updateProStatus(proId, status, btn) {
         btn.disabled = false;
         btn.classList.remove('opacity-50');
         console.error("Error al actualizar estado:", error);
-        showToast("Error al conectar con el servidor", 'error');
+        showToast(t('error.server_connection'), 'error');
     }
 }
 
@@ -1321,7 +1321,7 @@ function setLoading(btn, loading, loadingText) {
     if (!btn) return;
     if (loading) {
         btn.setAttribute('data-original-content', btn.innerHTML);
-        var text = loadingText || btn.getAttribute('data-loading-text') || 'Procesando...';
+        var text = loadingText || btn.getAttribute('data-loading-text') || t('action.processing');
         btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin inline-block align-middle"></i> ' + text;
         btn.disabled = true;
         btn.classList.add('is-submitting');

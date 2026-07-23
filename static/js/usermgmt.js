@@ -25,7 +25,7 @@ async function loadUsers() {
             <td colspan="7" class="p-8 text-center text-midnight/60">
                 <div class="flex justify-center items-center gap-2">
                     <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gold"></div>
-                    Cargando...
+                    ${t('action.loading')}
                 </div>
             </td>
         </tr>`;
@@ -38,17 +38,17 @@ async function loadUsers() {
             renderUsers(data.users);
             document.getElementById('usersCount').textContent = data.total;
         } else {
-            showTableError(data.error || 'Error al cargar usuarios.');
+            showTableError(data.error || t('error.users_load'));
         }
     } catch (err) {
-        showTableError('Error de conexión.');
+        showTableError(t('error.connection'));
     }
 }
 
 const ROLE_LABELS = {
-    admin:        { text: 'Admin',        cls: 'bg-midnight text-white' },
-    professional: { text: 'Profesional',  cls: 'bg-gold/20 text-gold' },
-    client:       { text: 'Cliente',      cls: 'bg-paper-dark text-midnight/60' },
+    admin:        { text: t('role.admin'),        cls: 'bg-midnight text-white' },
+    professional: { text: t('role.professional'),  cls: 'bg-gold/20 text-gold' },
+    client:       { text: t('role.client'),      cls: 'bg-paper-dark text-midnight/60' },
 };
 
 function renderUsers(users) {
@@ -59,7 +59,7 @@ function renderUsers(users) {
             <tr>
                 <td colspan="7" class="p-8 text-center text-midnight/60">
                     <i data-lucide="search" class="w-8 h-8 mx-auto mb-2 opacity-30"></i>
-                    <p>No se encontraron usuarios.</p>
+                    <p>${t('users.no_results')}</p>
                 </td>
             </tr>`;
         if (window.lucide) lucide.createIcons();
@@ -71,34 +71,34 @@ function renderUsers(users) {
         const phoneVerified = u.phone_verified === 1;
         const phone = u.phone
             ? (phoneVerified
-                ? `<span class="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400"><i data-lucide="smartphone" class="w-3.5 h-3.5"></i> <span class="font-medium">${escapeHtml(u.phone)}</span><span class="text-[8px] font-bold uppercase tracking-widest text-emerald-500/60 dark:text-emerald-400/60">Verificado</span></span>`
-                : `<span class="inline-flex items-center gap-1.5 text-rose-500 dark:text-rose-400"><i data-lucide="phone-off" class="w-3.5 h-3.5"></i> <span class="font-medium">${escapeHtml(u.phone)}</span><span class="text-[8px] font-bold uppercase tracking-widest text-rose-400/70 dark:text-rose-300/70">Sin verificar</span></span>`)
-            : '<span class="text-midnight/25 dark:text-paper/25 italic">Sin teléfono</span>';
+                ? `<span class="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400"><i data-lucide="smartphone" class="w-3.5 h-3.5"></i> <span class="font-medium">${escapeHtml(u.phone)}</span><span class="text-[8px] font-bold uppercase tracking-widest text-emerald-500/60 dark:text-emerald-400/60">${t('phone.verified')}</span></span>`
+                : `<span class="inline-flex items-center gap-1.5 text-rose-500 dark:text-rose-400"><i data-lucide="phone-off" class="w-3.5 h-3.5"></i> <span class="font-medium">${escapeHtml(u.phone)}</span><span class="text-[8px] font-bold uppercase tracking-widest text-rose-400/70 dark:text-rose-300/70">${t('phone.unverified')}</span></span>`)
+            : `<span class="text-midnight/25 dark:text-paper/25 italic">${t('phone.none')}</span>`;
 
         const isAdmin = u.role === 'admin';
         const resetBtn = isAdmin
-            ? `<span class="text-[10px] text-midnight/20 font-bold uppercase tracking-widest">Protegida</span>`
+            ? `<span class="text-[10px] text-midnight/20 font-bold uppercase tracking-widest">${t('status.protected')}</span>`
             : `<button
                 onclick="openResetModal(${u.id}, '${escapeHtml(u.username)}')"
                 class="inline-flex items-center gap-2 px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">
-                    <i data-lucide="key-round" class="w-3 h-3"></i> Reset Pass
+                    <i data-lucide="key-round" class="w-3 h-3"></i> ${t('action.reset_password')}
                </button>`;
 
         const isActive = u.is_active === 1;
         const statusBadge = isActive
-            ? '<span class="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-700 inline-flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i> Activo</span>'
-            : '<span class="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest bg-rose-50 text-rose-700 inline-flex items-center gap-1"><i data-lucide="x" class="w-3 h-3"></i> Baja</span>';
+            ? `<span class="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-700 inline-flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i> ${t('status.active')}</span>`
+            : `<span class="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest bg-rose-50 text-rose-700 inline-flex items-center gap-1"><i data-lucide="x" class="w-3 h-3"></i> ${t('status.disabled')}</span>`;
 
         const toggleBtn = isAdmin
-            ? '<span class="text-[10px] text-midnight/20 font-bold uppercase tracking-widest">Protegida</span>'
+            ? `<span class="text-[10px] text-midnight/20 font-bold uppercase tracking-widest">${t('status.protected')}</span>`
             : (isActive
                 ? `<button onclick="openDisableModal(${u.id}, '${escapeHtml(u.username)}')"
                     class="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-rose-50 text-rose-600 rounded text-[9px] font-bold uppercase tracking-widest hover:bg-rose-600 hover:text-white transition-all">
-                    <i data-lucide="user-x" class="w-3 h-3"></i> Bajar
+                    <i data-lucide="user-x" class="w-3 h-3"></i> ${t('action.disable')}
                    </button>`
                 : `<button onclick="openEnableModal(${u.id}, '${escapeHtml(u.username)}')"
                     class="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-50 text-emerald-600 rounded text-[9px] font-bold uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all">
-                    <i data-lucide="user-check" class="w-3 h-3"></i> Activar
+                    <i data-lucide="user-check" class="w-3 h-3"></i> ${t('action.enable')}
                    </button>`);
 
         return `
@@ -107,7 +107,7 @@ function renderUsers(users) {
                 <td class="px-4 py-3 text-[13px]">
                     <div class="font-medium text-midnight">${escapeHtml(u.username)}</div>
                 </td>
-                <td class="px-4 py-3 text-[13px] text-midnight/50">${escapeHtml(u.email) || '<span class="text-midnight/25 italic">Sin email</span>'}</td>
+                <td class="px-4 py-3 text-[13px] text-midnight/50">${escapeHtml(u.email) || `<span class="text-midnight/25 italic">${t('email.none')}</span>`}</td>
                 <td class="px-4 py-3 text-[13px] text-midnight/50">${phone}</td>
                 <td class="px-4 py-3">
                     <span class="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest ${badge.cls}">
@@ -207,7 +207,7 @@ function validatePasswordModal() {
     // Validar coincidencia solo si el campo de confirmación tiene algo
     if (confirm.length > 0) {
         if (pwd !== confirm) {
-            errEl.textContent = 'Las contraseñas no coinciden.';
+            errEl.textContent = t('password.mismatch');
             errEl.classList.remove('hidden');
         } else {
             errEl.classList.add('hidden');
@@ -225,7 +225,7 @@ function updateStrengthBar(pwd) {
     if (/[^A-Za-z0-9]/.test(pwd)) strength++;
 
     const colors  = ['bg-rose-400', 'bg-amber-400', 'bg-yellow-400', 'bg-emerald-500'];
-    const labels  = ['Muy débil', 'Débil', 'Aceptable', 'Fuerte'];
+    const labels  = [t('password.weak'), t('password.fair'), t('password.good'), t('password.strong')];
     const filled  = colors[strength - 1] || 'bg-midnight/10';
 
     for (let i = 1; i <= 4; i++) {
@@ -252,14 +252,14 @@ async function confirmReset() {
     }
 
     if (pwd !== confirm) {
-        errEl.textContent = 'Las contraseñas no coinciden.';
+        errEl.textContent = t('password.mismatch');
         errEl.classList.remove('hidden');
         return;
     }
 
     // Estado de carga
     const original = btn.innerHTML;
-    btn.innerHTML  = '<div class="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div> Procesando...';
+    btn.innerHTML  = '<div class="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div> ' + t('action.processing');
     btn.disabled   = true;
 
     try {
@@ -280,7 +280,7 @@ async function confirmReset() {
             btn.disabled   = false;
         }
     } catch (err) {
-        errEl.textContent = 'Error de conexión. Intentá de nuevo.';
+        errEl.textContent = t('error.connection');
         errEl.classList.remove('hidden');
         btn.innerHTML  = original;
         btn.disabled   = false;
@@ -327,7 +327,7 @@ async function confirmDisable() {
     if (!disableTargetId) return;
     const btn = document.getElementById('confirmDisableBtn');
     const original = btn.innerHTML;
-    btn.innerHTML = '<div class="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div> Procesando...';
+    btn.innerHTML = '<div class="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div> ' + t('action.processing');
     btn.disabled = true;
 
     try {
@@ -346,7 +346,7 @@ async function confirmDisable() {
             if (typeof showToast === 'function') showToast(data.error || 'Error al dar de baja.', 'error');
         }
     } catch (err) {
-        if (typeof showToast === 'function') showToast('Error de conexión.', 'error');
+        if (typeof showToast === 'function') showToast(t('error.connection'), 'error');
     } finally {
         btn.innerHTML = original;
         btn.disabled = false;
@@ -374,7 +374,7 @@ async function confirmEnable() {
     if (!enableTargetId) return;
     const btn = document.getElementById('confirmEnableBtn');
     const original = btn.innerHTML;
-    btn.innerHTML = '<div class="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div> Procesando...';
+    btn.innerHTML = '<div class="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div> ' + t('action.processing');
     btn.disabled = true;
 
     try {
@@ -393,7 +393,7 @@ async function confirmEnable() {
             if (typeof showToast === 'function') showToast(data.error || 'Error al reactivar.', 'error');
         }
     } catch (err) {
-        if (typeof showToast === 'function') showToast('Error de conexión.', 'error');
+        if (typeof showToast === 'function') showToast(t('error.connection'), 'error');
     } finally {
         btn.innerHTML = original;
         btn.disabled = false;

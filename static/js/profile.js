@@ -73,7 +73,7 @@ function saveUserProfile() {
     const err = document.getElementById('profile-error-msg');
 
     btn.disabled = true;
-    btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Guardando...';
+    btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> ' + t('action.saving');
     if (window.lucide) lucide.createIcons();
     if (msg) msg.classList.add('hidden');
     if (err) err.classList.add('hidden');
@@ -107,11 +107,11 @@ function saveUserProfile() {
         }
     })
     .catch(() => {
-        if (err) { err.textContent = 'Error de conexión'; err.classList.remove('hidden'); }
+        if (err) { err.textContent = t('error.connection'); err.classList.remove('hidden'); }
     })
     .finally(() => {
         btn.disabled = false;
-        btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Guardar Cambios';
+        btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> ' + t('action.save_changes');
         if (window.lucide) lucide.createIcons();
     });
 }
@@ -120,10 +120,10 @@ function updatePhoneVerificationArea(phone) {
     const area = document.getElementById('phone-verification-area');
     if (!area) return;
     area.innerHTML = '<span class="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/60 inline-flex items-center gap-1">'
-        + '<i data-lucide="phone-off" class="w-3 h-3"></i> No verificado</span>'
+        + '<i data-lucide="phone-off" class="w-3 h-3"></i> ' + t('phone.not_verified') + '</span>'
         + '<button type="button" id="verify-phone-btn"'
         + ' class="text-[10px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors"'
-        + ' onclick="openPhoneVerifyModal()">Verificar</button>';
+        + ' onclick="openPhoneVerifyModal()">' + t('action.verify') + '</button>';
     if (window.lucide) lucide.createIcons();
 }
 
@@ -135,7 +135,7 @@ function uploadAvatar(input) {
     if (!file) return;
 
     const status = document.getElementById('avatar-status');
-    if (status) { status.textContent = 'Subiendo...'; status.className = 'text-[9px] mt-1 text-amber-500'; }
+    if (status) { status.textContent = t('action.uploading'); status.className = 'text-[9px] mt-1 text-amber-500'; }
 
     const formData = new FormData();
     formData.append('avatar', file);
@@ -153,24 +153,24 @@ function uploadAvatar(input) {
             if (img && ring) {
                 img.addEventListener('load', function() { extractAvatarColors(img, ring); });
             }
-            if (status) { status.textContent = 'Foto actualizada'; status.className = 'text-[9px] mt-1 text-emerald-600'; }
+            if (status) { status.textContent = t('avatar.updated'); status.className = 'text-[9px] mt-1 text-emerald-600'; }
         } else {
-            if (status) { status.textContent = data.error || 'Error al subir foto'; status.className = 'text-[9px] mt-1 text-rose-500'; }
+            if (status) { status.textContent = data.error || t('error.avatar_upload'); status.className = 'text-[9px] mt-1 text-rose-500'; }
         }
         input.value = '';
     })
     .catch(() => {
-        if (status) { status.textContent = 'Error de conexión'; status.className = 'text-[9px] mt-1 text-rose-500'; }
+        if (status) { status.textContent = t('error.connection'); status.className = 'text-[9px] mt-1 text-rose-500'; }
         input.value = '';
     });
 }
 
 function deleteAvatar() {
-    var promise = typeof showConfirm === 'function' ? showConfirm('Eliminar foto de perfil?') : Promise.resolve(true);
+    var promise = typeof showConfirm === 'function' ? showConfirm(t('confirm.delete_avatar')) : Promise.resolve(true);
     promise.then(function (ok) {
         if (!ok) return;
         var status = document.getElementById('avatar-status');
-        if (status) { status.textContent = 'Eliminando...'; status.className = 'text-[9px] mt-1 text-amber-500'; }
+        if (status) { status.textContent = t('action.deleting'); status.className = 'text-[9px] mt-1 text-amber-500'; }
         fetch('/api/profile/user/avatar', { method: 'DELETE' })
         .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
         .then(function (res) {
@@ -179,13 +179,13 @@ function deleteAvatar() {
                 if (img) img.src = '/static/img/default-avatar.svg';
                 var ring = document.getElementById('avatar-ring');
                 if (ring) ring.classList.remove('visible');
-                if (status) { status.textContent = 'Foto eliminada'; status.className = 'text-[9px] mt-1 text-emerald-600'; }
+                if (status) { status.textContent = t('avatar.deleted'); status.className = 'text-[9px] mt-1 text-emerald-600'; }
             } else {
-                if (status) { status.textContent = 'Error al eliminar foto'; status.className = 'text-[9px] mt-1 text-rose-500'; }
+                if (status) { status.textContent = t('error.avatar_delete'); status.className = 'text-[9px] mt-1 text-rose-500'; }
             }
         })
         .catch(function () {
-            if (status) { status.textContent = 'Error de conexión'; status.className = 'text-[9px] mt-1 text-rose-500'; }
+            if (status) { status.textContent = t('error.connection'); status.className = 'text-[9px] mt-1 text-rose-500'; }
         });
     });
 }
@@ -607,7 +607,7 @@ function saveSettings() {
         }
     })
     .catch(() => {
-        if (err) { err.textContent = 'Error de conexión'; err.classList.remove('hidden'); }
+        if (err) { err.textContent = t('error.connection'); err.classList.remove('hidden'); }
     });
 }
 
@@ -620,7 +620,7 @@ function changePassword() {
     const err = document.getElementById('password-error-msg');
 
     btn.disabled = true;
-    btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Actualizando...';
+    btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> ' + t('action.updating');
     if (window.lucide) lucide.createIcons();
     if (msg) msg.classList.add('hidden');
     if (err) err.classList.add('hidden');
@@ -630,13 +630,13 @@ function changePassword() {
     const confirm = document.getElementById('confirm-password').value;
 
     if (!current || !newPass || !confirm) {
-        if (err) { err.textContent = 'Todos los campos son requeridos'; err.classList.remove('hidden'); }
-        resetBtn(btn, '<i data-lucide="lock" class="w-4 h-4"></i> Cambiar Contrasena');
+        if (err) { err.textContent = t('password.all_fields_required'); err.classList.remove('hidden'); }
+        resetBtn(btn, '<i data-lucide="lock" class="w-4 h-4"></i> ' + t('action.change_password'));
         return;
     }
     if (newPass !== confirm) {
-        if (err) { err.textContent = 'Las contrasenas no coinciden'; err.classList.remove('hidden'); }
-        resetBtn(btn, '<i data-lucide="lock" class="w-4 h-4"></i> Cambiar Contrasena');
+        if (err) { err.textContent = t('password.mismatch'); err.classList.remove('hidden'); }
+        resetBtn(btn, '<i data-lucide="lock" class="w-4 h-4"></i> ' + t('action.change_password'));
         return;
     }
 
@@ -658,10 +658,10 @@ function changePassword() {
         }
     })
     .catch(() => {
-        if (err) { err.textContent = 'Error de conexión'; err.classList.remove('hidden'); }
+        if (err) { err.textContent = t('error.connection'); err.classList.remove('hidden'); }
     })
     .finally(() => {
-        resetBtn(btn, '<i data-lucide="lock" class="w-4 h-4"></i> Cambiar Contrasena');
+        resetBtn(btn, '<i data-lucide="lock" class="w-4 h-4"></i> ' + t('action.change_password'));
     });
 }
 
@@ -678,16 +678,16 @@ function resetBtn(btn, html) {
 function loadUserSessions() {
     const container = document.getElementById('sessions-container');
     if (!container) return;
-    container.innerHTML = '<div class="text-sm hint-text">Cargando sesiones...</div>';
+    container.innerHTML = '<div class="text-sm hint-text">' + t('sessions.loading') + '</div>';
 
     fetch('/api/profile/sessions')
     .then(r => r.json())
     .then(data => {
         if (!data.success || !data.sessions || data.sessions.length === 0) {
-            container.innerHTML = '<p class="text-sm hint-text">No hay sesiones registradas.</p>';
+            container.innerHTML = '<p class="text-sm hint-text">' + t('sessions.empty') + '</p>';
             return;
         }
-        let html = '<table class="sessions-table"><thead><tr><th>#</th><th>IP</th><th>Dispositivo</th><th>Ultima actividad</th><th></th></tr></thead><tbody>';
+        let html = '<table class="sessions-table"><thead><tr><th>#</th><th>IP</th><th>' + t('sessions.device') + '</th><th>' + t('sessions.last_activity') + '</th><th></th></tr></thead><tbody>';
         data.sessions.forEach((s, i) => {
             const ua = s.user_agent ? s.user_agent.substring(0, 60) : '-';
             html += `<tr>
@@ -695,19 +695,19 @@ function loadUserSessions() {
                 <td class="font-mono text-[10px]">${s.ip_address || '-'}</td>
                 <td class="text-[11px]">${escapeHtml(ua)}</td>
                 <td class="text-[11px]">${s.last_active || s.created_at || '-'}</td>
-                <td><button onclick="terminateSession(${s.id})" class="text-[9px] uppercase tracking-widest font-bold hover:text-rose-500 transition-colors" style="color:var(--text-secondary)">Cerrar</button></td>
+                <td><button onclick="terminateSession(${s.id})" class="text-[9px] uppercase tracking-widest font-bold hover:text-rose-500 transition-colors" style="color:var(--text-secondary)">${t('action.close')}</button></td>
             </tr>`;
         });
         html += '</tbody></table>';
         container.innerHTML = html;
     })
     .catch(() => {
-        container.innerHTML = '<p class="text-sm text-rose-600">Error al cargar sesiones</p>';
+        container.innerHTML = '<p class="text-sm text-rose-600">' + t('error.sessions_load') + '</p>';
     });
 }
 
 function terminateSession(entryId) {
-    var promise = typeof showConfirm === 'function' ? showConfirm('Cerrar esta sesion?') : Promise.resolve(true);
+    var promise = typeof showConfirm === 'function' ? showConfirm(t('confirm.close_session')) : Promise.resolve(true);
     promise.then(function (ok) {
         if (!ok) return;
         fetch('/api/profile/sessions/' + entryId, { method: 'DELETE' })
@@ -725,13 +725,13 @@ function terminateSession(entryId) {
 function loadUserActivity() {
     const container = document.getElementById('activity-container');
     if (!container) return;
-    container.innerHTML = '<div class="text-sm hint-text">Cargando actividad...</div>';
+    container.innerHTML = '<div class="text-sm hint-text">' + t('activity.loading') + '</div>';
 
     fetch('/api/profile/activity')
     .then(r => r.json())
     .then(data => {
         if (!data.success || !data.activity || data.activity.length === 0) {
-            container.innerHTML = '<p class="text-sm hint-text">No hay actividad registrada aun.</p>';
+            container.innerHTML = '<p class="text-sm hint-text">' + t('activity.empty') + '</p>';
             return;
         }
         let html = '<div class="activity-timeline">';
@@ -746,7 +746,7 @@ function loadUserActivity() {
         container.innerHTML = html;
     })
     .catch(() => {
-        container.innerHTML = '<p class="text-sm text-rose-600">Error al cargar actividad</p>';
+        container.innerHTML = '<p class="text-sm text-rose-600">' + t('error.activity_load') + '</p>';
     });
 }
 
@@ -773,13 +773,13 @@ function loadUserLeads() {
             const sym = lead.currency === 'USD' ? 'US$' : lead.currency === 'EUR' ? 'EUR' : '$';
             const seenCount = lead.seen_count || 0;
             const trackingHtml = seenCount > 0
-                ? `<span class="tracking-badge" title="${seenCount} ${seenCount === 1 ? 'inmobiliaria ha visto' : 'inmobiliarias han visto'} tu solicitud">
+                ? `<span class="tracking-badge" title="${seenCount} ${seenCount === 1 ? t('leads.seen_by_singular') : t('leads.seen_by_plural')} tu solicitud">
                     <i data-lucide="eye" class="w-3 h-3 tracking-eye"></i>
-                    ${seenCount} ${seenCount === 1 ? 'vista' : 'vistas'}
+                    ${seenCount} ${seenCount === 1 ? t('leads.view_singular') : t('leads.view_plural')}
                 </span>`
                 : `<span class="tracking-empty">
                     <i data-lucide="hourglass" class="w-3 h-3"></i>
-                    En revisión
+                    ${t('leads.under_review')}
                 </span>`;
             return `<tr style="border-bottom:1px solid var(--border)">
                 <td class="px-4 py-3 text-[13px] font-semibold" style="color:var(--text-primary)">#${lead.id}</td>
@@ -800,7 +800,7 @@ function loadUserLeads() {
         if (window.lucide) lucide.createIcons();
     })
     .catch(() => {
-        tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-rose-600">Error al cargar solicitudes</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="p-8 text-center text-rose-600">' + t('error.leads_load') + '</td></tr>';
     });
 }
 
@@ -819,16 +819,16 @@ function loadProfessionalFullProfile() {
             const licenseStatusEl = document.getElementById('pro-license-status');
             if (licenseEl) licenseEl.textContent = p.license || '-';
             if (statusEl) {
-                const labels = { pending: 'Pendiente', approved: 'Aprobado', rejected: 'Rechazado' };
+                const labels = { pending: t('status.pending'), approved: t('status.approved'), rejected: t('status.rejected') };
                 statusEl.textContent = labels[p.status] || p.status;
                 statusEl.className = 'text-sm font-medium ' + ({ pending: 'text-amber-600', approved: 'text-emerald-600', rejected: 'text-rose-600' }[p.status] || 'text-midnight/60');
             }
             if (licenseStatusEl) {
                 if (p.license_verified) {
-                    licenseStatusEl.textContent = '✓ Verificada';
+                    licenseStatusEl.textContent = t('license.verified');
                     licenseStatusEl.className = 'text-sm font-medium text-emerald-600';
                 } else {
-                    licenseStatusEl.textContent = 'No verificada';
+                    licenseStatusEl.textContent = t('license.not_verified');
                     licenseStatusEl.className = 'text-sm font-medium text-amber-600';
                 }
             }
@@ -906,7 +906,7 @@ function saveProfessionalFullProfile() {
     const err = document.getElementById('pro-full-error-msg');
 
     btn.disabled = true;
-    btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Guardando...';
+    btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> ' + t('action.saving');
     if (window.lucide) lucide.createIcons();
     if (msg) msg.classList.add('hidden');
     if (err) err.classList.add('hidden');
@@ -958,11 +958,11 @@ function saveProfessionalFullProfile() {
         }
     })
     .catch(() => {
-        if (err) { err.textContent = 'Error de conexión'; err.classList.remove('hidden'); }
+        if (err) { err.textContent = t('error.connection'); err.classList.remove('hidden'); }
     })
     .finally(() => {
         btn.disabled = false;
-        btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Guardar Perfil Profesional';
+        btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> ' + t('action.save_pro_profile');
         if (window.lucide) lucide.createIcons();
     });
 }
@@ -975,7 +975,7 @@ function uploadProfessionalPhoto(input) {
     if (!file) return;
 
     const status = document.getElementById('pro-photo-status');
-    if (status) { status.textContent = 'Subiendo...'; status.className = 'text-[9px] mt-1 text-amber-500'; }
+    if (status) { status.textContent = t('action.uploading'); status.className = 'text-[9px] mt-1 text-amber-500'; }
 
     const formData = new FormData();
     formData.append('photo', file);
@@ -993,24 +993,24 @@ function uploadProfessionalPhoto(input) {
             if (img && ring) {
                 img.addEventListener('load', function() { extractAvatarColors(img, ring); });
             }
-            if (status) { status.textContent = 'Foto actualizada'; status.className = 'text-[9px] mt-1 text-emerald-600'; }
+            if (status) { status.textContent = t('avatar.updated'); status.className = 'text-[9px] mt-1 text-emerald-600'; }
         } else {
-            if (status) { status.textContent = data.error || 'Error al subir foto'; status.className = 'text-[9px] mt-1 text-rose-500'; }
+            if (status) { status.textContent = data.error || t('error.avatar_upload'); status.className = 'text-[9px] mt-1 text-rose-500'; }
         }
         input.value = '';
     })
     .catch(() => {
-        if (status) { status.textContent = 'Error de conexión'; status.className = 'text-[9px] mt-1 text-rose-500'; }
+        if (status) { status.textContent = t('error.connection'); status.className = 'text-[9px] mt-1 text-rose-500'; }
         input.value = '';
     });
 }
 
 function deleteProfessionalPhoto() {
-    var promise = typeof showConfirm === 'function' ? showConfirm('Eliminar foto profesional?') : Promise.resolve(true);
+    var promise = typeof showConfirm === 'function' ? showConfirm(t('confirm.delete_pro_photo')) : Promise.resolve(true);
     promise.then(function (ok) {
         if (!ok) return;
         var status = document.getElementById('pro-photo-status');
-        if (status) { status.textContent = 'Eliminando...'; status.className = 'text-[9px] mt-1 text-amber-500'; }
+        if (status) { status.textContent = t('action.deleting'); status.className = 'text-[9px] mt-1 text-amber-500'; }
         fetch('/api/profile/professional/photo', { method: 'DELETE' })
         .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
         .then(function (res) {
@@ -1019,13 +1019,13 @@ function deleteProfessionalPhoto() {
                 if (img) img.src = '/static/img/default-avatar.svg';
                 var ring = document.getElementById('pro-photo-ring');
                 if (ring) ring.classList.remove('visible');
-                if (status) { status.textContent = 'Foto eliminada'; status.className = 'text-[9px] mt-1 text-emerald-600'; }
+                if (status) { status.textContent = t('avatar.deleted'); status.className = 'text-[9px] mt-1 text-emerald-600'; }
             } else {
-                if (status) { status.textContent = 'Error al eliminar foto'; status.className = 'text-[9px] mt-1 text-rose-500'; }
+                if (status) { status.textContent = t('error.avatar_delete'); status.className = 'text-[9px] mt-1 text-rose-500'; }
             }
         })
         .catch(function () {
-            if (status) { status.textContent = 'Error de conexión'; status.className = 'text-[9px] mt-1 text-rose-500'; }
+            if (status) { status.textContent = t('error.connection'); status.className = 'text-[9px] mt-1 text-rose-500'; }
         });
     });
 }
@@ -1179,11 +1179,11 @@ async function autoSendVerificationCode() {
         });
         const data = await res.json();
         if (!res.ok) {
-            errorEl.textContent = data.error || 'Error al enviar el código.';
+            errorEl.textContent = data.error || t('error.code_send');
             errorEl.classList.remove('hidden');
         }
     } catch {
-        errorEl.textContent = 'Error de conexión. Intentá de nuevo.';
+        errorEl.textContent = t('error.connection_retry');
         errorEl.classList.remove('hidden');
     } finally {
         submitBtn.disabled = false;
@@ -1213,13 +1213,13 @@ async function submitVerificationCode() {
     successEl.classList.add('hidden');
 
     if (code.length !== 6) {
-        errorEl.textContent = 'Ingresá el código completo de 6 dígitos.';
+        errorEl.textContent = t('verification.enter_full_code');
         errorEl.classList.remove('hidden');
         return;
     }
 
     const originalContent = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin inline"></i> Verificando...';
+    submitBtn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin inline"></i> ' + t('action.verifying');
     submitBtn.disabled = true;
     if (window.lucide) lucide.createIcons();
 
@@ -1233,7 +1233,7 @@ async function submitVerificationCode() {
 
         if (res.ok) {
             successEl.classList.remove('hidden');
-            if (typeof showToast === 'function') showToast('Teléfono verificado correctamente', 'success');
+            if (typeof showToast === 'function') showToast(t('verification.success'), 'success');
             setTimeout(() => {
                 closePhoneVerifyModal();
                 const area = document.getElementById('phone-verification-area');
@@ -1247,14 +1247,14 @@ async function submitVerificationCode() {
                 }
             }, 1500);
         } else if (res.status === 410) {
-            errorEl.textContent = data.error || 'Código expirado. Solicitá uno nuevo.';
+            errorEl.textContent = data.error || t('verification.expired');
             errorEl.classList.remove('hidden');
         } else {
-            errorEl.textContent = data.error || 'Código incorrecto.';
+            errorEl.textContent = data.error || t('verification.incorrect');
             errorEl.classList.remove('hidden');
         }
     } catch (err) {
-        errorEl.textContent = 'Error de conexión. Intentá de nuevo.';
+        errorEl.textContent = t('error.connection_retry');
         errorEl.classList.remove('hidden');
     } finally {
         submitBtn.innerHTML = originalContent;
@@ -1284,7 +1284,7 @@ async function resendVerificationCode() {
         const data = await res.json();
 
         if (res.ok) {
-            if (typeof showToast === 'function') showToast('Código reenviado', 'info');
+            if (typeof showToast === 'function') showToast(t('verification.resent'), 'info');
             // Cooldown 60s
             let remaining = 60;
             cooldown.classList.remove('hidden');
@@ -1300,13 +1300,13 @@ async function resendVerificationCode() {
                 }
             }, 1000);
         } else {
-            errorEl.textContent = data.error || 'Error al enviar el código.';
+            errorEl.textContent = data.error || t('error.code_send');
             errorEl.classList.remove('hidden');
             btn.disabled = false;
             btn.classList.remove('opacity-50');
         }
     } catch (err) {
-        errorEl.textContent = 'Error de conexión.';
+        errorEl.textContent = t('error.connection');
         errorEl.classList.remove('hidden');
         btn.disabled = false;
         btn.classList.remove('opacity-50');

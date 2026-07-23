@@ -27,9 +27,9 @@ function renderUploadWidget(cid) {
                 <div class="w-14 h-14 mx-auto rounded-full bg-paper-dark group-hover:bg-gold/10 flex items-center justify-center mb-4 transition-colors">
                     <i data-lucide="upload-cloud" class="w-7 h-7 text-midnight/30 group-hover:text-gold transition-colors"></i>
                 </div>
-                <p class="text-sm font-semibold text-midnight/70 group-hover:text-midnight transition-colors">Arrastrá tu archivo aquí</p>
-                <p class="text-[10px] text-midnight/60 mt-1 uppercase tracking-widest font-bold">o hacé clic para seleccionar</p>
-                <p class="text-[9px] text-midnight/30 mt-3 uppercase tracking-widest">PDF · JPG · PNG &nbsp;·&nbsp; Máx. ${MAX_MB} MB</p>
+                <p class="text-sm font-semibold text-midnight/70 group-hover:text-midnight transition-colors">${t('upload.drag_here')}</p>
+                <p class="text-[10px] text-midnight/60 mt-1 uppercase tracking-widest font-bold">${t('upload.or_click')}</p>
+                <p class="text-[9px] text-midnight/30 mt-3 uppercase tracking-widest">${t('upload.max_size', {max: MAX_MB})}</p>
             </div>
 
             <!-- Preview del archivo seleccionado -->
@@ -42,7 +42,7 @@ function renderUploadWidget(cid) {
                         <p id="fileName-${cid}" class="text-sm font-semibold text-midnight truncate"></p>
                         <p id="fileSize-${cid}" class="text-[10px] text-midnight/60 mt-0.5 uppercase tracking-widest font-bold"></p>
                     </div>
-                    <button onclick="clearFile('${cid}')" class="p-2 text-midnight/30 hover:text-rose-500 transition-colors flex-shrink-0" title="Quitar archivo">
+                    <button onclick="clearFile('${cid}')" class="p-2 text-midnight/30 hover:text-rose-500 transition-colors flex-shrink-0" title="${t('upload.remove_file')}">
                         <i data-lucide="x" class="w-4 h-4"></i>
                     </button>
                 </div>
@@ -51,7 +51,7 @@ function renderUploadWidget(cid) {
             <!-- Barra de progreso -->
             <div id="progressWrapper-${cid}" class="hidden space-y-2">
                 <div class="flex justify-between items-center">
-                    <p class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">Subiendo documento...</p>
+                    <p class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">${t('upload.uploading')}</p>
                     <span id="progressPct-${cid}" class="text-[10px] font-bold text-gold">0%</span>
                 </div>
                 <div class="h-1.5 bg-midnight/10 rounded-full overflow-hidden">
@@ -64,17 +64,17 @@ function renderUploadWidget(cid) {
                 <div class="flex items-center gap-3 p-3 bg-emerald-50 border border-emerald-100 rounded-lg">
                     <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600 flex-shrink-0"></i>
                     <div class="flex-grow min-w-0">
-                        <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-700">Documento cargado</p>
+                        <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-700">${t('upload.doc_loaded')}</p>
                         <p id="docStatusName-${cid}" class="text-xs text-emerald-600 mt-0.5 truncate font-medium"></p>
                     </div>
                     <a href="${(document.getElementById('docApproved') || {}).dataset ? document.getElementById('docApproved').dataset.downloadUrl : '#'}"
                        class="flex-shrink-0 flex items-center gap-1 px-2 py-1 bg-emerald-100 text-emerald-700 rounded text-[9px] font-bold uppercase tracking-widest hover:bg-emerald-200 transition-colors">
-                        <i data-lucide="download" class="w-3 h-3"></i> Descargar
+                        <i data-lucide="download" class="w-3 h-3"></i> ${t('action.download')}
                     </a>
                 </div>
                 <button onclick="replaceDoc('${cid}')"
                     class="w-full text-[10px] text-midnight/60 hover:text-gold transition-colors font-bold uppercase tracking-widest py-1 flex items-center justify-center gap-1">
-                    <i data-lucide="refresh-cw" class="w-3 h-3"></i> Reemplazar documento
+                    <i data-lucide="refresh-cw" class="w-3 h-3"></i> ${t('upload.replace_doc')}
                 </button>
             </div>
 
@@ -83,7 +83,7 @@ function renderUploadWidget(cid) {
                 <button id="uploadBtn-${cid}" onclick="uploadFile('${cid}')"
                     class="w-full py-3 bg-midnight text-white rounded font-bold uppercase tracking-widest text-[10px] hover:bg-gold transition-all flex items-center justify-center gap-2">
                     <i data-lucide="upload" class="w-4 h-4"></i>
-                    Subir Documentación
+                    ${t('upload.submit_docs')}
                 </button>
             </div>
 
@@ -108,7 +108,7 @@ function markDocLoaded(cid, name) {
     document.getElementById(`submitWrapper-${cid}`)?.classList.add('hidden');
     document.getElementById(`docStatus-${cid}`)?.classList.remove('hidden');
     const nameEl = document.getElementById(`docStatusName-${cid}`);
-    if (nameEl) nameEl.textContent = name || 'Documento cargado';
+    if (nameEl) nameEl.textContent = name || t('upload.doc_loaded');
 
     // Actualizar paso 2 en el sidebar (solo estado pendiente)
     const icon  = document.getElementById('step2-icon');
@@ -118,7 +118,7 @@ function markDocLoaded(cid, name) {
         icon.className = 'w-6 h-6 rounded-full bg-gold flex items-center justify-center flex-shrink-0 mt-0.5';
         icon.innerHTML = '<i data-lucide="check" class="w-3 h-3 text-white"></i>';
         label.className   = 'text-white text-xs font-bold uppercase tracking-widest';
-        label.textContent = 'Documentación enviada';
+        label.textContent = t('upload.docs_sent');
         sub.textContent   = name || '';
         if (window.lucide) lucide.createIcons();
     }
@@ -145,11 +145,11 @@ function handleFileSelect(e, cid) {
 function processFile(file, cid) {
     const ext = '.' + file.name.split('.').pop().toLowerCase();
     if (!ALLOWED_EXT.includes(ext)) {
-        if (typeof showToast === 'function') showToast(`Tipo no permitido. Usá: PDF, JPG o PNG.`, 'error');
+        if (typeof showToast === 'function') showToast(t('error.file_type_not_allowed'), 'error');
         return;
     }
     if (file.size > MAX_MB * 1024 * 1024) {
-        if (typeof showToast === 'function') showToast(`El archivo supera los ${MAX_MB} MB.`, 'error');
+        if (typeof showToast === 'function') showToast(t('error.file_too_large', {max: MAX_MB}), 'error');
         return;
     }
 
@@ -232,13 +232,13 @@ async function uploadFile(cid) {
             if (typeof showToast === 'function') showToast(data.message);
         } else {
             document.getElementById(`dropzone-${cid}`).classList.remove('hidden');
-            if (typeof showToast === 'function') showToast(data.error || 'Error al subir el archivo.', 'error');
+            if (typeof showToast === 'function') showToast(data.error || t('error.upload_failed'), 'error');
         }
     } catch (err) {
         clearInterval(tick);
         document.getElementById(`progressWrapper-${cid}`).classList.add('hidden');
         document.getElementById(`dropzone-${cid}`).classList.remove('hidden');
-        if (typeof showToast === 'function') showToast('Error de conexión al subir el archivo.', 'error');
+        if (typeof showToast === 'function') showToast(t('error.upload_network'), 'error');
     }
 
     btn.disabled       = false;
@@ -285,12 +285,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ---- Labels legibles para los filtros activos ----
 const PROP_LABELS = {
-    departamento: 'Departamento', casa: 'Casa', duplex: 'Dúplex',
-    penthouse: 'Penthouse', local_comercial: 'Local Comercial',
+    departamento: t('property.department'), casa: t('property.house'), duplex: t('property.duplex'),
+    penthouse: t('property.penthouse'), local_comercial: t('property.commercial'),
 };
 const BUDGET_LABELS = {
-    hasta_200k: 'Hasta $200k', '200k_500k': '$200k–$500k',
-    '500k_1m': '$500k–$1M', '1m_2m': '$1M–$2M', mas_2m: 'Más de $2M',
+    hasta_200k: t('budget.up_to_200k'), '200k_500k': t('budget.200k_500k'),
+    '500k_1m': t('budget.500k_1m'), '1m_2m': t('budget.1m_2m'), mas_2m: t('budget.over_2m'),
 };
 
 // ---- Íconos por tipo de propiedad ----
@@ -425,10 +425,10 @@ function renderActiveTags() {
     if (currentFilters.search)        tags.push({ key: 'search',       label: `"${currentFilters.search}"` });
     if (currentFilters.type)          tags.push({ key: 'type',         label: currentFilters.type });
     if (currentFilters.property_type) tags.push({ key: 'property_type',label: PROP_LABELS[currentFilters.property_type] || currentFilters.property_type });
-    if (currentFilters.zone)          tags.push({ key: 'zone',         label: `Zona: ${currentFilters.zone}` });
+    if (currentFilters.zone)          tags.push({ key: 'zone',         label: t('filter.zone_label', {zone: currentFilters.zone}) });
     if (currentFilters.budget_range)  tags.push({ key: 'budget_range', label: BUDGET_LABELS[currentFilters.budget_range] || currentFilters.budget_range });
     if (currentFilters.time_range) {
-        var trLabels = {'1': 'Hoy', '7': '7 días', '30': '30 días'};
+        var trLabels = {'1': t('time.today'), '7': t('time.7_days'), '30': t('time.30_days')};
         tags.push({ key: 'time_range', label: trLabels[currentFilters.time_range] || currentFilters.time_range + ' días' });
     }
 
@@ -479,7 +479,7 @@ async function loadLeads() {
         tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-midnight/60">
             <div class="flex justify-center items-center gap-2">
                 <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gold"></div>
-                Buscando leads...
+                ${t('leads.searching')}
             </div></td></tr>`;
 
         const res  = await fetch(`/api/leads?${params}`);
@@ -491,10 +491,10 @@ async function loadLeads() {
             document.getElementById('leadsCount').textContent = data.total;
             renderActiveTags();
         } else {
-            showLeadError(data.error || 'Error al cargar leads');
+            showLeadError(data.error || t('error.leads_load'));
         }
     } catch (err) {
-        showLeadError('Error de conexión');
+        showLeadError(t('error.connection'));
     }
 }
 
@@ -515,8 +515,8 @@ function renderLeads(leads) {
         tbody.innerHTML = `
             <tr><td colspan="8" class="p-12 text-center text-midnight/60">
                 <i data-lucide="search-x" class="w-10 h-10 mx-auto mb-3 text-midnight/20"></i>
-                <p class="font-semibold text-midnight/60">Sin resultados para estos filtros</p>
-                <p class="text-xs text-midnight/30 mt-1">Probá ajustando el tipo de vivienda o el rango de inversión</p>
+                <p class="font-semibold text-midnight/60">${t('leads.no_results')}</p>
+                <p class="text-xs text-midnight/30 mt-1">${t('leads.no_results_hint')}</p>
             </td></tr>`;
         if (window.lucide) lucide.createIcons();
         return;
@@ -535,18 +535,18 @@ function renderLeads(leads) {
 
         // Detalles técnicos compactos
         const specs = [];
-        if (lead.ambientes)          specs.push(`${lead.ambientes} amb.`);
-        if (lead.bedrooms)           specs.push(`${lead.bedrooms} hab.`);
-        if (lead.bathrooms)          specs.push(`${lead.bathrooms} baños`);
+        if (lead.ambientes)          specs.push(`${lead.ambientes} ${t('spec.rooms')}`);
+        if (lead.bedrooms)           specs.push(`${lead.bedrooms} ${t('spec.bedrooms')}`);
+        if (lead.bathrooms)          specs.push(`${lead.bathrooms} ${t('spec.bathrooms')}`);
         if (lead.usable_m2 > 0)      specs.push(`${lead.usable_m2} m²`);
-        if (lead.land_area > 0)      specs.push(`${lead.land_area} m² terreno`);
+        if (lead.land_area > 0)      specs.push(`${lead.land_area} ${t('spec.land_m2')}`);
 
         const specLine = specs.length
             ? `<div class="text-[9px] text-midnight/60 font-bold uppercase tracking-widest mt-0.5">${specs.join(' · ')}</div>`
             : '';
 
         // Badges extra
-        const parkingLabels = { sin_cochera:'Sin cochera', simple_cubierta:'Coch. simple', doble_cubierta:'Coch. doble', descubierta:'Desc.', garage:'Garage' };
+        const parkingLabels = { sin_cochera: t('parking.none'), simple_cubierta: t('parking.single'), doble_cubierta: t('parking.double'), descubierta: t('parking.open'), garage: t('parking.garage') };
         const conditionColors = { 'A estrenar':'bg-emerald-50 text-emerald-700', 'Usado':'bg-paper-dark text-midnight/60', 'A reciclar':'bg-amber-50 text-amber-700', 'En construcción':'bg-blue-50 text-blue-700' };
 
         const extraBadges = [];
@@ -579,13 +579,13 @@ function renderLeads(leads) {
                                 data-status="seen"
                                 data-lead-id="${lead.id}">
                             <i data-lucide="eye" class="w-3 h-3"></i>
-                            <span>${tracking.seen ? 'Visto' : 'Ver'}</span>
+                            <span>${tracking.seen ? t('status.seen') : t('action.view')}</span>
                         </button>
                         <button type="button" class="status-btn status-btn-contacted ${tracking.contacted ? 'status-active' : ''}"
                                 data-status="contacted"
                                 data-lead-id="${lead.id}">
                             <i data-lucide="message-circle" class="w-3 h-3"></i>
-                            <span>${tracking.contacted ? 'Contactado' : 'Contactar'}</span>
+                            <span>${tracking.contacted ? t('status.contacted') : t('action.contact')}</span>
                         </button>
                     </div>
                 </td>
@@ -606,15 +606,15 @@ function renderLeads(leads) {
                         <div class="flex justify-end gap-1.5 items-center">
                             <button onclick="togglePhone(this,'${lead.id}')"
                                 class="inline-flex items-center gap-1.5 px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">
-                                <i data-lucide="phone" class="w-3 h-3"></i> Teléfono
+                                <i data-lucide="phone" class="w-3 h-3"></i> ${t('action.phone')}
                             </button>
                             ${lead.phone_is_mobile
                                 ? `<a href="/api/lead/${lead.id}/r/whatsapp"
                                      data-wa-link
                                      data-lead-id="${lead.id}"
                                      class="contact-btn contact-btn-whatsapp inline-flex items-center gap-1.5 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-widest transition-all"
-                                     title="Abrir chat de WhatsApp"
-                                     aria-label="Abrir chat de WhatsApp">
+                                     title="${t('action.open_whatsapp')}"
+                                     aria-label="${t('action.open_whatsapp')}">
                                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/><path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1Zm0 0a5 5 0 0 0 5 5m0 0a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1v1a.5.5 0 0 0 1 0v-1a.5.5 0 0 0-1 0Z"/><path d="M17 8a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2"/><path d="M12 12h.01"/></svg> WhatsApp
                                    </a>`
                                 : (lead.phone_format_valid == 1
@@ -622,8 +622,8 @@ function renderLeads(leads) {
                                          data-sms-link
                                          data-lead-id="${lead.id}"
                                          class="contact-btn contact-btn-sms inline-flex items-center gap-1.5 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-widest transition-all"
-                                         title="Enviar SMS"
-                                         aria-label="Enviar SMS">
+                                         title="${t('action.send_sms')}"
+                                         aria-label="${t('action.send_sms')}">
                                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg> SMS
                                        </a>`
                                     : '')
@@ -632,7 +632,7 @@ function renderLeads(leads) {
                         <div class="flex justify-end gap-1.5 items-center flex-wrap">
                             <a href="/profesional/lead/${lead.id}"
                                 class="inline-flex items-center gap-1.5 px-3 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
-                                <i data-lucide="arrow-right" class="w-3 h-3"></i> Ver más
+                                <i data-lucide="arrow-right" class="w-3 h-3"></i> ${t('action.view_more')}
                             </a>
                             <a href="/api/lead/${lead.id}/download"
                                 class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-paper-dark text-midnight rounded text-[9px] font-bold uppercase tracking-widest hover:bg-midnight hover:text-white transition-all">
@@ -640,8 +640,8 @@ function renderLeads(leads) {
                             </a>
                             <button type="button" class="report-lead-btn inline-flex items-center gap-1 px-2.5 py-1.5 bg-rose-50 text-rose-600 rounded text-[9px] font-bold uppercase tracking-widest hover:bg-rose-600 hover:text-white transition-all"
                                 data-lead-id="${lead.id}"
-                                title="Reportar teléfono inexistente">
-                                <i data-lucide="flag" class="w-3 h-3"></i> Reportar
+                                title="${t('action.report_phone')}">
+                                <i data-lucide="flag" class="w-3 h-3"></i> ${t('action.report')}
                             </button>
                             ${lead.phone_format_valid == 1
                                 ? '<span class="inline-flex items-center gap-1 px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-700"><i data-lucide="check" class="w-3 h-3"></i> OK</span>'
@@ -717,7 +717,7 @@ async function toggleLeadStatus(leadId, statusType, btn) {
     const isActive = btn.classList.contains('status-active');
     const label = btn.querySelector('span');
     const originalText = label ? label.textContent : '';
-    const pendingText = isActive ? (statusType === 'seen' ? 'Ver' : 'Contactar') : (statusType === 'seen' ? 'Visto' : 'Contactado');
+    const pendingText = isActive ? (statusType === 'seen' ? t('action.view') : t('action.contact')) : (statusType === 'seen' ? t('status.seen') : t('status.contacted'));
 
     btn.disabled = true;
     btn.classList.add('status-toggling');
@@ -763,7 +763,7 @@ async function toggleLeadStatus(leadId, statusType, btn) {
             btn.classList.remove('status-active');
             btn.classList.remove('status-toggling');
             if (label) label.textContent = originalText;
-            if (typeof showToast === 'function') showToast(data.error || 'Error al actualizar estado', 'error');
+            if (typeof showToast === 'function') showToast(data.error || t('error.generic'), 'error');
         }
     } catch (error) {
         console.error('Error toggling lead status:', error);
@@ -772,9 +772,9 @@ async function toggleLeadStatus(leadId, statusType, btn) {
         else btn.classList.remove('status-active');
         btn.classList.remove('status-toggling');
         if (label) label.textContent = isActive
-            ? (statusType === 'seen' ? 'Visto' : 'Contactado')
-            : (statusType === 'seen' ? 'Ver' : 'Contactar');
-        if (typeof showToast === 'function') showToast('Error de conexión', 'error');
+            ? (statusType === 'seen' ? t('status.seen') : t('status.contacted'))
+            : (statusType === 'seen' ? t('action.view') : t('action.contact'));
+        if (typeof showToast === 'function') showToast(t('error.connection'), 'error');
     } finally {
         btn.disabled = false;
     }
@@ -833,16 +833,16 @@ function openLeadPreview(leadId) {
     if (!overlay || !drawer) return;
 
     document.getElementById('previewLeadId').textContent = '#' + lead.id;
-    document.getElementById('previewLeadTitle').textContent = (lead.type || 'Sin tipo') + ' en ' + (lead.zone || '—');
+    document.getElementById('previewLeadTitle').textContent = (lead.type || t('leads.no_type')) + ' en ' + (lead.zone || '—');
 
     var sym = lead.currency === 'USD' ? 'US$' : lead.currency === 'EUR' ? '\u20ac' : '$';
     var propType = (lead.property_type || '').toLowerCase();
     var propLabel = PROP_LABELS[propType] || lead.property_type || '—';
 
     var specs = [];
-    if (lead.ambientes) specs.push(lead.ambientes + ' amb.');
-    if (lead.bedrooms) specs.push(lead.bedrooms + ' hab.');
-    if (lead.bathrooms) specs.push(lead.bathrooms + ' ba\u00f1os');
+    if (lead.ambientes) specs.push(lead.ambientes + ' ' + t('spec.rooms'));
+    if (lead.bedrooms) specs.push(lead.bedrooms + ' ' + t('spec.bedrooms'));
+    if (lead.bathrooms) specs.push(lead.bathrooms + ' ' + t('spec.bathrooms'));
     if (lead.usable_m2 > 0) specs.push(lead.usable_m2 + ' m\u00b2');
 
     var tracking = lead.tracking || { seen: false, contacted: false };
@@ -851,26 +851,26 @@ function openLeadPreview(leadId) {
 
     // Info grid
     html += '<div class="grid grid-cols-2 gap-3">';
-    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/60 mb-1">Operaci\u00f3n</p><p class="text-[13px] font-medium text-midnight">' + escapeHtml(lead.type) + '</p></div>';
-    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/60 mb-1">Vivienda</p><p class="text-[13px] font-medium text-midnight">' + propLabel + '</p></div>';
-    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/60 mb-1">Zona</p><p class="text-[13px] font-medium text-midnight">' + escapeHtml(lead.zone) + '</p></div>';
-    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/60 mb-1">Presupuesto</p><p class="text-[13px] font-medium text-midnight">' + sym + ' ' + escapeHtml(lead.budget) + '</p></div>';
+    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/60 mb-1">' + t('preview.operation') + '</p><p class="text-[13px] font-medium text-midnight">' + escapeHtml(lead.type) + '</p></div>';
+    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/60 mb-1">' + t('preview.housing') + '</p><p class="text-[13px] font-medium text-midnight">' + propLabel + '</p></div>';
+    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/60 mb-1">' + t('preview.zone') + '</p><p class="text-[13px] font-medium text-midnight">' + escapeHtml(lead.zone) + '</p></div>';
+    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/60 mb-1">' + t('preview.budget') + '</p><p class="text-[13px] font-medium text-midnight">' + sym + ' ' + escapeHtml(lead.budget) + '</p></div>';
     html += '</div>';
 
     // Specs
     if (specs.length) {
-        html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/60 mb-1">Especificaciones</p><p class="text-xs text-midnight/70">' + specs.join(' \u00b7 ') + '</p></div>';
+        html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/60 mb-1">' + t('preview.specifications') + '</p><p class="text-xs text-midnight/70">' + specs.join(' \u00b7 ') + '</p></div>';
     }
 
     // Status buttons
     html += '<div class="flex gap-2">';
-    html += '<button type="button" class="status-btn status-btn-seen ' + (tracking.seen ? 'status-active' : '') + '" data-status="seen" data-lead-id="' + lead.id + '" onclick="event.stopPropagation(); toggleLeadStatus(' + lead.id + ', \'seen\', this)"><i data-lucide="eye" class="w-3 h-3"></i><span>' + (tracking.seen ? 'Visto' : 'Ver') + '</span></button>';
-    html += '<button type="button" class="status-btn status-btn-contacted ' + (tracking.contacted ? 'status-active' : '') + '" data-status="contacted" data-lead-id="' + lead.id + '" onclick="event.stopPropagation(); toggleLeadStatus(' + lead.id + ', \'contacted\', this)"><i data-lucide="message-circle" class="w-3 h-3"></i><span>' + (tracking.contacted ? 'Contactado' : 'Contactar') + '</span></button>';
+    html += '<button type="button" class="status-btn status-btn-seen ' + (tracking.seen ? 'status-active' : '') + '" data-status="seen" data-lead-id="' + lead.id + '" onclick="event.stopPropagation(); toggleLeadStatus(' + lead.id + ', \'seen\', this)"><i data-lucide="eye" class="w-3 h-3"></i><span>' + (tracking.seen ? t('status.seen') : t('action.view')) + '</span></button>';
+    html += '<button type="button" class="status-btn status-btn-contacted ' + (tracking.contacted ? 'status-active' : '') + '" data-status="contacted" data-lead-id="' + lead.id + '" onclick="event.stopPropagation(); toggleLeadStatus(' + lead.id + ', \'contacted\', this)"><i data-lucide="message-circle" class="w-3 h-3"></i><span>' + (tracking.contacted ? t('status.contacted') : t('action.contact')) + '</span></button>';
     html += '</div>';
 
     // Phone + contact
     html += '<div class="flex flex-wrap gap-2">';
-    html += '<button onclick="event.stopPropagation(); togglePhone(this,\'' + lead.id + '\')" class="inline-flex items-center gap-1.5 px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all"><i data-lucide="phone" class="w-3 h-3"></i> Tel\u00e9fono</button>';
+    html += '<button onclick="event.stopPropagation(); togglePhone(this,\'' + lead.id + '\')" class="inline-flex items-center gap-1.5 px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all"><i data-lucide="phone" class="w-3 h-3"></i> ' + t('action.phone') + '</button>';
     if (lead.phone_is_mobile) {
         html += '<a href="/api/lead/' + lead.id + '/r/whatsapp" data-wa-link data-lead-id="' + lead.id + '" class="contact-btn contact-btn-whatsapp inline-flex items-center gap-1.5 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-widest"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/><path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1Zm0 0a5 5 0 0 0 5 5m0 0a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1v1a.5.5 0 0 0 1 0v-1a.5.5 0 0 0-1 0Z"/><path d="M17 8a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2"/><path d="M12 12h.01"/></svg> WhatsApp</a>';
     } else if (lead.phone_format_valid == 1) {
@@ -879,7 +879,7 @@ function openLeadPreview(leadId) {
     html += '</div>';
 
     // Ver más
-    html += '<a href="/profesional/lead/' + lead.id + '" class="block w-full text-center px-4 py-3 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all"><i data-lucide="arrow-right" class="w-3 h-3 inline mr-1"></i> Ver detalle completo</a>';
+    html += '<a href="/profesional/lead/' + lead.id + '" class="block w-full text-center px-4 py-3 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all"><i data-lucide="arrow-right" class="w-3 h-3 inline mr-1"></i> ' + t('action.view_full_details') + '</a>';
 
     document.getElementById('previewLeadContent').innerHTML = html;
 
@@ -956,7 +956,7 @@ async function confirmReport(btn) {
     const notes = document.getElementById('reportNotes').value.trim();
     const originalText = btn.textContent;
     btn.disabled = true;
-    btn.textContent = 'Enviando...';
+    btn.textContent = t('action.sending');
 
     try {
         const response = await fetch('/api/lead/' + currentReportLeadId + '/report', {
@@ -971,11 +971,11 @@ async function confirmReport(btn) {
             if (typeof showToast === 'function') showToast(data.message, 'success');
             closeReportModal();
         } else {
-            if (typeof showToast === 'function') showToast(data.error || 'Error al reportar', 'error');
+            if (typeof showToast === 'function') showToast(data.error || t('error.report'), 'error');
         }
     } catch (error) {
         console.error('Error reporting lead:', error);
-        if (typeof showToast === 'function') showToast('Error de conexión', 'error');
+        if (typeof showToast === 'function') showToast(t('error.connection'), 'error');
     } finally {
         btn.disabled = false;
         btn.textContent = originalText;
@@ -1065,8 +1065,8 @@ function animateCounter(el, target) {
 function formatMonthLabel(ym) {
     if (!ym) return '';
     const [y, m] = ym.split('-');
-    const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
-                    'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+    const months = [t('month.january'), t('month.february'), t('month.march'), t('month.april'), t('month.may'), t('month.june'),
+                    t('month.july'), t('month.august'), t('month.september'), t('month.october'), t('month.november'), t('month.december')];
     const idx = parseInt(m, 10) - 1;
     return months[idx] + ' ' + y;
 }
@@ -1161,11 +1161,11 @@ async function loadMarketStats(tryAutoSelect) {
             renderTopSearched(data.stats);
             triggerStatsEntrance();
         } else {
-            showToast(data.message || 'Error al cargar estadísticas', 'error');
+            showToast(data.message || t('error.stats_load'), 'error');
         }
     } catch (err) {
         console.error('Error loading market stats:', err);
-        showToast('Error de conexión al cargar estadísticas', 'error');
+        showToast(t('error.stats_network'), 'error');
     }
 }
 
@@ -1222,7 +1222,7 @@ function renderStatsKpis(stats) {
             growthEl.classList.remove('hidden');
         } else if (stats.total > 0) {
             growthEl.className = 'text-[10px] font-bold mt-1 text-emerald-600';
-            growthEl.textContent = 'Nuevo este mes';
+            growthEl.textContent = t('stats.new_this_month');
             growthEl.classList.remove('hidden');
         } else {
             growthEl.classList.add('hidden');
@@ -1262,7 +1262,7 @@ function renderStatsCharts(stats) {
     destroyStatsChart('propType');
     const ptData = stats.by_property_type || [];
     if (ptData.length && document.getElementById('chart-prop-type')) {
-        const ptLabels = ptData.map(function(d) { return d.label || 'Sin tipo'; });
+        const ptLabels = ptData.map(function(d) { return d.label || t('chart.no_type'); });
         const ptValues = ptData.map(function(d) { return d.value; });
         statsCharts['propType'] = new Chart(document.getElementById('chart-prop-type'), {
             type: 'doughnut',
@@ -1302,7 +1302,7 @@ function renderStatsCharts(stats) {
     destroyStatsChart('zones');
     const zData = stats.by_zone || [];
     if (zData.length && document.getElementById('chart-zones')) {
-        const zLabels = zData.map(function(d) { return d.label || 'Sin zona'; }).reverse();
+        const zLabels = zData.map(function(d) { return d.label || t('chart.no_zone'); }).reverse();
         const zValues = zData.map(function(d) { return d.value; }).reverse();
         statsCharts['zones'] = new Chart(document.getElementById('chart-zones'), {
             type: 'bar',
@@ -1411,7 +1411,7 @@ function renderStatsCharts(stats) {
     destroyStatsChart('opType');
     const otData = stats.by_operation_type || [];
     if (otData.length && document.getElementById('chart-op-type')) {
-        const otLabels = otData.map(function(d) { return d.label || 'Sin tipo'; });
+        const otLabels = otData.map(function(d) { return d.label || t('chart.no_type'); });
         const otValues = otData.map(function(d) { return d.value; });
         statsCharts['opType'] = new Chart(document.getElementById('chart-op-type'), {
             type: 'doughnut',
@@ -1449,16 +1449,16 @@ function renderStatsCharts(stats) {
 
     // Update chart count badges
     var ptCount = document.getElementById('chartPropTypeCount');
-    if (ptCount) ptCount.textContent = (stats.by_property_type || []).length + ' tipos';
+    if (ptCount) ptCount.textContent = (stats.by_property_type || []).length + ' ' + t('chart.types');
 
     var zCount = document.getElementById('chartZonesCount');
-    if (zCount) zCount.textContent = (stats.by_zone || []).length + ' zonas';
+    if (zCount) zCount.textContent = (stats.by_zone || []).length + ' ' + t('chart.zones');
 
     var tCount = document.getElementById('chartTrendCount');
-    if (tCount) tCount.textContent = (stats.trend || []).length + ' meses';
+    if (tCount) tCount.textContent = (stats.trend || []).length + ' ' + t('chart.months');
 
     var otCount = document.getElementById('chartOpTypeCount');
-    if (otCount) otCount.textContent = (stats.by_operation_type || []).length + ' tipos';
+    if (otCount) otCount.textContent = (stats.by_operation_type || []).length + ' ' + t('chart.types');
 }
 
 function renderTopSearched(stats) {
@@ -1472,10 +1472,10 @@ function renderTopSearched(stats) {
         var subEl = document.getElementById(subElId);
 
         if (items.length && nameEl && total > 0) {
-            nameEl.textContent = items[0].label || 'Sin datos';
+            nameEl.textContent = items[0].label || t('chart.no_data');
             var pct = ((items[0].value / total) * 100).toFixed(1);
             if (pctEl) pctEl.textContent = pct + '%';
-            if (subEl) subEl.textContent = items[0].value + ' solicitudes en total';
+            if (subEl) subEl.textContent = items[0].value + ' ' + t('stats.requests_total');
 
             // Animate progress bar
             if (barEl) {

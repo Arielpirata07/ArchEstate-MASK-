@@ -130,7 +130,7 @@ function submitEditLead() {
     var err = document.getElementById('lead-error-msg');
 
     btn.disabled = true;
-    btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Guardando...';
+    btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> ' + t('action.saving');
     if (window.lucide) lucide.createIcons();
     if (msg) msg.classList.add('hidden');
     if (err) err.classList.add('hidden');
@@ -178,11 +178,11 @@ function submitEditLead() {
         }
     })
     .catch(function() {
-        if (err) { err.textContent = 'Error de conexión'; err.classList.remove('hidden'); }
+        if (err) { err.textContent = t('error.connection'); err.classList.remove('hidden'); }
     })
     .finally(function() {
         btn.disabled = false;
-        btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Guardar Cambios';
+        btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> ' + t('action.save_changes');
         if (window.lucide) lucide.createIcons();
     });
 }
