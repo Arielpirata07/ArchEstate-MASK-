@@ -10,9 +10,10 @@
 ![Lucide](https://img.shields.io/badge/Lucide_Icons-0.468-735A3A?style=for-the-badge&logo=lucide&logoColor=white)
 ![License](https://img.shields.io/badge/License-Private-blue?style=for-the-badge)
 
-![Tests](https://img.shields.io/badge/Tests-380%20Passed-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)
+![Tests](https://img.shields.io/badge/Tests-444%20Passed-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)
 ![Status](https://img.shields.io/badge/Status-MVP%20Avanzado-0078D4?style=for-the-badge)
-![Updated](https://img.shields.io/badge/Updated-Junio%202026-orange?style=for-the-badge)
+![Updated](https://img.shields.io/badge/Updated-Julio%202026-orange?style=for-the-badge)
+![i18n](https://img.shields.io/badge/i18n-ES%2FEN-8B5CF6?style=for-the-badge)
 
 ---
 
@@ -548,7 +549,19 @@ python -m pytest tests/test_file.py   # Archivo individual
 
 ## Variables de Entorno
 
-Las credenciales de Twilio se configuran en el archivo `.env`:
+### Obligatoria
+
+| Variable | Descripción |
+|----------|-------------|
+| `SECRET_KEY` | Clave secreta para sesiones Flask (generar con `python -c "import secrets; print(secrets.token_hex(32))"`) |
+
+### Base de datos
+
+| Variable | Descripción | Default |
+|----------|-------------|---------|
+| `DATABASE_URL` | Connection string PostgreSQL (Neon, etc.) | SQLite en disco |
+
+### Twilio (Phone + WhatsApp)
 
 | Variable | Descripción |
 |----------|-------------|
@@ -557,9 +570,42 @@ Las credenciales de Twilio se configuran en el archivo `.env`:
 | `TWILIO_PHONE_NUMBER` | Número de Twilio para SMS |
 | `TWILIO_WHATSAPP_FROM` | Número de WhatsApp sandbox |
 | `TWILIO_WHATSAPP_CONTENT_SID` | Content SID para plantillas WhatsApp |
+| `TWILIO_WHATSAPP_BUTTON_CONTENT_SID` | Content SID para template con botón "✅ Verificar" |
 | `TWILIO_SIMULATE` | `true` = códigos en consola, `false` = envío real |
 
+### SMTP (Emails)
+
+| Variable | Descripción | Default |
+|----------|-------------|---------|
+| `SMTP_HOST` | Host del servidor SMTP | — |
+| `SMTP_PORT` | Puerto SMTP | `587` |
+| `SMTP_USER` | Usuario SMTP | — |
+| `SMTP_PASSWORD` | Contraseña SMTP | — |
+| `SMTP_FROM` | Email remitente | `noreply@archestate.com` |
+
+### Otras
+
+| Variable | Descripción | Default |
+|----------|-------------|---------|
+| `SITE_URL` | URL base para emails y links | `http://localhost:5000` |
+| `PREFER_SECURE_COOKIES` | Flags de cookie seguros (HTTPS) | `true` |
+
 > En desarrollo, `TWILIO_SIMULATE=true` evita consumir créditos del trial.
+> Si no se configura SMTP, los emails se loguean en consola (console fallback).
+
+---
+
+## Deploy en Render
+
+```bash
+# Build
+pip install -r requirements.txt
+
+# Start
+gunicorn wsgi:app --workers 4 --timeout 120 --access-logfile -
+```
+
+Ver `.plans/deploy-checklist.md` para el checklist completo.
 
 ---
 
@@ -595,6 +641,7 @@ Las credenciales de Twilio se configuran en el archivo `.env`:
 - [x] Filtro de leads por provincia/zona del profesional
 - [x] Toggle "Mis Leads / Todos" en panel profesional
 - [x] Province/zone en perfil profesional
+- [x] Internacionalización ES/EN (1100+ keys, 40+ archivos)
 - [ ] CSRF protection en formularios
 - [ ] Notificaciones internas entre admin y profesional
 - [ ] Asignación automática de leads por especialidad y zona

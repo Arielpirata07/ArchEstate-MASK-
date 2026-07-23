@@ -31,6 +31,10 @@
 | `services/notifications.py` | `notify_lead_created()`, `notify_lead_status_change()`, `notify_professional_status_change()`, `notify_report_deleted()` — reads `user_preferences` toggles |
 | `wsgi.py` | Gunicorn entry point: `gunicorn wsgi:app` |
 | `render.yaml` | Render deployment blueprint |
+| `i18n/__init__.py` | Package with `t()`, `get_language()`, `DEFAULT_LANG`, `SUPPORTED_LANGS` |
+| `i18n/translations.py` | Master dictionary: 833 keys ES/EN (all UI strings) |
+| `i18n/browser.py` | `get_browser_language(request)` — parses `Accept-Language` header |
+| `static/js/i18n.js` | JS dictionary (356 keys) + `window.t()` function |
 
 ## Commands
 
@@ -116,3 +120,24 @@ python verify_coherence.py            # Cross-checks schema/routes/templates
   - `POST /api/profile/notifications/read-all` → mark all as read
   - `GET /api/profile/notification-filters` → get professional's filters
   - `PUT /api/profile/notification-filters` → save professional's filters (body: `{types: [...], property_types: [...]}`)
+
+## i18n (Internationalization)
+
+- **Language**: ES (default) and EN. Toggle in `/mi-perfil` saves to `user_preferences.language`.
+- **Detection**: Session > browser `Accept-Language` > fallback `'es'`.
+- **Python**: `from i18n import t, get_language` — 833 keys in `i18n/translations.py`.
+- **Templates**: `{{ t('key') }}` via `inject_language()` context processor in `middleware.py`.
+- **JS**: `window.t('key')` via `static/js/i18n.js` — 356 keys.
+- **Backend**: All flash messages, jsonify responses, validators, error handlers, PDF/XLSX exports, email subjects, OTP messages use `t('key', lang)`.
+- **Key naming**: `prefix.suffix` (e.g., `auth.invalid_credentials`, `prof.pdf_title`, `error.404`).
+- **Adding new keys**: Add to both `es` and `en` in `translations.py` (Python) and `i18n.js` (JS). Keep key parity.
+
+## Deploy (Render)
+
+- **Service type**: Web Service (Python)
+- **Build**: `pip install -r requirements.txt`
+- **Start**: `gunicorn wsgi:app --workers 4 --timeout 120 --access-logfile -`
+- **Database**: SQLite por defecto (disco persistente de Render). Listo para migrar a Neon PostgreSQL vía `DATABASE_URL`.
+- **Redis**: Pendiente migrar rate limiting de archivos a Redis (Render KV).
+- **Env vars**: `SECRET_KEY` (requerido), `DATABASE_URL`, `REDIS_URL`, `SITE_URL`, `TWILIO_*`, `SMTP_*`, `PREFER_SECURE_COOKIES=true`
+- **Checklist completo**: `.plans/deploy-checklist.md`
