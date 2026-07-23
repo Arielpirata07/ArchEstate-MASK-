@@ -12,6 +12,7 @@ from typing import Optional
 import config
 import models
 import utils
+from i18n import t, get_language
 from services.email import get_email_sender
 from services.verifier import get_default_router
 from utils import parse_budget
@@ -64,13 +65,14 @@ def _render_email(template_name: str, **kwargs) -> tuple:
         except Exception:
             pass
 
+    lang = get_language()
     html = f"""
     <html>
     <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #735A3A;">ArchEstate</h2>
         {''.join(f'<p><b>{k}:</b> {v}</p>' for k, v in kwargs.items())}
         <hr style="border: 1px solid #735A3A;">
-        <p style="font-size: 12px; color: #666;">Este es un correo automático de ArchEstate.</p>
+        <p style="font-size: 12px; color: #666;">{t('notif.auto_email_footer', lang)}</p>
     </body>
     </html>
     """
@@ -104,6 +106,7 @@ def notify_lead_created(lead_id: int) -> list:
     Filtra por provincia, zona, tipo de operación, tipo de propiedad
     y rango de presupuesto configurados en las preferencias del profesional.
     """
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
@@ -162,8 +165,8 @@ def notify_lead_created(lead_id: int) -> list:
 
         # Always create in-app notification
         _create_notification(pro['id'], lead_id,
-            title=f'Nuevo lead: {lead["type"]} en {lead["zone"]}',
-            body=f'{lead["property_type"]} — {lead.get("currency", "")} {lead.get("budget", "")}'
+            title=t('notif.new_lead_title', lang, type=lead["type"], zone=lead["zone"]),
+            body=t('notif.new_lead_body', lang, property_type=lead["property_type"], currency=lead.get("currency", ""), budget=lead.get("budget", ""))
         )
 
         # Route channel: email / whatsapp / ambos / auto
@@ -196,7 +199,8 @@ def notify_lead_created(lead_id: int) -> list:
 
 def _send_lead_email(pro, lead, lead_data, lead_id):
     """Send lead notification email to a professional."""
-    subject = f'Nuevo lead disponible: {lead["type"]} en {lead["zone"]}'
+    lang = get_language()
+    subject = t('notif.lead_email_subject', lang, type=lead["type"], zone=lead["zone"])
     html, _ = _render_email('lead_assigned',
         lead_type=lead['type'],
         zone=lead['zone'],
@@ -261,6 +265,7 @@ def notify_lead_status_change(lead_id: int, professional_id: int, new_status: st
     """
     Notifica al admin cuando un profesional cambia el estado de un lead.
     """
+    lang = get_language()
     user = models.get_user_by_id(professional_id)
     if not user:
         return
@@ -277,8 +282,8 @@ def notify_lead_status_change(lead_id: int, professional_id: int, new_status: st
         if conn:
             conn.close()
 
-    status_label = 'visto' if new_status == 'seen' else 'contactado'
-    subject = f'Lead #{lead_id} marcado como {status_label} por {user.get("username", "profesional")}'
+    status_label = t('notif.status_seen', lang) if new_status == 'seen' else t('notif.status_contacted', lang)
+    subject = t('notif.status_change_subject', lang, lead_id=lead_id, status=status_label, username=user.get("username", "profesional"))
 
     admin_users = _get_admin_users()
     for admin in admin_users:
@@ -306,6 +311,7 @@ def notify_professional_status_change(pro_id: int, new_status: str) -> None:
     """
     Notifica al profesional cuando su cuenta es aprobada o rechazada.
     """
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
@@ -323,8 +329,8 @@ def notify_professional_status_change(pro_id: int, new_status: str) -> None:
         return
 
     pro_dict = dict(pro)
-    status_label = 'aprobada' if new_status == 'approved' else 'rechazada'
-    subject = f'Tu cuenta ha sido {status_label}'
+    status_label = t('notif.status_approved', lang) if new_status == 'approved' else t('notif.status_rejected', lang)
+    subject = t('notif.pro_status_subject', lang, status=status_label)
 
     html, _ = _render_email('professional_status',
         professional_name=pro_dict['name'],
@@ -336,7 +342,7 @@ def notify_professional_status_change(pro_id: int, new_status: str) -> None:
 
     prefs = models.get_user_preferences(pro_dict['user_id'])
     if prefs.get('sms_notifications') and pro_dict.get('email'):
-        _send_sms_notification(pro_dict['user_id'], f'ArchEstate: Tu cuenta ha sido {status_label}.')
+        _send_sms_notification(pro_dict['user_id'], t('notif.pro_status_sms', lang, status=status_label))
 
     utils.log_action(
         'Notificación estado profesional',
@@ -349,6 +355,7 @@ def notify_report_deleted(lead_id: int, reported_by_user_id: int) -> None:
     """
     Notifica al profesional que reportó un lead cuando admin lo elimina.
     """
+    lang = get_language()
     user = models.get_user_by_id(reported_by_user_id)
     if not user:
         return
@@ -373,7 +380,7 @@ def notify_report_deleted(lead_id: int, reported_by_user_id: int) -> None:
         if conn:
             conn.close()
 
-    subject = f'Lead #{lead_id} eliminado tras tu reporte'
+    subject = t('notif.report_deleted_subject', lang, lead_id=lead_id)
     html, _ = _render_email('report_deleted',
         lead_id=lead_id,
         professional_name=user.get('username', 'N/A'),

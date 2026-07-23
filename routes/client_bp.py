@@ -7,6 +7,7 @@ import rate_limit
 import utils
 import validators
 from decorators import login_required
+from i18n import t, get_language
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +17,7 @@ client_bp = Blueprint('client', __name__, url_prefix='')
 @client_bp.route('/usuario')
 @login_required
 def user_view():
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
@@ -26,7 +28,7 @@ def user_view():
             conn.close()
 
     if user and user['role'] == 'professional':
-        flash('Acceso denegado. Los profesionales no pueden acceder a esta sección.', 'error')
+        flash(t('client.professional_denied', lang), 'error')
         return redirect(url_for('public.index'))
 
     user_dict = dict(user) if user else None
@@ -55,13 +57,14 @@ def user_view():
 @login_required
 @rate_limit.check_rate_limit(limit=100, window=60)
 def submit_lead():
+    lang = get_language()
     data = request.json
     user_id = session.get('user_id')
 
     if not user_id:
         return jsonify({
             "status": "error",
-            "message": "Debes estar registrado para enviar solicitudes."
+            "message": t('client.auth_required', lang)
         }), 401
 
     conn = None
@@ -70,7 +73,7 @@ def submit_lead():
         user = conn.execute('SELECT id, username FROM users WHERE id = ?', (user_id,)).fetchone()
 
         if not user:
-            return jsonify({"status": "error", "message": "Sesión no válida"}), 401
+            return jsonify({"status": "error", "message": t('client.invalid_session', lang)}), 401
 
         email = session.get('email') or data.get('email', '')
         is_valid, error = validators.validate_email(email)
@@ -82,7 +85,7 @@ def submit_lead():
         phone_format_valid = 0
         if session.get('role') != 'admin':
             if not phone:
-                return jsonify({"status": "error", "message": "Teléfono es obligatorio"}), 400
+                return jsonify({"status": "error", "message": t('client.phone_required', lang)}), 400
             is_valid, error = validators.validate_phone(phone)
             if not is_valid:
                 return jsonify({"status": "error", "message": error}), 400
@@ -102,29 +105,29 @@ def submit_lead():
 
         lead_type = data.get('type')
         if not lead_type:
-            return jsonify({"status": "error", "message": "El tipo de operación es requerido."}), 400
+            return jsonify({"status": "error", "message": t('client.operation_type_required', lang)}), 400
 
         zone = data.get('zone')
         if not zone:
-            return jsonify({"status": "error", "message": "La zona es requerida."}), 400
+            return jsonify({"status": "error", "message": t('client.zone_required', lang)}), 400
 
         budget = data.get('budget')
         if not budget:
-            return jsonify({"status": "error", "message": "El presupuesto es requerido."}), 400
+            return jsonify({"status": "error", "message": t('client.budget_required', lang)}), 400
 
         property_type = data.get('property_type', 'departamento')
         valid_property_types = models.get_form_options_by_category('property_type')
         if property_type not in valid_property_types:
-            return jsonify({"status": "error", "message": "Tipo de propiedad no válido."}), 400
+            return jsonify({"status": "error", "message": t('client.invalid_property_type', lang)}), 400
 
         valid_currencies = models.get_form_options_by_category('currency')
         currency = data.get('currency', 'ARG')
         if currency not in valid_currencies:
-            return jsonify({"status": "error", "message": "Moneda no válida."}), 400
+            return jsonify({"status": "error", "message": t('client.invalid_currency', lang)}), 400
 
         valid_lead_types = models.get_form_options_by_category('operation_type')
         if lead_type not in valid_lead_types:
-            return jsonify({"status": "error", "message": "Tipo de operación no válido."}), 400
+            return jsonify({"status": "error", "message": t('client.invalid_operation_type', lang)}), 400
 
         try:
             land_area = int(data.get('land_area') or 0)
@@ -134,7 +137,7 @@ def submit_lead():
             built_area = 0
 
         if property_type == 'casa' and built_area > land_area:
-            return jsonify({"status": "error", "message": "Los metros construidos no pueden ser mayores que los metros de terreno."}), 400
+            return jsonify({"status": "error", "message": t('client.built_area_exceeds_land', lang)}), 400
 
         province = data.get('province', '')
 
@@ -190,12 +193,12 @@ def submit_lead():
 
         return jsonify({
             "status": "success",
-            "message": "Solicitud enviada con éxito. Los profesionales se contactarán contigo."
+            "message": t('client.lead_submitted', lang)
         })
 
     except Exception as e:
         logger.exception('Error en BD')
-        return jsonify({"status": "error", "message": "Error al procesar la solicitud."}), 500
+        return jsonify({"status": "error", "message": t('client.lead_error', lang)}), 500
     finally:
         if conn:
             conn.close()

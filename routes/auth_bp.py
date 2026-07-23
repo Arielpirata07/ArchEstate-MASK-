@@ -13,6 +13,7 @@ import models
 import rate_limit
 import utils
 import validators
+from i18n import t, get_language
 
 auth_bp = Blueprint('auth', __name__, url_prefix='')
 
@@ -21,6 +22,7 @@ auth_bp = Blueprint('auth', __name__, url_prefix='')
 @rate_limit.check_rate_limit(limit=100, window=60)
 def register():
     if request.method == 'POST':
+        lang = get_language()
         username = request.form.get('username', '').strip()
         email = request.form.get('email', '').strip()
         phone = request.form.get('phone', '').strip()
@@ -29,15 +31,15 @@ def register():
         license_number = request.form.get('license', '').strip()
 
         if not username or len(username) < 3 or len(username) > 30:
-            flash('El nombre de usuario debe tener entre 3 y 30 caracteres.', 'error')
+            flash(t('auth.username_length', lang), 'error')
             return redirect(url_for('auth.register'))
 
         if not re.match(r'^[a-zA-Z0-9_]+$', username):
-            flash('El usuario solo puede contener letras, números y guión bajo.', 'error')
+            flash(t('auth.username_format', lang), 'error')
             return redirect(url_for('auth.register'))
 
         if not email:
-            flash('El email es requerido.', 'error')
+            flash(t('auth.email_required', lang), 'error')
             return redirect(url_for('auth.register'))
 
         is_valid_email_result, email_error = validators.validate_email(email)
@@ -46,15 +48,15 @@ def register():
             return redirect(url_for('auth.register'))
 
         if not password or len(password) < 6:
-            flash('La contraseña debe tener al menos 6 caracteres.', 'error')
+            flash(t('auth.password_min_length', lang), 'error')
             return redirect(url_for('auth.register'))
 
         if not re.search(r'[A-Za-z]', password) or not re.search(r'[0-9]', password):
-            flash('La contraseña debe contener al menos una letra y un número.', 'error')
+            flash(t('auth.password_format', lang), 'error')
             return redirect(url_for('auth.register'))
 
         if not phone:
-            flash('El teléfono es requerido.', 'error')
+            flash(t('auth.phone_required', lang), 'error')
             return redirect(url_for('auth.register'))
         is_valid_phone, phone_error = validators.validate_phone(phone)
         if not is_valid_phone:
@@ -63,7 +65,7 @@ def register():
 
         if raw_role == 'admin':
             logger.warning('Intento de registro ilegal como admin por %s', username)
-            flash('Acceso denegado. Solo administradores pueden asignarse ese rol.', 'error')
+            flash(t('auth.admin_role_denied', lang), 'error')
             return redirect(url_for('auth.register'))
 
         if raw_role in ['client', 'professional']:
@@ -72,15 +74,15 @@ def register():
             role = 'client'
 
         if role == 'professional' and not license_number:
-            flash('El número de matrícula es requerido para profesionales.', 'error')
+            flash(t('auth.license_required', lang), 'error')
             return redirect(url_for('auth.register'))
 
         if role == 'professional' and (len(license_number) < 3 or len(license_number) > 50):
-            flash('El número de matrícula debe tener entre 3 y 50 caracteres.', 'error')
+            flash(t('auth.license_length', lang), 'error')
             return redirect(url_for('auth.register'))
 
         if role == 'professional' and not re.match(r'^[a-zA-Z0-9\-]+$', license_number):
-            flash('El número de matrícula contiene caracteres no válidos.', 'error')
+            flash(t('auth.license_format', lang), 'error')
             return redirect(url_for('auth.register'))
 
         conn = models.get_db_connection()
@@ -94,16 +96,16 @@ def register():
                              (new_user_id, username, license_number, 'General', 'pending'))
 
             conn.commit()
-            flash('Registro exitoso. Por favor, inicia sesión.', 'success')
+            flash(t('auth.register_success', lang), 'success')
             return redirect(url_for('auth.login'))
 
         except Exception as exc:
             from services.database import is_integrity_error
             if is_integrity_error(exc):
-                flash('El nombre de usuario ya está en uso. Por favor, elige otro.', 'error')
+                flash(t('auth.username_taken', lang), 'error')
             else:
                 logger.exception('Error al registrar usuario')
-                flash('Error al registrar. Por favor, intenta de nuevo.', 'error')
+                flash(t('auth.register_error', lang), 'error')
             return redirect(url_for('auth.register'))
         finally:
             conn.close()
@@ -115,6 +117,7 @@ def register():
 @rate_limit.check_rate_limit(limit=100, window=60)
 def login():
     if request.method == 'POST':
+        lang = get_language()
         username = request.form.get('username')
         password = request.form.get('password')
 
@@ -128,7 +131,7 @@ def login():
 
         if user and check_password_hash(user['hash'], password):
             if not user['is_active']:
-                flash('Tu cuenta ha sido dada de baja. Contactá al administrador para más información.', 'error')
+                flash(t('auth.account_disabled', lang), 'error')
                 return redirect(url_for('auth.login'))
 
             session.clear()
@@ -204,7 +207,7 @@ def login():
                 return remember_response
             return redirect(target)
 
-        flash('Credenciales inválidas. Intente de nuevo.', 'error')
+        flash(t('auth.invalid_credentials', lang), 'error')
         return redirect(url_for('auth.login'))
 
     return render_template('login.html')

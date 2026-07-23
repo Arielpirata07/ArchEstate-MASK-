@@ -14,6 +14,7 @@ import models
 import rate_limit
 import utils
 from decorators import admin_required, login_required
+from i18n import t, get_language
 from services.database import date_format_sql, now_sql
 from utils import convert_to_argentina_time
 
@@ -43,6 +44,7 @@ def admin_view():
 @admin_bp.route('/api/professionals')
 @admin_required
 def get_professionals_api():
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
@@ -104,7 +106,7 @@ def get_professionals_api():
         })
     except Exception as e:
         logger.exception('Error en get_professionals_api')
-        return jsonify({"status": "error", "message": "Error interno del servidor"}), 500
+        return jsonify({"status": "error", "message": t('admin.internal_error', lang)}), 500
     finally:
         if conn:
             conn.close()
@@ -114,11 +116,12 @@ def get_professionals_api():
 @rate_limit.check_rate_limit(limit=100, window=60)
 @admin_required
 def update_pro_status(pro_id):
+    lang = get_language()
     data = request.json
     new_status = data.get('status')
 
     if new_status not in ['approved', 'rejected']:
-        return jsonify({"status": "error", "message": "Estado no válido"}), 400
+        return jsonify({"status": "error", "message": t('admin.invalid_status', lang)}), 400
 
     conn = None
     try:
@@ -137,9 +140,9 @@ def update_pro_status(pro_id):
 
             action = "Aprobación" if new_status == 'approved' else "Rechazo"
             utils.log_action(action, pro['name'], session)
-            return jsonify({"status": "success", "message": f"Profesional {action.lower()} correctamente"})
+            return jsonify({"status": "success", "message": t('admin.pro_status_updated', lang, action=action.lower())})
 
-        return jsonify({"error": "Profesional no encontrado"}), 404
+        return jsonify({"error": t('admin.pro_not_found', lang)}), 404
     finally:
         if conn:
             conn.close()
@@ -148,6 +151,7 @@ def update_pro_status(pro_id):
 @admin_bp.route('/api/admin/stats')
 @admin_required
 def admin_stats():
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
@@ -221,7 +225,7 @@ def admin_stats():
         })
     except Exception as e:
         logger.exception('Error en admin_stats')
-        return jsonify({"error": "Error interno"}), 500
+        return jsonify({"error": t('admin.internal_error_short', lang)}), 500
     finally:
         if conn:
             conn.close()
@@ -230,12 +234,13 @@ def admin_stats():
 @admin_bp.route('/api/admin/lead/<int:lead_id>', methods=['GET'])
 @admin_required
 def admin_lead_detail(lead_id):
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
         lead = conn.execute('SELECT * FROM leads WHERE id = ?', (lead_id,)).fetchone()
         if not lead:
-            return jsonify({'error': 'Lead no encontrado'}), 404
+            return jsonify({'error': t('admin.lead_not_found', lang)}), 404
 
         lead_dict = dict(lead)
         lead_dict['timestamp'] = convert_to_argentina_time(lead_dict['timestamp'])
@@ -246,7 +251,7 @@ def admin_lead_detail(lead_id):
         })
     except Exception as e:
         logger.exception('Error en admin_lead_detail')
-        return jsonify({'error': 'Error interno'}), 500
+        return jsonify({'error': t('admin.internal_error_short', lang)}), 500
     finally:
         if conn:
             conn.close()
@@ -255,6 +260,7 @@ def admin_lead_detail(lead_id):
 @admin_bp.route('/api/admin/reports', methods=['GET'])
 @admin_required
 def get_lead_reports():
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
@@ -267,7 +273,7 @@ def get_lead_reports():
             page = int(page)
             per_page = int(per_page)
         except (ValueError, TypeError):
-            return jsonify({'error': 'page y per_page deben ser enteros'}), 400
+            return jsonify({'error': t('admin.pagination_invalid', lang)}), 400
 
         if page < 1:
             page = 1
@@ -325,7 +331,7 @@ def get_lead_reports():
         })
     except Exception as e:
         logger.exception('Error en get_lead_reports')
-        return jsonify({'error': 'Error interno'}), 500
+        return jsonify({'error': t('admin.internal_error_short', lang)}), 500
     finally:
         if conn:
             conn.close()
@@ -334,6 +340,7 @@ def get_lead_reports():
 @admin_bp.route('/api/admin/telemetry', methods=['GET'])
 @admin_required
 def get_telemetry():
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
@@ -418,7 +425,7 @@ def get_telemetry():
         })
     except Exception as e:
         logger.exception('Error en get_telemetry')
-        return jsonify({'error': 'Error interno'}), 500
+        return jsonify({'error': t('admin.internal_error_short', lang)}), 500
     finally:
         if conn:
             conn.close()
@@ -428,6 +435,7 @@ def get_telemetry():
 @login_required
 @admin_required
 def admin_phone_audit():
+    lang = get_language()
     profesional = (request.args.get('profesional') or '').strip()
     evento = (request.args.get('evento') or '').strip()
     desde = (request.args.get('desde') or '').strip()
@@ -439,7 +447,7 @@ def admin_phone_audit():
         page = int(page)
         per_page = int(per_page)
     except (ValueError, TypeError):
-        return jsonify({'error': 'page y per_page deben ser enteros'}), 400
+        return jsonify({'error': t('admin.pagination_invalid', lang)}), 400
 
     if page < 1:
         page = 1
@@ -450,13 +458,13 @@ def admin_phone_audit():
         try:
             datetime.strptime(desde, '%Y-%m-%d')
         except ValueError:
-            return jsonify({'error': 'desde debe tener formato YYYY-MM-DD'}), 400
+            return jsonify({'error': t('admin.date_from_format', lang)}), 400
 
     if hasta:
         try:
             datetime.strptime(hasta, '%Y-%m-%d')
         except ValueError:
-            return jsonify({'error': 'hasta debe tener formato YYYY-MM-DD'}), 400
+            return jsonify({'error': t('admin.date_to_format', lang)}), 400
 
     conn = None
     try:
@@ -524,7 +532,7 @@ def admin_phone_audit():
         })
     except Exception as e:
         logger.exception('Error en admin_phone_audit')
-        return jsonify({'error': 'Error interno'}), 500
+        return jsonify({'error': t('admin.internal_error_short', lang)}), 500
     finally:
         if conn:
             conn.close()
@@ -533,6 +541,7 @@ def admin_phone_audit():
 @admin_bp.route('/api/admin/report/<int:report_id>/delete', methods=['POST'])
 @admin_required
 def delete_reported_lead(report_id):
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
@@ -541,10 +550,10 @@ def delete_reported_lead(report_id):
             'SELECT * FROM lead_reports WHERE id = ?', (report_id,)
         ).fetchone()
         if not report:
-            return jsonify({'error': 'Reporte no encontrado'}), 404
+            return jsonify({'error': t('admin.report_not_found', lang)}), 404
 
         if report['status'] == 'deleted':
-            return jsonify({'error': 'El reporte ya esta eliminado'}), 400
+            return jsonify({'error': t('admin.report_already_deleted', lang)}), 400
 
         lead_id = report['lead_id']
         argentina_tz = pytz.timezone('America/Argentina/Buenos_Aires')
@@ -565,11 +574,11 @@ def delete_reported_lead(report_id):
 
         return jsonify({
             'success': True,
-            'message': 'Lead eliminado correctamente'
+            'message': t('admin.lead_deleted', lang)
         })
     except Exception as e:
         logger.exception('Error en delete_reported_lead')
-        return jsonify({'error': 'Error interno'}), 500
+        return jsonify({'error': t('admin.internal_error_short', lang)}), 500
     finally:
         if conn:
             conn.close()
@@ -578,6 +587,7 @@ def delete_reported_lead(report_id):
 @admin_bp.route('/api/admin/report/<int:report_id>/dismiss', methods=['POST'])
 @admin_required
 def dismiss_report(report_id):
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
@@ -586,7 +596,7 @@ def dismiss_report(report_id):
             'SELECT * FROM lead_reports WHERE id = ?', (report_id,)
         ).fetchone()
         if not report:
-            return jsonify({'error': 'Reporte no encontrado'}), 404
+            return jsonify({'error': t('admin.report_not_found', lang)}), 404
 
         argentina_tz = pytz.timezone('America/Argentina/Buenos_Aires')
         now = datetime.now(argentina_tz).strftime('%Y-%m-%d %H:%M:%S')
@@ -600,11 +610,11 @@ def dismiss_report(report_id):
 
         return jsonify({
             'success': True,
-            'message': 'Reporte descartado'
+            'message': t('admin.report_dismissed', lang)
         })
     except Exception as e:
         logger.exception('Error en dismiss_report')
-        return jsonify({'error': 'Error interno'}), 500
+        return jsonify({'error': t('admin.internal_error_short', lang)}), 500
     finally:
         if conn:
             conn.close()
@@ -613,6 +623,7 @@ def dismiss_report(report_id):
 @admin_bp.route('/api/admin/report/<int:report_id>/restore', methods=['POST'])
 @admin_required
 def restore_report(report_id):
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
@@ -621,10 +632,10 @@ def restore_report(report_id):
             'SELECT * FROM lead_reports WHERE id = ?', (report_id,)
         ).fetchone()
         if not report:
-            return jsonify({'error': 'Reporte no encontrado'}), 404
+            return jsonify({'error': t('admin.report_not_found', lang)}), 404
 
         if report['status'] == 'pending':
-            return jsonify({'error': 'El reporte ya esta pendiente'}), 400
+            return jsonify({'error': t('admin.report_already_pending', lang)}), 400
 
         conn.execute(
             'UPDATE lead_reports SET status = ?, reviewed_by = NULL, reviewed_at = NULL WHERE id = ?',
@@ -635,11 +646,11 @@ def restore_report(report_id):
 
         return jsonify({
             'success': True,
-            'message': 'Reporte restaurado correctamente'
+            'message': t('admin.report_restored', lang)
         })
     except Exception as e:
         logger.exception('Error en restore_report')
-        return jsonify({'error': 'Error interno'}), 500
+        return jsonify({'error': t('admin.internal_error_short', lang)}), 500
     finally:
         if conn:
             conn.close()
@@ -649,6 +660,7 @@ def restore_report(report_id):
 @admin_required
 def download_professional_doc(user_id):
     from flask import current_app
+    lang = get_language()
 
     conn = None
     try:
@@ -656,19 +668,19 @@ def download_professional_doc(user_id):
         user = conn.execute('SELECT doc_path FROM users WHERE id = ?', (user_id,)).fetchone()
 
         if not user or not user['doc_path']:
-            return "El profesional no ha subido ningún documento aún.", 404
+            return t('admin.no_doc_uploaded', lang), 404
 
         directory = current_app.config['UPLOAD_FOLDER']
         filename = user['doc_path']
 
         if not os.path.exists(os.path.join(directory, filename)):
-            return f"Error: El archivo {filename} no existe en el servidor.", 404
+            return t('admin.file_not_found', lang, filename=filename), 404
 
         return send_from_directory(directory, filename, as_attachment=True)
 
     except Exception as e:
         logger.exception('Error en download_professional_doc')
-        return jsonify({"error": "Error interno del servidor"}), 500
+        return jsonify({"error": t('admin.internal_error', lang)}), 500
     finally:
         if conn:
             conn.close()
@@ -683,6 +695,7 @@ def user_management_view():
 @admin_bp.route('/api/admin/users', methods=['GET'])
 @admin_required
 def get_all_users():
+    lang = get_language()
     search = request.args.get('search', '').strip()
     role_filter = request.args.get('role', '').strip()
     active_filter = request.args.get('active', '').strip()
@@ -720,7 +733,7 @@ def get_all_users():
         })
     except Exception:
         logger.exception('Error en get_all_users')
-        return jsonify({"error": "Error interno"}), 500
+        return jsonify({"error": t('admin.internal_error_short', lang)}), 500
     finally:
         if conn:
             conn.close()
@@ -730,11 +743,12 @@ def get_all_users():
 @rate_limit.check_rate_limit(limit=100, window=60)
 @admin_required
 def admin_reset_password(user_id):
+    lang = get_language()
     data = request.json
     new_password = (data.get('password') or '').strip()
 
     if not new_password or len(new_password) < 6:
-        return jsonify({"error": "La contraseña debe tener al menos 6 caracteres."}), 400
+        return jsonify({"error": t('admin.password_min_length', lang)}), 400
 
     conn = None
     try:
@@ -742,10 +756,10 @@ def admin_reset_password(user_id):
         user = conn.execute('SELECT username, role FROM users WHERE id = ?', (user_id,)).fetchone()
 
         if not user:
-            return jsonify({"error": "Usuario no encontrado."}), 404
+            return jsonify({"error": t('admin.user_not_found', lang)}), 404
 
         if user['role'] == 'admin' and user_id != session.get('user_id'):
-            return jsonify({"error": "No se puede resetear la contraseña de otro administrador."}), 403
+            return jsonify({"error": t('admin.cannot_reset_admin', lang)}), 403
 
         conn.execute('UPDATE users SET hash = ? WHERE id = ?',
                      (generate_password_hash(new_password), user_id))
@@ -758,7 +772,7 @@ def admin_reset_password(user_id):
 
     return jsonify({
         "status": "success",
-        "message": f"Contraseña de '{user['username']}' actualizada correctamente."
+        "message": t('admin.password_updated', lang, username=user['username'])
     })
 
 
@@ -766,11 +780,12 @@ def admin_reset_password(user_id):
 @rate_limit.check_rate_limit(limit=100, window=60)
 @admin_required
 def admin_set_user_active(user_id):
+    lang = get_language()
     data = request.json
     new_state = data.get('is_active')
 
     if new_state not in (True, False):
-        return jsonify({"error": "Estado inválido."}), 400
+        return jsonify({"error": t('admin.invalid_state', lang)}), 400
 
     conn = None
     try:
@@ -778,13 +793,13 @@ def admin_set_user_active(user_id):
         user = conn.execute('SELECT username, role FROM users WHERE id = ?', (user_id,)).fetchone()
 
         if not user:
-            return jsonify({"error": "Usuario no encontrado."}), 404
+            return jsonify({"error": t('admin.user_not_found', lang)}), 404
 
         if user['role'] == 'admin':
-            return jsonify({"error": "No se puede dar de baja a un administrador."}), 403
+            return jsonify({"error": t('admin.cannot_deactivate_admin', lang)}), 403
 
         if user_id == session.get('user_id'):
-            return jsonify({"error": "No podés darte de baja a vos mismo."}), 403
+            return jsonify({"error": t('admin.cannot_deactivate_self', lang)}), 403
 
         conn.execute('UPDATE users SET is_active = ? WHERE id = ?', (1 if new_state else 0, user_id))
         conn.commit()
@@ -794,7 +809,7 @@ def admin_set_user_active(user_id):
 
     action = "Reactivación de Cuenta" if new_state else "Baja de Cuenta"
     reason = (data.get('reason') or '').strip()
-    message = f"Usuario '{user['username']}' {'reactivado' if new_state else 'dado de baja'} correctamente."
+    message = t('admin.user_status_updated', lang, username=user['username'], status_text='reactivado' if new_state else 'dado de baja')
     log_detail = f"Usuario: {user['username']} (ID: {user_id})"
     if not new_state and reason:
         log_detail += f" — Motivo: {reason}"

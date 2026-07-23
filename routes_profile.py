@@ -19,6 +19,7 @@ import validators
 import utils
 from utils import parse_budget
 import rate_limit
+from i18n import t, get_language
 
 
 logger = logging.getLogger(__name__)
@@ -72,10 +73,11 @@ def api_get_user_leads():
 @profile_bp.route('/api/profile/lead/<int:lead_id>', methods=['GET'])
 @decorators.login_required
 def api_get_lead(lead_id):
+    lang = get_language()
     user_id = session['user_id']
     lead = models.get_lead_by_id_and_user(lead_id, user_id)
     if not lead:
-        return jsonify({'error': 'Solicitud no encontrada'}), 404
+        return jsonify({'error': t('profile.lead_not_found', lang)}), 404
     if lead.get('timestamp'):
         lead['timestamp'] = utils.convert_to_argentina_time(lead['timestamp'])
     return jsonify({'success': True, 'lead': lead})
@@ -85,18 +87,19 @@ def api_get_lead(lead_id):
 @decorators.login_required
 @rate_limit.check_rate_limit(limit=100, window=60)
 def api_update_lead(lead_id):
+    lang = get_language()
     user_id = session['user_id']
     data = request.json
 
     lead = models.get_lead_by_id_and_user(lead_id, user_id)
     if not lead:
-        return jsonify({'error': 'Solicitud no encontrada'}), 404
+        return jsonify({'error': t('profile.lead_not_found', lang)}), 404
 
     allowed = ALLOWED_LEAD_EDIT_FIELDS
     update_data = {k: utils.safe_text(v) for k, v in data.items() if k in allowed}
 
     if not update_data:
-        return jsonify({'error': 'No hay datos validos para actualizar'}), 400
+        return jsonify({'error': t('profile.no_valid_data', lang)}), 400
 
     snapshot = json.dumps({k: str(lead.get(k, '')) for k in allowed})
     max_ver = models.get_lead_max_version(lead_id)
@@ -106,16 +109,17 @@ def api_update_lead(lead_id):
 
     utils.log_action('Edicion de Lead', f'Lead ID: {lead_id} editado por {session["username"]}', session)
 
-    return jsonify({'status': 'success', 'message': 'Solicitud actualizada'})
+    return jsonify({'status': 'success', 'message': t('profile.lead_updated', lang)})
 
 
 @profile_bp.route('/api/profile/lead/<int:lead_id>/versions', methods=['GET'])
 @decorators.login_required
 def api_get_lead_versions(lead_id):
+    lang = get_language()
     user_id = session['user_id']
     lead = models.get_lead_by_id_and_user(lead_id, user_id)
     if not lead:
-        return jsonify({'error': 'Solicitud no encontrada'}), 404
+        return jsonify({'error': t('profile.lead_not_found', lang)}), 404
     versions = models.get_lead_versions(lead_id)
     for v in versions:
         if v.get('edited_at'):
@@ -126,9 +130,10 @@ def api_get_lead_versions(lead_id):
 @profile_bp.route('/api/profile/user', methods=['GET'])
 @decorators.login_required
 def api_get_user():
+    lang = get_language()
     user = models.get_user_profile(session['user_id'])
     if not user:
-        return jsonify({'error': 'Usuario no encontrado'}), 404
+        return jsonify({'error': t('profile.user_not_found', lang)}), 404
     return jsonify({'success': True, 'user': user})
 
 
@@ -136,6 +141,7 @@ def api_get_user():
 @decorators.login_required
 @rate_limit.check_rate_limit(limit=100, window=60)
 def api_update_user():
+    lang = get_language()
     user_id = session['user_id']
     data = request.json
 
@@ -167,13 +173,14 @@ def api_update_user():
 
     utils.log_action('Actualizacion de Perfil', f'Usuario: {session["username"]}', session)
 
-    return jsonify({'status': 'success', 'message': 'Perfil actualizado'})
+    return jsonify({'status': 'success', 'message': t('profile.updated', lang)})
 
 
 @profile_bp.route('/api/profile/user/password', methods=['PUT'])
 @decorators.login_required
 @rate_limit.check_rate_limit(limit=100, window=60)
 def api_change_password():
+    lang = get_language()
     user_id = session['user_id']
     data = request.json
 
@@ -181,11 +188,11 @@ def api_change_password():
     new_password = data.get('new_password', '')
 
     if not current_password or not new_password:
-        return jsonify({'error': 'Todos los campos son requeridos'}), 400
+        return jsonify({'error': t('profile.all_fields_required', lang)}), 400
 
     user = models.get_user_by_id(user_id)
     if not user or not check_password_hash(user['hash'], current_password):
-        return jsonify({'error': 'La contraseña actual es incorrecta'}), 400
+        return jsonify({'error': t('profile.wrong_password', lang)}), 400
 
     is_valid, error = validators.validate_password(new_password)
     if not is_valid:
@@ -201,16 +208,17 @@ def api_change_password():
 
     utils.log_action('Cambio de Contrasena', f'Usuario: {session["username"]}', session)
 
-    return jsonify({'status': 'success', 'message': 'Contrasena actualizada'})
+    return jsonify({'status': 'success', 'message': t('profile.password_updated', lang)})
 
 
 @profile_bp.route('/api/profile/professional', methods=['GET'])
 @decorators.professional_required
 def api_get_professional():
+    lang = get_language()
     user_id = session['user_id']
     pro = models.get_professional_by_user_id(user_id)
     if not pro:
-        return jsonify({'error': 'Perfil profesional no encontrado'}), 404
+        return jsonify({'error': t('profile.pro_not_found', lang)}), 404
     return jsonify({'success': True, 'professional': pro})
 
 
@@ -218,6 +226,7 @@ def api_get_professional():
 @decorators.professional_required
 @rate_limit.check_rate_limit(limit=100, window=60)
 def api_update_professional():
+    lang = get_language()
     user_id = session['user_id']
     data = request.json
 
@@ -228,13 +237,13 @@ def api_update_professional():
             update_data[field] = utils.safe_text(data[field]).strip()
 
     if not update_data:
-        return jsonify({'error': 'No hay datos validos para actualizar'}), 400
+        return jsonify({'error': t('profile.no_valid_data', lang)}), 400
 
     models.update_professional_profile(user_id, update_data)
 
     utils.log_action('Actualizacion Profesional', f'Usuario: {session["username"]}', session)
 
-    return jsonify({'status': 'success', 'message': 'Perfil profesional actualizado'})
+    return jsonify({'status': 'success', 'message': t('profile.pro_updated', lang)})
 
 
 # ============================================================
@@ -253,6 +262,7 @@ def api_get_settings():
 @decorators.login_required
 @rate_limit.check_rate_limit(limit=100, window=60)
 def api_update_settings():
+    lang = get_language()
     user_id = session['user_id']
     data = request.json
 
@@ -264,21 +274,21 @@ def api_update_settings():
             update_data[key] = data[key]
 
     if not update_data:
-        return jsonify({'error': 'No hay datos validos para actualizar'}), 400
+        return jsonify({'error': t('profile.no_valid_data', lang)}), 400
 
     if 'theme' in update_data and update_data['theme'] not in ('light', 'dark'):
-        return jsonify({'error': 'Tema no valido'}), 400
+        return jsonify({'error': t('profile.invalid_theme', lang)}), 400
 
     if 'language' in update_data and update_data['language'] not in ('es', 'en'):
-        return jsonify({'error': 'Idioma no valido'}), 400
+        return jsonify({'error': t('profile.invalid_language', lang)}), 400
 
     if 'preferred_channel' in update_data and update_data['preferred_channel'] not in ('sms', 'whatsapp', 'auto'):
-        return jsonify({'error': 'Canal no valido. Usa sms, whatsapp o auto.'}), 400
+        return jsonify({'error': t('profile.invalid_channel', lang)}), 400
 
     models.update_user_preferences(user_id, update_data)
     utils.log_action('Actualizacion de Preferencias', f'Usuario: {session["username"]}', session)
 
-    return jsonify({'status': 'success', 'message': 'Preferencias actualizadas'})
+    return jsonify({'status': 'success', 'message': t('profile.prefs_updated', lang)})
 
 
 @profile_bp.route('/api/profile/sessions', methods=['GET'])
@@ -292,11 +302,12 @@ def api_get_sessions():
 @decorators.login_required
 @rate_limit.check_rate_limit(limit=100, window=60)
 def api_delete_session(entry_id):
+    lang = get_language()
     deleted = models.delete_login_history_entry(entry_id, session['user_id'])
     if not deleted:
-        return jsonify({'error': 'Sesion no encontrada'}), 404
+        return jsonify({'error': t('profile.session_not_found', lang)}), 404
     utils.log_action('Sesion cerrada', f'Sesion ID: {entry_id}', session)
-    return jsonify({'status': 'success', 'message': 'Sesion cerrada'})
+    return jsonify({'status': 'success', 'message': t('profile.session_closed', lang)})
 
 
 @profile_bp.route('/api/profile/activity', methods=['GET'])
@@ -315,16 +326,17 @@ def api_get_activity():
 @decorators.login_required
 @rate_limit.check_rate_limit(limit=100, window=60)
 def api_upload_avatar():
+    lang = get_language()
     user_id = session['user_id']
     if 'avatar' not in request.files:
-        return jsonify({'error': 'No se envio ningun archivo'}), 400
+        return jsonify({'error': t('profile.no_file_sent', lang)}), 400
 
     file = request.files['avatar']
     if file.filename == '':
-        return jsonify({'error': 'Nombre de archivo vacio'}), 400
+        return jsonify({'error': t('profile.empty_filename', lang)}), 400
 
     if not utils.allowed_file(file.filename):
-        return jsonify({'error': 'Formato no permitido. Usa JPG, PNG, GIF o WebP'}), 400
+        return jsonify({'error': t('profile.invalid_format', lang)}), 400
 
     mime_valid, detected_ext, mime_error = utils.validate_mime_type(file, file.filename)
     if not mime_valid:
@@ -333,7 +345,7 @@ def api_upload_avatar():
     file.seek(0, os.SEEK_END)
     size = file.tell()
     if size > config.MAX_UPLOAD_SIZE:
-        return jsonify({'error': 'El archivo excede el tamaño maximo de 16MB'}), 400
+        return jsonify({'error': t('profile.file_too_large', lang)}), 400
     file.seek(0)
 
     ext = detected_ext or 'jpg'
@@ -361,6 +373,7 @@ def api_upload_avatar():
 @decorators.login_required
 @rate_limit.check_rate_limit(limit=100, window=60)
 def api_delete_avatar():
+    lang = get_language()
     user_id = session['user_id']
     old_path = models.get_user_avatar_path(user_id)
     if old_path:
@@ -369,7 +382,7 @@ def api_delete_avatar():
             os.remove(old_file)
     models.delete_user_avatar(user_id)
     utils.log_action('Avatar eliminado', f'Usuario: {session["username"]}', session)
-    return jsonify({'status': 'success', 'message': 'Avatar eliminado'})
+    return jsonify({'status': 'success', 'message': t('profile.avatar_deleted', lang)})
 
 
 # ============================================================
@@ -380,10 +393,11 @@ def api_delete_avatar():
 @profile_bp.route('/api/profile/professional/full', methods=['GET'])
 @decorators.professional_required
 def api_get_professional_full():
+    lang = get_language()
     user_id = session['user_id']
     pro = models.get_professional_full_profile(user_id)
     if not pro:
-        return jsonify({'error': 'Perfil profesional no encontrado'}), 404
+        return jsonify({'error': t('profile.pro_not_found', lang)}), 404
     return jsonify({'success': True, 'professional': pro})
 
 
@@ -391,6 +405,7 @@ def api_get_professional_full():
 @decorators.professional_required
 @rate_limit.check_rate_limit(limit=100, window=60)
 def api_update_professional_full():
+    lang = get_language()
     user_id = session['user_id']
     data = request.json
 
@@ -408,28 +423,29 @@ def api_update_professional_full():
             update_data[key] = val
 
     if not update_data:
-        return jsonify({'error': 'No hay datos validos para actualizar'}), 400
+        return jsonify({'error': t('profile.no_valid_data', lang)}), 400
 
     models.create_or_update_professional_profile(user_id, update_data)
     utils.log_action('Perfil profesional actualizado', f'Usuario: {session["username"]}', session)
 
-    return jsonify({'status': 'success', 'message': 'Perfil profesional actualizado'})
+    return jsonify({'status': 'success', 'message': t('profile.pro_updated', lang)})
 
 
 @profile_bp.route('/api/profile/professional/photo', methods=['POST'])
 @decorators.professional_required
 @rate_limit.check_rate_limit(limit=100, window=60)
 def api_upload_professional_photo():
+    lang = get_language()
     user_id = session['user_id']
     if 'photo' not in request.files:
-        return jsonify({'error': 'No se envio ningun archivo'}), 400
+        return jsonify({'error': t('profile.no_file_sent', lang)}), 400
 
     file = request.files['photo']
     if file.filename == '':
-        return jsonify({'error': 'Nombre de archivo vacio'}), 400
+        return jsonify({'error': t('profile.empty_filename', lang)}), 400
 
     if not utils.allowed_file(file.filename):
-        return jsonify({'error': 'Formato no permitido. Usa JPG, PNG, GIF o WebP'}), 400
+        return jsonify({'error': t('profile.invalid_format', lang)}), 400
 
     mime_valid, detected_ext, mime_error = utils.validate_mime_type(file, file.filename)
     if not mime_valid:
@@ -438,7 +454,7 @@ def api_upload_professional_photo():
     file.seek(0, os.SEEK_END)
     size = file.tell()
     if size > config.MAX_UPLOAD_SIZE:
-        return jsonify({'error': 'El archivo excede el tamaño maximo de 16MB'}), 400
+        return jsonify({'error': t('profile.file_too_large', lang)}), 400
     file.seek(0)
 
     ext = detected_ext or 'jpg'
@@ -465,6 +481,7 @@ def api_upload_professional_photo():
 @decorators.professional_required
 @rate_limit.check_rate_limit(limit=100, window=60)
 def api_delete_professional_photo():
+    lang = get_language()
     user_id = session['user_id']
     old_path = models.get_professional_photo_path(user_id)
     if old_path:
@@ -473,7 +490,7 @@ def api_delete_professional_photo():
             os.remove(old_file)
     models.create_or_update_professional_profile(user_id, {'photo_path': ''})
     utils.log_action('Foto profesional eliminada', f'Usuario: {session["username"]}', session)
-    return jsonify({'status': 'success', 'message': 'Foto eliminada'})
+    return jsonify({'status': 'success', 'message': t('profile.photo_deleted', lang)})
 
 
 # ============================================================
@@ -517,6 +534,7 @@ def mark_all_notifications_read():
 @profile_bp.route('/api/profile/notification-filters', methods=['PUT'])
 @decorators.professional_required
 def update_notification_filters():
+    lang = get_language()
     user_id = session['user_id']
     data = request.json or {}
     filters = {
@@ -526,7 +544,7 @@ def update_notification_filters():
     # Validate types against form_options
     valid_types = set(models.get_form_options_by_category('operation_type'))
     valid_prop_types = set(models.get_form_options_by_category('property_type'))
-    filters['types'] = [t for t in filters['types'] if t in valid_types]
+    filters['types'] = [ft for ft in filters['types'] if ft in valid_types]
     filters['property_types'] = [pt for pt in filters['property_types'] if pt in valid_prop_types]
     # Budget range
     budget_min = data.get('budget_min')
@@ -539,7 +557,7 @@ def update_notification_filters():
     ok = models.update_user_preferences(user_id, updates)
     if ok:
         return jsonify({'success': True, 'filters': filters, 'budget_min': updates.get('budget_min', 0), 'budget_max': updates.get('budget_max', 0)})
-    return jsonify({'success': False, 'error': 'Error al guardar'}), 500
+    return jsonify({'success': False, 'error': t('profile.save_error', lang)}), 500
 
 
 @profile_bp.route('/api/profile/notification-filters', methods=['GET'])
@@ -565,16 +583,17 @@ def get_notification_filters():
 @profile_bp.route('/api/profile/notification-channel', methods=['PUT'])
 @decorators.login_required
 def update_notification_channel():
+    lang = get_language()
     user_id = session['user_id']
     data = request.json or {}
     channel = data.get('channel', '').strip().lower()
     valid_channels = {'email', 'whatsapp', 'ambos', 'auto'}
     if channel not in valid_channels:
-        return jsonify({'success': False, 'error': 'Canal inválido'}), 400
+        return jsonify({'success': False, 'error': t('profile.invalid_channel', lang)}), 400
     ok = models.update_user_preferences(user_id, {'preferred_channel': channel})
     if ok:
         return jsonify({'success': True, 'channel': channel})
-    return jsonify({'success': False, 'error': 'Error al guardar'}), 500
+    return jsonify({'success': False, 'error': t('profile.save_error', lang)}), 500
 
 
 @profile_bp.route('/api/profile/notification-channel', methods=['GET'])
@@ -724,6 +743,7 @@ def _apply_data_border(ws, row, col_count):
 @decorators.professional_required
 def profile_export_history_xlsx():
     try:
+        lang = get_language()
         user_id = session['user_id']
         leads = _query_monthly_contacts(user_id)
         stats = _build_export_stats(leads)
@@ -734,14 +754,14 @@ def profile_export_history_xlsx():
 
         # ─── Sheet 1: Resumen ───
         ws_resumen = wb.active
-        ws_resumen.title = 'Resumen'
+        ws_resumen.title = t('profile.xlsx_summary', lang)
         resumen_data = [
-            ['Total Leads Contactados', stats['total']],
-            ['Presupuesto Promedio', f"${stats['avg_budget']:,.2f}"],
-            ['Presupuesto Total', f"${stats['total_budget']:,.2f}"],
-            ['Zonas Diferentes', stats['zone_count']],
+            [t('profile.xlsx_total_leads_contacted', lang), stats['total']],
+            [t('profile.xlsx_avg_budget', lang), f"${stats['avg_budget']:,.2f}"],
+            [t('profile.xlsx_total_budget', lang), f"${stats['total_budget']:,.2f}"],
+            [t('profile.xlsx_different_zones', lang), stats['zone_count']],
         ]
-        for col, h in enumerate(['Métrica', 'Valor'], 1):
+        for col, h in enumerate([t('profile.xlsx_metric', lang), t('profile.xlsx_value', lang)], 1):
             ws_resumen.cell(row=1, column=col, value=h)
         _style_header_row(ws_resumen, 2)
         ws_resumen.column_dimensions['A'].width = 32
@@ -754,13 +774,13 @@ def profile_export_history_xlsx():
 
         note_row = len(resumen_data) + 3
         ws_resumen.cell(row=note_row, column=1,
-            value='Generado por ArchEstate · The Private Ledger'
+            value=t('profile.xlsx_generated_by', lang)
         ).font = Font(name='Manrope', size=8, italic=True, color='A68A64')
 
         # ─── Sheet 2: Leads ───
         ws_leads = wb.create_sheet('Leads')
-        headers = ['ID', 'Tipo', 'Propiedad', 'Zona', 'Provincia', 'Presupuesto',
-                   'Moneda', 'Creado', 'Visto', 'Contactado']
+        headers = ['ID', t('profile.xlsx_type', lang), t('profile.xlsx_property', lang), t('profile.xlsx_zone', lang), t('profile.xlsx_province', lang), t('profile.xlsx_budget', lang),
+                   t('profile.xlsx_currency', lang), t('profile.xlsx_created', lang), t('profile.xlsx_seen', lang), t('profile.xlsx_contacted', lang)]
         for col, h in enumerate(headers, 1):
             ws_leads.cell(row=1, column=col, value=h)
         _style_header_row(ws_leads, len(headers))
@@ -782,7 +802,7 @@ def profile_export_history_xlsx():
 
         # ─── Sheet 3: Por Zona ───
         ws_zones = wb.create_sheet('Por Zona')
-        for col, h in enumerate(['Zona', 'Cantidad', '% del Total'], 1):
+        for col, h in enumerate([t('profile.xlsx_zone', lang), t('profile.xlsx_count', lang), t('profile.xlsx_pct_total', lang)], 1):
             ws_zones.cell(row=1, column=col, value=h)
         _style_header_row(ws_zones, 3)
         ws_zones.column_dimensions['A'].width = 30
@@ -800,7 +820,7 @@ def profile_export_history_xlsx():
 
         # ─── Sheet 4: Inversiones ───
         ws_inv = wb.create_sheet('Inversiones')
-        for col, h in enumerate(['Moneda', 'Cantidad', 'Presupuesto Total', 'Presupuesto Promedio'], 1):
+        for col, h in enumerate([t('profile.xlsx_currency', lang), t('profile.xlsx_count', lang), t('profile.xlsx_total_budget_col', lang), t('profile.xlsx_avg_budget_col', lang)], 1):
             ws_inv.cell(row=1, column=col, value=h)
         _style_header_row(ws_inv, 4)
         ws_inv.column_dimensions['A'].width = 16
@@ -836,13 +856,15 @@ def profile_export_history_xlsx():
         )
     except Exception:
         logger.exception('Error exporting XLSX report')
-        return jsonify({'error': 'Error al generar el reporte XLSX'}), 500
+        lang = get_language()
+        return jsonify({'error': t('profile.xlsx_export_error', lang)}), 500
 
 
 @profile_bp.route('/api/profile/professional/export/pdf')
 @decorators.professional_required
 def profile_export_history_pdf():
     try:
+        lang = get_language()
         user_id = session['user_id']
         leads = _query_monthly_contacts(user_id)
         stats = _build_export_stats(leads)
@@ -870,14 +892,14 @@ def profile_export_history_pdf():
                 self.set_font('Helvetica', 'B', 7)
                 self.set_text_color(*gold_light)
                 self.set_y(2)
-                self.cell(0, 6, 'ArchEstate - Reporte de Rendimiento', ln=True, align='C')
+                self.cell(0, 6, t('profile.pdf_report_title', lang), ln=True, align='C')
                 self.ln(4)
 
             def footer(self):
                 self.set_y(-12)
                 self.set_font('Helvetica', 'I', 7)
                 self.set_text_color(150, 150, 150)
-                self.cell(0, 8, f'Pagina {self.page_no()}/{{nb}}  |  {datetime.now().strftime("%d/%m/%Y %H:%M")}', ln=True, align='C')
+                self.cell(0, 8, f'{t("profile.pdf_page", lang)} {self.page_no()}/{{nb}}  |  {datetime.now().strftime("%d/%m/%Y %H:%M")}', ln=True, align='C')
 
         pdf = ReportPDF()
         pdf.alias_nb_pages()
@@ -908,7 +930,7 @@ def profile_export_history_pdf():
         pdf.cell(0, 6, pdf_safe(prof_name), ln=True, align='L')
         pdf.set_font('Helvetica', '', 8)
         pdf.set_text_color(100, 100, 100)
-        pdf.cell(0, 5, 'Leads contactados en los últimos 30 días', ln=True, align='L')
+        pdf.cell(0, 5, t('profile.pdf_subtitle', lang), ln=True, align='L')
         pdf.ln(6)
 
         # ─── Summary cards (2x2) ───
@@ -919,8 +941,8 @@ def profile_export_history_pdf():
         pdf.set_font('Helvetica', '', 9)
 
         cards = [
-            ('Total Leads', str(stats['total']), f"{stats['zone_count']} zonas activas"),
-            ('Presupuesto Total', f"${stats['total_budget']:,.2f}", f"Promedio ${stats['avg_budget']:,.2f}"),
+            (t('profile.pdf_total_leads', lang), str(stats['total']), f"{stats['zone_count']} {t('profile.pdf_active_zones', lang)}"),
+            (t('profile.pdf_total_budget', lang), f"${stats['total_budget']:,.2f}", f"{t('profile.pdf_average', lang)} ${stats['avg_budget']:,.2f}"),
         ]
         pdf.set_x(left_margin)
         for title, value, sub in cards:
@@ -948,8 +970,8 @@ def profile_export_history_pdf():
 
         pdf.set_x(left_margin)
         cards2 = [
-            ('Promedio / Lead', f"${stats['avg_budget']:,.2f}", 'Valor estimado promedio'),
-            ('Monedas activas', str(len(stats['currencies'])), f"{', '.join(sorted(stats['currencies'].keys()))}"),
+            (t('profile.pdf_avg_per_lead', lang), f"${stats['avg_budget']:,.2f}", t('profile.pdf_estimated_avg', lang)),
+            (t('profile.pdf_active_currencies', lang), str(len(stats['currencies'])), f"{', '.join(sorted(stats['currencies'].keys()))}"),
         ]
         for title, value, sub in cards2:
             x0 = pdf.get_x()
@@ -983,11 +1005,11 @@ def profile_export_history_pdf():
             pdf.set_font('Helvetica', '', 9)
             pdf.ln(2)
 
-        section_header('Distribución por Moneda')
+        section_header(t('profile.pdf_by_currency', lang))
         pdf.set_font('Helvetica', 'B', 8)
         pdf.set_fill_color(*gray_bg)
         cw = [30, 30, 50, 50, 30]
-        ch = ['Moneda', 'Cantidad', 'Presupuesto Total', 'Presupuesto Promedio', '%']
+        ch = [t('profile.pdf_currency', lang), t('profile.pdf_count', lang), t('profile.pdf_total_budget_label', lang), t('profile.pdf_avg_budget_label', lang), t('profile.pdf_pct', lang)]
         for i, (h, w) in enumerate(zip(ch, cw)):
             pdf.cell(w, 6, pdf_safe(h), border=1, align='C', fill=True)
         pdf.ln()
@@ -1004,11 +1026,11 @@ def profile_export_history_pdf():
         pdf.ln(5)
 
         # ─── Property type breakdown ───
-        section_header('Distribución por Tipo de Propiedad')
+        section_header(t('profile.pdf_by_property_type', lang))
         pdf.set_font('Helvetica', 'B', 8)
         pdf.set_fill_color(*gray_bg)
         cw2 = [80, 40, 40, 30]
-        ch2 = ['Tipo', 'Cantidad', '% del Total', 'Prom. Presupuesto']
+        ch2 = [t('profile.pdf_type', lang), t('profile.pdf_count', lang), t('profile.pdf_pct_total', lang), t('profile.pdf_avg_budget', lang)]
         for h, w in zip(ch2, cw2):
             pdf.cell(w, 6, pdf_safe(h), border=1, align='C', fill=True)
         pdf.ln()
@@ -1017,27 +1039,27 @@ def profile_export_history_pdf():
         # Compute per-type budgets
         type_budgets = {}
         for lead in leads:
-            t = lead.get('type') or 'Otro'
+            type_val = lead.get('type') or 'Otro'
             b = parse_budget(lead.get('budget'))
-            tb = type_budgets.setdefault(t, {'count': 0, 'total': 0.0})
+            tb = type_budgets.setdefault(type_val, {'count': 0, 'total': 0.0})
             tb['count'] += 1
             tb['total'] += b
-        for t, count in sorted(stats['types'].items(), key=lambda x: x[1], reverse=True):
-            tb = type_budgets.get(t, {'count': 0, 'total': 0.0})
+        for type_val, count in sorted(stats['types'].items(), key=lambda x: x[1], reverse=True):
+            tb = type_budgets.get(type_val, {'count': 0, 'total': 0.0})
             avg_t = round(tb['total'] / tb['count'], 2) if tb['count'] else 0
             pct = round(count / stats['total'] * 100, 1) if stats['total'] else 0
-            vals = [pdf_safe(t)[:35], str(count), f"{pct}%", f"${avg_t:,.2f}"]
+            vals = [pdf_safe(type_val)[:35], str(count), f"{pct}%", f"${avg_t:,.2f}"]
             for v, w in zip(vals, cw2):
                 pdf.cell(w, 5, pdf_safe(v), border=1, align='C')
             pdf.ln()
         pdf.ln(5)
 
         # ─── Zone breakdown ───
-        section_header('Zonas con Mayor Captación')
+        section_header(t('profile.pdf_top_zones', lang))
         pdf.set_font('Helvetica', 'B', 8)
         pdf.set_fill_color(*gray_bg)
         cw3 = [90, 40, 40, 22]
-        ch3 = ['Zona', 'Cantidad', '% del Total', 'Bar']
+        ch3 = [t('profile.pdf_zone', lang), t('profile.pdf_count', lang), t('profile.pdf_pct_total', lang), t('profile.pdf_bar', lang)]
         for h, w in zip(ch3, cw3):
             pdf.cell(w, 6, pdf_safe(h), border=1, align='C', fill=True)
         pdf.ln()
@@ -1060,12 +1082,12 @@ def profile_export_history_pdf():
         pdf.ln(5)
 
         # ─── Leads detail table ───
-        section_header('Detalle de Leads (últimos 30)')
+        section_header(t('profile.pdf_lead_detail', lang))
         pdf.set_font('Helvetica', 'B', 7)
         pdf.set_fill_color(*midnight)
         pdf.set_text_color(*white)
         cols_l = [8, 8, 32, 26, 24, 22, 28, 22]
-        headers_l = ['#', 'ID', 'Tipo', 'Zona', 'Presupuesto', 'Moneda', 'Provincia', 'Contactado']
+        headers_l = ['#', 'ID', t('profile.pdf_type', lang), t('profile.pdf_zone', lang), t('profile.pdf_budget', lang), t('profile.pdf_currency', lang), t('profile.pdf_province', lang), t('profile.pdf_contacted_label', lang)]
         for h, w in zip(headers_l, cols_l):
             pdf.cell(w, 6, pdf_safe(h), border=1, align='C', fill=True)
         pdf.ln()
@@ -1096,7 +1118,7 @@ def profile_export_history_pdf():
         pdf.set_font('Helvetica', 'I', 7)
         pdf.set_text_color(*gold_light)
         gen_date = datetime.now().strftime('%d/%m/%Y %H:%M')
-        pdf.cell(0, 5, f'Generado por ArchEstate . The Private Ledger | {gen_date}', ln=True, align='C')
+        pdf.cell(0, 5, f'{t("profile.pdf_generated_by", lang)} | {gen_date}', ln=True, align='C')
 
         pdf_output = pdf.output(dest='S')
         if isinstance(pdf_output, str):
@@ -1114,4 +1136,5 @@ def profile_export_history_pdf():
         )
     except Exception:
         logger.exception('Error exporting PDF report')
-        return jsonify({'error': 'Error al generar el reporte PDF'}), 500
+        lang = get_language()
+        return jsonify({'error': t('profile.pdf_export_error', lang)}), 500

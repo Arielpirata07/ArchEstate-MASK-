@@ -4,6 +4,7 @@ from flask import Blueprint, request
 
 import config
 import models
+from i18n import t, get_language
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +16,7 @@ def whatsapp_webhook():
     from twilio.request_validator import RequestValidator
     from twilio.twiml.messaging_response import MessagingResponse
 
+    lang = get_language()
     validator = RequestValidator(config.TWILIO_AUTH_TOKEN)
     signature = request.headers.get('X-Twilio-Signature', '')
     params = request.form.to_dict()
@@ -51,19 +53,19 @@ def whatsapp_webhook():
         if user and user['phone_verified'] == 0:
             conn.execute('UPDATE users SET phone_verified = 1 WHERE id = ?', (user['id'],))
             conn.commit()
-            msg = f'✅ Teléfono verificado correctamente. Gracias, {user["username"]}.'
+            msg = t('wa.verified', lang, username=user['username'])
             logger.info('Verified user %s (id=%s)', user['username'], user['id'])
             resp.message(msg)
         elif user and user['phone_verified'] == 1:
-            resp.message('✅ Tu teléfono ya estaba verificado.')
+            resp.message(t('wa.already_verified', lang))
         else:
-            resp.message('No se encontró un usuario con este número en ArchEstate.')
+            resp.message(t('wa.user_not_found', lang))
         return str(resp), 200
 
     except Exception:
         logger.exception('Error en whatsapp_webhook')
         resp = MessagingResponse()
-        resp.message('Ocurrió un error al verificar tu teléfono. Intentá de nuevo.')
+        resp.message(t('wa.verify_error', lang))
         return str(resp), 200
     finally:
         if conn:

@@ -2,6 +2,7 @@ import re
 
 import phonenumbers
 from phonenumbers import NumberParseException
+from i18n import t, get_language
 
 
 VALID_ZONES = [
@@ -43,27 +44,29 @@ def validate_email(email):
     Validación completa de email.
     Retorna (is_valid, error_message)
     """
+    lang = get_language()
+
     if not email or not isinstance(email, str):
-        return False, "Email es requerido"
+        return False, t('val.email_required', lang)
 
     email = email.strip()
 
     if len(email) > 254:
-        return False, "Email demasiado largo"
+        return False, t('val.email_too_long', lang)
 
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     if not re.match(pattern, email):
-        return False, "Formato de email inválido"
+        return False, t('val.email_invalid_format', lang)
 
     local, domain = email.rsplit('@', 1)
     if len(local) > 64:
-        return False, "Parte local del email demasiado larga"
+        return False, t('val.email_local_too_long', lang)
 
     if '..' in email:
-        return False, "Email inválido: punto doble"
+        return False, t('val.email_double_dot', lang)
 
     if domain.startswith('.') or domain.endswith('.'):
-        return False, "Dominio inválido"
+        return False, t('val.email_invalid_domain', lang)
 
     return True, None
 
@@ -78,8 +81,10 @@ def validate_phone(phone):
     Si el parse con región None falla (sin '+'), intenta como número argentino
     (region='AR') para preservar compatibilidad con usuarios legacy.
     """
+    lang = get_language()
+
     if not phone or not isinstance(phone, str):
-        return False, "Teléfono es requerido"
+        return False, t('val.phone_required', lang)
 
     phone = phone.strip()
 
@@ -90,19 +95,19 @@ def validate_phone(phone):
         try:
             parsed = phonenumbers.parse(phone, "AR")
         except NumberParseException:
-            return False, "Número inválido. Incluí el código de país (ej: +54 9 11 1234 5678)"
+            return False, t('val.phone_invalid_format', lang)
 
     if parsed is None:
-        return False, "Número inválido. Incluí el código de país (ej: +54 9 11 1234 5678)"
+        return False, t('val.phone_invalid_format', lang)
 
     if not phonenumbers.is_possible_number(parsed):
-        return False, "Número imposible (cantidad de dígitos inválida)"
+        return False, t('val.phone_impossible', lang)
 
     if not phonenumbers.is_valid_number(parsed):
         region = phonenumbers.region_code_for_number(parsed)
         if region:
-            return False, f"Número inválido para {region}"
-        return False, "Número inválido (verificá el código de país)"
+            return False, t('val.phone_invalid_for_region', lang, region=region)
+        return False, t('val.phone_invalid_check_code', lang)
 
     return True, None
 
@@ -113,20 +118,22 @@ def validate_budget(amount):
     Acepta números positivos o range strings "min - max".
     Retorna (is_valid, error_message)
     """
+    lang = get_language()
+
     if amount is None:
-        return False, "Presupuesto es requerido"
+        return False, t('val.budget_required', lang)
 
     try:
         parts = str(amount).split(' - ')
         for part in parts:
             num = float(part.strip())
             if num <= 0:
-                return False, "El presupuesto debe ser positivo"
+                return False, t('val.budget_positive', lang)
             if num > 1000000000000:
-                return False, "Presupuesto demasiado grande"
+                return False, t('val.budget_too_large', lang)
         return True, None
     except (ValueError, TypeError):
-        return False, "Presupuesto debe ser un número válido"
+        return False, t('val.budget_invalid', lang)
 
 
 def validate_zone(zone):
@@ -135,45 +142,51 @@ def validate_zone(zone):
     Acepta cualquier texto no vacío entre 2 y 100 caracteres.
     Retorna (is_valid, error_message)
     """
+    lang = get_language()
+
     if not zone or not isinstance(zone, str):
-        return False, "Zona es requerida"
+        return False, t('val.zone_required', lang)
 
     zone = zone.strip()
 
     if len(zone) < 2:
-        return False, "Zona demasiado corta"
+        return False, t('val.zone_too_short', lang)
 
     if len(zone) > 100:
-        return False, "Zona demasiado larga"
+        return False, t('val.zone_too_long', lang)
 
     return True, None
 
 
 def validate_username(username):
+    lang = get_language()
     if not username or len(username) < 3 or len(username) > 30:
-        return False, 'El nombre de usuario debe tener entre 3 y 30 caracteres.'
+        return False, t('val.username_length', lang)
     if not re.match(r'^[a-zA-Z0-9_]+$', username):
-        return False, 'El usuario solo puede contener letras, números y guión bajo.'
+        return False, t('val.username_format', lang)
     return True, None
 
 
 def validate_password(password):
+    lang = get_language()
     if not password or len(password) < 6:
-        return False, 'La contraseña debe tener al menos 6 caracteres.'
+        return False, t('val.password_min_length', lang)
     if not re.search(r'[A-Za-z]', password) or not re.search(r'[0-9]', password):
-        return False, 'La contraseña debe contener al menos una letra y un número.'
+        return False, t('val.password_format', lang)
     return True, None
 
 
 def validate_property_type(ptype):
+    lang = get_language()
     valid = get_valid_property_types()
     if not ptype or ptype not in valid:
-        return False, 'Tipo de propiedad no válido.'
+        return False, t('val.invalid_property_type', lang)
     return True, None
 
 
 def validate_operation_type(otype):
+    lang = get_language()
     valid = get_valid_operation_types()
     if not otype or otype not in valid:
-        return False, 'Tipo de operación no válido.'
+        return False, t('val.invalid_operation_type', lang)
     return True, None

@@ -14,6 +14,7 @@ from flask import Blueprint, redirect, request, session, jsonify, current_app
 
 import utils
 from decorators import professional_required
+from i18n import t, get_language
 from models import get_db_connection
 
 
@@ -73,44 +74,45 @@ def redirect_whatsapp(lead_id):
     302. Rate-limit: 60/h por profesional, 60/h por IP.
     """
     user_id = session.get('user_id')
+    lang = get_language()
     if not _check_rate(f'wa:{user_id}', _WA_PER_HOUR):
         utils.log_event(user_id=user_id, lead_id=lead_id, event='wa_rate_limited')
-        return jsonify({"error": "Limite de redirecciones alcanzado. Intenta en una hora."}), 429
+        return jsonify({"error": t('lead.wa_rate_limited', lang)}), 429
     ip = request.headers.get('X-Forwarded-For', request.remote_addr or '').split(',')[0].strip()
     if not _check_rate(f'wa:ip:{ip}', _WA_PER_HOUR):
         utils.log_event(user_id=user_id, lead_id=lead_id, event='wa_rate_limited', props={'by': 'ip'})
-        return jsonify({"error": "Limite de redirecciones alcanzado."}), 429
+        return jsonify({"error": t('lead.wa_rate_limited_short', lang)}), 429
 
     conn = None
     try:
         conn = get_db_connection()
         user = conn.execute('SELECT username FROM users WHERE id = ?', (user_id,)).fetchone()
         if not user:
-            return jsonify({"error": "Acceso denegado"}), 403
+            return jsonify({"error": t('lead.access_denied', lang)}), 403
 
         pro_status = conn.execute(
             'SELECT status FROM professionals WHERE name = ?', (user['username'],)
         ).fetchone()
         if not pro_status or pro_status['status'] != 'approved':
-            return jsonify({"error": "Cuenta pendiente de aprobacion"}), 403
+            return jsonify({"error": t('lead.account_pending', lang)}), 403
 
         lead = conn.execute(
             'SELECT id, phone, type, zone, property_type FROM leads WHERE id = ?',
             (lead_id,)
         ).fetchone()
         if not lead:
-            return jsonify({"error": "Lead no encontrado"}), 404
+            return jsonify({"error": t('lead.not_found', lang)}), 404
 
         phone_e164 = utils.normalize_phone_to_e164(lead['phone'] or '')
         if not phone_e164:
             utils.log_event(user_id=user_id, lead_id=lead_id, event='wa_invalid_number',
                             props={'reason': 'no_e164'}, conn=conn)
-            return jsonify({"error": "El telefono del lead no es valido para WhatsApp."}), 422
+            return jsonify({"error": t('lead.wa_invalid_phone', lang)}), 422
 
         if not utils.is_whatsapp_capable(phone_e164):
             utils.log_event(user_id=user_id, lead_id=lead_id, event='wa_fallback_sms',
                             props={'reason': 'not_mobile'}, conn=conn)
-            return jsonify({"error": "El telefono no es un celular. Usa el enlace de SMS."}), 422
+            return jsonify({"error": t('lead.wa_not_mobile', lang)}), 422
 
         wa_url = utils.build_whatsapp_url(
             phone_e164,
@@ -120,7 +122,7 @@ def redirect_whatsapp(lead_id):
             lead_id=lead_id,
         )
         if not wa_url:
-            return jsonify({"error": "No se pudo construir el enlace de WhatsApp."}), 422
+            return jsonify({"error": t('lead.wa_build_error', lang)}), 422
 
         try:
             u = urllib.parse.urlparse(wa_url)
@@ -160,25 +162,26 @@ def reveal_phone(lead_id):
     o copy-paste manual. Audita la consulta con hash.
     """
     user_id = session.get('user_id')
+    lang = get_language()
     if not _check_rate(f'reveal:{user_id}', _REVEAL_PER_HOUR):
-        return jsonify({"error": "Limite de revelaciones alcanzado."}), 429
+        return jsonify({"error": t('lead.reveal_rate_limited', lang)}), 429
 
     conn = None
     try:
         conn = get_db_connection()
         user = conn.execute('SELECT username FROM users WHERE id = ?', (user_id,)).fetchone()
         if not user:
-            return jsonify({"status": "error", "message": "Acceso denegado"}), 403
+            return jsonify({"status": "error", "message": t('lead.access_denied', lang)}), 403
 
         pro_status = conn.execute(
             'SELECT status FROM professionals WHERE name = ?', (user['username'],)
         ).fetchone()
         if not pro_status or pro_status['status'] != 'approved':
-            return jsonify({"status": "error", "message": "Cuenta pendiente de aprobacion"}), 403
+            return jsonify({"status": "error", "message": t('lead.account_pending', lang)}), 403
 
         lead = conn.execute('SELECT phone, type FROM leads WHERE id = ?', (lead_id,)).fetchone()
         if not lead:
-            return jsonify({"status": "error", "message": "Lead no encontrado"}), 404
+            return jsonify({"status": "error", "message": t('lead.not_found', lang)}), 404
 
         phone_to_return = lead['phone'] or ''
         utils.log_action(
@@ -206,6 +209,7 @@ def whatsapp_event(lead_id):
     o del flujo SMS. No es auth-pesado: sólo profesionales autenticados.
     """
     user_id = session.get('user_id')
+    lang = get_language()
     data = request.get_json(silent=True) or {}
     event = (data.get('event') or '').strip().lower()
     props = data.get('props') or {}
@@ -215,7 +219,7 @@ def whatsapp_event(lead_id):
         'wa_invalid_number', 'sms_button_clicked', 'sms_window_opened',
         'sms_fallback_used', 'tel_clicked', 'phone_button_clicked'
     }:
-        return jsonify({"error": "Evento no reconocido."}), 400
+        return jsonify({"error": t('lead.unknown_event', lang)}), 400
 
     ip = request.headers.get('X-Forwarded-For', request.remote_addr or '').split(',')[0].strip()
     utils.log_event(

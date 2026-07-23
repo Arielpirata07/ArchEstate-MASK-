@@ -14,6 +14,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Optional
 
+from i18n import t, get_language
+
 logger = logging.getLogger(__name__)
 
 from utils import hash_phone_digits
@@ -50,16 +52,17 @@ class SmsSimulatedVerifier(OTPChannel):
         self._audit = audit_fn
 
     def send(self, phone_e164, code, ttl_minutes=10, username=None):
+        lang = get_language()
         try:
             print(f"\n[SMS SIMULADO] -> {phone_e164}")
             print(f"[SMS SIMULADO] Código: {code} (válido {ttl_minutes} min)\n")
             if self._audit:
                 self._audit("OTP enviado por SMS", f"phone_hash={hash_phone_digits(phone_e164)} channel=sms ttl={ttl_minutes}m")
             return SendResult(ok=True, channel=self.name,
-                              message=f"Código enviado por SMS a {phone_e164}")
+                              message=t('verifier.sms_sent', lang, phone=phone_e164))
         except Exception as e:
             return SendResult(ok=False, channel=self.name,
-                              message=f"Error al enviar SMS: {e}")
+                              message=t('verifier.sms_error', lang, error=str(e)))
 
 
 class WhatsAppSimulatedVerifier(OTPChannel):
@@ -80,11 +83,12 @@ class WhatsAppSimulatedVerifier(OTPChannel):
         self._include_deep_link = include_deep_link
 
     def send(self, phone_e164, code, ttl_minutes=10, username=None):
+        lang = get_language()
         try:
             from urllib.parse import quote_plus
             digits = phone_e164.lstrip('+')
             label = f" {username}," if username else ""
-            text = quote_plus(f"Hola{label} tu código de verificación de ArchEstate es: {code} (válido {ttl_minutes} min)")
+            text = quote_plus(t('verifier.wa_otp_text', lang, label=label, code=code, ttl=ttl_minutes))
             link = f"{self._base_url}/{digits}?text={text}"
             print(f"\n[WHATSAPP SIMULADO] -> {phone_e164}")
             print(f"[WHATSAPP SIMULADO] Link wa.me con código prellenado (no enviado): {link}\n")
@@ -93,11 +97,11 @@ class WhatsAppSimulatedVerifier(OTPChannel):
                             f"phone_hash={hash_phone_digits(phone_e164)} channel=whatsapp ttl={ttl_minutes}m")
             meta = {"deep_link": link} if self._include_deep_link else None
             return SendResult(ok=True, channel=self.name,
-                              message="Código enviado por WhatsApp",
+                              message=t('verifier.wa_sent', lang),
                               meta=meta)
         except Exception as e:
             return SendResult(ok=False, channel=self.name,
-                              message=f"Error al enviar WhatsApp: {e}")
+                              message=t('verifier.wa_error', lang, error=str(e)))
 
 
 class TwilioSmsVerifier(OTPChannel):
@@ -115,8 +119,9 @@ class TwilioSmsVerifier(OTPChannel):
         self._audit = audit_fn
 
     def send(self, phone_e164, code, ttl_minutes=10, username=None):
+        lang = get_language()
         try:
-            body = f"Tu código de verificación de ArchEstate es: {code} (válido {ttl_minutes} min)"
+            body = t('verifier.twilio_sms_body', lang, code=code, ttl=ttl_minutes)
             message = self._client.messages.create(
                 body=body,
                 from_=self._from,
@@ -127,23 +132,23 @@ class TwilioSmsVerifier(OTPChannel):
                 self._audit("OTP enviado por SMS (Twilio)",
                             f"phone_hash={hash_phone_digits(phone_e164)} channel=sms sid={message.sid} ttl={ttl_minutes}m")
             return SendResult(ok=True, channel=self.name,
-                              message=f"Código enviado por SMS a {phone_e164}")
+                              message=t('verifier.sms_sent', lang, phone=phone_e164))
         except Exception as e:
             error_str = str(e)
             logger.exception('[TWILIO SMS ERROR] -> %s', phone_e164)
 
             if '21608' in error_str or 'unverified' in error_str.lower():
                 return SendResult(ok=False, channel=self.name,
-                                  message="Tu cuenta de Twilio es de prueba. Verificá el número en twilio.com o comprá un número Twilio.")
+                                  message=t('verifier.twilio_trial', lang))
             elif '21211' in error_str or 'invalid' in error_str.lower():
                 return SendResult(ok=False, channel=self.name,
-                                  message="El número de teléfono no es válido para Twilio.")
+                                  message=t('verifier.twilio_invalid', lang))
             elif '21614' in error_str or 'not a valid' in error_str.lower():
                 return SendResult(ok=False, channel=self.name,
-                                  message="El número no es un celular válido para SMS.")
+                                  message=t('verifier.twilio_not_mobile', lang))
             else:
                 return SendResult(ok=False, channel=self.name,
-                                  message="Error al enviar SMS. Intentá de nuevo.")
+                                  message=t('verifier.sms_retry', lang))
 
 
 class TwilioWhatsAppVerifier(OTPChannel):
@@ -163,6 +168,7 @@ class TwilioWhatsAppVerifier(OTPChannel):
         self._audit = audit_fn
 
     def send(self, phone_e164, code, ttl_minutes=10, username=None):
+        lang = get_language()
         try:
             to_number = f"whatsapp:{phone_e164}"
             import json
@@ -182,23 +188,23 @@ class TwilioWhatsAppVerifier(OTPChannel):
                 self._audit("OTP enviado por WhatsApp (Twilio)",
                             f"phone_hash={hash_phone_digits(phone_e164)} channel=whatsapp sid={message.sid} ttl={ttl_minutes}m")
             return SendResult(ok=True, channel=self.name,
-                              message="Código enviado por WhatsApp")
+                              message=t('verifier.wa_sent', lang))
         except Exception as e:
             error_str = str(e)
             logger.exception('[TWILIO WHATSAPP ERROR] -> %s', phone_e164)
 
             if '21608' in error_str or 'unverified' in error_str.lower():
                 return SendResult(ok=False, channel=self.name,
-                                  message="Tu cuenta de Twilio es de prueba. Verificá el número en twilio.com o comprá un número Twilio.")
+                                  message=t('verifier.twilio_trial', lang))
             elif '21211' in error_str or 'invalid' in error_str.lower():
                 return SendResult(ok=False, channel=self.name,
-                                  message="El número de teléfono no es válido para Twilio.")
+                                  message=t('verifier.twilio_invalid', lang))
             elif '63030' in error_str or 'template' in error_str.lower():
                 return SendResult(ok=False, channel=self.name,
-                                  message="La plantilla de WhatsApp no está configurada. Contactá al administrador.")
+                                  message=t('verifier.wa_template_missing', lang))
             else:
                 return SendResult(ok=False, channel=self.name,
-                                  message="Error al enviar WhatsApp. Intentá de nuevo.")
+                                  message=t('verifier.wa_retry', lang))
 
 
 class VerifierRouter:

@@ -12,16 +12,19 @@ def t(key, lang=None, **kwargs):
 
 
 def get_language():
-    from flask import session, g
-    if session.get('user_id'):
-        try:
-            from models import get_user_preferences
-            prefs = get_user_preferences(session['user_id'])
-            lang = prefs.get('language', DEFAULT_LANG)
-            if lang in SUPPORTED_LANGS:
-                return lang
-        except Exception:
-            pass
+    try:
+        from flask import session
+        if session.get('user_id'):
+            try:
+                from models import get_user_preferences
+                prefs = get_user_preferences(session['user_id'])
+                lang = prefs.get('language', DEFAULT_LANG)
+                if lang in SUPPORTED_LANGS:
+                    return lang
+            except Exception:
+                pass
+    except RuntimeError:
+        pass
     try:
         from flask import request
         return get_browser_language(request)

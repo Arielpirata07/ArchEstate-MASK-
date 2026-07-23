@@ -22,6 +22,7 @@ import models
 import rate_limit
 import utils
 from decorators import login_required, professional_required
+from i18n import t, get_language
 from services.database import date_format_sql, now_sql
 from utils import allowed_file, convert_to_argentina_time
 
@@ -84,14 +85,15 @@ def get_leads_api():
     conn = None
     try:
         conn = models.get_db_connection()
+        lang = get_language()
 
         user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
         if not user:
-            return jsonify({"status": "error", "message": "Acceso denegado"}), 403
+            return jsonify({"status": "error", "message": t('prof.access_denied', lang)}), 403
 
         professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
         if not professional or professional['status'] != 'approved':
-            return jsonify({"status": "error", "message": "Cuenta pendiente de aprobación"}), 403
+            return jsonify({"status": "error", "message": t('prof.account_pending', lang)}), 403
 
         my_leads = request.args.get('my_leads', '1').strip() == '1'
         search = request.args.get('search', '').strip()
@@ -231,7 +233,7 @@ def get_leads_api():
         })
     except Exception as e:
         logger.exception('Error en get_leads_api')
-        return jsonify({"status": "error", "message": "Error interno del servidor"}), 500
+        return jsonify({"status": "error", "message": t('prof.internal_error', lang)}), 500
     finally:
         if conn:
             conn.close()
@@ -240,6 +242,7 @@ def get_leads_api():
 @professional_bp.route('/api/leads/filter-options')
 @professional_required
 def get_leads_filter_options():
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
@@ -247,7 +250,7 @@ def get_leads_filter_options():
         if user:
             professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
             if not professional or professional['status'] != 'approved':
-                return jsonify({"error": "Debes estar aprobado para acceder a esta información."}), 403
+                return jsonify({"error": t('prof.approval_required', lang)}), 403
     finally:
         if conn:
             conn.close()
@@ -370,13 +373,14 @@ def get_leads_stats():
     conn = None
     try:
         conn = models.get_db_connection()
+        lang = get_language()
         user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
         if not user:
-            return jsonify({'status': 'error', 'message': 'Acceso denegado'}), 403
+            return jsonify({'status': 'error', 'message': t('prof.access_denied', lang)}), 403
 
         professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
         if not professional or professional['status'] != 'approved':
-            return jsonify({'status': 'error', 'message': 'Cuenta pendiente de aprobación'}), 403
+            return jsonify({'status': 'error', 'message': t('prof.account_pending', lang)}), 403
 
         my_leads = request.args.get('my_leads', '1').strip() == '1'
         month = request.args.get('month', '').strip()
@@ -387,7 +391,7 @@ def get_leads_stats():
         return jsonify({'status': 'success', 'stats': stats, 'month': month})
     except Exception as e:
         logger.exception('Error en get_leads_stats')
-        return jsonify({'status': 'error', 'message': 'Error interno del servidor'}), 500
+        return jsonify({'status': 'error', 'message': t('prof.internal_error', lang)}), 500
     finally:
         if conn:
             conn.close()
@@ -399,13 +403,14 @@ def export_stats_csv():
     conn = None
     try:
         conn = models.get_db_connection()
+        lang = get_language()
         user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
         if not user:
-            return 'Acceso denegado', 403
+            return t('prof.access_denied', lang), 403
 
         professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
         if not professional or professional['status'] != 'approved':
-            return 'Cuenta pendiente de aprobación', 403
+            return t('prof.account_pending', lang), 403
 
         my_leads = request.args.get('my_leads', '1').strip() == '1'
         month = request.args.get('month', '').strip()
@@ -419,40 +424,40 @@ def export_stats_csv():
             writer = csv.writer(data)
 
             # Summary section
-            writer.writerow(['--- RESUMEN ---'])
-            writer.writerow(['Mes', stats.get('month', month)])
+            writer.writerow([t('prof.export_summary', lang)])
+            writer.writerow([t('prof.export_month', lang), stats.get('month', month)])
             writer.writerow(['Total Leads', stats['total']])
-            writer.writerow(['Presupuesto Promedio', f"${stats['avg_budget']:,.0f}"])
-            writer.writerow(['Vs. Mes Anterior', stats['previous_month']['total']])
-            writer.writerow(['Zonas Activas', stats['active_zones']])
+            writer.writerow([t('prof.export_avg_budget', lang), f"${stats['avg_budget']:,.0f}"])
+            writer.writerow([t('prof.export_vs_prev_month', lang), stats['previous_month']['total']])
+            writer.writerow([t('prof.export_active_zones', lang), stats['active_zones']])
             writer.writerow([])
 
             # Property type section
-            writer.writerow(['--- TIPO DE PROPIEDAD ---'])
-            writer.writerow(['Tipo', 'Cantidad'])
+            writer.writerow([t('prof.export_property_type_section', lang)])
+            writer.writerow([t('prof.export_type', lang), t('prof.export_count', lang)])
             for pt in stats['by_property_type']:
                 writer.writerow([pt['label'], pt['value']])
             writer.writerow([])
 
             # Zone section
-            writer.writerow(['--- ZONAS (Top 10) ---'])
-            writer.writerow(['Zona', 'Cantidad'])
+            writer.writerow([t('prof.export_zones_section', lang)])
+            writer.writerow([t('prof.export_zone', lang), t('prof.export_count', lang)])
             for z in stats['by_zone']:
                 writer.writerow([z['label'], z['value']])
             writer.writerow([])
 
             # Operation type section
-            writer.writerow(['--- TIPO DE OPERACIÓN ---'])
-            writer.writerow(['Operación', 'Cantidad'])
+            writer.writerow([t('prof.export_operation_type_section', lang)])
+            writer.writerow([t('prof.export_operation', lang), t('prof.export_count', lang)])
             for ot in stats['by_operation_type']:
                 writer.writerow([ot['label'], ot['value']])
             writer.writerow([])
 
             # Trend section
-            writer.writerow(['--- TENDENCIA MENSUAL ---'])
-            writer.writerow(['Mes', 'Leads'])
-            for t in stats['trend']:
-                writer.writerow([t['label'], t['value']])
+            writer.writerow([t('prof.export_trend_section', lang)])
+            writer.writerow([t('prof.export_month', lang), 'Leads'])
+            for trend in stats['trend']:
+                writer.writerow([trend['label'], trend['value']])
 
             yield data.getvalue()
             data.seek(0)
@@ -466,7 +471,7 @@ def export_stats_csv():
         )
     except Exception as e:
         logger.exception('Error en export_stats_csv')
-        return 'Error interno del servidor', 500
+        return t('prof.internal_error', lang), 500
     finally:
         if conn:
             conn.close()
@@ -509,13 +514,14 @@ def export_stats_xlsx():
     conn = None
     try:
         conn = models.get_db_connection()
+        lang = get_language()
         user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
         if not user:
-            return 'Acceso denegado', 403
+            return t('prof.access_denied', lang), 403
 
         professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
         if not professional or professional['status'] != 'approved':
-            return 'Cuenta pendiente de aprobación', 403
+            return t('prof.account_pending', lang), 403
 
         my_leads = request.args.get('my_leads', '1').strip() == '1'
         month = request.args.get('month', '').strip()
@@ -533,15 +539,15 @@ def export_stats_xlsx():
 
         # ─── Sheet 1: Resumen ───
         ws_resumen = wb.active
-        ws_resumen.title = 'Resumen'
+        ws_resumen.title = t('prof.export_summary_sheet', lang)
         resumen_data = [
-            ['Mes', stats.get('month', month)],
+            [t('prof.export_month', lang), stats.get('month', month)],
             ['Total Leads', stats['total']],
-            ['Presupuesto Promedio', stats['avg_budget']],
-            ['Vs. Mes Anterior', stats['previous_month']['total']],
-            ['Zonas Activas', stats['active_zones']],
+            [t('prof.export_avg_budget', lang), stats['avg_budget']],
+            [t('prof.export_vs_prev_month', lang), stats['previous_month']['total']],
+            [t('prof.export_active_zones', lang), stats['active_zones']],
         ]
-        for col, h in enumerate(['Métrica', 'Valor'], 1):
+        for col, h in enumerate([t('prof.export_metric', lang), t('prof.export_value', lang)], 1):
             cell = ws_resumen.cell(row=1, column=col, value=h)
         _style_header_row(ws_resumen, 2)
         ws_resumen.column_dimensions['A'].width = 28
@@ -558,13 +564,13 @@ def export_stats_xlsx():
 
         # Separator + note rows
         note_row = len(resumen_data) + 3
-        ws_resumen.cell(row=note_row, column=1, value='Generado por ArchEstate · The Private Ledger').font = Font(
+        ws_resumen.cell(row=note_row, column=1, value=t('prof.export_generated_by', lang)).font = Font(
             name='Manrope', size=8, italic=True, color='A68A64'
         )
 
         # ─── Sheet 2: Tipo de Propiedad ───
-        ws_pt = wb.create_sheet('Tipo de Propiedad')
-        for col, h in enumerate(['Tipo', 'Cantidad'], 1):
+        ws_pt = wb.create_sheet(t('prof.export_property_type_sheet', lang))
+        for col, h in enumerate([t('prof.export_type', lang), t('prof.export_count', lang)], 1):
             ws_pt.cell(row=1, column=col, value=h)
         _style_header_row(ws_pt, 2)
         ws_pt.column_dimensions['A'].width = 32
@@ -580,8 +586,8 @@ def export_stats_xlsx():
             _apply_data_border(ws_pt, row_idx, 2)
 
         # ─── Sheet 3: Zonas ───
-        ws_z = wb.create_sheet('Zonas')
-        for col, h in enumerate(['Zona', 'Cantidad'], 1):
+        ws_z = wb.create_sheet(t('prof.export_zones_sheet', lang))
+        for col, h in enumerate([t('prof.export_zone', lang), t('prof.export_count', lang)], 1):
             ws_z.cell(row=1, column=col, value=h)
         _style_header_row(ws_z, 2)
         ws_z.column_dimensions['A'].width = 34
@@ -597,8 +603,8 @@ def export_stats_xlsx():
             _apply_data_border(ws_z, row_idx, 2)
 
         # ─── Sheet 4: Tipo de Operación ───
-        ws_ot = wb.create_sheet('Tipo de Operación')
-        for col, h in enumerate(['Operación', 'Cantidad'], 1):
+        ws_ot = wb.create_sheet(t('prof.export_operation_type_sheet', lang))
+        for col, h in enumerate([t('prof.export_operation', lang), t('prof.export_count', lang)], 1):
             ws_ot.cell(row=1, column=col, value=h)
         _style_header_row(ws_ot, 2)
         ws_ot.column_dimensions['A'].width = 34
@@ -614,18 +620,18 @@ def export_stats_xlsx():
             _apply_data_border(ws_ot, row_idx, 2)
 
         # ─── Sheet 5: Tendencia Mensual ───
-        ws_t = wb.create_sheet('Tendencia Mensual')
-        for col, h in enumerate(['Mes', 'Leads'], 1):
+        ws_t = wb.create_sheet(t('prof.export_trend_sheet', lang))
+        for col, h in enumerate([t('prof.export_month', lang), 'Leads'], 1):
             ws_t.cell(row=1, column=col, value=h)
         _style_header_row(ws_t, 2)
         ws_t.column_dimensions['A'].width = 28
         ws_t.column_dimensions['B'].width = 14
         ws_t.auto_filter.ref = f'A1:B{len(stats["trend"]) + 1}'
-        for row_idx, t in enumerate(stats['trend'], 2):
-            c1 = ws_t.cell(row=row_idx, column=1, value=t['label'])
+        for row_idx, trend in enumerate(stats['trend'], 2):
+            c1 = ws_t.cell(row=row_idx, column=1, value=trend['label'])
             c1.font = label_font
             c1.alignment = Alignment(horizontal='left', vertical='center')
-            c2 = ws_t.cell(row=row_idx, column=2, value=t['value'])
+            c2 = ws_t.cell(row=row_idx, column=2, value=trend['value'])
             c2.font = data_font
             c2.alignment = Alignment(horizontal='center', vertical='center')
             _apply_data_border(ws_t, row_idx, 2)
@@ -643,7 +649,7 @@ def export_stats_xlsx():
         )
     except Exception as e:
         logger.exception('Error en export_stats_xlsx')
-        return 'Error interno del servidor', 500
+        return t('prof.internal_error', lang), 500
     finally:
         if conn:
             conn.close()
@@ -653,8 +659,9 @@ def export_stats_xlsx():
 @professional_required
 def invalidate_filter_cache():
     from app_setup import filter_cache
+    lang = get_language()
     filter_cache.invalidate()
-    return jsonify({"status": "success", "message": "Caché invalidada"})
+    return jsonify({"status": "success", "message": t('prof.cache_invalidated', lang)})
 
 
 @professional_bp.route('/api/leads/export')
@@ -664,13 +671,14 @@ def export_leads_csv():
     leads = []
     try:
         conn = models.get_db_connection()
+        lang = get_language()
         user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
         if not user:
-            return "Acceso denegado", 403
+            return t('prof.access_denied', lang), 403
 
         professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
         if not professional or professional['status'] != 'approved':
-            return "Cuenta pendiente de aprobación", 403
+            return t('prof.account_pending', lang), 403
 
         leads = conn.execute('SELECT id, type, zone, budget, currency, timestamp FROM leads ORDER BY timestamp DESC').fetchall()
     finally:
@@ -680,7 +688,7 @@ def export_leads_csv():
     def generate():
         data = StringIO()
         writer = csv.writer(data)
-        writer.writerow(['ID', 'Tipo Operacion', 'Zona', 'Presupuesto', 'Moneda', 'Fecha Registro (Argentina)'])
+        writer.writerow(t('prof.export_csv_headers', lang))
         yield data.getvalue()
         data.seek(0)
         data.truncate(0)
@@ -709,13 +717,14 @@ def export_leads_xlsx():
     leads = []
     try:
         conn = models.get_db_connection()
+        lang = get_language()
         user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
         if not user:
-            return "Acceso denegado", 403
+            return t('prof.access_denied', lang), 403
 
         professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
         if not professional or professional['status'] != 'approved':
-            return "Cuenta pendiente de aprobación", 403
+            return t('prof.account_pending', lang), 403
 
         leads = conn.execute('SELECT id, type, zone, budget, currency, timestamp FROM leads ORDER BY timestamp DESC').fetchall()
     finally:
@@ -724,9 +733,9 @@ def export_leads_xlsx():
 
     wb = openpyxl.Workbook()
     ws = wb.active
-    ws.title = "Leads"
+    ws.title = t('prof.export_leads_sheet', lang)
 
-    headers = ['ID', 'Tipo Operacion', 'Zona', 'Presupuesto', 'Moneda', 'Fecha Registro']
+    headers = t('prof.export_leads_headers', lang)
     for col_num, header in enumerate(headers, 1):
         ws.cell(row=1, column=col_num, value=header)
     _style_header_row(ws, len(headers))
@@ -771,13 +780,14 @@ def download_lead_pdf(lead_id):
     conn = None
     try:
         conn = models.get_db_connection()
+        lang = get_language()
         user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
         if not user:
-            return "Acceso denegado", 403
+            return t('prof.access_denied', lang), 403
 
         professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
         if not professional or professional['status'] != 'approved':
-            return "Cuenta pendiente de aprobación", 403
+            return t('prof.account_pending', lang), 403
 
         lead = conn.execute('SELECT * FROM leads WHERE id = ?', (lead_id,)).fetchone()
     finally:
@@ -785,7 +795,7 @@ def download_lead_pdf(lead_id):
             conn.close()
 
     if not lead:
-        return jsonify({"status": "error", "message": "Lead no encontrado"}), 404
+        return jsonify({"status": "error", "message": t('prof.lead_not_found', lang)}), 404
 
     lead = dict(lead)
 
@@ -830,12 +840,12 @@ def download_lead_pdf(lead_id):
 
     pdf.set_font('Times', 'BI', 20)
     pdf.set_text_color(*midnight)
-    pdf.cell(0, 15, 'ArchEstate - Detalle de Lead', ln=True, align='C')
+    pdf.cell(0, 15, t('prof.pdf_title', lang), ln=True, align='C')
     pdf.ln(5)
 
     pdf.set_font('Helvetica', '', 10)
     pdf.set_text_color(100, 100, 100)
-    pdf.cell(0, 8, f'Lead #{lead["id"]} - Información completa enviada por el cliente', ln=True, align='C')
+    pdf.cell(0, 8, t('prof.pdf_subtitle', lang, lead_id=lead['id']), ln=True, align='C')
     pdf.ln(10)
 
     def section_header(title):
@@ -847,79 +857,79 @@ def download_lead_pdf(lead_id):
         pdf.set_font('Helvetica', '', 10)
         pdf.ln(2)
 
-    section_header('Tipo de Operación')
+    section_header(t('prof.pdf_operation_type', lang))
     pdf.cell(0, 6, pdf_val(lead['type']), ln=True)
 
     prop_type = pdf_safe(lead.get('property_type', '')).lower()
     prop_type_label = {'departamento': 'Departamento', 'casa': 'Casa', 'duplex': 'Duplex',
                        'penthouse': 'Penthouse', 'local_comercial': 'Local Comercial'}.get(prop_type, prop_type)
-    section_header('Tipo de Propiedad')
-    pdf.cell(0, 6, pdf_val(prop_type_label, 'No especificado'), ln=True)
+    section_header(t('prof.pdf_property_type', lang))
+    pdf.cell(0, 6, pdf_val(prop_type_label, t('prof.not_specified', lang)), ln=True)
 
-    section_header('Zona Geografica')
-    pdf.cell(0, 6, f"Zona: {pdf_val(lead['zone'])}", ln=True)
-    pdf.cell(0, 6, f"Provincia: {pdf_val(lead.get('province'), 'No especificada')}", ln=True)
+    section_header(t('prof.pdf_geographic_zone', lang))
+    pdf.cell(0, 6, f"{t('prof.pdf_zone_prefix', lang)}{pdf_val(lead['zone'])}", ln=True)
+    pdf.cell(0, 6, f"{t('prof.pdf_province_prefix', lang)}{pdf_val(lead.get('province'), t('prof.not_specified_fem', lang))}", ln=True)
 
-    section_header('Presupuesto')
+    section_header(t('prof.pdf_budget', lang))
     budget_symbol = 'USD' if lead['currency'] == 'USD' else 'EUR' if lead['currency'] == 'EUR' else '$'
     pdf.cell(0, 6, f"{budget_symbol} {pdf_val(lead['budget'])}", ln=True)
 
-    section_header('Estilo Arquitectónico')
-    pdf.cell(0, 6, pdf_val(lead.get('architectural_style'), 'No especificado'), ln=True)
+    section_header(t('prof.pdf_architectural_style', lang))
+    pdf.cell(0, 6, pdf_val(lead.get('architectural_style'), t('prof.not_specified', lang)), ln=True)
 
-    section_header('Contacto Directo')
+    section_header(t('prof.pdf_direct_contact', lang))
     pdf.cell(0, 6, f"Email: {pdf_val(lead['email'])}", ln=True)
     pdf.cell(0, 6, f"Telefono: {pdf_val(lead['phone'])}", ln=True)
 
-    section_header('Registrado')
+    section_header(t('prof.pdf_registered', lang))
     pdf.cell(0, 6, pdf_val(convert_to_argentina_time(lead['timestamp'])), ln=True)
     pdf.ln(5)
 
-    section_header('Especificaciones Tecnicas')
+    section_header(t('prof.pdf_tech_specs', lang))
 
     pdf.set_font('Helvetica', 'B', 10)
-    pdf.cell(60, 8, 'Ambientes:', border=1)
+    pdf.cell(60, 8, t('prof.pdf_rooms', lang), border=1)
     pdf.cell(0, 8, pdf_val(lead.get('ambientes')), ln=True, border=1)
 
-    pdf.cell(60, 8, 'Habitaciones:', border=1)
+    pdf.cell(60, 8, t('prof.pdf_bedrooms', lang), border=1)
     pdf.cell(0, 8, pdf_val(lead['bedrooms']), ln=True, border=1)
 
-    pdf.cell(60, 8, 'Baños:', border=1)
+    pdf.cell(60, 8, t('prof.pdf_bathrooms', lang), border=1)
     pdf.cell(0, 8, pdf_val(lead['bathrooms']), ln=True, border=1)
 
-    pdf.cell(60, 8, 'Estacionamiento:', border=1)
-    pdf.cell(0, 8, pdf_val(lead.get('parking'), 'No especificado'), ln=True, border=1)
+    pdf.cell(60, 8, t('prof.pdf_parking', lang), border=1)
+    pdf.cell(0, 8, pdf_val(lead.get('parking'), t('prof.not_specified', lang)), ln=True, border=1)
 
-    pdf.cell(60, 8, 'Orientación:', border=1)
-    pdf.cell(0, 8, pdf_val(lead.get('orientation'), 'No especificada'), ln=True, border=1)
+    pdf.cell(60, 8, t('prof.pdf_orientation', lang), border=1)
+    pdf.cell(0, 8, pdf_val(lead.get('orientation'), t('prof.not_specified_fem', lang)), ln=True, border=1)
 
     pdf.ln(2)
 
-    pdf.cell(60, 8, 'Metros Útiles:', border=1)
+    pdf.cell(60, 8, t('prof.pdf_usable_m2', lang), border=1)
     pdf.cell(0, 8, f"{pdf_val(lead.get('usable_m2'))} m2" if lead.get('usable_m2') else '-', ln=True, border=1)
 
-    pdf.cell(60, 8, 'Superficie Total:', border=1)
+    pdf.cell(60, 8, t('prof.pdf_total_area', lang), border=1)
     pdf.cell(0, 8, f"{pdf_val(lead.get('total_area'))} m2" if lead.get('total_area') else '-', ln=True, border=1)
 
-    pdf.cell(60, 8, 'Superficie de Terreno:', border=1)
+    pdf.cell(60, 8, t('prof.pdf_land_area', lang), border=1)
     pdf.cell(0, 8, f"{pdf_val(lead.get('land_area'))} m2" if lead.get('land_area') else '-', ln=True, border=1)
 
-    pdf.cell(60, 8, 'Superficie Construida:', border=1)
+    pdf.cell(60, 8, t('prof.pdf_built_area', lang), border=1)
     pdf.cell(0, 8, f"{pdf_val(lead.get('built_area'))} m2" if lead.get('built_area') else '-', ln=True, border=1)
 
     pdf.ln(5)
 
-    section_header('Estado y Antiguedad')
+    section_header(t('prof.pdf_condition_age', lang))
     pdf.set_font('Helvetica', 'B', 10)
-    pdf.cell(60, 8, 'Estado:', border=1)
-    pdf.cell(0, 8, pdf_val(lead.get('property_condition'), 'No especificado'), ln=True, border=1)
+    pdf.cell(60, 8, t('prof.pdf_condition', lang), border=1)
+    pdf.cell(0, 8, pdf_val(lead.get('property_condition'), t('prof.not_specified', lang)), ln=True, border=1)
 
-    pdf.cell(60, 8, 'Antiguedad:', border=1)
-    pdf.cell(0, 8, pdf_val(lead.get('property_age'), 'No especificada'), ln=True, border=1)
+    pdf.cell(60, 8, t('prof.pdf_age', lang), border=1)
+    pdf.cell(0, 8, pdf_val(lead.get('property_age'), t('prof.not_specified_fem', lang)), ln=True, border=1)
 
     pdf.ln(5)
 
-    section_header('Extras y Comodidades')
+    section_header(t('prof.pdf_amenities', lang))
     amenities = lead.get('amenities', '')
     if amenities and str(amenities).strip():
         for amenity in pdf_safe(amenities).split(','):
@@ -927,13 +937,13 @@ def download_lead_pdf(lead_id):
             if stripped:
                 pdf.cell(0, 6, f"- {stripped}", ln=True)
     else:
-        pdf.cell(0, 6, 'No especificadas', ln=True)
+        pdf.cell(0, 6, t('prof.not_specified_fem_pl', lang), ln=True)
 
-    section_header('Detalles de la Propiedad')
+    section_header(t('prof.pdf_property_details', lang))
     if prop_type == 'departamento':
-        pdf.cell(0, 6, f"Piso / Bloque: {pdf_val(lead.get('floor_block'), 'No especificado')}", ln=True)
-    pdf.cell(0, 6, f"Piscina: {pdf_val(lead.get('pool'), 'No especificada')}", ln=True)
-    pdf.cell(0, 6, f"Ascensor: {pdf_val(lead.get('elevator'), 'No especificado')}", ln=True)
+        pdf.cell(0, 6, f"{t('prof.pdf_floor_block', lang)}{pdf_val(lead.get('floor_block'), t('prof.not_specified', lang))}", ln=True)
+    pdf.cell(0, 6, f"{t('prof.pdf_pool', lang)}{pdf_val(lead.get('pool'), t('prof.not_specified_fem', lang))}", ln=True)
+    pdf.cell(0, 6, f"{t('prof.pdf_elevator', lang)}{pdf_val(lead.get('elevator'), t('prof.not_specified', lang))}", ln=True)
 
     pdf_output = pdf.output(dest='S')
     if isinstance(pdf_output, str):
@@ -958,27 +968,28 @@ def toggle_lead_status(lead_id):
     conn = None
     try:
         conn = models.get_db_connection()
+        lang = get_language()
 
         user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
         if not user:
-            return jsonify({'error': 'Acceso denegado'}), 403
+            return jsonify({'error': t('prof.access_denied', lang)}), 403
 
         professional = conn.execute(
             'SELECT status FROM professionals WHERE name = ?',
             (user['username'],)
         ).fetchone()
         if not professional or professional['status'] != 'approved':
-            return jsonify({'error': 'Cuenta pendiente de aprobacion'}), 403
+            return jsonify({'error': t('prof.account_pending', lang)}), 403
 
         lead = conn.execute('SELECT id FROM leads WHERE id = ?', (lead_id,)).fetchone()
         if not lead:
-            return jsonify({'error': 'Lead no encontrado'}), 404
+            return jsonify({'error': t('prof.lead_not_found', lang)}), 404
 
         data = request.get_json()
         status_type = data.get('status')
 
         if status_type not in ('seen', 'contacted'):
-            return jsonify({'error': 'Tipo de estado invalido'}), 400
+            return jsonify({'error': t('prof.invalid_status_type', lang)}), 400
 
         professional_id = session['user_id']
         argentina_tz = pytz.timezone('America/Argentina/Buenos_Aires')
@@ -1028,7 +1039,7 @@ def toggle_lead_status(lead_id):
         })
     except Exception as e:
         logger.exception('Error en toggle_lead_status')
-        return jsonify({'error': 'Error interno'}), 500
+        return jsonify({'error': t('prof.internal_error_short', lang)}), 500
     finally:
         if conn:
             conn.close()
@@ -1040,21 +1051,22 @@ def report_lead(lead_id):
     conn = None
     try:
         conn = models.get_db_connection()
+        lang = get_language()
 
         user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
         if not user:
-            return jsonify({'error': 'Acceso denegado'}), 403
+            return jsonify({'error': t('prof.access_denied', lang)}), 403
 
         professional = conn.execute(
             'SELECT status FROM professionals WHERE name = ?',
             (user['username'],)
         ).fetchone()
         if not professional or professional['status'] != 'approved':
-            return jsonify({'error': 'Cuenta pendiente de aprobacion'}), 403
+            return jsonify({'error': t('prof.account_pending', lang)}), 403
 
         lead = conn.execute('SELECT id, type, phone FROM leads WHERE id = ?', (lead_id,)).fetchone()
         if not lead:
-            return jsonify({'error': 'Lead no encontrado'}), 404
+            return jsonify({'error': t('prof.lead_not_found', lang)}), 404
 
         data = request.get_json() or {}
         notes = utils.safe_text(data.get('notes', ''))[:500]
@@ -1064,7 +1076,7 @@ def report_lead(lead_id):
             (lead_id, session['user_id'], 'pending')
         ).fetchone()
         if existing:
-            return jsonify({'error': 'Ya reportaste este pedido anteriormente'}), 400
+            return jsonify({'error': t('prof.already_reported', lang)}), 400
 
         conn.execute(
             'INSERT INTO lead_reports (lead_id, reported_by, reason, notes, status) VALUES (?, ?, ?, ?, ?)',
@@ -1080,11 +1092,11 @@ def report_lead(lead_id):
 
         return jsonify({
             'success': True,
-            'message': 'Pedido reportado correctamente'
+            'message': t('prof.report_submitted', lang)
         })
     except Exception as e:
         logger.exception('Error en report_lead')
-        return jsonify({'error': 'Error interno'}), 500
+        return jsonify({'error': t('prof.internal_error_short', lang)}), 500
     finally:
         if conn:
             conn.close()
@@ -1096,10 +1108,11 @@ def get_doc_status():
     conn = None
     try:
         conn = models.get_db_connection()
+        lang = get_language()
         user = conn.execute('SELECT doc_path FROM users WHERE id = ?', (session['user_id'],)).fetchone()
 
         if not user:
-            return jsonify({"error": "Usuario no encontrado"}), 404
+            return jsonify({"error": t('prof.user_not_found', lang)}), 404
 
         doc_path = user['doc_path']
         has_doc = bool(doc_path)
@@ -1116,7 +1129,7 @@ def get_doc_status():
         })
     except Exception as e:
         logger.exception('Error en get_doc_status')
-        return jsonify({"error": "Error interno"}), 500
+        return jsonify({"error": t('prof.internal_error_short', lang)}), 500
     finally:
         if conn:
             conn.close()
@@ -1130,17 +1143,18 @@ MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 @professional_required
 def upload_professional_doc():
     from flask import current_app
+    lang = get_language()
 
     if 'document' not in request.files:
-        return jsonify({"error": "No se incluyó ningún archivo en la solicitud."}), 400
+        return jsonify({"error": t('prof.no_file_included', lang)}), 400
 
     file = request.files['document']
     if not file or file.filename == '':
-        return jsonify({"error": "No se seleccionó ningún archivo."}), 400
+        return jsonify({"error": t('prof.no_file_selected', lang)}), 400
 
     if not allowed_file(file.filename):
         return jsonify({
-            "error": "Tipo de archivo no permitido. Usá PDF, JPG o PNG."
+            "error": t('prof.invalid_file_type', lang)
         }), 415
 
     mime_valid, detected_ext, mime_error = utils.validate_mime_type(file, file.filename)
@@ -1151,7 +1165,7 @@ def upload_professional_doc():
     size = file.tell()
     file.seek(0)
     if size > config.MAX_UPLOAD_SIZE:
-        return jsonify({"error": "El archivo supera el límite de 10 MB."}), 413
+        return jsonify({"error": t('prof.file_too_large', lang)}), 413
 
     original_name = secure_filename(file.filename)
     filename = f"user_{session['user_id']}_{original_name}"
@@ -1183,7 +1197,7 @@ def upload_professional_doc():
 
     return jsonify({
         "status": "success",
-        "message": "Documento subido correctamente.",
+        "message": t('prof.doc_uploaded', lang),
         "filename": filename,
         "display_name": original_name,
     })
@@ -1197,17 +1211,18 @@ def download_own_doc():
     conn = None
     try:
         conn = models.get_db_connection()
+        lang = get_language()
         user = conn.execute('SELECT doc_path FROM users WHERE id = ?', (session['user_id'],)).fetchone()
 
         if not user or not user['doc_path']:
-            flash('No has subido ningún documento aún.', 'error')
+            flash(t('prof.no_doc_yet', lang), 'error')
             return redirect(url_for('professional.professional_view'))
 
         directory = current_app.config['UPLOAD_FOLDER']
         filename = user['doc_path']
 
         if not os.path.exists(os.path.join(directory, filename)):
-            flash(f'Error: El archivo {filename} no existe en el servidor.', 'error')
+            flash(t('prof.file_not_found_server', lang, filename=filename), 'error')
             return redirect(url_for('professional.professional_view'))
 
         from flask import send_from_directory
@@ -1215,7 +1230,7 @@ def download_own_doc():
 
     except Exception as e:
         logger.exception('Error en download_professional_doc')
-        flash('Error interno del servidor.', 'error')
+        flash(t('prof.internal_server_error', lang), 'error')
         return redirect(url_for('professional.professional_view'))
     finally:
         if conn:
