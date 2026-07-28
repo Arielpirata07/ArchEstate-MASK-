@@ -2,6 +2,37 @@
  * LOGICA PRINCIPAL - ARCHESTATE
  */
 
+function getCsrfToken() {
+    var meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? meta.getAttribute('content') : '';
+}
+
+function csrfSafeMethod(method) {
+    return /^(GET|HEAD|OPTIONS|TRACE)$/.test(method);
+}
+
+(function() {
+    var origFetch = window.fetch;
+    window.fetch = function(input, init) {
+        init = init || {};
+        if (!csrfSafeMethod((init.method || 'GET').toUpperCase())) {
+            var token = getCsrfToken();
+            if (token) {
+                var headers = init.headers || {};
+                if (headers instanceof Headers) {
+                    if (!headers.has('X-CSRFToken')) {
+                        headers.set('X-CSRFToken', token);
+                    }
+                } else {
+                    headers['X-CSRFToken'] = token;
+                    init.headers = headers;
+                }
+            }
+        }
+        return origFetch.call(this, input, init);
+    };
+})();
+
 function escapeHtml(str) {
     if (str === null || str === undefined) return '';
     const div = document.createElement('div');

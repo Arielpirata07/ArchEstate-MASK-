@@ -13,6 +13,9 @@ if config.SENTRY_DSN:
         environment='staging' if config.STAGING else 'production',
     )
 
+from flask_wtf.csrf import CSRFProtect, generate_csrf
+csrf = CSRFProtect()
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
@@ -36,6 +39,13 @@ def create_app():
 
     from middleware import register_middleware
     register_middleware(app)
+
+    csrf.init_app(app)
+    app.config['WTF_CSRF_EXEMPT_LIST'] = ['whatsapp.whatsapp_webhook']
+
+    @app.context_processor
+    def inject_csrf_token():
+        return {'csrf_token': generate_csrf}
 
     from errors import register_error_handlers
     register_error_handlers(app)

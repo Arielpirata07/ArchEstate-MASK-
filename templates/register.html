@@ -21,6 +21,7 @@
             <p id="register-form-desc" class="visually-hidden">
                 {{ t('auth.all_fields_required') }}
             </p>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             <div class="field space-y-2">
                 <label for="role" class="block text-[10px] uppercase tracking-widest font-bold text-gold">
