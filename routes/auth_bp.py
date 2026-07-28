@@ -247,3 +247,68 @@ def api_check_username():
 
     _time.sleep(random.uniform(0.02, 0.08))
     return jsonify(result)
+
+
+@auth_bp.route('/forgot-password', methods=['GET', 'POST'])
+@rate_limit.check_rate_limit(limit=20, window=60)
+def forgot_password():
+    lang = get_language()
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip().lower()
+        if not email:
+            flash(t('auth.forgot_email_required', lang), 'error')
+            return redirect(url_for('auth.forgot_password'))
+
+        import secrets
+        from datetime import datetime, timedelta
+
+        user = models.get_user_by_email(email)
+        if user:
+            token = secrets.token_urlsafe(32)
+            expires_at = (datetime.utcnow() + timedelta(hours=1)).isoformat()
+            models.create_password_reset_token(user['id'], token, expires_at)
+
+            from flask import render_template
+            from services.email import get_email_sender
+            reset_url = f"{config.SITE_URL}{url_for('auth.reset_password', token=token)}"
+            html_body = render_template('email/password_reset.html', reset_url=reset_url, user=user)
+            get_email_sender().send(to=user['email'], subject=t('auth.forgot_email_subject', lang), html_body=html_body)
+
+        flash(t('auth.forgot_email_sent', lang), 'success')
+        return redirect(url_for('auth.login'))
+
+    return render_template('forgot_password.html')
+
+
+@auth_bp.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    lang = get_language()
+    user_id = models.validate_password_reset_token(token)
+    if not user_id:
+        flash(t('auth.reset_invalid_token', lang), 'error')
+        return redirect(url_for('auth.forgot_password'))
+
+    if request.method == 'POST':
+        password = request.form.get('password', '').strip()
+        confirm = request.form.get('confirm_password', '').strip()
+
+        if not password or len(password) < 6:
+            flash(t('auth.password_min_length', lang), 'error')
+            return redirect(url_for('auth.reset_password', token=token))
+
+        if not re.search(r'[A-Za-z]', password) or not re.search(r'[0-9]', password):
+            flash(t('auth.password_format', lang), 'error')
+            return redirect(url_for('auth.reset_password', token=token))
+
+        if password != confirm:
+            flash(t('auth.reset_password_mismatch', lang), 'error')
+            return redirect(url_for('auth.reset_password', token=token))
+
+        new_hash = generate_password_hash(password)
+        models.update_user_password(user_id, new_hash)
+        models.mark_password_reset_token_used(token)
+
+        flash(t('auth.reset_success', lang), 'success')
+        return redirect(url_for('auth.login'))
+
+    return render_template('reset_password.html', token=token)

@@ -132,6 +132,8 @@ def init_db(app):
         current_ver = row[0] if row and row[0] else 0
         if current_ver < 1:
             cursor.execute('INSERT INTO schema_version (version) VALUES (1)')
+        if current_ver < 2:
+            cursor.execute('INSERT INTO schema_version (version) VALUES (2)')
 
         cursor.execute('PRAGMA table_info(users)')
         user_columns = [row[1] for row in cursor.fetchall()]
@@ -422,6 +424,19 @@ def init_db(app):
         ''')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, is_read)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_notifications_created ON notifications(created_at)')
+
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS password_reset_tokens (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                token TEXT NOT NULL UNIQUE,
+                expires_at DATETIME NOT NULL,
+                used INTEGER NOT NULL DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_password_reset_token ON password_reset_tokens(token)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_password_reset_expires ON password_reset_tokens(expires_at)')
 
         cursor.execute('''
             SELECT id, phone FROM users

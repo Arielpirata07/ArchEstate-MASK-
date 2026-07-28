@@ -769,3 +769,66 @@ def delete_form_option(option_id):
         return True
     finally:
         conn.close()
+
+
+def get_user_by_email(email):
+    conn = get_db_connection()
+    try:
+        user = conn.execute('SELECT id, username, email, hash, role, is_active FROM users WHERE email = ?', (email,)).fetchone()
+        return dict(user) if user else None
+    finally:
+        conn.close()
+
+
+def create_password_reset_token(user_id, token, expires_at):
+    conn = get_db_connection()
+    try:
+        conn.execute(
+            'INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES (?, ?, ?)',
+            (user_id, token, expires_at)
+        )
+        conn.commit()
+        return True
+    except Exception:
+        logger.exception('Error al crear token de recuperación')
+        return False
+    finally:
+        conn.close()
+
+
+def validate_password_reset_token(token):
+    conn = get_db_connection()
+    try:
+        row = conn.execute(
+            'SELECT id, user_id, expires_at, used FROM password_reset_tokens WHERE token = ?',
+            (token,)
+        ).fetchone()
+        if not row:
+            return None
+        if row['used']:
+            return None
+        from datetime import datetime
+        expires = datetime.fromisoformat(row['expires_at'])
+        if datetime.utcnow() > expires:
+            return None
+        return row['user_id']
+    finally:
+        conn.close()
+
+
+def mark_password_reset_token_used(token):
+    conn = get_db_connection()
+    try:
+        conn.execute('UPDATE password_reset_tokens SET used = 1 WHERE token = ?', (token,))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def update_user_password(user_id, new_hash):
+    conn = get_db_connection()
+    try:
+        conn.execute('UPDATE users SET hash = ? WHERE id = ?', (new_hash, user_id))
+        conn.commit()
+    finally:
+        conn.close()

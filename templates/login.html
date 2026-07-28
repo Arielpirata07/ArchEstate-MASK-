@@ -48,7 +48,7 @@
                             <label for="password" class="block text-[10px] uppercase tracking-widest font-bold text-gold">
                             {{ t('auth.password') }}
                         </label>
-                        <a href="#" class="text-[10px] font-bold text-midnight/60 dark:text-white/40 hover:text-gold transition-colors" aria-label="{{ t('auth.forgot_password') }}">
+                        <a href="{{ url_for('auth.forgot_password') }}" class="text-[10px] font-bold text-midnight/60 dark:text-white/40 hover:text-gold transition-colors" aria-label="{{ t('auth.forgot_password') }}">
                             {{ t('auth.forgot_password') }}
                         </a>
                     </div>
