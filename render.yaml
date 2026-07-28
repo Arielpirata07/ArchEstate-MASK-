@@ -41,3 +41,40 @@ services:
         sync: false
       - key: PREFER_SECURE_COOKIES
         value: "true"
+      - key: SENTRY_DSN
+        sync: false
+      - key: BACKUP_S3_BUCKET
+        sync: false
+      - key: BACKUP_S3_ACCESS_KEY
+        sync: false
+      - key: BACKUP_S3_SECRET_KEY
+        sync: false
+
+  - type: web
+    name: archestate-staging
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn wsgi:app --workers 2 --worker-class sync --timeout 120 --access-logfile - --error-logfile -
+    envVars:
+      - key: SECRET_KEY
+        sync: false
+      - key: SITE_URL
+        value: "https://archestate-staging.onrender.com"
+      - key: TWILIO_SIMULATE
+        value: "true"
+      - key: PREFER_SECURE_COOKIES
+        value: "false"
+      - key: STAGING
+        value: "true"
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      - key: SENTRY_DSN
+        sync: false

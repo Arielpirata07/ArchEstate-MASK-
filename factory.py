@@ -5,6 +5,14 @@ from flask import Flask, jsonify
 
 import config
 
+if config.SENTRY_DSN:
+    import sentry_sdk
+    sentry_sdk.init(
+        dsn=config.SENTRY_DSN,
+        traces_sample_rate=0.1,
+        environment='staging' if config.STAGING else 'production',
+    )
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',

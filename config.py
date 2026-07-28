@@ -52,3 +52,12 @@ SMTP_PORT = int(os.environ.get('SMTP_PORT', '587'))
 SMTP_USER = os.environ.get('SMTP_USER', '')
 SMTP_PASS = os.environ.get('SMTP_PASS', '')
 SMTP_FROM = os.environ.get('SMTP_FROM', '')
+
+SENTRY_DSN = os.environ.get('SENTRY_DSN', '')
+
+BACKUP_S3_BUCKET = os.environ.get('BACKUP_S3_BUCKET', '')
+BACKUP_S3_ACCESS_KEY = os.environ.get('BACKUP_S3_ACCESS_KEY', '')
+BACKUP_S3_SECRET_KEY = os.environ.get('BACKUP_S3_SECRET_KEY', '')
+BACKUP_S3_REGION = os.environ.get('BACKUP_S3_REGION', 'us-east-1')
+
+STAGING = os.environ.get('STAGING', 'false').lower() == 'true'
