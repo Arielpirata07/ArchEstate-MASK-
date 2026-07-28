@@ -108,6 +108,9 @@ def get_leads_api():
         sort_by = request.args.get('sort', 'timestamp')
         sort_order = request.args.get('order', 'desc')
         time_range = request.args.get('time_range', '').strip()
+        page = max(1, int(request.args.get('page', '1')))
+        per_page = max(5, min(100, int(request.args.get('per_page', '25'))))
+        offset = (page - 1) * per_page
 
         BUDGET_RANGES = {
             'hasta_200k': (0, 200000),
@@ -184,7 +187,11 @@ def get_leads_api():
             except ValueError:
                 pass
 
-        query += f' ORDER BY {sort_by} {order}, id DESC'
+        count_query = f'SELECT COUNT(*) as total FROM ({query})'
+        total = conn.execute(count_query, params).fetchone()['total']
+
+        query += f' ORDER BY {sort_by} {order}, id DESC LIMIT ? OFFSET ?'
+        params.extend([per_page, offset])
 
         leads = conn.execute(query, params).fetchall()
 
@@ -218,10 +225,15 @@ def get_leads_api():
             tracking = tracking_map.get(lead['id'], {'seen': False, 'contacted': False})
             lead['tracking'] = tracking
 
+        total_pages = max(1, (total + per_page - 1) // per_page)
+
         return jsonify({
             "success": True,
             "leads": leads_list,
-            "total": len(leads_list)
+            "total": total,
+            "page": page,
+            "per_page": per_page,
+            "total_pages": total_pages
         })
     except Exception as e:
         logger.exception('Error en get_leads_api')

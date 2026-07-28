@@ -13,6 +13,7 @@ import config
 import models
 import utils
 from i18n import t, get_language
+from services.assignment import auto_assign_lead
 from services.email import get_email_sender
 from services.verifier import get_default_router
 from utils import parse_budget
@@ -130,47 +131,62 @@ def notify_lead_created(lead_id: int) -> list:
         if conn:
             conn.close()
 
+    assigned_user_id = auto_assign_lead(lead_id)
+
     lead_data = _lead_to_dict(lead)
     notified = []
 
     pro_ids = [pro['id'] for pro in professionals]
     all_prefs = models.get_user_preferences_batch(pro_ids)
 
+    assigned_pro_name = None
+    if assigned_user_id:
+        ap = next((p for p in professionals if p['id'] == assigned_user_id), None)
+        if ap:
+            assigned_pro_name = ap['name']
+
     for pro in professionals:
+        is_assigned = assigned_user_id and pro['id'] == assigned_user_id
+
         prefs = all_prefs.get(pro['id'], {})
-        if not prefs.get('lead_alerts'):
+
+        if not prefs.get('lead_alerts') and not is_assigned:
             continue
 
-        # Geo filtering
-        pro_province = (pro['province'] or '').strip()
-        pro_zone = (pro['zone'] or '').strip()
-        if pro_province and lead_province and pro_province != lead_province:
-            continue
-        if pro_zone and lead_zone and pro_zone.lower() not in lead_zone.lower():
-            continue
+        # Geo/filter matching — skip for the assigned professional
+        if not is_assigned:
+            pro_province = (pro['province'] or '').strip()
+            pro_zone = (pro['zone'] or '').strip()
+            if pro_province and lead_province and pro_province != lead_province:
+                continue
+            if pro_zone and lead_zone and pro_zone.lower() not in lead_zone.lower():
+                continue
 
-        # Advanced filter matching from notification_filters
-        nf = _load_notification_filters(pro['id'])
-        filter_types = nf.get('types', [])
-        filter_property_types = nf.get('property_types', [])
-        if filter_types and lead_type not in filter_types:
-            continue
-        if filter_property_types and lead_property_type not in filter_property_types:
-            continue
+            nf = _load_notification_filters(pro['id'])
+            filter_types = nf.get('types', [])
+            filter_property_types = nf.get('property_types', [])
+            if filter_types and lead_type not in filter_types:
+                continue
+            if filter_property_types and lead_property_type not in filter_property_types:
+                continue
 
-        # Budget range matching
-        budget_min = prefs.get('budget_min') or 0
-        budget_max = prefs.get('budget_max') or 0
-        if budget_min > 0 and lead_budget < budget_min:
-            continue
-        if budget_max > 0 and lead_budget > budget_max:
-            continue
+            budget_min = prefs.get('budget_min') or 0
+            budget_max = prefs.get('budget_max') or 0
+            if budget_min > 0 and lead_budget < budget_min:
+                continue
+            if budget_max > 0 and lead_budget > budget_max:
+                continue
 
-        # Always create in-app notification
-        _create_notification(pro['id'], lead_id,
-            title=t('notif.new_lead_title', lang, type=lead["type"], zone=lead["zone"]),
-            body=t('notif.new_lead_body', lang, property_type=lead["property_type"], currency=lead.get("currency", ""), budget=lead.get("budget", ""))
-        )
+        if is_assigned:
+            _create_notification(pro['id'], lead_id,
+                title=t('notif.lead_assigned_title', lang, type=lead["type"], zone=lead["zone"]),
+                body=t('notif.lead_assigned_body', lang, property_type=lead["property_type"], currency=lead.get("currency", ""), budget=lead.get("budget", ""))
+            )
+        else:
+            _create_notification(pro['id'], lead_id,
+                title=t('notif.new_lead_title', lang, type=lead["type"], zone=lead["zone"]),
+                body=t('notif.new_lead_body', lang, property_type=lead["property_type"], currency=lead.get("currency", ""), budget=lead.get("budget", ""))
+            )
 
         # Route channel: email / whatsapp / ambos / auto
         channel = (prefs.get('preferred_channel') or 'email').strip().lower()
@@ -473,3 +489,19 @@ def _get_admin_users() -> list:
     finally:
         if conn:
             conn.close()
+
+
+def send_internal_notification(target_user_id: int, title: str, body: str = '', lead_id: int = 0) -> bool:
+    """Envía una notificación interna a un usuario específico."""
+    _create_notification(target_user_id, lead_id, title=title, body=body)
+    return True
+
+
+def notify_admins(title: str, body: str = '', lead_id: int = 0) -> list:
+    """Envía una notificación interna a todos los admins activos."""
+    admins = _get_admin_users()
+    notified = []
+    for admin in admins:
+        _create_notification(admin['id'], lead_id, title=title, body=body)
+        notified.append(admin['email'])
+    return notified

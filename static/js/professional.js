@@ -312,11 +312,12 @@ var currentFilters = {
     search: '', type: '', property_type: '', zone: '',
     min_budget: '', max_budget: '', budget_range: '',
     currency: '', sort: 'timestamp', order: 'desc', my_leads: true,
-    time_range: ''
+    time_range: '', page: 1
 };
 
 function setMyLeads(myLeads) {
     currentFilters.my_leads = myLeads;
+    currentFilters.page = 1;
     const btnMy = document.getElementById('btnMyLeads');
     const btnAll = document.getElementById('btnAllLeads');
     if (myLeads) {
@@ -468,12 +469,17 @@ async function loadLeads() {
     try {
         const params = new URLSearchParams();
         Object.entries(currentFilters).forEach(([k, v]) => {
+            if (k === 'page') return;
             if (k === 'my_leads') {
                 params.set('my_leads', v ? '1' : '0');
+            } else if (k === 'time_range' && v) {
+                params.set('time_range', v);
             } else if (v) {
                 params.set(k, v);
             }
         });
+        if (currentFilters.page > 1) params.set('page', String(currentFilters.page));
+        params.set('per_page', '25');
 
         const tbody = document.getElementById('leadsTableBody');
         tbody.innerHTML = `<tr><td colspan="8" class="p-8 text-center text-midnight/60">
@@ -489,6 +495,7 @@ async function loadLeads() {
             renderLeads(data.leads);
             renderLeadKpis(data.leads);
             document.getElementById('leadsCount').textContent = data.total;
+            renderPagination(data);
             renderActiveTags();
         } else {
             showLeadError(data.error || t('error.leads_load'));
@@ -496,6 +503,35 @@ async function loadLeads() {
     } catch (err) {
         showLeadError(t('error.connection'));
     }
+}
+
+function goToPage(page) {
+    currentFilters.page = page;
+    loadLeads();
+}
+
+function renderPagination(data) {
+    const container = document.getElementById('paginationControls');
+    if (!container) return;
+    const { page, total_pages, total } = data;
+    if (total_pages <= 1) {
+        container.innerHTML = '';
+        return;
+    }
+    let html = '<div class="flex items-center justify-center gap-2 mt-4">';
+    html += `<button onclick="goToPage(${page - 1})" class="px-3 py-1.5 text-[10px] font-bold rounded border border-midnight/20 ${page <= 1 ? 'text-midnight/20 cursor-not-allowed' : 'text-midnight/60 hover:border-gold hover:text-gold'}" ${page <= 1 ? 'disabled' : ''}>${t('pagination.prev') || '‹ Anterior'}</button>`;
+    for (let p = 1; p <= total_pages; p++) {
+        if (p === page) {
+            html += `<span class="px-3 py-1.5 text-[10px] font-bold rounded bg-gold text-white">${p}</span>`;
+        } else if (p === 1 || p === total_pages || Math.abs(p - page) <= 2) {
+            html += `<button onclick="goToPage(${p})" class="px-3 py-1.5 text-[10px] font-bold rounded text-midnight/60 hover:text-gold">${p}</button>`;
+        } else if (p === page - 3 || p === page + 3) {
+            html += `<span class="px-1 text-midnight/30">…</span>`;
+        }
+    }
+    html += `<button onclick="goToPage(${page + 1})" class="px-3 py-1.5 text-[10px] font-bold rounded border border-midnight/20 ${page >= total_pages ? 'text-midnight/20 cursor-not-allowed' : 'text-midnight/60 hover:border-gold hover:text-gold'}" ${page >= total_pages ? 'disabled' : ''}>${t('pagination.next') || 'Siguiente ›'}</button>`;
+    html += '</div>';
+    container.innerHTML = html;
 }
 
 function formatBudget(value) {
@@ -660,6 +696,7 @@ function applyFilters() {
     currentFilters.search = document.getElementById('searchInput').value.trim();
     currentFilters.type   = document.getElementById('typeFilter').value;
     currentFilters.zone   = document.getElementById('zoneFilter').value.trim();
+    currentFilters.page = 1;
     loadLeads();
 }
 
@@ -671,7 +708,7 @@ function clearFilters() {
         search: '', type: '', property_type: '', zone: '',
         min_budget: '', max_budget: '', budget_range: '',
         currency: '', sort: 'timestamp', order: 'desc',
-        my_leads: currentFilters.my_leads, time_range: ''
+        my_leads: currentFilters.my_leads, time_range: '', page: 1
     };
     setPropType('');
     setBudgetRange('');
@@ -683,11 +720,13 @@ function clearFilters() {
 
 function updateSort() {
     currentFilters.sort = document.getElementById('sortSelect').value;
+    currentFilters.page = 1;
     loadLeads();
 }
 
 function toggleSortOrder() {
     currentFilters.order = currentFilters.order === 'desc' ? 'asc' : 'desc';
+    currentFilters.page = 1;
     const sortBtn = document.getElementById('sortOrder');
     if (sortBtn) {
         sortBtn.innerHTML = '<i data-lucide="' + (currentFilters.order === 'desc' ? 'arrow-down' : 'arrow-up') + '" class="w-3 h-3"></i>';

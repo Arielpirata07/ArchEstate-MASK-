@@ -21,6 +21,7 @@ from utils import parse_budget
 import rate_limit
 from services.pdf_helpers import pdf_safe, pdf_val, _style_header_row, _apply_data_border
 from i18n import t, get_language
+from services.notifications import notify_admins
 
 
 logger = logging.getLogger(__name__)
@@ -613,6 +614,28 @@ def get_notification_channel():
         'channel': prefs.get('preferred_channel', 'email'),
         'whatsapp_notifications': prefs.get('whatsapp_notifications', 1),
     })
+
+
+@profile_bp.route('/api/profile/contact-admin', methods=['POST'])
+@decorators.login_required
+def contact_admin():
+    lang = get_language()
+    data = request.json or {}
+    subject = (data.get('subject') or '').strip()
+    message = (data.get('message') or '').strip()
+
+    if not subject or not message:
+        return jsonify({"error": t('profile.contact_admin_required', lang)}), 400
+
+    user = models.get_user_by_id(session['user_id'])
+    username = user['username'] if user else 'Desconocido'
+
+    title = t('profile.admin_msg_title', lang, user=username, subject=subject)
+    body = t('profile.admin_msg_body', lang, message=message)
+
+    notified = notify_admins(title=title, body=body)
+    utils.log_action('Contacto admin desde perfil', f'{username}: {subject}', session)
+    return jsonify({"status": "success", "message": t('profile.contact_admin_sent', lang)})
 
 
 # ============================================================

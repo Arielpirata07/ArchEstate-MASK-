@@ -17,6 +17,7 @@ import validators
 from decorators import admin_required, login_required
 from i18n import t, get_language
 from services.database import date_format_sql, now_sql
+from services.notifications import send_internal_notification
 from utils import convert_to_argentina_time
 
 admin_bp = Blueprint('admin', __name__, url_prefix='')
@@ -245,6 +246,15 @@ def admin_lead_detail(lead_id):
 
         lead_dict = dict(lead)
         lead_dict['timestamp'] = convert_to_argentina_time(lead_dict['timestamp'])
+
+        if lead_dict.get('assigned_to'):
+            assigned_user = conn.execute(
+                'SELECT u.username, p.name FROM users u LEFT JOIN professionals p ON p.user_id = u.id WHERE u.id = ?',
+                (lead_dict['assigned_to'],)
+            ).fetchone()
+            lead_dict['assigned_name'] = assigned_user['name'] if assigned_user else None
+        else:
+            lead_dict['assigned_name'] = None
 
         return jsonify({
             'success': True,
@@ -818,3 +828,40 @@ def admin_set_user_active(user_id):
     utils.log_action(action, log_detail, session)
 
     return jsonify({"status": "success", "message": message, "is_active": new_state})
+
+
+@admin_bp.route('/api/admin/send-notification', methods=['POST'])
+@rate_limit.check_rate_limit(limit=30, window=60)
+@admin_required
+def admin_send_notification():
+    lang = get_language()
+    data = request.json or {}
+    target_user_id = data.get('user_id')
+    title = (data.get('title') or '').strip()
+    body = (data.get('body') or '').strip()
+    broadcast = data.get('broadcast', False)
+
+    if not title:
+        return jsonify({"error": t('admin.notification_title_required', lang)}), 400
+
+    if broadcast:
+        conn = None
+        try:
+            conn = models.get_db_connection()
+            professionals = conn.execute(
+                'SELECT u.id FROM professionals p JOIN users u ON p.user_id = u.id WHERE p.status = ? AND u.is_active = 1',
+                ('approved',)
+            ).fetchall()
+            for pro in professionals:
+                send_internal_notification(pro['id'], title, body)
+            utils.log_action('Notificacion masiva', f'Titulo: {title}', session)
+            return jsonify({"status": "success", "message": t('admin.notification_sent_all', lang, count=len(professionals))})
+        finally:
+            if conn:
+                conn.close()
+    elif target_user_id:
+        send_internal_notification(target_user_id, title, body)
+        utils.log_action('Notificacion individual', f'Usuario #{target_user_id} - Titulo: {title}', session)
+        return jsonify({"status": "success", "message": t('admin.notification_sent', lang)})
+    else:
+        return jsonify({"error": t('admin.notification_target_required', lang)}), 400

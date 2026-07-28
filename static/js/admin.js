@@ -712,6 +712,10 @@ function renderProfessionals(pros) {
                 <td class="px-4 py-3 text-right">
                     <div class="flex justify-end items-center gap-2 flex-wrap">
                         ${approvalActions}
+                        <button onclick="openNotifyModal('${pro.id}', '${escapeHtml(pro.name)}')"
+                            class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-blue-100 transition-colors">
+                            <i data-lucide="bell" class="w-3 h-3"></i> ${t('admin.send_notification_to')}
+                        </button>
                         <span class="text-midnight/10 select-none">|</span>
                         ${accountBtn}
                     </div>
@@ -879,6 +883,69 @@ document.addEventListener('keydown', e => {
         closeLeadDetailModal();
     }
 });
+
+// ---- Notificaciones a profesionales ----
+let notifyTargetId = null;
+
+function openNotifyModal(proId, proName) {
+    notifyTargetId = proId;
+    document.getElementById('notifyModalProName').textContent = proName;
+    document.getElementById('notifySubject').value = '';
+    document.getElementById('notifyMessage').value = '';
+    document.getElementById('notifyModalError').classList.add('hidden');
+    document.getElementById('notifyModal').classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => document.getElementById('notifySubject').focus(), 100);
+}
+
+function closeNotifyModal() {
+    document.getElementById('notifyModal').classList.add('hidden');
+    document.body.style.overflow = '';
+    notifyTargetId = null;
+}
+
+async function confirmNotify() {
+    if (!notifyTargetId) return;
+    const btn = document.getElementById('confirmNotifyBtn');
+    const errEl = document.getElementById('notifyModalError');
+    const orig = btn.innerHTML;
+    errEl.classList.add('hidden');
+
+    const title = document.getElementById('notifySubject').value.trim();
+    const body = document.getElementById('notifyMessage').value.trim();
+
+    if (!title) {
+        errEl.textContent = t('admin.notification_title_required');
+        errEl.classList.remove('hidden');
+        return;
+    }
+
+    btn.innerHTML = '<div class="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div> ' + t('action.processing');
+    btn.disabled = true;
+
+    try {
+        const res = await fetch('/api/admin/send-notification', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: notifyTargetId, title: title, body: body })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+            closeNotifyModal();
+            if (typeof showToast === 'function') showToast(data.message);
+        } else {
+            errEl.textContent = data.error || t('error.process_request');
+            errEl.classList.remove('hidden');
+        }
+    } catch (err) {
+        errEl.textContent = t('error.connection_retry');
+        errEl.classList.remove('hidden');
+    } finally {
+        btn.innerHTML = orig;
+        btn.disabled = false;
+    }
+}
 
 async function confirmDeactivate() {
     if (deactivateTargetId === null) return;

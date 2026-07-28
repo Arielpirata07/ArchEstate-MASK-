@@ -1328,3 +1328,43 @@ async function resendVerificationCode() {
         btn.classList.remove('opacity-50');
     }
 }
+
+// ---- Contactar Administración ----
+async function contactAdmin() {
+    const subject = document.getElementById('contact-admin-subject').value.trim();
+    const message = document.getElementById('contact-admin-message').value.trim();
+    const msgEl   = document.getElementById('contact-admin-msg');
+    const errEl   = document.getElementById('contact-admin-error');
+
+    msgEl.classList.add('hidden');
+    errEl.classList.add('hidden');
+
+    if (!subject || !message) {
+        errEl.textContent = t('error.required_fields');
+        errEl.classList.remove('hidden');
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/profile/contact-admin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ subject: subject, message: message })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+            document.getElementById('contact-admin-subject').value = '';
+            document.getElementById('contact-admin-message').value = '';
+            msgEl.textContent = data.message || t('profile.contact_admin_sent');
+            msgEl.classList.remove('hidden');
+            if (typeof showToast === 'function') showToast(data.message);
+        } else {
+            errEl.textContent = data.error || t('error.process_request');
+            errEl.classList.remove('hidden');
+        }
+    } catch (err) {
+        errEl.textContent = t('error.connection');
+        errEl.classList.remove('hidden');
+    }
+}

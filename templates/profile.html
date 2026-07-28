@@ -774,6 +774,30 @@
                             PDF
                         </a>
                     </div>
+
+                    <!-- Contacto con Administración -->
+                    <div class="flex flex-col gap-4 pt-6 mt-6 border-t" style="border-color:var(--border)">
+                        <h3 class="text-sm font-bold uppercase tracking-widest" style="color:var(--text-secondary)">{{ t('profile.contact_admin_title') }}</h3>
+                        <p class="text-[11px]" style="color:var(--text-secondary)">{{ t('profile.contact_admin_desc') }}</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="contact-admin-subject" class="input-label">{{ t('profile.contact_admin_subject') }}</label>
+                                <input id="contact-admin-subject" type="text" class="input-field" placeholder="{{ t('profile.contact_admin_subject_placeholder') }}">
+                            </div>
+                            <div>
+                                <label for="contact-admin-message" class="input-label">{{ t('profile.contact_admin_message') }}</label>
+                                <textarea id="contact-admin-message" rows="2" class="input-field resize-none" placeholder="{{ t('profile.contact_admin_message_placeholder') }}"></textarea>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <button onclick="contactAdmin()" class="btn-primary">
+                                <i data-lucide="send" class="w-4 h-4" aria-hidden="true"></i>
+                                {{ t('profile.contact_admin_send') }}
+                            </button>
+                            <span id="contact-admin-msg" class="hidden text-sm font-medium text-emerald-600" aria-live="polite"></span>
+                            <span id="contact-admin-error" class="hidden text-sm font-medium text-rose-600" role="alert"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
             {% endif %}

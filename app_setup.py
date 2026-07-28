@@ -136,6 +136,8 @@ def init_db(app):
             cursor.execute('INSERT INTO schema_version (version) VALUES (2)')
         if current_ver < 3:
             cursor.execute('INSERT INTO schema_version (version) VALUES (3)')
+        if current_ver < 4:
+            cursor.execute('INSERT INTO schema_version (version) VALUES (4)')
 
         cursor.execute('PRAGMA table_info(users)')
         user_columns = [row[1] for row in cursor.fetchall()]
@@ -218,6 +220,9 @@ def init_db(app):
 
         if 'additional_features' not in existing_columns:
             cursor.execute("ALTER TABLE leads ADD COLUMN additional_features TEXT DEFAULT ''")
+
+        if 'assigned_to' not in existing_columns:
+            cursor.execute("ALTER TABLE leads ADD COLUMN assigned_to INTEGER DEFAULT NULL REFERENCES users(id)")
 
         cursor.execute('PRAGMA table_info(leads)')
         lead_columns = [row[1] for row in cursor.fetchall()]
