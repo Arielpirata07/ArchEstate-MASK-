@@ -89,7 +89,7 @@ def api_get_lead(lead_id):
 def api_update_lead(lead_id):
     lang = get_language()
     user_id = session['user_id']
-    data = request.json
+    data = request.json or {}
 
     lead = models.get_lead_by_id_and_user(lead_id, user_id)
     if not lead:
@@ -143,7 +143,7 @@ def api_get_user():
 def api_update_user():
     lang = get_language()
     user_id = session['user_id']
-    data = request.json
+    data = request.json or {}
 
     email = utils.safe_text(data.get('email', '')).strip()
     phone = (data.get('phone', '') or '').strip()
@@ -182,7 +182,7 @@ def api_update_user():
 def api_change_password():
     lang = get_language()
     user_id = session['user_id']
-    data = request.json
+    data = request.json or {}
 
     current_password = data.get('current_password', '')
     new_password = data.get('new_password', '')
@@ -228,7 +228,7 @@ def api_get_professional():
 def api_update_professional():
     lang = get_language()
     user_id = session['user_id']
-    data = request.json
+    data = request.json or {}
 
     ALLOWED_FIELDS = {'specialty', 'title', 'province', 'zone'}
     update_data = {}
@@ -264,7 +264,7 @@ def api_get_settings():
 def api_update_settings():
     lang = get_language()
     user_id = session['user_id']
-    data = request.json
+    data = request.json or {}
 
     allowed = {'theme', 'language', 'email_notifications', 'sms_notifications', 'lead_alerts', 'preferred_channel'}
     update_data = {}
@@ -407,7 +407,7 @@ def api_get_professional_full():
 def api_update_professional_full():
     lang = get_language()
     user_id = session['user_id']
-    data = request.json
+    data = request.json or {}
 
     allowed = {
         'bio_pro', 'experience_years', 'services_offered',
@@ -551,9 +551,15 @@ def update_notification_filters():
     budget_max = data.get('budget_max')
     updates = {'notification_filters': json.dumps(filters, ensure_ascii=False)}
     if budget_min is not None:
-        updates['budget_min'] = max(0, float(budget_min))
+        try:
+            updates['budget_min'] = max(0, float(budget_min))
+        except (ValueError, TypeError):
+            return jsonify({'success': False, 'error': t('profile.invalid_budget_range', lang)}), 400
     if budget_max is not None:
-        updates['budget_max'] = max(0, float(budget_max))
+        try:
+            updates['budget_max'] = max(0, float(budget_max))
+        except (ValueError, TypeError):
+            return jsonify({'success': False, 'error': t('profile.invalid_budget_range', lang)}), 400
     ok = models.update_user_preferences(user_id, updates)
     if ok:
         return jsonify({'success': True, 'filters': filters, 'budget_min': updates.get('budget_min', 0), 'budget_max': updates.get('budget_max', 0)})

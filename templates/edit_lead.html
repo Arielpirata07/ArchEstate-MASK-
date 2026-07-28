@@ -85,7 +85,7 @@ window.__FORM_OPTIONS = {{ {
                         <i data-lucide="chevron-down" class="w-4 h-4 ml-auto text-midnight/30 transition-transform group-open:rotate-180"></i>
                     </summary>
                     <div class="p-5 space-y-6">
-                        <div class="grid grid-cols-1 md:grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label for="edit-zone" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Zona</label>
                                 <input id="edit-zone" name="zone" type="text" value="{{ lead.zone if lead.zone else '' }}"
@@ -115,7 +115,7 @@ window.__FORM_OPTIONS = {{ {
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label for="edit-architectural-style" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Estilo Arquitectónico</label>
                                 <input id="edit-architectural-style" name="architectural_style" type="text" value="{{ lead.architectural_style if lead.architectural_style else '' }}"

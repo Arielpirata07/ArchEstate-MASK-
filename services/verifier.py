@@ -42,6 +42,13 @@ class OTPChannel(ABC):
         No debe lanzar excepciones: fallos deben reflejarse en ok=False.
         """
 
+    @abstractmethod
+    def send_sms(self, phone_e164: str, body: str) -> SendResult:
+        """
+        Envía un SMS con texto libre (no OTP). Para notificaciones.
+        No debe lanzar excepciones: fallos deben reflejarse en ok=False.
+        """
+
 
 class SmsSimulatedVerifier(OTPChannel):
     """Simula el envío de un SMS. Imprime en consola y registra en audit_log."""
@@ -58,6 +65,19 @@ class SmsSimulatedVerifier(OTPChannel):
             print(f"[SMS SIMULADO] Código: {code} (válido {ttl_minutes} min)\n")
             if self._audit:
                 self._audit("OTP enviado por SMS", f"phone_hash={hash_phone_digits(phone_e164)} channel=sms ttl={ttl_minutes}m")
+            return SendResult(ok=True, channel=self.name,
+                              message=t('verifier.sms_sent', lang, phone=phone_e164))
+        except Exception as e:
+            return SendResult(ok=False, channel=self.name,
+                              message=t('verifier.sms_error', lang, error=str(e)))
+
+    def send_sms(self, phone_e164, body):
+        lang = get_language()
+        try:
+            print(f"\n[SMS NOTIF SIMULADO] -> {phone_e164}")
+            print(f"[SMS NOTIF SIMULADO] Mensaje: {body}\n")
+            if self._audit:
+                self._audit("SMS notificación (simulado)", f"phone_hash={hash_phone_digits(phone_e164)}")
             return SendResult(ok=True, channel=self.name,
                               message=t('verifier.sms_sent', lang, phone=phone_e164))
         except Exception as e:
@@ -103,6 +123,10 @@ class WhatsAppSimulatedVerifier(OTPChannel):
             return SendResult(ok=False, channel=self.name,
                               message=t('verifier.wa_error', lang, error=str(e)))
 
+    def send_sms(self, phone_e164, body):
+        return SendResult(ok=False, channel='sms',
+                          message='WhatsApp verifier cannot send SMS')
+
 
 class TwilioSmsVerifier(OTPChannel):
     """
@@ -137,6 +161,36 @@ class TwilioSmsVerifier(OTPChannel):
             error_str = str(e)
             logger.exception('[TWILIO SMS ERROR] -> %s', phone_e164)
 
+            if '21608' in error_str or 'unverified' in error_str.lower():
+                return SendResult(ok=False, channel=self.name,
+                                  message=t('verifier.twilio_trial', lang))
+            elif '21211' in error_str or 'invalid' in error_str.lower():
+                return SendResult(ok=False, channel=self.name,
+                                  message=t('verifier.twilio_invalid', lang))
+            elif '21614' in error_str or 'not a valid' in error_str.lower():
+                return SendResult(ok=False, channel=self.name,
+                                  message=t('verifier.twilio_not_mobile', lang))
+            else:
+                return SendResult(ok=False, channel=self.name,
+                                  message=t('verifier.sms_retry', lang))
+
+    def send_sms(self, phone_e164, body):
+        lang = get_language()
+        try:
+            message = self._client.messages.create(
+                body=body,
+                from_=self._from,
+                to=phone_e164
+            )
+            print(f"\n[TWILIO SMS NOTIF] -> {phone_e164} | SID: {message.sid}")
+            if self._audit:
+                self._audit("SMS notificación (Twilio)",
+                            f"phone_hash={hash_phone_digits(phone_e164)} sid={message.sid}")
+            return SendResult(ok=True, channel=self.name,
+                              message=t('verifier.sms_sent', lang, phone=phone_e164))
+        except Exception as e:
+            error_str = str(e)
+            logger.exception('[TWILIO SMS NOTIF ERROR] -> %s', phone_e164)
             if '21608' in error_str or 'unverified' in error_str.lower():
                 return SendResult(ok=False, channel=self.name,
                                   message=t('verifier.twilio_trial', lang))
@@ -206,6 +260,10 @@ class TwilioWhatsAppVerifier(OTPChannel):
                 return SendResult(ok=False, channel=self.name,
                                   message=t('verifier.wa_retry', lang))
 
+    def send_sms(self, phone_e164, body):
+        return SendResult(ok=False, channel='sms',
+                          message='WhatsApp verifier cannot send SMS')
+
 
 class VerifierRouter:
     """
@@ -234,6 +292,13 @@ class VerifierRouter:
         if self._is_wa(phone_e164):
             return self._whatsapp.send(phone_e164, code, ttl_minutes, username=username)
         return self._sms.send(phone_e164, code, ttl_minutes)
+
+    def send_sms(self, phone_e164: str, body: str) -> SendResult:
+        """
+        Envía un SMS con texto libre (no OTP). Para notificaciones.
+        Siempre delega al verificador SMS, ignorando preferencia de canal.
+        """
+        return self._sms.send_sms(phone_e164, body)
 
 
 _default_router: Optional[VerifierRouter] = None

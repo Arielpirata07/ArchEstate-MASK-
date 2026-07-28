@@ -15,12 +15,17 @@ whatsapp_bp = Blueprint('whatsapp', __name__, url_prefix='')
 def whatsapp_webhook():
     from twilio.request_validator import RequestValidator
     from twilio.twiml.messaging_response import MessagingResponse
+    from urllib.parse import urljoin
 
     lang = get_language()
     validator = RequestValidator(config.TWILIO_AUTH_TOKEN)
     signature = request.headers.get('X-Twilio-Signature', '')
     params = request.form.to_dict()
-    url = request.url
+
+    if config.SITE_URL:
+        url = urljoin(config.SITE_URL.rstrip('/') + '/', 'api/whatsapp/webhook')
+    else:
+        url = request.url
 
     if config.TWILIO_AUTH_TOKEN and not validator.validate(url, params, signature):
         logger.warning('Invalid signature from %s', request.remote_addr)

@@ -41,7 +41,7 @@ def _send_email_notification(user_id: int, subject: str, html_body: str, text_bo
 
 
 def _send_sms_notification(user_id: int, message: str) -> bool:
-    """Envía SMS si el usuario tiene sms_notifications activado."""
+    """Envía SMS con texto libre si el usuario tiene sms_notifications activado."""
     prefs = models.get_user_preferences(user_id)
     if not prefs.get('sms_notifications'):
         return False
@@ -52,7 +52,7 @@ def _send_sms_notification(user_id: int, message: str) -> bool:
 
     router = get_default_router()
     phone_e164 = user.get('phone_e164') or user['phone']
-    result = router.send_otp(phone_e164, message[:6], preferred_channel='sms', ttl_minutes=5)
+    result = router.send_sms(phone_e164, message)
     return result.ok
 
 
@@ -244,6 +244,29 @@ def _send_lead_whatsapp(user_id, phone_e164, lead_data):
     return notifier.send_lead_alert(phone_e164, lead_data)
 
 
+def _send_client_status_email(client_user_id: int, lead_id: int, subject: str, body: str) -> None:
+    """Send email to client when a professional views or contacts their lead."""
+    prefs = models.get_user_preferences(client_user_id)
+    if not prefs.get('email_notifications'):
+        return
+    user = models.get_user_by_id(client_user_id)
+    if not user or not user.get('email'):
+        return
+    html = f"""
+    <html>
+    <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #735A3A;">ArchEstate</h2>
+        <p>{body}</p>
+        <a href="{config.SITE_URL}/mi-perfil" style="display:inline-block;background:#735A3A;color:#fff;text-decoration:none;padding:12px 28px;border-radius:6px;font-size:13px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;margin-top:16px;">Ver mis solicitudes</a>
+        <hr style="border: 1px solid #735A3A; margin-top: 24px;">
+        <p style="font-size: 12px; color: #666;">{t('notif.auto_email_footer', get_language())}</p>
+    </body>
+    </html>
+    """
+    sender = get_email_sender()
+    sender.send(user['email'], subject, html)
+
+
 def _create_notification(user_id: int, lead_id: int, title: str, body: str = '') -> None:
     """Inserta una notificación en la tabla notifications."""
     conn = None
@@ -263,28 +286,39 @@ def _create_notification(user_id: int, lead_id: int, title: str, body: str = '')
 
 def notify_lead_status_change(lead_id: int, professional_id: int, new_status: str) -> None:
     """
-    Notifica al admin cuando un profesional cambia el estado de un lead.
+    Notifica al admin y al cliente cuando un profesional cambia el estado de un lead.
     """
     lang = get_language()
     user = models.get_user_by_id(professional_id)
     if not user:
         return
 
-    # Obtener datos del lead para enriquecer la notificación
+    # Obtener datos del lead y del profesional
     lead_data = {}
+    lead_owner_id = None
+    pro_specialty = ''
     conn = None
     try:
         conn = models.get_db_connection()
         lead = conn.execute('SELECT * FROM leads WHERE id = ?', (lead_id,)).fetchone()
         if lead:
             lead_data = _lead_to_dict(lead)
+            lead_owner_id = lead['user_id']
+
+        pro = conn.execute(
+            'SELECT name, specialty FROM professionals WHERE user_id = ?',
+            (professional_id,)
+        ).fetchone()
+        if pro:
+            pro_specialty = pro['specialty'] or ''
     finally:
         if conn:
             conn.close()
 
     status_label = t('notif.status_seen', lang) if new_status == 'seen' else t('notif.status_contacted', lang)
-    subject = t('notif.status_change_subject', lang, lead_id=lead_id, status=status_label, username=user.get("username", "profesional"))
 
+    # --- Notificar al admin (como antes) ---
+    subject = t('notif.status_change_subject', lang, lead_id=lead_id, status=status_label, username=user.get("username", "profesional"))
     admin_users = _get_admin_users()
     for admin in admin_users:
         html, _ = _render_email('status_change',
@@ -299,6 +333,31 @@ def notify_lead_status_change(lead_id: int, professional_id: int, new_status: st
             lead_timestamp=lead_data.get('timestamp', ''),
         )
         _send_email_notification(admin['id'], subject, html)
+
+    # --- Notificar al cliente (dueño del lead) ---
+    if lead_owner_id and lead_owner_id != professional_id:
+        pro_name = user.get('username', 'un profesional')
+        client_title_key = 'notif.client_status_contacted_title' if new_status == 'contacted' else 'notif.client_status_seen_title'
+        client_title = t(client_title_key, lang, lead_id=lead_id)
+        client_body = t('notif.client_status_body', lang,
+            professional_name=pro_name,
+            specialty=pro_specialty or 'Profesional',
+            status=status_label,
+            lead_type=lead_data.get('type', ''),
+            zone=lead_data.get('zone', ''),
+        )
+
+        _create_notification(lead_owner_id, lead_id, title=client_title, body=client_body)
+
+        email_subject = t('notif.client_status_email_subject', lang, lead_id=lead_id)
+        email_body = t('notif.client_status_email_body', lang,
+            professional_name=pro_name,
+            specialty=pro_specialty or 'Profesional',
+            status=status_label,
+            lead_type=lead_data.get('type', ''),
+            zone=lead_data.get('zone', ''),
+        )
+        _send_client_status_email(lead_owner_id, lead_id, email_subject, email_body)
 
     utils.log_action(
         'Notificación cambio estado lead',

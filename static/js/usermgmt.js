@@ -246,7 +246,7 @@ async function confirmReset() {
     errEl.classList.add('hidden');
 
     if (!pwd || pwd.length < 6) {
-        errEl.textContent = 'La contraseña debe tener al menos 6 caracteres.';
+        errEl.textContent = t('password.min_length');
         errEl.classList.remove('hidden');
         return;
     }
@@ -274,7 +274,7 @@ async function confirmReset() {
             closeModal();
             if (typeof showToast === 'function') showToast(data.message);
         } else {
-            errEl.textContent = data.error || 'Error al resetear la contraseña.';
+            errEl.textContent = data.error || t('error.password_reset');
             errEl.classList.remove('hidden');
             btn.innerHTML  = original;
             btn.disabled   = false;
@@ -343,7 +343,7 @@ async function confirmDisable() {
             if (typeof showToast === 'function') showToast(data.message);
             loadUsers();
         } else {
-            if (typeof showToast === 'function') showToast(data.error || 'Error al dar de baja.', 'error');
+            if (typeof showToast === 'function') showToast(data.error || t('error.disable'), 'error');
         }
     } catch (err) {
         if (typeof showToast === 'function') showToast(t('error.connection'), 'error');
@@ -390,7 +390,7 @@ async function confirmEnable() {
             if (typeof showToast === 'function') showToast(data.message);
             loadUsers();
         } else {
-            if (typeof showToast === 'function') showToast(data.error || 'Error al reactivar.', 'error');
+            if (typeof showToast === 'function') showToast(data.error || t('error.reactivate'), 'error');
         }
     } catch (err) {
         if (typeof showToast === 'function') showToast(t('error.connection'), 'error');

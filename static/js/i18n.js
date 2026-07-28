@@ -235,6 +235,8 @@ window.I18N = {
         'leads.view_singular': 'vista',
         'leads.view_plural': 'vistas',
         'leads.under_review': 'En revisión',
+        'leads.contacted_by': '{count} profesional(es) contactaron tu solicitud',
+        'leads.contact_names': '{names} contactaron tu solicitud',
 
         // === SPEC ===
         'spec.rooms': 'amb.',
@@ -712,6 +714,8 @@ window.I18N = {
         'leads.view_singular': 'view',
         'leads.view_plural': 'views',
         'leads.under_review': 'Under review',
+        'leads.contacted_by': '{count} professional(s) contacted your request',
+        'leads.contact_names': '{names} contacted your request',
 
         // === SPEC ===
         'spec.rooms': 'rooms',
@@ -962,6 +966,7 @@ window.t = function(key, params) {
     var val = dict[key] || key;
     if (params) {
         Object.keys(params).forEach(function(k) {
+            val = val.replace('${' + k + '}', params[k]);
             val = val.replace('{' + k + '}', params[k]);
         });
     }

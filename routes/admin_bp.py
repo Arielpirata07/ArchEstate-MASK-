@@ -13,6 +13,7 @@ from werkzeug.security import generate_password_hash
 import models
 import rate_limit
 import utils
+import validators
 from decorators import admin_required, login_required
 from i18n import t, get_language
 from services.database import date_format_sql, now_sql
@@ -117,7 +118,7 @@ def get_professionals_api():
 @admin_required
 def update_pro_status(pro_id):
     lang = get_language()
-    data = request.json
+    data = request.json or {}
     new_status = data.get('status')
 
     if new_status not in ['approved', 'rejected']:
@@ -744,11 +745,12 @@ def get_all_users():
 @admin_required
 def admin_reset_password(user_id):
     lang = get_language()
-    data = request.json
+    data = request.json or {}
     new_password = (data.get('password') or '').strip()
 
-    if not new_password or len(new_password) < 6:
-        return jsonify({"error": t('admin.password_min_length', lang)}), 400
+    is_valid, error = validators.validate_password(new_password)
+    if not is_valid:
+        return jsonify({"error": error}), 400
 
     conn = None
     try:
@@ -781,7 +783,7 @@ def admin_reset_password(user_id):
 @admin_required
 def admin_set_user_active(user_id):
     lang = get_language()
-    data = request.json
+    data = request.json or {}
     new_state = data.get('is_active')
 
     if new_state not in (True, False):

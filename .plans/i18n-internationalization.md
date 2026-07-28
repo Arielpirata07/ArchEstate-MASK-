@@ -1,5 +1,15 @@
 # Plan de Internacionalización (i18n) — ArchEstate
 
+> **ESTADO: COMPLETADO** — 4/4 fases, 1100+ keys, 444 tests passing
+>
+> | Fase | Status | Tag | Keys |
+> |------|--------|-----|------|
+> | Fase 1 — Motor core | ✅ DONE | v0.20.2 | ~80 JS + engine |
+> | Fase 2 — Templates | ✅ DONE | v0.20.3 | ~300+ template keys |
+> | Fase 3 — Backend | ✅ DONE | v0.20.4 | ~812 Python keys |
+> | Fase 4 — JS dinámico | ✅ DONE | v0.20.5 | ~280 JS keys |
+> | **TOTAL** | **✅ COMPLETE** | | **1100+ keys** |
+
 ## Arquitectura del Sistema
 
 ### Infraestructura existente (NO necesita cambios)

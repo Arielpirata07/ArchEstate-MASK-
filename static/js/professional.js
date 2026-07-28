@@ -441,10 +441,10 @@ function renderActiveTags() {
     countEl.textContent = `${tags.length} activo${tags.length > 1 ? 's' : ''}`;
     countEl.classList.remove('hidden');
 
-    container.innerHTML = tags.map(t => `
+    container.innerHTML = tags.map(tag => `
         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gold/10 text-gold border border-gold/20 rounded-full text-[9px] font-bold uppercase tracking-widest">
-            ${t.label}
-            <button onclick="removeFilter('${t.key}')" class="hover:text-rose-500 transition-colors">
+            ${tag.label}
+            <button onclick="removeFilter('${tag.key}')" class="hover:text-rose-500 transition-colors">
                 <i data-lucide="x" class="w-2.5 h-2.5"></i>
             </button>
         </span>
@@ -787,10 +787,10 @@ function renderLeadKpis(leads) {
     var total = leads.length;
     var unseen = 0, contacted = 0, seen = 0;
     for (var i = 0; i < leads.length; i++) {
-        var t = leads[i].tracking;
-        if (t) {
-            if (!t.seen) unseen++;
-            if (t.contacted) contacted++;
+        var trk = leads[i].tracking;
+        if (trk) {
+            if (!trk.seen) unseen++;
+            if (trk.contacted) contacted++;
         } else {
             unseen++;
         }
@@ -1054,10 +1054,10 @@ function animateCounter(el, target) {
     const start = performance.now();
     const from = 0;
     const step = (now) => {
-        const t = Math.min((now - start) / duration, 1);
-        const val = Math.round(from + (target - from) * (1 - Math.pow(1 - t, 3)));
+        const progress = Math.min((now - start) / duration, 1);
+        const val = Math.round(from + (target - from) * (1 - Math.pow(1 - progress, 3)));
         el.textContent = val;
-        if (t < 1) requestAnimationFrame(step);
+        if (progress < 1) requestAnimationFrame(step);
     };
     requestAnimationFrame(step);
 }

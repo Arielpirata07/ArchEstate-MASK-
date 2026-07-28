@@ -3,9 +3,9 @@
  */
 
 function escapeHtml(str) {
-    if (!str) return '';
+    if (str === null || str === undefined) return '';
     const div = document.createElement('div');
-    div.textContent = str;
+    div.textContent = String(str);
     return div.innerHTML;
 }
 
@@ -518,22 +518,22 @@ function initZoneAutocomplete() {
 
     const renderSuggestions = (items, query) => {
         if (!items.length && query.length > 0) {
-            suggestions.innerHTML = `<li role="option" class="cursor-pointer px-4 py-3 border-b border-slate-100 hover:bg-slate-50" data-value="${query}">
-                        <strong class="text-midnight">' + t('autocomplete.use_query', {query: query}) + '</strong><span class="ml-2 text-[11px] text-midnight/60">' + t('autocomplete.free_text') + '</span>
+            suggestions.innerHTML = `<li role="option" class="cursor-pointer px-4 py-3 border-b border-slate-100 hover:bg-slate-50" data-value="${escapeHtml(query)}">
+                        <strong class="text-midnight">${escapeHtml(t('autocomplete.use_query', {query: query}))}</strong><span class="ml-2 text-[11px] text-midnight/60">${escapeHtml(t('autocomplete.free_text'))}</span>
                     </li>`;
             suggestions.classList.remove('hidden');
             return;
         }
 
         if (!items.length) {
-            suggestions.innerHTML = '<li role="status" class="px-4 py-3 text-sm text-midnight/60">' + t('autocomplete.type_zone') + '</li>';
+            suggestions.innerHTML = '<li role="status" class="px-4 py-3 text-sm text-midnight/60">' + escapeHtml(t('autocomplete.type_zone')) + '</li>';
             suggestions.classList.remove('hidden');
             return;
         }
 
         suggestions.innerHTML = items.map(item => {
-            return `<li role="option" class="cursor-pointer px-4 py-3 border-b border-slate-100 hover:bg-slate-50" data-value="${item.city}, ${item.country}">
-                        <strong class="text-midnight">${item.city}</strong><span class="ml-2 text-[11px] text-midnight/60">${item.country}</span>
+            return `<li role="option" class="cursor-pointer px-4 py-3 border-b border-slate-100 hover:bg-slate-50" data-value="${escapeHtml(item.city + ', ' + item.country)}">
+                        <strong class="text-midnight">${escapeHtml(item.city)}</strong><span class="ml-2 text-[11px] text-midnight/60">${escapeHtml(item.country)}</span>
                     </li>`;
         }).join('');
         suggestions.classList.remove('hidden');
@@ -572,14 +572,14 @@ function initArchitecturalStyleAutocomplete() {
 
     const renderSuggestions = (items) => {
         if (!items.length) {
-            suggestions.innerHTML = '<li role="status" class="px-4 py-3 text-sm text-midnight/60">' + t('autocomplete.no_matches') + '</li>';
+            suggestions.innerHTML = '<li role="status" class="px-4 py-3 text-sm text-midnight/60">' + escapeHtml(t('autocomplete.no_matches')) + '</li>';
             suggestions.classList.remove('hidden');
             return;
         }
 
         suggestions.innerHTML = items.map(item => {
-            return `<li role="option" class="cursor-pointer px-4 py-3 border-b border-slate-100 hover:bg-slate-50" data-value="${item}">
-                        <strong class="text-midnight">${item}</strong>
+            return `<li role="option" class="cursor-pointer px-4 py-3 border-b border-slate-100 hover:bg-slate-50" data-value="${escapeHtml(item)}">
+                        <strong class="text-midnight">${escapeHtml(item)}</strong>
                     </li>`;
         }).join('');
         suggestions.classList.remove('hidden');

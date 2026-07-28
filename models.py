@@ -5,6 +5,8 @@ import utils
 
 logger = logging.getLogger(__name__)
 
+logger = logging.getLogger(__name__)
+
 
 class DatabaseError(Exception):
     pass
@@ -134,13 +136,20 @@ def get_user_leads(user_id):
         leads = conn.execute('''
             SELECT l.*,
                    COALESCE(lt.seen_count, 0) AS seen_count,
-                   COALESCE(lt.contacted_count, 0) AS contacted_count
+                   COALESCE(lt.contacted_count, 0) AS contacted_count,
+                   lt.contact_names
             FROM leads l
             LEFT JOIN (
                 SELECT lead_id,
                        SUM(seen) AS seen_count,
-                       SUM(contacted) AS contacted_count
-                FROM lead_tracking
+                       SUM(contacted) AS contacted_count,
+                       GROUP_CONCAT(
+                           CASE WHEN contacted = 1
+                           THEN p.name || ' (' || p.specialty || ')' END,
+                           ', '
+                       ) AS contact_names
+                FROM lead_tracking lt2
+                LEFT JOIN professionals p ON p.user_id = lt2.professional_id
                 GROUP BY lead_id
             ) lt ON l.id = lt.lead_id
             WHERE l.user_id = ?
@@ -164,14 +173,18 @@ def get_lead_by_id_and_user(lead_id, user_id):
 
 
 def update_lead(lead_id, data):
+    filtered = {k: v for k, v in data.items() if k in ALLOWED_LEAD_UPDATE_FIELDS}
+    if not filtered:
+        return False
     conn = get_db_connection()
     try:
-        set_clause = ', '.join(f'{k} = ?' for k in data.keys())
-        values = list(data.values()) + [lead_id]
+        set_clause = ', '.join(f'{k} = ?' for k in filtered.keys())
+        values = list(filtered.values()) + [lead_id]
         conn.execute(f'UPDATE leads SET {set_clause} WHERE id = ?', values)
         conn.commit()
         return True
     except Exception:
+        logger.exception('update_lead failed for lead_id=%s', lead_id)
         return False
     finally:
         conn.close()
@@ -231,6 +244,28 @@ def get_user_profile(user_id):
 
 
 ALLOWED_PROFILE_FIELDS = {'first_name', 'last_name', 'bio', 'title', 'avatar_path'}
+ALLOWED_LEAD_UPDATE_FIELDS = {
+    'zone', 'province', 'budget', 'currency',
+    'floor_block', 'usable_m2', 'elevator',
+    'land_area', 'built_area', 'pool',
+    'architectural_style', 'bedrooms', 'bathrooms',
+    'total_area', 'amenities', 'ambientes',
+    'parking', 'orientation', 'property_condition',
+    'property_age', 'community_pool', 'additional_features',
+    'phone_format_valid',
+}
+ALLOWED_PROFESSIONAL_FIELDS = {'specialty', 'title', 'province', 'zone'}
+ALLOWED_PROFESSIONAL_PROFILE_FIELDS = {
+    'bio_pro', 'experience_years', 'services_offered',
+    'portfolio', 'availability', 'social_links',
+    'fee_range_min', 'fee_range_max', 'professional_address',
+    'photo_path',
+}
+ALLOWED_PREFERENCES_FIELDS = {
+    'theme', 'language', 'email_notifications', 'sms_notifications',
+    'lead_alerts', 'preferred_channel', 'whatsapp_notifications',
+    'notification_filters', 'budget_min', 'budget_max',
+}
 
 
 def update_user_profile(user_id, data):
@@ -254,44 +289,67 @@ def update_user_profile(user_id, data):
         conn.commit()
         return True
     except Exception:
+        logger.exception('update_user_profile failed for user_id=%s', user_id)
         return False
     finally:
         conn.close()
 
 
-def update_user_credentials(user_id, email, phone):
+def update_user_phone_only(user_id, phone):
+    """
+    Actualiza el teléfono de un usuario con normalización E.164 y
+    invalidación condicional de OTP si el número cambió.
+    Retorna dict con el resultado de la operación.
+    """
     conn = get_db_connection()
     try:
-        current = conn.execute('SELECT phone, phone_e164, phone_verified FROM users WHERE id = ?',
-                               (user_id,)).fetchone()
+        current = conn.execute(
+            'SELECT phone, phone_verified FROM users WHERE id = ?', (user_id,)
+        ).fetchone()
 
-        if phone and current:
-            old_phone = current['phone'] or ''
-            e164 = utils.normalize_phone_to_e164(phone)
-            ntype = utils.classify_phone_type(e164) if e164 else ''
-            old_e164 = utils.normalize_phone_to_e164(old_phone) if old_phone else ''
-            phone_changed = bool(e164) and (old_e164 != e164)
+        old_phone = current['phone'] if current else ''
+        e164 = utils.normalize_phone_to_e164(phone)
+        ntype = utils.classify_phone_type(e164) if e164 else ''
+        old_e164 = utils.normalize_phone_to_e164(old_phone) if old_phone else ''
+        invalidate_otp = bool(e164) and (old_e164 != e164)
 
-            if phone_changed:
-                conn.execute(
-                    'UPDATE users SET email = ?, phone = ?, phone_e164 = ?, phone_number_type = ?, '
-                    'phone_format_valid = 1, phone_verified = 0, verification_code = \'\', verification_expires = NULL '
-                    'WHERE id = ?',
-                    (email, phone, e164, ntype, user_id)
-                )
-            else:
-                conn.execute(
-                    'UPDATE users SET email = ?, phone = ?, phone_e164 = ?, phone_number_type = ?, '
-                    'phone_format_valid = 1 WHERE id = ?',
-                    (email, phone, e164, ntype, user_id)
-                )
+        if invalidate_otp:
+            conn.execute(
+                'UPDATE users SET phone = ?, phone_e164 = ?, phone_number_type = ?, '
+                'phone_format_valid = 1, phone_verified = 0, verification_code = \'\', '
+                'verification_expires = NULL WHERE id = ?',
+                (phone, e164, ntype, user_id)
+            )
         else:
             conn.execute(
-                'UPDATE users SET email = ?, phone = ?, phone_e164 = \'\', phone_number_type = \'\', '
-                'phone_format_valid = 0, phone_verified = 0 WHERE id = ?',
-                (email, phone, user_id)
+                'UPDATE users SET phone = ?, phone_e164 = ?, phone_number_type = ? WHERE id = ?',
+                (phone, e164, ntype, user_id)
             )
+        conn.commit()
 
+        return {
+            'success': True,
+            'phone': phone,
+            'phone_e164': e164,
+            'invalidate_otp': invalidate_otp,
+            'phone_verified': 0 if invalidate_otp else (current['phone_verified'] if current else 0),
+        }
+    except Exception:
+        logger.exception('update_user_phone_only failed for user_id=%s', user_id)
+        return {'success': False}
+    finally:
+        conn.close()
+
+
+def update_user_credentials(user_id, email, phone):
+    if phone:
+        phone_result = update_user_phone_only(user_id, phone)
+        if not phone_result['success']:
+            return False
+
+    conn = get_db_connection()
+    try:
+        conn.execute('UPDATE users SET email = ? WHERE id = ?', (email, user_id))
         conn.commit()
         return True
     except Exception:
@@ -301,14 +359,18 @@ def update_user_credentials(user_id, email, phone):
 
 
 def update_professional_profile(user_id, data):
+    filtered = {k: v for k, v in data.items() if k in ALLOWED_PROFESSIONAL_FIELDS}
+    if not filtered:
+        return False
     conn = get_db_connection()
     try:
-        set_clause = ', '.join(f'{k} = ?' for k in data.keys())
-        values = list(data.values()) + [user_id]
+        set_clause = ', '.join(f'{k} = ?' for k in filtered.keys())
+        values = list(filtered.values()) + [user_id]
         conn.execute(f'UPDATE professionals SET {set_clause} WHERE user_id = ?', values)
         conn.commit()
         return True
     except Exception:
+        logger.exception('update_professional_profile failed for user_id=%s', user_id)
         return False
     finally:
         conn.close()
@@ -339,23 +401,27 @@ def get_user_preferences(user_id):
 
 
 def update_user_preferences(user_id, data):
+    filtered = {k: v for k, v in data.items() if k in ALLOWED_PREFERENCES_FIELDS}
+    if not filtered:
+        return False
     conn = get_db_connection()
     try:
         existing = conn.execute(
             'SELECT user_id FROM user_preferences WHERE user_id = ?', (user_id,)
         ).fetchone()
         if existing:
-            set_clause = ', '.join(f'{k} = ?' for k in data.keys())
-            values = list(data.values()) + [user_id]
+            set_clause = ', '.join(f'{k} = ?' for k in filtered.keys())
+            values = list(filtered.values()) + [user_id]
             conn.execute(f'UPDATE user_preferences SET {set_clause}, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?', values)
         else:
-            data['user_id'] = user_id
-            columns = ', '.join(data.keys())
-            placeholders = ', '.join('?' for _ in data)
-            conn.execute(f'INSERT INTO user_preferences ({columns}) VALUES ({placeholders})', list(data.values()))
+            filtered['user_id'] = user_id
+            columns = ', '.join(filtered.keys())
+            placeholders = ', '.join('?' for _ in filtered)
+            conn.execute(f'INSERT INTO user_preferences ({columns}) VALUES ({placeholders})', list(filtered.values()))
         conn.commit()
         return True
     except Exception:
+        logger.exception('update_user_preferences failed for user_id=%s', user_id)
         return False
     finally:
         conn.close()
@@ -381,23 +447,27 @@ def get_professional_full_profile(user_id):
 
 
 def create_or_update_professional_profile(user_id, data):
+    filtered = {k: v for k, v in data.items() if k in ALLOWED_PROFESSIONAL_PROFILE_FIELDS}
+    if not filtered:
+        return False
     conn = get_db_connection()
     try:
         existing = conn.execute(
             'SELECT id FROM professional_profiles WHERE user_id = ?', (user_id,)
         ).fetchone()
         if existing:
-            set_clause = ', '.join(f'{k} = ?' for k in data.keys())
-            values = list(data.values()) + [user_id]
+            set_clause = ', '.join(f'{k} = ?' for k in filtered.keys())
+            values = list(filtered.values()) + [user_id]
             conn.execute(f'UPDATE professional_profiles SET {set_clause}, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?', values)
         else:
-            data['user_id'] = user_id
-            columns = ', '.join(data.keys())
-            placeholders = ', '.join('?' for _ in data)
-            conn.execute(f'INSERT INTO professional_profiles ({columns}) VALUES ({placeholders})', list(data.values()))
+            filtered['user_id'] = user_id
+            columns = ', '.join(filtered.keys())
+            placeholders = ', '.join('?' for _ in filtered)
+            conn.execute(f'INSERT INTO professional_profiles ({columns}) VALUES ({placeholders})', list(filtered.values()))
         conn.commit()
         return True
     except Exception:
+        logger.exception('create_or_update_professional_profile failed for user_id=%s', user_id)
         return False
     finally:
         conn.close()
@@ -411,7 +481,7 @@ def _ensure_user_profile(user_id):
             conn.execute('INSERT INTO user_profiles (user_id) VALUES (?)', (user_id,))
             conn.commit()
     except Exception:
-        pass
+        logger.exception('_ensure_user_profile failed for user_id=%s', user_id)
     finally:
         conn.close()
 

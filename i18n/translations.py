@@ -849,6 +849,7 @@ TRANSLATIONS = {
         'profile.avatar_deleted': 'Avatar eliminado',
         'profile.photo_deleted': 'Foto eliminada',
         'profile.save_error': 'Error al guardar',
+        'profile.invalid_budget_range': 'Rango de presupuesto inválido',
         'profile.xlsx_export_error': 'Error al generar el reporte XLSX',
         'profile.pdf_export_error': 'Error al generar el reporte PDF',
         'profile.xlsx_summary': 'Resumen',
@@ -912,6 +913,11 @@ TRANSLATIONS = {
         'notif.pro_status_subject': 'Tu cuenta ha sido {status}',
         'notif.pro_status_sms': 'ArchEstate: Tu cuenta ha sido {status}.',
         'notif.report_deleted_subject': 'Lead #{lead_id} eliminado tras tu reporte',
+        'notif.client_status_seen_title': 'Tu solicitud #{lead_id} fue vista',
+        'notif.client_status_contacted_title': 'Tu solicitud #{lead_id} fue contactada',
+        'notif.client_status_body': '{professional_name} ({specialty}) {status} tu solicitud de {lead_type} en {zone}.',
+        'notif.client_status_email_subject': 'Actualización de tu solicitud #{lead_id}',
+        'notif.client_status_email_body': 'El profesional {professional_name} ({specialty}) ha {status} tu solicitud de {lead_type} en {zone}.',
 
         # === VERIFIER ===
         'verifier.sms_sent': 'Código enviado por SMS a {phone}',
@@ -1776,6 +1782,7 @@ TRANSLATIONS = {
         'profile.avatar_deleted': 'Avatar deleted',
         'profile.photo_deleted': 'Photo deleted',
         'profile.save_error': 'Error saving',
+        'profile.invalid_budget_range': 'Invalid budget range',
         'profile.xlsx_export_error': 'Error generating XLSX report',
         'profile.pdf_export_error': 'Error generating PDF report',
         'profile.xlsx_summary': 'Summary',
@@ -1839,6 +1846,11 @@ TRANSLATIONS = {
         'notif.pro_status_subject': 'Your account has been {status}',
         'notif.pro_status_sms': 'ArchEstate: Your account has been {status}.',
         'notif.report_deleted_subject': 'Lead #{lead_id} deleted after your report',
+        'notif.client_status_seen_title': 'Your request #{lead_id} was viewed',
+        'notif.client_status_contacted_title': 'Your request #{lead_id} was contacted',
+        'notif.client_status_body': '{professional_name} ({specialty}) {status} your {lead_type} request in {zone}.',
+        'notif.client_status_email_subject': 'Update on your request #{lead_id}',
+        'notif.client_status_email_body': 'Professional {professional_name} ({specialty}) has {status} your {lead_type} request in {zone}.',
 
         # === VERIFIER ===
         'verifier.sms_sent': 'Code sent via SMS to {phone}',

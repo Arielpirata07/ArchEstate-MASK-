@@ -680,7 +680,23 @@ def export_leads_csv():
         if not professional or professional['status'] != 'approved':
             return t('prof.account_pending', lang), 403
 
-        leads = conn.execute('SELECT id, type, zone, budget, currency, timestamp FROM leads ORDER BY timestamp DESC').fetchall()
+        pro_data = conn.execute(
+            'SELECT province, zone FROM professionals WHERE user_id = ?',
+            (session['user_id'],)
+        ).fetchone()
+        query = 'SELECT id, type, zone, budget, currency, timestamp FROM leads WHERE 1=1'
+        params = []
+        if pro_data:
+            pro_province = (pro_data['province'] or '').strip()
+            pro_zone = (pro_data['zone'] or '').strip()
+            if pro_province:
+                query += ' AND province = ?'
+                params.append(pro_province)
+            if pro_zone:
+                query += ' AND zone LIKE ?'
+                params.append(f'%{pro_zone}%')
+        query += ' ORDER BY timestamp DESC'
+        leads = conn.execute(query, params).fetchall()
     finally:
         if conn:
             conn.close()
@@ -726,7 +742,23 @@ def export_leads_xlsx():
         if not professional or professional['status'] != 'approved':
             return t('prof.account_pending', lang), 403
 
-        leads = conn.execute('SELECT id, type, zone, budget, currency, timestamp FROM leads ORDER BY timestamp DESC').fetchall()
+        pro_data = conn.execute(
+            'SELECT province, zone FROM professionals WHERE user_id = ?',
+            (session['user_id'],)
+        ).fetchone()
+        query = 'SELECT id, type, zone, budget, currency, timestamp FROM leads WHERE 1=1'
+        params = []
+        if pro_data:
+            pro_province = (pro_data['province'] or '').strip()
+            pro_zone = (pro_data['zone'] or '').strip()
+            if pro_province:
+                query += ' AND province = ?'
+                params.append(pro_province)
+            if pro_zone:
+                query += ' AND zone LIKE ?'
+                params.append(f'%{pro_zone}%')
+        query += ' ORDER BY timestamp DESC'
+        leads = conn.execute(query, params).fetchall()
     finally:
         if conn:
             conn.close()
@@ -985,7 +1017,7 @@ def toggle_lead_status(lead_id):
         if not lead:
             return jsonify({'error': t('prof.lead_not_found', lang)}), 404
 
-        data = request.get_json()
+        data = request.get_json() or {}
         status_type = data.get('status')
 
         if status_type not in ('seen', 'contacted'):

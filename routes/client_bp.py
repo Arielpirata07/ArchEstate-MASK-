@@ -58,7 +58,7 @@ def user_view():
 @rate_limit.check_rate_limit(limit=100, window=60)
 def submit_lead():
     lang = get_language()
-    data = request.json
+    data = request.json or {}
     user_id = session.get('user_id')
 
     if not user_id:

@@ -777,15 +777,26 @@ function loadUserLeads() {
         tbody.innerHTML = data.leads.map(lead => {
             const sym = lead.currency === 'USD' ? 'US$' : lead.currency === 'EUR' ? 'EUR' : '$';
             const seenCount = lead.seen_count || 0;
-            const trackingHtml = seenCount > 0
-                ? `<span class="tracking-badge" title="${seenCount} ${seenCount === 1 ? t('leads.seen_by_singular') : t('leads.seen_by_plural')} tu solicitud">
+            const contactedCount = lead.contacted_count || 0;
+            const contactNames = lead.contact_names || '';
+            let trackingHtml;
+            if (contactedCount > 0 && contactNames) {
+                const names = contactNames.split(', ').map(n => escapeHtml(n)).join(', ');
+                trackingHtml = `<span class="tracking-badge tracking-contacted" title="${names}">
+                    <i data-lucide="check-circle" class="w-3 h-3 tracking-eye"></i>
+                    ${t('leads.contact_names', { names })}
+                </span>`;
+            } else if (seenCount > 0) {
+                trackingHtml = `<span class="tracking-badge" title="${seenCount} ${seenCount === 1 ? t('leads.seen_by_singular') : t('leads.seen_by_plural')} tu solicitud">
                     <i data-lucide="eye" class="w-3 h-3 tracking-eye"></i>
                     ${seenCount} ${seenCount === 1 ? t('leads.view_singular') : t('leads.view_plural')}
-                </span>`
-                : `<span class="tracking-empty">
+                </span>`;
+            } else {
+                trackingHtml = `<span class="tracking-empty">
                     <i data-lucide="hourglass" class="w-3 h-3"></i>
                     ${t('leads.under_review')}
                 </span>`;
+            }
             return `<tr style="border-bottom:1px solid var(--border)">
                 <td class="px-4 py-3 text-[13px] font-semibold" style="color:var(--text-primary)">#${lead.id}</td>
                 <td class="px-4 py-3 text-[13px]" style="color:var(--text-secondary)">${escapeHtml(lead.type || '-')}</td>

@@ -30,7 +30,7 @@ def update_user_phone():
     if not request.is_json:
         return jsonify({"error": t('phone.invalid_content_type', lang)}), 415
 
-    data = request.json
+    data = request.json or {}
     phone = (data.get('phone') or '').strip()
 
     if not phone:
@@ -40,53 +40,30 @@ def update_user_phone():
     if not is_valid:
         return jsonify({"error": error}), 400
 
-    conn = None
     try:
-        conn = models.get_db_connection()
-        current = conn.execute('SELECT phone, phone_verified FROM users WHERE id = ?',
-                               (session['user_id'],)).fetchone()
-        old_phone = current['phone'] if current else ''
+        result = models.update_user_phone_only(session['user_id'], phone)
+        if not result['success']:
+            return jsonify({"error": t('phone.update_error', lang)}), 500
 
-        e164 = utils.normalize_phone_to_e164(phone)
-        ntype = utils.classify_phone_type(e164) if e164 else ''
-
-        old_e164 = utils.normalize_phone_to_e164(old_phone) if old_phone else ''
-        invalidate_otp = bool(e164) and (old_e164 != e164)
-
-        if invalidate_otp:
-            conn.execute(
-                'UPDATE users SET phone = ?, phone_e164 = ?, phone_number_type = ?, '
-                'phone_format_valid = 1, phone_verified = 0, verification_code = \'\', verification_expires = NULL '
-                'WHERE id = ?',
-                (phone, e164, ntype, session['user_id'])
-            )
+        if result['invalidate_otp']:
             utils.log_event(user_id=session['user_id'], event='phone_changed',
-                            props={'old_hash': utils.hash_phone_digits(old_phone),
+                            props={'old_hash': utils.hash_phone_digits(phone),
                                    'new_hash': utils.hash_phone_digits(phone),
-                                   'e164': bool(e164)}, conn=conn)
-        else:
-            conn.execute(
-                'UPDATE users SET phone = ?, phone_e164 = ?, phone_number_type = ? WHERE id = ?',
-                (phone, e164, ntype, session['user_id'])
-            )
-        conn.commit()
+                                   'e164': bool(result['phone_e164'])})
 
-        session['phone'] = phone
+        session['phone'] = result['phone']
 
         return jsonify({
             "status": "success",
-            "message": t('phone.updated', lang) if not invalidate_otp
-                       else t('phone.updated_reverify', lang),
-            "phone": phone,
-            "phone_e164": e164,
-            "phone_verified": 0 if invalidate_otp else (current['phone_verified'] if current else 0),
+            "message": t('phone.updated_reverify', lang) if result['invalidate_otp']
+                       else t('phone.updated', lang),
+            "phone": result['phone'],
+            "phone_e164": result['phone_e164'],
+            "phone_verified": result['phone_verified'],
         })
     except Exception as e:
         logger.exception('Error en update_user_phone')
         return jsonify({"error": t('phone.update_error', lang)}), 500
-    finally:
-        if conn:
-            conn.close()
 
 
 @phone_bp.route('/api/phone/send-code', methods=['POST'])
@@ -198,7 +175,7 @@ def verify_phone_code():
     if not request.is_json:
         return jsonify({"error": t('phone.invalid_content_type', lang)}), 415
 
-    data = request.json
+    data = request.json or {}
     code = (data.get('code') or '').strip()
 
     if not code or not code.isdigit() or len(code) != 6:
