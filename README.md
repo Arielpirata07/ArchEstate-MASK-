@@ -55,6 +55,9 @@ Conecta clientes de alto nivel adquisitivo con profesionales verificados del sec
 | **Export** | openpyxl (XLSX), fpdf (PDF) | 3.1+ / 1.7+ |
 | **Timezone** | pytz | 2023.3+ |
 | **Tests** | pytest + freezegun + monkeypatch | 9.x |
+| **CSRF** | Flask-WTF | 1.2+ |
+| **Error Tracking** | Sentry SDK (Flask) | 2.x+ |
+| **Backup** | sqlite3.backup + gzip + S3 (boto3) | stdlib |
 
 ---
 
@@ -92,7 +95,7 @@ Conecta clientes de alto nivel adquisitivo con profesionales verificados del sec
 | Funcionalidad | Descripción |
 |---------------|-------------|
 | Email transaccional | SMTP con fallback a consola en desarrollo |
-| Templates HTML | Base, lead asignado, cambio de estado, estado profesional |
+| Templates HTML | Base, lead asignado, password reset, cambio de estado, estado profesional |
 | Toggles por usuario | `email_notifications`, `sms_notifications`, `lead_alerts` en `user_preferences` |
 | Lead assignments | Notifica profesionales aprobados cuando se crea un lead nuevo |
 | Lead status changes | Notifica admin cuando profesional cambia estado de lead |
@@ -163,6 +166,8 @@ Conecta clientes de alto nivel adquisitivo con profesionales verificados del sec
 
 | Medida | Implementación |
 |--------|----------------|
+| CSRF Protection | Flask-WTF `CSRFProtect` middleware — token en formularios (login, register) y header `X-CSRFToken` auto-inyectado via monkey-patch de `fetch()` |
+| Password Recovery | Self-service forgot/reset con tokens de 1h + email transaccional |
 | Sesiones Flask | Roles: admin, professional, client con flags `HttpOnly`, `SameSite=Lax`, `Secure` |
 | Decoradores | `@login_required`, `@admin_required`, `@professional_required` — todos verifican `is_active` |
 | Cuentas deshabilitadas | Pierden sesión activa inmediatamente |
@@ -248,7 +253,7 @@ archestate/
 ├── utils.py                  # Phone normalization, logging, remember tokens
 ├── validators.py             # Email, phone, password, budget, zone validation
 ├── routes/
-│   ├── auth_bp.py            # Login, register, logout
+│   ├── auth_bp.py            # Login, register, logout, forgot/reset password
 │   ├── public_bp.py          # Landing page, lead detail public
 │   ├── client_bp.py          # /usuario, /api/submit
 │   ├── professional_bp.py    # /profesional, leads, docs, reports, WhatsApp
@@ -257,6 +262,8 @@ archestate/
 │   ├── lead_bp.py            # WhatsApp redirect, telemetry, lead reports
 │   └── form_options_bp.py    # CRUD de opciones de formulario (admin)
 ├── routes_profile.py         # Profile, lead editing, avatar, settings, sessions, activity
+├── scripts/
+│   └── backup_db.py          # SQLite backup with gzip + optional S3 upload
 ├── services/
 │   ├── verifier.py           # OTP verifier: SmsSimulated, WhatsAppSimulated, TwilioSms, TwilioWhatsApp + VerifierRouter
 │   ├── email.py              # SMTPEmailSender — SMTP with console fallback
@@ -269,15 +276,24 @@ archestate/
 │   ├── robots.txt            # SEO — bloquea admin/api
 │   ├── sitemap.xml           # SEO — páginas públicas
 │   └── uploads/docs/         # Professional document uploads
-├── templates/                # 17 templates (base, landing, login, register,
-│                             #   user, professional, admin, user_management,
+├── templates/                # 19 templates (base, landing, login, register,
+│                             #   forgot_password, reset_password, user,
+│                             #   professional, admin, user_management,
 │                             #   edit_lead, lead_detail, profile,
 │                             #   errors/400, errors/404, errors/409,
 │                             #   errors/410, errors/429, errors/500)
-│   └── email/                # Email templates: base, lead_assigned, status_change, professional_status
-├── tests/                    # 302 tests (pytest + freezegun + monkeypatch)
+│   └── email/                # Email templates: base, lead_assigned, password_reset,
+│                             #   status_change, professional_status
+├── scripts/
+│   └── backup_db.py          # SQLite backup with gzip + optional S3 upload
+├── tests/                    # 444 tests (pytest + freezegun + monkeypatch)
+├── .github/
+│   ├── workflows/tests.yml   # CI/CD: pytest + coherence on push/PR
+│   └── dependabot.yml        # Weekly pip updates
 ├── design.md                 # Design system tokens and patterns
 ├── AGENTS.md                 # AI agent guide
+├── verify_coherence.py       # Cross-checks schema/routes/templates (89 checks)
+├── render.yaml                # Render deployment blueprint (prod + staging)
 └── requirements.txt
 ```
 
@@ -422,11 +438,13 @@ archestate/
 | `user_id` | INTEGER FK | → `users.id` |
 
 ### Otras tablas
-- **`user_preferences`** — theme, language, notification toggles, preferred_channel
+- **`user_preferences`** — theme, language, notification toggles, preferred_channel, notification_filters (JSON)
 - **`user_login_history`** — IP, user_agent, timestamps de login
 - **`remember_tokens`** — selector/validator hash para "recordarme"
 - **`consent_log`** — consentimiento de verificación por canal
 - **`events`** — telemetría de clicks, envíos OTP, etc.
+- **`notifications`** — in-app notifications por usuario (lead, status, approval, report)
+- **`password_reset_tokens`** — tokens de recuperación de contraseña con expiry (1h)
 
 ---
 
@@ -461,6 +479,7 @@ archestate/
 | `POST` | `/api/user/update-phone` | Actualizar teléfono (requiere sesión) |
 | `POST` | `/api/phone/send-code` | Enviar OTP por SMS/WhatsApp |
 | `POST` | `/api/phone/verify` | Verificar código OTP |
+| `POST` | `/api/whatsapp/webhook` | Webhook Twilio WhatsApp (exento de CSRF) |
 
 ### Profile & Settings
 | Método | Endpoint | Descripción |
@@ -475,6 +494,11 @@ archestate/
 | `GET` | `/api/profile/sessions` | Historial de sesiones |
 | `DELETE` | `/api/profile/sessions/<id>` | Cerrar sesión específica |
 | `GET` | `/api/profile/activity` | Actividad reciente |
+| `GET` | `/api/profile/notifications` | Notificaciones del usuario |
+| `POST` | `/api/profile/notifications/read` | Marcar notificación como leída |
+| `POST` | `/api/profile/notifications/read-all` | Marcar todas como leídas |
+| `GET` | `/api/profile/notification-filters` | Filtros de notificaciones (profesional) |
+| `PUT` | `/api/profile/notification-filters` | Guardar filtros de notificaciones |
 
 ### Lead Editing
 | Método | Endpoint | Descripción |
@@ -540,9 +564,10 @@ Acceder en `http://127.0.0.1:5000`
 ### Ejecutar Tests
 
 ```bash
-python -m pytest tests/ -q            # Todos (380)
+python -m pytest tests/ -q            # Todos (444)
 python -m pytest tests/ -x -v         # Parar en primera falla, verbose
 python -m pytest tests/test_file.py   # Archivo individual
+python verify_coherence.py            # Cross-check schema/routes/templates (89 checks)
 ```
 
 ---
@@ -571,6 +596,7 @@ python -m pytest tests/test_file.py   # Archivo individual
 | `TWILIO_WHATSAPP_FROM` | Número de WhatsApp sandbox |
 | `TWILIO_WHATSAPP_CONTENT_SID` | Content SID para plantillas WhatsApp |
 | `TWILIO_WHATSAPP_BUTTON_CONTENT_SID` | Content SID para template con botón "✅ Verificar" |
+| `TWILIO_WHATSAPP_LEAD_CONTENT_SID` | Content SID para template de lead notification |
 | `TWILIO_SIMULATE` | `true` = códigos en consola, `false` = envío real |
 
 ### SMTP (Emails)
@@ -589,6 +615,17 @@ python -m pytest tests/test_file.py   # Archivo individual
 |----------|-------------|---------|
 | `SITE_URL` | URL base para emails y links | `http://localhost:5000` |
 | `PREFER_SECURE_COOKIES` | Flags de cookie seguros (HTTPS) | `true` |
+| `SENTRY_DSN` | DSN de Sentry para error tracking (opcional) | — |
+| `STAGING` | `true` = Sentry env staging, cookies no seguras | `false` |
+
+### Backup (S3)
+
+| Variable | Descripción | Default |
+|----------|-------------|---------|
+| `BACKUP_S3_BUCKET` | Bucket S3 para backups automáticos | — |
+| `BACKUP_S3_ACCESS_KEY` | Access key IAM | — |
+| `BACKUP_S3_SECRET_KEY` | Secret key IAM | — |
+| `BACKUP_S3_REGION` | Región del bucket | `us-east-1` |
 
 > En desarrollo, `TWILIO_SIMULATE=true` evita consumir créditos del trial.
 > Si no se configura SMTP, los emails se loguean en consola (console fallback).
@@ -596,6 +633,13 @@ python -m pytest tests/test_file.py   # Archivo individual
 ---
 
 ## Deploy en Render
+
+El proyecto incluye dos servicios en `render.yaml`:
+
+| Servicio | Propósito | `TWILIO_SIMULATE` | `PREFER_SECURE_COOKIES` |
+|----------|-----------|-------------------|------------------------|
+| `archestate` | Producción | `false` | `true` |
+| `archestate-staging` | Staging/QA | `true` | `false` |
 
 ```bash
 # Build
@@ -642,7 +686,14 @@ Ver `.plans/deploy-checklist.md` para el checklist completo.
 - [x] Toggle "Mis Leads / Todos" en panel profesional
 - [x] Province/zone en perfil profesional
 - [x] Internacionalización ES/EN (1100+ keys, 40+ archivos)
-- [ ] CSRF protection en formularios
+- [x] CSRF protection (Flask-WTF + monkey-patch fetch + forms)
+- [x] Password recovery (self-service forgot/reset con tokens 1h)
+- [x] Profesional identification compartida con clientes (in-app + email)
+- [x] CI/CD (GitHub Actions: pytest + coherence on push/PR)
+- [x] Sentry error tracking (DSN opcional, env staging/production)
+- [x] Dependabot (weekly pip updates)
+- [x] Staging environment en Render (`TWILIO_SIMULATE=true`)
+- [x] Backup script (SQLite backup + gzip + S3 upload)
 - [ ] Notificaciones internas entre admin y profesional
 - [ ] Asignación automática de leads por especialidad y zona
 - [ ] Paginación en tabla de leads
