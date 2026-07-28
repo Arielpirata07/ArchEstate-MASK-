@@ -9,12 +9,23 @@ venv/
 database.db
 *.db
 *.sqlite3
+instance/
+backups/
 
 # Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+.eggs/
+dist/
+build/
+.coverage
+htmlcov/
 
 # IDE
 .idea/
