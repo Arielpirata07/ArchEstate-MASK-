@@ -16,6 +16,8 @@ import re
 
 import pytest
 
+import models
+
 
 class TestLoginFlow:
     """El flujo de login de admin debe funcionar end-to-end."""
@@ -127,8 +129,7 @@ class TestRegisterDoesNotConfuseWithLogin:
             'role': 'admin',  # intento de privilege escalation
         }, follow_redirects=True)
         # Verificar en la DB que el user no se creó con role=admin
-        import sqlite3
-        conn = sqlite3.connect('database.db')
+        conn = models.get_db_connection()
         row = conn.execute(
             "SELECT role FROM users WHERE username = ?", ('newadminuser',)
         ).fetchone()

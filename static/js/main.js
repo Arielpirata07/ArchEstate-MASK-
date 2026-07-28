@@ -15,7 +15,11 @@ function csrfSafeMethod(method) {
     var origFetch = window.fetch;
     window.fetch = function(input, init) {
         init = init || {};
-        if (!csrfSafeMethod((init.method || 'GET').toUpperCase())) {
+        var method = init.method;
+        if (!method && input && typeof input.method === 'string') {
+            method = input.method;
+        }
+        if (!csrfSafeMethod((method || 'GET').toUpperCase())) {
             var token = getCsrfToken();
             if (token) {
                 var headers = init.headers || {};

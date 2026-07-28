@@ -443,7 +443,7 @@ function renderActiveTags() {
 
     container.innerHTML = tags.map(tag => `
         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gold/10 text-gold border border-gold/20 rounded-full text-[9px] font-bold uppercase tracking-widest">
-            ${tag.label}
+            ${escapeHtml(tag.label)}
             <button onclick="removeFilter('${tag.key}')" class="hover:text-rose-500 transition-colors">
                 <i data-lucide="x" class="w-2.5 h-2.5"></i>
             </button>

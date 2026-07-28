@@ -24,6 +24,7 @@ import utils
 from decorators import login_required, professional_required
 from i18n import t, get_language
 from services.database import date_format_sql, now_sql
+from services.pdf_helpers import pdf_safe, pdf_val, _style_header_row, _apply_data_border
 from utils import allowed_file, convert_to_argentina_time
 
 professional_bp = Blueprint('professional', __name__, url_prefix='')
@@ -124,19 +125,10 @@ def get_leads_api():
         params = []
 
         if my_leads:
-            pro_data = conn.execute(
-                'SELECT province, zone FROM professionals WHERE user_id = ?',
-                (session['user_id'],)
-            ).fetchone()
-            if pro_data:
-                pro_province = (pro_data['province'] or '').strip()
-                pro_zone = (pro_data['zone'] or '').strip()
-                if pro_province:
-                    query += ' AND province = ?'
-                    params.append(pro_province)
-                if pro_zone:
-                    query += ' AND zone LIKE ?'
-                    params.append(f'%{pro_zone}%')
+            conds, geo_params = _get_pro_geo_filter(conn, session['user_id'])
+            for c in conds:
+                query += f' AND {c}'
+            params.extend(geo_params)
 
         if search:
             query += ' AND (zone LIKE ? OR email LIKE ? OR type LIKE ? OR budget LIKE ?)'
@@ -281,25 +273,34 @@ def get_leads_filter_options():
             conn.close()
 
 
+def _get_pro_geo_filter(conn, user_id):
+    pro_data = conn.execute(
+        'SELECT province, zone FROM professionals WHERE user_id = ?',
+        (user_id,)
+    ).fetchone()
+    conditions = []
+    params = []
+    if pro_data:
+        pro_province = (pro_data['province'] or '').strip()
+        pro_zone = (pro_data['zone'] or '').strip()
+        if pro_province:
+            conditions.append('province = ?')
+            params.append(pro_province)
+        if pro_zone:
+            conditions.append('zone LIKE ?')
+            params.append(f'%{pro_zone}%')
+    return conditions, params
+
+
 def _query_leads_stats(conn, user_id, my_leads, month):
     """Helper: build stats data dict. conn must be open, caller owns close."""
     where_clauses = ['1=1']
     params = []
 
     if my_leads:
-        pro_data = conn.execute(
-            'SELECT province, zone FROM professionals WHERE user_id = ?',
-            (user_id,)
-        ).fetchone()
-        if pro_data:
-            pro_province = (pro_data['province'] or '').strip()
-            pro_zone = (pro_data['zone'] or '').strip()
-            if pro_province:
-                where_clauses.append('province = ?')
-                params.append(pro_province)
-            if pro_zone:
-                where_clauses.append('zone LIKE ?')
-                params.append(f'%{pro_zone}%')
+        conds, geo_params = _get_pro_geo_filter(conn, user_id)
+        where_clauses.extend(conds)
+        params.extend(geo_params)
 
     where_sql = ' AND '.join(where_clauses)
 
@@ -477,37 +478,6 @@ def export_stats_csv():
             conn.close()
 
 
-def _style_header_row(ws, col_count):
-    """Apply ArchEstate header style to the first row of a worksheet."""
-    header_font = Font(name='Manrope', bold=True, size=10, color='FFFFFF')
-    header_fill = PatternFill(start_color='000410', end_color='000410', fill_type='solid')
-    header_align = Alignment(horizontal='center', vertical='center')
-    thin_border = Border(
-        left=Side(style='thin', color='D4BC9A'),
-        right=Side(style='thin', color='D4BC9A'),
-        top=Side(style='thin', color='D4BC9A'),
-        bottom=Side(style='thin', color='D4BC9A'),
-    )
-    for col in range(1, col_count + 1):
-        cell = ws.cell(row=1, column=col)
-        cell.font = header_font
-        cell.fill = header_fill
-        cell.alignment = header_align
-        cell.border = thin_border
-
-
-def _apply_data_border(ws, row, col_count):
-    """Apply subtle borders to a data row."""
-    border = Border(
-        left=Side(style='thin', color='E8D5B7'),
-        right=Side(style='thin', color='E8D5B7'),
-        top=Side(style='thin', color='E8D5B7'),
-        bottom=Side(style='thin', color='E8D5B7'),
-    )
-    for col in range(1, col_count + 1):
-        ws.cell(row=row, column=col).border = border
-
-
 @professional_bp.route('/api/leads/stats/export/xlsx')
 @professional_required
 def export_stats_xlsx():
@@ -680,21 +650,12 @@ def export_leads_csv():
         if not professional or professional['status'] != 'approved':
             return t('prof.account_pending', lang), 403
 
-        pro_data = conn.execute(
-            'SELECT province, zone FROM professionals WHERE user_id = ?',
-            (session['user_id'],)
-        ).fetchone()
+        conds, geo_params = _get_pro_geo_filter(conn, session['user_id'])
         query = 'SELECT id, type, zone, budget, currency, timestamp FROM leads WHERE 1=1'
         params = []
-        if pro_data:
-            pro_province = (pro_data['province'] or '').strip()
-            pro_zone = (pro_data['zone'] or '').strip()
-            if pro_province:
-                query += ' AND province = ?'
-                params.append(pro_province)
-            if pro_zone:
-                query += ' AND zone LIKE ?'
-                params.append(f'%{pro_zone}%')
+        for c in conds:
+            query += f' AND {c}'
+        params.extend(geo_params)
         query += ' ORDER BY timestamp DESC'
         leads = conn.execute(query, params).fetchall()
     finally:
@@ -742,21 +703,12 @@ def export_leads_xlsx():
         if not professional or professional['status'] != 'approved':
             return t('prof.account_pending', lang), 403
 
-        pro_data = conn.execute(
-            'SELECT province, zone FROM professionals WHERE user_id = ?',
-            (session['user_id'],)
-        ).fetchone()
+        conds, geo_params = _get_pro_geo_filter(conn, session['user_id'])
         query = 'SELECT id, type, zone, budget, currency, timestamp FROM leads WHERE 1=1'
         params = []
-        if pro_data:
-            pro_province = (pro_data['province'] or '').strip()
-            pro_zone = (pro_data['zone'] or '').strip()
-            if pro_province:
-                query += ' AND province = ?'
-                params.append(pro_province)
-            if pro_zone:
-                query += ' AND zone LIKE ?'
-                params.append(f'%{pro_zone}%')
+        for c in conds:
+            query += f' AND {c}'
+        params.extend(geo_params)
         query += ' ORDER BY timestamp DESC'
         leads = conn.execute(query, params).fetchall()
     finally:
@@ -830,38 +782,6 @@ def download_lead_pdf(lead_id):
         return jsonify({"status": "error", "message": t('prof.lead_not_found', lang)}), 404
 
     lead = dict(lead)
-
-    def pdf_safe(value):
-        if value is None:
-            return ''
-        text = str(value)
-        replacements = {
-            '\u20ac': 'EUR', '\u00a3': 'GBP', '\u00a5': 'JPY',
-            '\u2014': '-', '\u2013': '-', '\u2022': '-',
-            '\u221a': 'sqrt', '\u00d7': 'x', '\u00f7': '/',
-            '\u2122': 'TM', '\u00a9': '(c)', '\u00ae': '(R)',
-            '\u2026': '...', '\u00b2': '2', '\u00b3': '3', '\u00b0': 'deg',
-        }
-        for old, new in replacements.items():
-            text = text.replace(old, new)
-        accents = {
-            '\u00e1': 'a', '\u00e9': 'e', '\u00ed': 'i', '\u00f3': 'o', '\u00fa': 'u',
-            '\u00e0': 'a', '\u00e8': 'e', '\u00ec': 'i', '\u00f2': 'o', '\u00f9': 'u',
-            '\u00e4': 'a', '\u00eb': 'e', '\u00ef': 'i', '\u00f6': 'o', '\u00fc': 'u',
-            '\u00e3': 'a', '\u00f5': 'o', '\u00f1': 'n',
-            '\u00c1': 'A', '\u00c9': 'E', '\u00cd': 'I', '\u00d3': 'O', '\u00da': 'U',
-            '\u00c0': 'A', '\u00c8': 'E', '\u00cc': 'I', '\u00d2': 'O', '\u00d9': 'U',
-            '\u00c4': 'A', '\u00cb': 'E', '\u00cf': 'I', '\u00d6': 'O', '\u00dc': 'U',
-            '\u00c3': 'A', '\u00d5': 'O', '\u00d1': 'N',
-            '\u00e7': 'c', '\u00c7': 'C', '\u00df': 'ss',
-        }
-        for old, new in accents.items():
-            text = text.replace(old, new)
-        return ''.join(c if ord(c) < 128 else '?' for c in text)
-
-    def pdf_val(value, default='-'):
-        text = pdf_safe(value)
-        return text if text else default
 
     pdf = FPDF()
     pdf.add_page()

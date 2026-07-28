@@ -134,6 +134,8 @@ def init_db(app):
             cursor.execute('INSERT INTO schema_version (version) VALUES (1)')
         if current_ver < 2:
             cursor.execute('INSERT INTO schema_version (version) VALUES (2)')
+        if current_ver < 3:
+            cursor.execute('INSERT INTO schema_version (version) VALUES (3)')
 
         cursor.execute('PRAGMA table_info(users)')
         user_columns = [row[1] for row in cursor.fetchall()]
@@ -493,6 +495,10 @@ def init_db(app):
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_events_lead ON events(lead_id)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_events_event ON events(event)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_events_ts ON events(ts)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_users_phone_e164 ON users(phone_e164)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_lead_versions_lead_id ON lead_versions(lead_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_leads_province_zone ON leads(province, zone)')
 
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS form_options (
@@ -631,7 +637,7 @@ def init_db(app):
             if is_prod:
                 import secrets
                 admin_password = secrets.token_urlsafe(12)
-                print(f'[STARTUP] Admin user created. Password: {admin_password}')
+                logger.info('Admin user created. Password: %s', admin_password)
             else:
                 admin_password = 'admin123'
             cursor.execute('INSERT INTO users (username, email, hash, role) VALUES (?, ?, ?, ?)',

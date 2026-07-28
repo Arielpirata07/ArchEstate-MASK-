@@ -169,7 +169,7 @@ check('Rate limit on /api/submit', 'check_rate_limit' in all_routes_content and 
 # ===== 9. Blueprint Registration =====
 print('\n[9] Blueprint Registration')
 factory_content = read_file(FACTORY_FILE)
-expected_blueprints = ['auth_bp', 'public_bp', 'client_bp', 'professional_bp', 'admin_bp', 'phone_bp', 'lead_bp', 'form_options_bp', 'whatsapp_bp']
+expected_blueprints = ['auth_bp', 'public_bp', 'client_bp', 'professional_bp', 'admin_bp', 'phone_bp', 'lead_bp', 'form_options_bp', 'whatsapp_bp', 'profile_bp']
 for bp in expected_blueprints:
     check(f'{bp} registered in factory.py', bp in factory_content)
 

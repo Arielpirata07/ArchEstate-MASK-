@@ -963,7 +963,7 @@ window.__LANG = document.documentElement.lang || 'es';
 
 window.t = function(key, params) {
     var dict = window.I18N[window.__LANG] || window.I18N.es;
-    var val = dict[key] || key;
+    var val = dict[key] || window.I18N.es[key] || key;
     if (params) {
         Object.keys(params).forEach(function(k) {
             val = val.replace('${' + k + '}', params[k]);

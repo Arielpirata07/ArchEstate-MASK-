@@ -4,6 +4,7 @@ from flask import Blueprint, request
 
 import config
 import models
+import rate_limit
 from i18n import t, get_language
 
 logger = logging.getLogger(__name__)
@@ -12,12 +13,19 @@ whatsapp_bp = Blueprint('whatsapp', __name__, url_prefix='')
 
 
 @whatsapp_bp.route('/api/whatsapp/webhook', methods=['POST'])
+@rate_limit.check_rate_limit(30, 60)
 def whatsapp_webhook():
     from twilio.request_validator import RequestValidator
     from twilio.twiml.messaging_response import MessagingResponse
     from urllib.parse import urljoin
 
     lang = get_language()
+
+    if not config.TWILIO_AUTH_TOKEN:
+        logger.critical('TWILIO_AUTH_TOKEN not configured — rejecting webhook')
+        resp = MessagingResponse()
+        return str(resp), 403
+
     validator = RequestValidator(config.TWILIO_AUTH_TOKEN)
     signature = request.headers.get('X-Twilio-Signature', '')
     params = request.form.to_dict()
@@ -27,7 +35,7 @@ def whatsapp_webhook():
     else:
         url = request.url
 
-    if config.TWILIO_AUTH_TOKEN and not validator.validate(url, params, signature):
+    if not validator.validate(url, params, signature):
         logger.warning('Invalid signature from %s', request.remote_addr)
         resp = MessagingResponse()
         return str(resp), 403

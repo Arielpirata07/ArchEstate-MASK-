@@ -133,8 +133,11 @@ def notify_lead_created(lead_id: int) -> list:
     lead_data = _lead_to_dict(lead)
     notified = []
 
+    pro_ids = [pro['id'] for pro in professionals]
+    all_prefs = models.get_user_preferences_batch(pro_ids)
+
     for pro in professionals:
-        prefs = models.get_user_preferences(pro['id'])
+        prefs = all_prefs.get(pro['id'], {})
         if not prefs.get('lead_alerts'):
             continue
 
