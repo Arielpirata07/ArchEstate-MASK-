@@ -286,13 +286,6 @@
     box-shadow: 0 4px 12px rgba(115, 90, 58, 0.06);
 }
 
-/* --- Form Validation --- */
-.field-error {
-    color: #e11d48;
-    font-size: 0.75rem;
-    margin-top: 0.25rem;
-}
-
 /* ============================================
    DARK MODE OVERRIDES
    ============================================ */
@@ -351,10 +344,7 @@
     background: var(--accent);
 }
 
-/* Field error/success */
-.dark .field-error {
-    color: #fb7185;
-}
+/* Field success */
 .dark .field-success {
     color: #34d399;
 }
