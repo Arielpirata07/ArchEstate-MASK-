@@ -45,4 +45,4 @@ Thumbs.db
 
 # Uploads
 uploads/
-static/uploads/
+static/uploads/.git-rewrite/

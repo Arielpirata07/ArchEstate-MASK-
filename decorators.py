@@ -1,7 +1,18 @@
 from functools import wraps
-from flask import jsonify, request, session, redirect, url_for, flash
+from flask import g, jsonify, request, session, redirect, url_for, flash
 
 from models import get_user_by_id
+
+
+def _get_current_user():
+    """Get user from g (set by middleware) or fallback to DB query."""
+    user = getattr(g, 'user', None)
+    if user is not None:
+        return user
+    user_id = session.get('user_id')
+    if user_id:
+        return get_user_by_id(user_id)
+    return None
 
 
 def login_required(f):
@@ -11,7 +22,7 @@ def login_required(f):
             if request.is_json or request.accept_mimetypes.best_match(['application/json', 'text/html']) == 'application/json':
                 return jsonify({"error": "No autorizado"}), 401
             return redirect(url_for('auth.login'))
-        user = get_user_by_id(session['user_id'])
+        user = _get_current_user()
         if not user or not user.get('is_active'):
             session.clear()
             flash('Tu cuenta ha sido deshabilitada. Contactá al administrador.', 'error')
@@ -25,7 +36,7 @@ def admin_required(f):
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
             return redirect(url_for('auth.login'))
-        user = get_user_by_id(session['user_id'])
+        user = _get_current_user()
         if not user or not user.get('is_active'):
             session.clear()
             flash('Tu cuenta ha sido deshabilitada. Contactá al administrador.', 'error')
@@ -42,7 +53,7 @@ def professional_required(f):
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
             return redirect(url_for('auth.login'))
-        user = get_user_by_id(session['user_id'])
+        user = _get_current_user()
         if not user or not user.get('is_active'):
             session.clear()
             flash('Tu cuenta ha sido deshabilitada. Contactá al administrador.', 'error')
