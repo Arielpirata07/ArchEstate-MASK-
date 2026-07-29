@@ -80,7 +80,6 @@ def restore_session_from_remember_cookie():
     if not user_id:
         return None
 
-    conn = None
     try:
         conn = models.get_db_connection()
         user = conn.execute(
@@ -104,9 +103,6 @@ def restore_session_from_remember_cookie():
         )
     except Exception:
         logger.exception('Error al restaurar sesión desde remember token')
-    finally:
-        if conn:
-            conn.close()
     return None
 
 
@@ -146,11 +142,22 @@ def inject_language():
     return dict(lang=lang, t=_translate)
 
 
+def close_db_connection(exc=None):
+    conn = getattr(g, 'db_conn', None)
+    if conn is not None:
+        try:
+            conn.close()
+        except Exception:
+            pass
+        g.db_conn = None
+
+
 def register_middleware(app):
     app.after_request(security_headers)
     app.before_request(assign_request_id)
     app.before_request(load_current_user)
     app.before_request(restore_session_from_remember_cookie)
+    app.teardown_appcontext(close_db_connection)
     app.context_processor(inject_request_id)
     app.context_processor(inject_theme)
     app.context_processor(inject_notifications)
