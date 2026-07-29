@@ -93,10 +93,13 @@
         <span class="w-1 h-1 bg-white/20 rounded-full dark:bg-gold/30"></span>
         <span class="w-1.5 h-1.5 bg-white/15 rounded-full dark:bg-gold/25"></span>
     </div>
+
+    <canvas id="hero-particles" aria-hidden="true" width="0" height="0"></canvas>
 </div>
 
-<!-- Grain noise texture overlay -->
-<div class="grain-overlay" aria-hidden="true"></div>
+    <!-- Grain noise texture overlay -->
+    <div class="grain-overlay" aria-hidden="true"></div>
+
 
 <div class="flex flex-col items-center justify-center min-h-[60vh] text-center relative z-10">
     <!-- Alerta de solicitud enviada -->
@@ -291,4 +294,5 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/landing.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/landing-particles.js') }}" defer></script>
 {% endblock %}

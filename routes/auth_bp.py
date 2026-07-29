@@ -1,7 +1,5 @@
 import logging
-import random
 import re
-import time as _time
 
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, session, url_for
 
@@ -125,90 +123,86 @@ def login():
         try:
             conn = models.get_db_connection()
             user = conn.execute('SELECT * FROM users WHERE username = ?', (username,)).fetchone()
+
+            if user and check_password_hash(user['hash'], password):
+                if not user['is_active']:
+                    flash(t('auth.account_disabled', lang), 'error')
+                    return redirect(url_for('auth.login'))
+
+                session.clear()
+                session.modified = True
+                session.permanent = True
+                session['user_id'] = user['id']
+                session['username'] = user['username']
+                session['email'] = user['email']
+                session['role'] = user['role']
+                session['phone'] = user['phone'] or ''
+
+                try:
+                    conn.execute(
+                        'INSERT INTO user_login_history (user_id, ip_address, user_agent) VALUES (?, ?, ?)',
+                        (user['id'], request.remote_addr or '', request.user_agent.string[:255] if request.user_agent else '')
+                    )
+                    conn.commit()
+                except Exception:
+                    pass
+
+                remember_response = None
+                if request.form.get('remember') == 'on':
+                    try:
+                        selector, validator, validator_hash = utils.generate_remember_token()
+                        conn.execute(
+                            'INSERT INTO remember_tokens (user_id, selector, validator_hash, expires_at, ip_address, user_agent) '
+                            'VALUES (?, ?, ?, ?, ?, ?)',
+                            (
+                                user['id'],
+                                selector,
+                                validator_hash,
+                                utils.remember_expires_at().isoformat(),
+                                request.remote_addr or '',
+                                request.user_agent.string[:255] if request.user_agent else '',
+                            )
+                        )
+                        conn.commit()
+                        remember_response = redirect(url_for(
+                            'admin.admin_view' if user['role'] == 'admin' else
+                            'professional.professional_view' if user['role'] == 'professional' else
+                            'client.user_view'
+                        ))
+                        remember_response.set_cookie(
+                            config.REMEMBER_COOKIE_NAME,
+                            f'{selector}:{validator}',
+                            max_age=utils.remember_cookie_max_age(),
+                            httponly=True,
+                            secure=config.REMEMBER_COOKIE_SECURE,
+                            samesite='Lax',
+                            path='/',
+                        )
+                        utils.log_action(
+                            "Remember me activado",
+                            f"user_id={user['id']}, selector={selector[:8]}...",
+                            session
+                        )
+                    except Exception:
+                        logger.exception('Error al crear remember token')
+                        remember_response = None
+
+                if user['role'] == 'admin':
+                    target = url_for('admin.admin_view')
+                elif user['role'] == 'professional':
+                    target = url_for('professional.professional_view')
+                else:
+                    target = url_for('client.user_view')
+
+                if remember_response is not None:
+                    return remember_response
+                return redirect(target)
+
+            flash(t('auth.invalid_credentials', lang), 'error')
+            return redirect(url_for('auth.login'))
         finally:
             if conn:
                 conn.close()
-
-        if user and check_password_hash(user['hash'], password):
-            if not user['is_active']:
-                flash(t('auth.account_disabled', lang), 'error')
-                return redirect(url_for('auth.login'))
-
-            session.clear()
-            session.modified = True
-            session.permanent = True
-            session['user_id'] = user['id']
-            session['username'] = user['username']
-            session['email'] = user['email']
-            session['role'] = user['role']
-            session['phone'] = user['phone'] or ''
-
-            try:
-                conn2 = models.get_db_connection()
-                conn2.execute(
-                    'INSERT INTO user_login_history (user_id, ip_address, user_agent) VALUES (?, ?, ?)',
-                    (user['id'], request.remote_addr or '', request.user_agent.string[:255] if request.user_agent else '')
-                )
-                conn2.commit()
-                conn2.close()
-            except Exception:
-                pass
-
-            remember_response = None
-            if request.form.get('remember') == 'on':
-                try:
-                    selector, validator, validator_hash = utils.generate_remember_token()
-                    conn3 = models.get_db_connection()
-                    conn3.execute(
-                        'INSERT INTO remember_tokens (user_id, selector, validator_hash, expires_at, ip_address, user_agent) '
-                        'VALUES (?, ?, ?, ?, ?, ?)',
-                        (
-                            user['id'],
-                            selector,
-                            validator_hash,
-                            utils.remember_expires_at().isoformat(),
-                            request.remote_addr or '',
-                            request.user_agent.string[:255] if request.user_agent else '',
-                        )
-                    )
-                    conn3.commit()
-                    conn3.close()
-                    remember_response = redirect(url_for(
-                        'admin.admin_view' if user['role'] == 'admin' else
-                        'professional.professional_view' if user['role'] == 'professional' else
-                        'client.user_view'
-                    ))
-                    remember_response.set_cookie(
-                        config.REMEMBER_COOKIE_NAME,
-                        f'{selector}:{validator}',
-                        max_age=utils.remember_cookie_max_age(),
-                        httponly=True,
-                        secure=config.REMEMBER_COOKIE_SECURE,
-                        samesite='Lax',
-                        path='/',
-                    )
-                    utils.log_action(
-                        "Remember me activado",
-                        f"user_id={user['id']}, selector={selector[:8]}...",
-                        session
-                    )
-                except Exception:
-                    logger.exception('Error al crear remember token')
-                    remember_response = None
-
-            if user['role'] == 'admin':
-                target = url_for('admin.admin_view')
-            elif user['role'] == 'professional':
-                target = url_for('professional.professional_view')
-            else:
-                target = url_for('client.user_view')
-
-            if remember_response is not None:
-                return remember_response
-            return redirect(target)
-
-        flash(t('auth.invalid_credentials', lang), 'error')
-        return redirect(url_for('auth.login'))
 
     return render_template('login.html')
 
@@ -245,7 +239,6 @@ def api_check_username():
             if conn:
                 conn.close()
 
-    _time.sleep(random.uniform(0.02, 0.08))
     return jsonify(result)
 
 

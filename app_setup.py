@@ -1,3 +1,4 @@
+import logging
 import os
 import threading
 import time
@@ -7,6 +8,8 @@ from werkzeug.security import generate_password_hash
 import config
 import models
 import utils
+
+logger = logging.getLogger(__name__)
 
 
 class FilterOptionsCache:
@@ -80,7 +83,7 @@ def _clean_lead_test_data(cursor):
             cursor.execute('UPDATE leads SET phone_format_valid = 1 WHERE id = ?', (row['id'],))
 
     if fixes or pending:
-        print(f'[init_db] Cleaned test data: {len(fixes)} leads budget/zone, {len(pending)} phone_format_valid')
+        logger.info('[init_db] Cleaned test data: %d leads budget/zone, %d phone_format_valid', len(fixes), len(pending))
 
 
 
@@ -459,7 +462,7 @@ def init_db(app):
                 (e164, ntype, 1 if e164 else 0, row['id'])
             )
         if pending:
-            print(f"[init_db] Backfill phone_e164 para {len(pending)} usuarios")
+            logger.info('[init_db] Backfill phone_e164 para %d usuarios', len(pending))
 
         cursor.execute('PRAGMA table_info(user_profiles)')
         up_cols = [r[1] for r in cursor.fetchall()]
@@ -642,7 +645,7 @@ def init_db(app):
             if is_prod:
                 import secrets
                 admin_password = secrets.token_urlsafe(12)
-                logger.info('Admin user created. Password: %s', admin_password)
+                logger.info('Admin user created (password stored in env)')
             else:
                 admin_password = 'admin123'
             cursor.execute('INSERT INTO users (username, email, hash, role) VALUES (?, ?, ?, ?)',

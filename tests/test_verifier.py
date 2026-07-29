@@ -26,7 +26,7 @@ def _reset_singleton():
     reset_default_router()
 
 
-def test_sms_simulated_returns_ok(capsys):
+def test_sms_simulated_returns_ok():
     audit = MagicMock()
     v = SmsSimulatedVerifier(audit_fn=audit)
     res = v.send("+5491144445555", "123456", ttl_minutes=10)
@@ -36,12 +36,13 @@ def test_sms_simulated_returns_ok(capsys):
     audit.assert_called_once()
 
 
-def test_sms_simulated_prints_to_console(capsys):
-    v = SmsSimulatedVerifier()
-    v.send("+5491144445555", "123456")
-    captured = capsys.readouterr()
-    assert "[SMS SIMULADO]" in captured.out
-    assert "123456" in captured.out
+def test_sms_simulated_prints_to_console(caplog):
+    import logging
+    with caplog.at_level(logging.INFO, logger='services.verifier'):
+        v = SmsSimulatedVerifier()
+        v.send("+5491144445555", "123456")
+        assert "[SMS SIMULADO]" in caplog.text
+        assert "123456" in caplog.text
 
 
 def test_whatsapp_simulated_returns_ok_with_deep_link():

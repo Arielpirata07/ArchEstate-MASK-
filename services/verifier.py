@@ -61,8 +61,7 @@ class SmsSimulatedVerifier(OTPChannel):
     def send(self, phone_e164, code, ttl_minutes=10, username=None):
         lang = get_language()
         try:
-            print(f"\n[SMS SIMULADO] -> {phone_e164}")
-            print(f"[SMS SIMULADO] Código: {code} (válido {ttl_minutes} min)\n")
+            logger.info('[SMS SIMULADO] -> %s | Código: %s (válido %d min)', phone_e164, code, ttl_minutes)
             if self._audit:
                 self._audit("OTP enviado por SMS", f"phone_hash={hash_phone_digits(phone_e164)} channel=sms ttl={ttl_minutes}m")
             return SendResult(ok=True, channel=self.name,
@@ -74,8 +73,7 @@ class SmsSimulatedVerifier(OTPChannel):
     def send_sms(self, phone_e164, body):
         lang = get_language()
         try:
-            print(f"\n[SMS NOTIF SIMULADO] -> {phone_e164}")
-            print(f"[SMS NOTIF SIMULADO] Mensaje: {body}\n")
+            logger.info('[SMS NOTIF SIMULADO] -> %s | Mensaje: %s', phone_e164, body)
             if self._audit:
                 self._audit("SMS notificación (simulado)", f"phone_hash={hash_phone_digits(phone_e164)}")
             return SendResult(ok=True, channel=self.name,
@@ -110,8 +108,7 @@ class WhatsAppSimulatedVerifier(OTPChannel):
             label = f" {username}," if username else ""
             text = quote_plus(t('verifier.wa_otp_text', lang, label=label, code=code, ttl=ttl_minutes))
             link = f"{self._base_url}/{digits}?text={text}"
-            print(f"\n[WHATSAPP SIMULADO] -> {phone_e164}")
-            print(f"[WHATSAPP SIMULADO] Link wa.me con código prellenado (no enviado): {link}\n")
+            logger.info('[WHATSAPP SIMULADO] -> %s | Link wa.me (no enviado): %s', phone_e164, link)
             if self._audit:
                 self._audit("OTP enviado por WhatsApp",
                             f"phone_hash={hash_phone_digits(phone_e164)} channel=whatsapp ttl={ttl_minutes}m")
@@ -151,7 +148,7 @@ class TwilioSmsVerifier(OTPChannel):
                 from_=self._from,
                 to=phone_e164
             )
-            print(f"\n[TWILIO SMS] -> {phone_e164} | SID: {message.sid}")
+            logger.info('[TWILIO SMS] -> %s | SID: %s', phone_e164, message.sid)
             if self._audit:
                 self._audit("OTP enviado por SMS (Twilio)",
                             f"phone_hash={hash_phone_digits(phone_e164)} channel=sms sid={message.sid} ttl={ttl_minutes}m")
@@ -182,7 +179,7 @@ class TwilioSmsVerifier(OTPChannel):
                 from_=self._from,
                 to=phone_e164
             )
-            print(f"\n[TWILIO SMS NOTIF] -> {phone_e164} | SID: {message.sid}")
+            logger.info('[TWILIO SMS NOTIF] -> %s | SID: %s', phone_e164, message.sid)
             if self._audit:
                 self._audit("SMS notificación (Twilio)",
                             f"phone_hash={hash_phone_digits(phone_e164)} sid={message.sid}")
@@ -237,7 +234,7 @@ class TwilioWhatsAppVerifier(OTPChannel):
                 content_variables=content_variables,
                 to=to_number
             )
-            print(f"\n[TWILIO WHATSAPP] -> {phone_e164} | SID: {message.sid}")
+            logger.info('[TWILIO WHATSAPP] -> %s | SID: %s', phone_e164, message.sid)
             if self._audit:
                 self._audit("OTP enviado por WhatsApp (Twilio)",
                             f"phone_hash={hash_phone_digits(phone_e164)} channel=whatsapp sid={message.sid} ttl={ttl_minutes}m")

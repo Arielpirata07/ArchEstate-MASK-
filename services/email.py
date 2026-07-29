@@ -51,9 +51,7 @@ class SMTPEmailSender:
         Si SMTP no está configurado, imprime en consola.
         """
         if not self.is_configured:
-            print(f'\n[EMAIL SIMULADO] -> {to}')
-            print(f'[EMAIL SIMULADO] Asunto: {subject}')
-            print(f'[EMAIL SIMULADO] Body (html): {html_body[:200]}...')
+            logger.info('[EMAIL SIMULADO] -> %s | Asunto: %s', to, subject)
             return True
 
         try:
@@ -74,7 +72,7 @@ class SMTPEmailSender:
                     server.login(self.user, self.password)
                 server.sendmail(self.from_addr, [to], msg.as_string())
 
-            print(f'[EMAIL ENVIADO] -> {to} | Asunto: {subject}')
+            logger.info('[EMAIL ENVIADO] -> %s | Asunto: %s', to, subject)
             return True
 
         except Exception:

@@ -8,12 +8,13 @@ from services.email import SMTPEmailSender, get_email_sender, reset_email_sender
 class TestSMTPEmailSender:
     """Tests for the SMTPEmailSender class."""
 
-    def test_not_configured_returns_true_with_console_output(self, capsys):
-        sender = SMTPEmailSender(host='', from_addr='')
-        result = sender.send('test@example.com', 'Test Subject', '<p>Hello</p>')
-        assert result is True
-        captured = capsys.readouterr()
-        assert '[EMAIL SIMULADO]' in captured.out
+    def test_not_configured_returns_true_with_console_output(self, caplog):
+        import logging
+        with caplog.at_level(logging.INFO, logger='services.email'):
+            sender = SMTPEmailSender(host='', from_addr='')
+            result = sender.send('test@example.com', 'Test Subject', '<p>Hello</p>')
+            assert result is True
+            assert '[EMAIL SIMULADO]' in caplog.text
 
     def test_is_configured_false_when_no_host(self):
         sender = SMTPEmailSender(host='', from_addr='test@test.com')
