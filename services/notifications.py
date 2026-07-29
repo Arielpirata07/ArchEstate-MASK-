@@ -27,13 +27,15 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
-def _send_email_notification(user_id: int, subject: str, html_body: str, text_body: str = '') -> bool:
+def _send_email_notification(user_id: int, subject: str, html_body: str, text_body: str = '', prefs=None, user=None) -> bool:
     """Envía email si el usuario tiene email_notifications activado."""
-    prefs = models.get_user_preferences(user_id)
+    if prefs is None:
+        prefs = models.get_user_preferences(user_id)
     if not prefs.get('email_notifications'):
         return False
 
-    user = models.get_user_by_id(user_id)
+    if user is None:
+        user = models.get_user_by_id(user_id)
     if not user or not user.get('email'):
         return False
 
@@ -41,13 +43,15 @@ def _send_email_notification(user_id: int, subject: str, html_body: str, text_bo
     return sender.send(user['email'], subject, html_body, text_body)
 
 
-def _send_sms_notification(user_id: int, message: str) -> bool:
+def _send_sms_notification(user_id: int, message: str, prefs=None, user=None) -> bool:
     """Envía SMS con texto libre si el usuario tiene sms_notifications activado."""
-    prefs = models.get_user_preferences(user_id)
+    if prefs is None:
+        prefs = models.get_user_preferences(user_id)
     if not prefs.get('sms_notifications'):
         return False
 
-    user = models.get_user_by_id(user_id)
+    if user is None:
+        user = models.get_user_by_id(user_id)
     if not user or not user.get('phone'):
         return False
 
@@ -198,7 +202,7 @@ def notify_lead_created(lead_id: int) -> list:
             sent_email = True
 
         if channel in ('whatsapp', 'ambos') or (channel == 'auto' and not sent_email):
-            whatsapp_ok = _send_lead_whatsapp(pro['id'], pro.get('phone_e164'), lead_data)
+            whatsapp_ok = _send_lead_whatsapp(pro['id'], pro.get('phone_e164'), lead_data, prefs=prefs)
             if whatsapp_ok:
                 sent_whatsapp = True
 
@@ -251,11 +255,12 @@ def _send_lead_email(pro, lead, lead_data, lead_id):
     _send_email_notification(pro['id'], subject, html)
 
 
-def _send_lead_whatsapp(user_id, phone_e164, lead_data):
+def _send_lead_whatsapp(user_id, phone_e164, lead_data, prefs=None):
     """Send lead notification via WhatsApp. Returns True on success."""
     if not phone_e164:
         return False
-    prefs = models.get_user_preferences(user_id)
+    if prefs is None:
+        prefs = models.get_user_preferences(user_id)
     if not prefs.get('whatsapp_notifications', 1):
         return False
     from services.whatsapp_notifier import WhatsAppLeadNotifier
@@ -263,12 +268,14 @@ def _send_lead_whatsapp(user_id, phone_e164, lead_data):
     return notifier.send_lead_alert(phone_e164, lead_data)
 
 
-def _send_client_status_email(client_user_id: int, lead_id: int, subject: str, body: str) -> None:
+def _send_client_status_email(client_user_id: int, lead_id: int, subject: str, body: str, prefs=None, user=None) -> None:
     """Send email to client when a professional views or contacts their lead."""
-    prefs = models.get_user_preferences(client_user_id)
+    if prefs is None:
+        prefs = models.get_user_preferences(client_user_id)
     if not prefs.get('email_notifications'):
         return
-    user = models.get_user_by_id(client_user_id)
+    if user is None:
+        user = models.get_user_by_id(client_user_id)
     if not user or not user.get('email'):
         return
     html = f"""
@@ -368,6 +375,8 @@ def notify_lead_status_change(lead_id: int, professional_id: int, new_status: st
 
         _create_notification(lead_owner_id, lead_id, title=client_title, body=client_body)
 
+        client_prefs = models.get_user_preferences(lead_owner_id)
+        client_user = models.get_user_by_id(lead_owner_id)
         email_subject = t('notif.client_status_email_subject', lang, lead_id=lead_id)
         email_body = t('notif.client_status_email_body', lang,
             professional_name=pro_name,
@@ -376,7 +385,7 @@ def notify_lead_status_change(lead_id: int, professional_id: int, new_status: st
             lead_type=lead_data.get('type', ''),
             zone=lead_data.get('zone', ''),
         )
-        _send_client_status_email(lead_owner_id, lead_id, email_subject, email_body)
+        _send_client_status_email(lead_owner_id, lead_id, email_subject, email_body, prefs=client_prefs, user=client_user)
 
     utils.log_action(
         'Notificación cambio estado lead',

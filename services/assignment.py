@@ -40,6 +40,14 @@ def auto_assign_lead(lead_id: int) -> int | None:
         if not professionals:
             return None
 
+        pro_ids = [pro['user_id'] for pro in professionals]
+        placeholders = ','.join('?' for _ in pro_ids)
+        tracking_rows = conn.execute(
+            f'SELECT professional_id, COUNT(*) as cnt FROM lead_tracking WHERE professional_id IN ({placeholders}) GROUP BY professional_id',
+            pro_ids
+        ).fetchall()
+        tracking_counts = {r['professional_id']: r['cnt'] for r in tracking_rows}
+
         best_score = -999
         best_pro = None
 
@@ -62,10 +70,7 @@ def auto_assign_lead(lead_id: int) -> int | None:
             if pro_province and lead_province and pro_province == lead_province:
                 score += 20
 
-            tracked = conn.execute(
-                'SELECT COUNT(*) FROM lead_tracking WHERE professional_id = ?',
-                (pro['user_id'],)
-            ).fetchone()[0]
+            tracked = tracking_counts.get(pro['user_id'], 0)
             score -= tracked
 
             if score > best_score:
