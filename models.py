@@ -1,9 +1,51 @@
 import logging
+import threading
+import time
 
 import config
 import utils
 
 logger = logging.getLogger(__name__)
+
+
+class SimpleTTLCache:
+    """Thread-safe in-memory cache with per-key TTL."""
+
+    def __init__(self, ttl_seconds=60):
+        self._cache = {}
+        self._timestamps = {}
+        self._ttl = ttl_seconds
+        self._lock = threading.Lock()
+
+    def get(self, key):
+        with self._lock:
+            if key in self._cache:
+                if time.time() - self._timestamps[key] < self._ttl:
+                    return self._cache[key]
+                del self._cache[key]
+                del self._timestamps[key]
+        return None
+
+    def set(self, key, value):
+        with self._lock:
+            self._cache[key] = value
+            self._timestamps[key] = time.time()
+
+    def invalidate(self, key):
+        with self._lock:
+            self._cache.pop(key, None)
+            self._timestamps.pop(key, None)
+
+    def invalidate_prefix(self, prefix):
+        with self._lock:
+            keys_to_del = [k for k in self._cache if k.startswith(prefix)]
+            for k in keys_to_del:
+                del self._cache[k]
+                del self._timestamps[k]
+
+
+_prefs_cache = SimpleTTLCache(ttl_seconds=60)
+_form_options_cache = SimpleTTLCache(ttl_seconds=60)
 
 logger = logging.getLogger(__name__)
 
@@ -377,25 +419,32 @@ def update_professional_profile(user_id, data):
 
 
 def get_user_preferences(user_id):
+    cache_key = f'prefs:{user_id}'
+    cached = _prefs_cache.get(cache_key)
+    if cached is not None:
+        return cached
     conn = get_db_connection()
     try:
         prefs = conn.execute(
             'SELECT * FROM user_preferences WHERE user_id = ?', (user_id,)
         ).fetchone()
         if prefs:
-            return dict(prefs)
-        return {
-            'user_id': user_id,
-            'theme': 'light',
-            'language': 'es',
-            'email_notifications': 1,
-            'sms_notifications': 1,
-            'lead_alerts': 1,
-            'preferred_channel': 'auto',
-            'whatsapp_notifications': 1,
-            'budget_min': 0,
-            'budget_max': 0,
-        }
+            result = dict(prefs)
+        else:
+            result = {
+                'user_id': user_id,
+                'theme': 'light',
+                'language': 'es',
+                'email_notifications': 1,
+                'sms_notifications': 1,
+                'lead_alerts': 1,
+                'preferred_channel': 'auto',
+                'whatsapp_notifications': 1,
+                'budget_min': 0,
+                'budget_max': 0,
+            }
+        _prefs_cache.set(cache_key, result)
+        return result
     finally:
         conn.close()
 
@@ -447,6 +496,7 @@ def update_user_preferences(user_id, data):
             placeholders = ', '.join('?' for _ in filtered)
             conn.execute(f'INSERT INTO user_preferences ({columns}) VALUES ({placeholders})', list(filtered.values()))
         conn.commit()
+        _prefs_cache.invalidate(f'prefs:{user_id}')
         return True
     except Exception:
         logger.exception('update_user_preferences failed for user_id=%s', user_id)
@@ -613,6 +663,10 @@ FORM_OPTION_CATEGORIES = [
 
 
 def get_form_options(category=None, active_only=True):
+    cache_key = f'form_options:{category}:{active_only}'
+    cached = _form_options_cache.get(cache_key)
+    if cached is not None:
+        return cached
     conn = get_db_connection()
     try:
         if category:
@@ -635,7 +689,9 @@ def get_form_options(category=None, active_only=True):
                 rows = conn.execute(
                     'SELECT * FROM form_options ORDER BY category, sort_order, label'
                 ).fetchall()
-        return [dict(r) for r in rows]
+        result = [dict(r) for r in rows]
+        _form_options_cache.set(cache_key, result)
+        return result
     finally:
         conn.close()
 
@@ -684,6 +740,7 @@ def create_form_option(data):
                  data.get('icon', ''), sort_order, data.get('is_active', 1))
             )
             conn.commit()
+            _form_options_cache.invalidate_prefix('form_options:')
             return cursor.lastrowid
         except Exception:
             conn.rollback()
@@ -721,6 +778,7 @@ def update_form_option(option_id, data):
             values = list(filtered.values()) + [option_id]
             conn.execute(f'UPDATE form_options SET {set_clause} WHERE id = ?', values)
             conn.commit()
+            _form_options_cache.invalidate_prefix('form_options:')
             return True
         except Exception:
             conn.rollback()
@@ -794,6 +852,7 @@ def delete_form_option(option_id):
             (row['category'], row['sort_order'])
         )
         conn.commit()
+        _form_options_cache.invalidate_prefix('form_options:')
         return True
     finally:
         conn.close()
