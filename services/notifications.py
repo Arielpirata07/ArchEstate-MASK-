@@ -121,12 +121,13 @@ def notify_lead_created(lead_id: int) -> list:
 
         lead_province = (lead['province'] or '').strip()
         lead_zone = (lead['zone'] or '').strip()
+        lead_country = (lead['country'] or '').strip()
         lead_type = (lead['type'] or '').strip()
         lead_property_type = (lead['property_type'] or '').strip()
         lead_budget = parse_budget(lead.get('budget'))
 
         professionals = conn.execute('''
-            SELECT u.id, u.email, u.phone, u.phone_e164, p.name, p.specialty, p.province, p.zone
+            SELECT u.id, u.email, u.phone, u.phone_e164, p.name, p.specialty, p.province, p.zone, p.country
             FROM professionals p
             JOIN users u ON p.user_id = u.id
             WHERE p.status = 'approved' AND u.is_active = 1
@@ -135,6 +136,7 @@ def notify_lead_created(lead_id: int) -> list:
         if conn:
             conn.close()
 
+    assigner_user_id = lead.get('user_id')
     assigned_user_id = auto_assign_lead(lead_id)
 
     lead_data = _lead_to_dict(lead)
@@ -159,8 +161,11 @@ def notify_lead_created(lead_id: int) -> list:
 
         # Geo/filter matching — skip for the assigned professional
         if not is_assigned:
+            pro_country = (pro['country'] or '').strip()
             pro_province = (pro['province'] or '').strip()
             pro_zone = (pro['zone'] or '').strip()
+            if pro_country and lead_country and pro_country != lead_country:
+                continue
             if pro_province and lead_province and pro_province != lead_province:
                 continue
             if pro_zone and lead_zone and pro_zone.lower() not in lead_zone.lower():
@@ -184,12 +189,14 @@ def notify_lead_created(lead_id: int) -> list:
         if is_assigned:
             _create_notification(pro['id'], lead_id,
                 title=t('notif.lead_assigned_title', lang, type=lead["type"], zone=lead["zone"]),
-                body=t('notif.lead_assigned_body', lang, property_type=lead["property_type"], currency=lead.get("currency", ""), budget=lead.get("budget", ""))
+                body=t('notif.lead_assigned_body', lang, property_type=lead["property_type"], currency=lead.get("currency", ""), budget=lead.get("budget", "")),
+                actor_id=assigner_user_id
             )
         else:
             _create_notification(pro['id'], lead_id,
                 title=t('notif.new_lead_title', lang, type=lead["type"], zone=lead["zone"]),
-                body=t('notif.new_lead_body', lang, property_type=lead["property_type"], currency=lead.get("currency", ""), budget=lead.get("budget", ""))
+                body=t('notif.new_lead_body', lang, property_type=lead["property_type"], currency=lead.get("currency", ""), budget=lead.get("budget", "")),
+                actor_id=assigner_user_id
             )
 
         # Route channel: email / whatsapp / ambos / auto
@@ -293,14 +300,14 @@ def _send_client_status_email(client_user_id: int, lead_id: int, subject: str, b
     sender.send(user['email'], subject, html)
 
 
-def _create_notification(user_id: int, lead_id: int, title: str, body: str = '') -> None:
+def _create_notification(user_id: int, lead_id: int, title: str, body: str = '', actor_id: int = 0) -> None:
     """Inserta una notificación en la tabla notifications."""
     conn = None
     try:
         conn = models.get_db_connection()
         conn.execute(
-            'INSERT INTO notifications (user_id, lead_id, title, body) VALUES (?, ?, ?, ?)',
-            (user_id, lead_id, title[:255], body[:500])
+            'INSERT INTO notifications (user_id, lead_id, title, body, actor_id) VALUES (?, ?, ?, ?, ?)',
+            (user_id, lead_id, title[:255], body[:500], actor_id if actor_id else None)
         )
         conn.commit()
     except Exception:
@@ -373,7 +380,7 @@ def notify_lead_status_change(lead_id: int, professional_id: int, new_status: st
             zone=lead_data.get('zone', ''),
         )
 
-        _create_notification(lead_owner_id, lead_id, title=client_title, body=client_body)
+        _create_notification(lead_owner_id, lead_id, title=client_title, body=client_body, actor_id=professional_id)
 
         client_prefs = models.get_user_preferences(lead_owner_id)
         client_user = models.get_user_by_id(lead_owner_id)
@@ -500,17 +507,17 @@ def _get_admin_users() -> list:
             conn.close()
 
 
-def send_internal_notification(target_user_id: int, title: str, body: str = '', lead_id: int = 0) -> bool:
+def send_internal_notification(target_user_id: int, title: str, body: str = '', lead_id: int = 0, actor_id: int = 0) -> bool:
     """Envía una notificación interna a un usuario específico."""
-    _create_notification(target_user_id, lead_id, title=title, body=body)
+    _create_notification(target_user_id, lead_id, title=title, body=body, actor_id=actor_id)
     return True
 
 
-def notify_admins(title: str, body: str = '', lead_id: int = 0) -> list:
+def notify_admins(title: str, body: str = '', lead_id: int = 0, actor_id: int = 0) -> list:
     """Envía una notificación interna a todos los admins activos."""
     admins = _get_admin_users()
     notified = []
     for admin in admins:
-        _create_notification(admin['id'], lead_id, title=title, body=body)
+        _create_notification(admin['id'], lead_id, title=title, body=body, actor_id=actor_id)
         notified.append(admin['email'])
     return notified

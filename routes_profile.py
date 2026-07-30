@@ -232,7 +232,7 @@ def api_update_professional():
     user_id = session['user_id']
     data = request.json or {}
 
-    ALLOWED_FIELDS = {'specialty', 'title', 'province', 'zone'}
+    ALLOWED_FIELDS = {'specialty', 'title', 'province', 'zone', 'country'}
     update_data = {}
     for field in ALLOWED_FIELDS:
         if field in data:
@@ -426,8 +426,15 @@ def api_update_professional_full():
 
     if not update_data:
         return jsonify({'error': t('profile.no_valid_data', lang)}), 400
-
     models.create_or_update_professional_profile(user_id, update_data)
+
+    geo_fields = {}
+    for key in ('province', 'zone', 'country'):
+        if key in data:
+            geo_fields[key] = utils.safe_text(data[key]).strip()
+    if geo_fields:
+        models.update_professional_profile(user_id, geo_fields)
+
     utils.log_action('Perfil profesional actualizado', f'Usuario: {session["username"]}', session)
 
     return jsonify({'status': 'success', 'message': t('profile.pro_updated', lang)})
@@ -510,6 +517,7 @@ def profile_notifications():
         'success': True,
         'notifications': notifications,
         'unread': unread,
+        'current_user_id': user_id,
     })
 
 

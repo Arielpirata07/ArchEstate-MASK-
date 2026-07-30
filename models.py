@@ -296,7 +296,7 @@ ALLOWED_LEAD_UPDATE_FIELDS = {
     'property_age', 'community_pool', 'additional_features',
     'phone_format_valid',
 }
-ALLOWED_PROFESSIONAL_FIELDS = {'specialty', 'title', 'province', 'zone'}
+ALLOWED_PROFESSIONAL_FIELDS = {'specialty', 'title', 'province', 'zone', 'country'}
 ALLOWED_PROFESSIONAL_PROFILE_FIELDS = {
     'bio_pro', 'experience_years', 'services_offered',
     'portfolio', 'availability', 'social_links',
@@ -510,6 +510,7 @@ def get_professional_full_profile(user_id):
     try:
         row = conn.execute(
             'SELECT p.id as prof_id, p.name, p.license, p.specialty, p.status, p.license_verified, '
+            'p.province, p.zone, p.country, '
             'pp.id as pro_profile_id, pp.photo_path, pp.bio_pro, pp.experience_years, '
             'pp.services_offered, pp.portfolio, pp.availability, pp.social_links, '
             'pp.fee_range_min, pp.fee_range_max, pp.professional_address, '

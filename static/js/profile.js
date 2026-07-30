@@ -875,6 +875,12 @@ function loadProfessionalFullProfile() {
         setVal('pro-bio', p.bio_pro);
         setVal('pro-experience', p.experience_years);
         setVal('pro-address', p.professional_address);
+        setVal('pro-country', p.country || '');
+        var proCountry = document.getElementById('pro-country');
+        if (proCountry && p.country) {
+            proCountry.value = p.country;
+            proCountry.dispatchEvent(new Event('change'));
+        }
         setVal('pro-province', p.province || '');
         setVal('pro-zone', p.zone || '');
         setVal('pro-fee-min', p.fee_range_min);
@@ -952,6 +958,7 @@ function saveProfessionalFullProfile() {
         professional_address: document.getElementById('pro-address')?.value || '',
         province: document.getElementById('pro-province')?.value || '',
         zone: document.getElementById('pro-zone')?.value || '',
+        country: document.getElementById('pro-country')?.value || '',
         services_offered: JSON.stringify(services),
         availability: JSON.stringify(avail),
         social_links: JSON.stringify(social),
@@ -1127,6 +1134,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     setupAvatarRing('avatar-preview', 'avatar-ring');
     setupAvatarRing('pro-photo-preview', 'pro-photo-ring');
+    initCountrySelector('pro-province');
 
     // Auto-focus y navegación entre dígitos del modal
     const digits = document.querySelectorAll('.verify-digit');

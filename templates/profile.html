@@ -638,14 +638,22 @@
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
-                                    <label for="pro-province" class="input-label">{{ t('profile.pro_province') }}</label>
-                                    <select id="pro-province" class="input-field">
-                                        <option value="">{{ t('profile.pro_all_provinces') }}</option>
-                                        {% for opt in form_options.get('province', []) %}
+                                    <label for="pro-country" class="input-label">{{ t('profile.pro_country') }}</label>
+                                    <select id="pro-country" class="input-field">
+                                        <option value="">{{ t('profile.pro_all_countries') }}</option>
+                                        {% for opt in form_options.get('country', []) %}
                                         <option value="{{ opt.value }}">{{ opt.label }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
+                                <div>
+                                    <label for="pro-province" class="input-label">{{ t('profile.pro_province') }}</label>
+                                    <select id="pro-province" class="input-field">
+                                        <option value="">{{ t('profile.pro_all_provinces') }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
                                     <label for="pro-zone" class="input-label">{{ t('profile.pro_zone') }}</label>
                                     <input id="pro-zone" type="text" class="input-field" placeholder="Ej: Palermo, Recoleta, Belgrano...">
@@ -737,15 +745,15 @@
                                 <div class="space-y-3 mt-2">
                                     <div class="flex items-center gap-3">
                                         <i data-lucide="linkedin" class="w-4 h-4 flex-shrink-0" style="color:var(--text-secondary)" aria-hidden="true"></i>
-                                        <input id="pro-linkedin" type="url" class="input-field flex-1" placeholder="https://linkedin.com/in/tu-perfil">
+                                        <input id="pro-linkedin" type="url" class="input-field flex-1" placeholder="https://linkedin.com/in/tu-perfil" aria-label="LinkedIn">
                                     </div>
                                     <div class="flex items-center gap-3">
                                         <i data-lucide="camera" class="w-4 h-4 flex-shrink-0" style="color:var(--text-secondary)" aria-hidden="true"></i>
-                                        <input id="pro-instagram" type="url" class="input-field flex-1" placeholder="https://instagram.com/tu-cuenta">
+                                        <input id="pro-instagram" type="url" class="input-field flex-1" placeholder="https://instagram.com/tu-cuenta" aria-label="Instagram">
                                     </div>
                                     <div class="flex items-center gap-3">
                                         <i data-lucide="globe" class="w-4 h-4 flex-shrink-0" style="color:var(--text-secondary)" aria-hidden="true"></i>
-                                        <input id="pro-website" type="url" class="input-field flex-1" placeholder="https://tusitio.com">
+                                        <input id="pro-website" type="url" class="input-field flex-1" placeholder="https://tusitio.com" aria-label="Sitio web">
                                     </div>
                                 </div>
                             </div>

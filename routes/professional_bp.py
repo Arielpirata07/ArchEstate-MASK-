@@ -287,14 +287,18 @@ def get_leads_filter_options():
 
 def _get_pro_geo_filter(conn, user_id):
     pro_data = conn.execute(
-        'SELECT province, zone FROM professionals WHERE user_id = ?',
+        'SELECT province, zone, country FROM professionals WHERE user_id = ?',
         (user_id,)
     ).fetchone()
     conditions = []
     params = []
     if pro_data:
+        pro_country = (pro_data['country'] or '').strip()
         pro_province = (pro_data['province'] or '').strip()
         pro_zone = (pro_data['zone'] or '').strip()
+        if pro_country:
+            conditions.append('country = ?')
+            params.append(pro_country)
         if pro_province:
             conditions.append('province = ?')
             params.append(pro_province)
