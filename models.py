@@ -658,7 +658,7 @@ def get_professional_by_license(license_number):
 FORM_OPTION_CATEGORIES = [
     'property_type', 'operation_type', 'currency', 'parking',
     'orientation', 'condition', 'age', 'budget_range',
-    'province', 'architectural_style', 'amenities'
+    'province', 'architectural_style', 'amenities', 'country'
 ]
 
 
@@ -790,11 +790,16 @@ def update_form_option(option_id, data):
 def get_user_notifications(user_id: int, limit: int = 20, unread_only: bool = False) -> list:
     conn = get_db_connection()
     try:
-        query = 'SELECT * FROM notifications WHERE user_id = ?'
+        query = '''
+            SELECT n.*, actor.username AS actor_username
+            FROM notifications n
+            LEFT JOIN users actor ON n.actor_id = actor.id
+            WHERE n.user_id = ?
+        '''
         params = [user_id]
         if unread_only:
-            query += ' AND is_read = 0'
-        query += ' ORDER BY created_at DESC LIMIT ?'
+            query += ' AND n.is_read = 0'
+        query += ' ORDER BY n.created_at DESC LIMIT ?'
         params.append(limit)
         rows = conn.execute(query, params).fetchall()
         return [dict(r) for r in rows]

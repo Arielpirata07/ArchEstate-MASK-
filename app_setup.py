@@ -237,6 +237,9 @@ def init_db(app):
                 ) WHERE user_id IS NULL AND leads.email IN (SELECT email FROM users)
             ''')
 
+        if 'country' not in lead_columns:
+            cursor.execute("ALTER TABLE leads ADD COLUMN country TEXT DEFAULT ''")
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS user_profiles (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -435,6 +438,12 @@ def init_db(app):
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, is_read)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_notifications_created ON notifications(created_at)')
 
+        cursor.execute('PRAGMA table_info(notifications)')
+        notif_cols = [r[1] for r in cursor.fetchall()]
+        if 'actor_id' not in notif_cols:
+            cursor.execute("ALTER TABLE notifications ADD COLUMN actor_id INTEGER REFERENCES users(id)")
+            cursor.execute('CREATE INDEX IF NOT EXISTS idx_notifications_actor ON notifications(actor_id)')
+
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS password_reset_tokens (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -477,6 +486,8 @@ def init_db(app):
             cursor.execute("ALTER TABLE professionals ADD COLUMN province TEXT DEFAULT ''")
         if 'zone' not in pro_cols:
             cursor.execute("ALTER TABLE professionals ADD COLUMN zone TEXT DEFAULT ''")
+        if 'country' not in pro_cols:
+            cursor.execute("ALTER TABLE professionals ADD COLUMN country TEXT DEFAULT ''")
 
         cursor.execute('PRAGMA table_info(audit_log)')
         al_cols = [r[1] for r in cursor.fetchall()]
@@ -587,6 +598,17 @@ def init_db(app):
             ('province', 'Santiago del Estero', 'Santiago del Estero', '', 22),
             ('province', 'Tierra del Fuego', 'Tierra del Fuego', '', 23),
             ('province', 'Tucuman', 'Tucuman', '', 24),
+            ('country', 'Argentina', 'Argentina', 'globe', 1),
+            ('country', 'Uruguay', 'Uruguay', 'globe', 2),
+            ('country', 'Chile', 'Chile', 'globe', 3),
+            ('country', 'Brasil', 'Brasil', 'globe', 4),
+            ('country', 'Paraguay', 'Paraguay', 'globe', 5),
+            ('country', 'Bolivia', 'Bolivia', 'globe', 6),
+            ('country', 'Colombia', 'Colombia', 'globe', 7),
+            ('country', 'Mexico', 'Mexico', 'globe', 8),
+            ('country', 'España', 'España', 'globe', 9),
+            ('country', 'Estados Unidos', 'Estados Unidos', 'globe', 10),
+            ('country', 'Portugal', 'Portugal', 'globe', 11),
             ('architectural_style', 'Moderno', 'Moderno', '', 1),
             ('architectural_style', 'Classico', 'Classico', '', 2),
             ('architectural_style', 'Minimalista', 'Minimalista', '', 3),
