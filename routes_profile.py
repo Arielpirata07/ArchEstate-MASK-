@@ -541,6 +541,45 @@ def mark_all_notifications_read():
     return jsonify({'success': True})
 
 
+@profile_bp.route('/api/profile/notifications/all')
+@decorators.login_required
+def all_notifications():
+    user_id = session['user_id']
+    page = request.args.get('page', 1, type=int)
+    result = models.get_all_user_notifications(user_id, page=page)
+    unread = models.get_unread_notification_count(user_id)
+    return jsonify({
+        'success': True,
+        'notifications': result['items'],
+        'total': result['total'],
+        'page': result['page'],
+        'pages': result['pages'],
+        'unread': unread,
+        'current_user_id': user_id,
+    })
+
+
+@profile_bp.route('/api/profile/notifications/delete-read', methods=['POST'])
+@decorators.login_required
+def delete_read_notifications():
+    user_id = session['user_id']
+    count = models.delete_read_notifications(user_id)
+    lang = get_language()
+    return jsonify({
+        'success': True,
+        'deleted': count,
+        'message': t('notif.read_deleted', lang),
+    })
+
+
+@profile_bp.route('/api/profile/notifications/<int:notification_id>', methods=['DELETE'])
+@decorators.login_required
+def delete_notification(notification_id):
+    user_id = session['user_id']
+    ok = models.delete_notification(notification_id, user_id)
+    return jsonify({'success': ok})
+
+
 @profile_bp.route('/api/profile/notification-filters', methods=['PUT'])
 @decorators.professional_required
 def update_notification_filters():
