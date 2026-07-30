@@ -17,6 +17,7 @@ window.__FORM_OPTIONS = {{ {
     'condition': form_options.get('condition', []),
     'age': form_options.get('age', []),
     'province': form_options.get('province', []),
+    'country': form_options.get('country', []),
 } | tojson }};
 </script>
 <div class="grid grid-cols-1 lg:grid-cols-2 min-h-[85vh] gap-0">
@@ -113,13 +114,13 @@ window.__FORM_OPTIONS = {{ {
 
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                                         <div>
-                                            <label class="block text-[10px] uppercase tracking-widest font-medium text-midnight/60 mb-1">Mínimo</label>
+                                            <label for="budget-min-input" class="block text-[10px] uppercase tracking-widest font-medium text-midnight/60 mb-1">Mínimo</label>
                                             <input type="number" id="budget-min-input"
                                                    class="w-full bg-paper-dark border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 text-sm"
                                                     min="0" max="10000000000" value="0">
                                         </div>
                                         <div>
-                                            <label class="block text-[10px] uppercase tracking-widest font-medium text-midnight/60 mb-1">Máximo</label>
+                                            <label for="budget-max-input" class="block text-[10px] uppercase tracking-widest font-medium text-midnight/60 mb-1">Máximo</label>
                                             <input type="number" id="budget-max-input"
                                                    class="w-full bg-paper-dark border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 text-sm"
                                                     min="0" max="10000000000" value="10000000000">
@@ -145,6 +146,17 @@ window.__FORM_OPTIONS = {{ {
                             </div>
                         </div>
 
+                        <!-- País -->
+                        <div>
+                            <label for="country-select" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.country') }}</label>
+                            <select id="country-select" name="country" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                <option value="">{{ t('user.select_country') }}</option>
+                                {% for opt in form_options.get('country', []) %}
+                                <option value="{{ opt.value }}">{{ opt.label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
                         <!-- Zona Geográfica -->
                         <div>
                             <label for="zone-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.zone') }}</label>
@@ -154,14 +166,11 @@ window.__FORM_OPTIONS = {{ {
                             </div>
                         </div>
 
-                        <!-- Provincia -->
+                        <!-- Provincia / Estado -->
                         <div>
                             <label for="province-select" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.province') }}</label>
                             <select id="province-select" name="province" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
-                                <option value="">{{ t('user.select_province') }}</option>
-                                {% for opt in form_options.get('province', []) %}
-                                <option value="{{ opt.value }}">{{ opt.label }}</option>
-                                {% endfor %}
+                                <option value="">{{ t('user.select_state') }}</option>
                             </select>
                         </div>
 
@@ -200,19 +209,19 @@ window.__FORM_OPTIONS = {{ {
                             <div>
                                 <label for="bedrooms-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.bedrooms') }}</label>
                                 <div class="flex items-center gap-3">
-                                    <button type="button" onclick="stepNum('bedrooms',-1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-base md:text-lg leading-none">−</button>
+                                    <button type="button" aria-label="Reducir dormitorios" onclick="stepNum('bedrooms',-1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-base md:text-lg leading-none">−</button>
                                     <input id="bedrooms-input" name="bedrooms" type="number" min="0" max="20" value="" placeholder="—"
                                            class="w-12 text-center bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-1 text-sm font-semibold">
-                                    <button type="button" onclick="stepNum('bedrooms',1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-base md:text-lg leading-none">+</button>
+                                    <button type="button" aria-label="Aumentar dormitorios" onclick="stepNum('bedrooms',1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-base md:text-lg leading-none">+</button>
                                 </div>
                             </div>
                             <div>
                                 <label for="bathrooms-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.bathrooms') }}</label>
                                 <div class="flex items-center gap-3">
-                                    <button type="button" onclick="stepNum('bathrooms',-1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-base md:text-lg leading-none">−</button>
+                                    <button type="button" aria-label="Reducir baños" onclick="stepNum('bathrooms',-1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-base md:text-lg leading-none">−</button>
                                     <input id="bathrooms-input" name="bathrooms" type="number" min="0" max="20" value="" placeholder="—"
                                            class="w-12 text-center bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-1 text-sm font-semibold">
-                                    <button type="button" onclick="stepNum('bathrooms',1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-base md:text-lg leading-none">+</button>
+                                    <button type="button" aria-label="Aumentar baños" onclick="stepNum('bathrooms',1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-base md:text-lg leading-none">+</button>
                                 </div>
                             </div>
                         </div>
@@ -270,12 +279,12 @@ window.__FORM_OPTIONS = {{ {
                                 <h4 class="text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">{{ t('user.dept_details') }}</h4>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.floor_block') }}</label>
-                                        <input name="floor_block" type="text" placeholder="5º A" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                        <label for="floor-block-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.floor_block') }}</label>
+                                        <input id="floor-block-input" name="floor_block" type="text" placeholder="5º A" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                     </div>
                                     <div>
-                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.usable_m2') }}</label>
-                                        <input name="usable_m2" type="number" min="0" placeholder="85" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                        <label for="usable-m2-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.usable_m2') }}</label>
+                                        <input id="usable-m2-input" name="usable_m2" type="number" min="0" placeholder="85" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
                                     </div>
                                 </div>
                                 <div class="flex flex-wrap gap-4 mt-4">

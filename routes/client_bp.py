@@ -140,6 +140,11 @@ def submit_lead():
             return jsonify({"status": "error", "message": t('client.built_area_exceeds_land', lang)}), 400
 
         province = data.get('province', '')
+        country = data.get('country', '')
+
+        valid_countries = models.get_form_options_by_category('country')
+        if country and country not in valid_countries:
+            return jsonify({"status": "error", "message": t('client.invalid_country', lang)}), 400
 
         cursor = conn.execute('''
             INSERT INTO leads (
@@ -148,9 +153,9 @@ def submit_lead():
                 land_area, built_area, pool, architectural_style,
                 bedrooms, bathrooms, total_area, amenities,
                 ambientes, parking, orientation, property_condition, property_age,
-                phone_format_valid, community_pool, additional_features
+                phone_format_valid, community_pool, additional_features, country
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             data.get('type'),
             property_type,
@@ -180,6 +185,7 @@ def submit_lead():
             phone_format_valid,
             data.get('community_pool', ''),
             data.get('additional_features', ''),
+            country,
         ))
         conn.commit()
 

@@ -323,6 +323,7 @@ function initUserForm() {
 
     initZoneAutocomplete();
     initArchitecturalStyleAutocomplete();
+    initCountrySelector();
     initBudgetPopup();
 
     if (form) {
@@ -506,9 +507,22 @@ function toggleInfinityPool() {
     }
 }
 
+const COUNTRY_STATES = {
+    'Argentina': ['Buenos Aires','CABA','Catamarca','Chaco','Chubut','Córdoba','Corrientes','Entre Ríos','Formosa','Jujuy','La Pampa','La Rioja','Mendoza','Misiones','Neuquén','Río Negro','Salta','San Juan','San Luis','Santa Cruz','Santa Fe','Santiago del Estero','Tierra del Fuego','Tucumán'],
+    'Uruguay': ['Artigas','Canelones','Cerro Largo','Colonia','Durazno','Flores','Florida','Lavalleja','Maldonado','Montevideo','Paysandú','Río Negro','Rivera','Rocha','Salto','San José','Soriano','Tacuarembó','Treinta y Tres'],
+    'Chile': ['Arica y Parinacota','Tarapacá','Antofagasta','Atacama','Coquimbo','Valparaíso','Metropolitana de Santiago','O\'Higgins','Maule','Ñuble','Biobío','La Araucanía','Los Ríos','Los Lagos','Aysén','Magallanes'],
+    'Brasil': ['Acre','Alagoas','Amapá','Amazonas','Bahía','Ceará','Distrito Federal','Espírito Santo','Goiás','Maranhão','Mato Grosso','Mato Grosso do Sul','Minas Gerais','Pará','Paraíba','Paraná','Pernambuco','Piauí','Rio de Janeiro','Rio Grande do Norte','Rio Grande do Sul','Rondônia','Roraima','Santa Catarina','São Paulo','Sergipe','Tocantins'],
+    'Paraguay': ['Asunción','Alto Paraguay','Alto Paraná','Amambay','Boquerón','Caaguazú','Caazapá','Canindeyú','Central','Concepción','Cordillera','Guairá','Itapúa','Misiones','Ñeembucú','Paraguarí','Presidente Hayes','San Pedro'],
+    'Bolivia': ['Chuquisaca','Cochabamba','Beni','La Paz','Oruro','Pando','Potosí','Santa Cruz','Tarija'],
+    'Colombia': ['Amazonas','Antioquia','Arauca','Atlántico','Bogotá D.C.','Bolívar','Boyacá','Caldas','Caquetá','Casanare','Cauca','Cesar','Chocó','Córdoba','Cundinamarca','Guainía','Guaviare','Huila','La Guajira','Magdalena','Meta','Nariño','Norte de Santander','Putumayo','Quindío','Risaralda','San Andrés y Providencia','Santander','Sucre','Tolima','Valle del Cauca','Vaupés','Vichada'],
+    'México': ['Aguascalientes','Baja California','Baja California Sur','Campeche','Chiapas','Chihuahua','Ciudad de México','Coahuila','Colima','Durango','Estado de México','Guanajuato','Guerrero','Hidalgo','Jalisco','Michoacán','Morelos','Nayarit','Nuevo León','Oaxaca','Puebla','Querétaro','Quintana Roo','San Luis Potosí','Sinaloa','Sonora','Tabasco','Tamaulipas','Tlaxcala','Veracruz','Yucatán','Zacatecas'],
+    'España': ['Andalucía','Aragón','Asturias','Islas Baleares','Canarias','Cantabria','Castilla-La Mancha','Castilla y León','Cataluña','Comunidad Valenciana','Extremadura','Galicia','La Rioja','Madrid','Murcia','Navarra','País Vasco'],
+    'Estados Unidos': ['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawái','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Luisiana','Maine','Maryland','Massachusetts','Míchigan','Minnesota','Misisipi','Misuri','Montana','Nebraska','Nevada','Nuevo Hampshire','Nueva Jersey','Nuevo México','Nueva York','Carolina del Norte','Dakota del Norte','Ohio','Oklahoma','Oregón','Pensilvania','Rhode Island','Carolina del Sur','Dakota del Sur','Tennessee','Texas','Utah','Vermont','Virginia','Washington','Virginia Occidental','Wisconsin','Wyoming'],
+    'Portugal': ['Aveiro','Beja','Braga','Bragança','Castelo Branco','Coimbra','Évora','Faro','Guarda','Leiria','Lisboa','Portalegre','Porto','Santarém','Setúbal','Viana do Castelo','Vila Real','Viseu','Madeira','Açores']
+};
+
 const CITY_SUGGESTIONS = [
     { city: 'Córdoba', country: 'Argentina' },
-    { city: 'Córdoba', country: 'España' },
     { city: 'Buenos Aires', country: 'Argentina' },
     { city: 'Rosario', country: 'Argentina' },
     { city: 'Mendoza', country: 'Argentina' },
@@ -519,23 +533,35 @@ const CITY_SUGGESTIONS = [
     { city: 'Merlo', country: 'Argentina' },
     { city: 'San Luis Capital', country: 'Argentina' },
     { city: 'Santa Rosa de Calamuchita', country: 'Argentina' },
+    { city: 'Montevideo', country: 'Uruguay' },
+    { city: 'Punta del Este', country: 'Uruguay' },
+    { city: 'Colonia del Sacramento', country: 'Uruguay' },
+    { city: 'Santiago', country: 'Chile' },
+    { city: 'Valparaíso', country: 'Chile' },
+    { city: 'Viña del Mar', country: 'Chile' },
+    { city: 'São Paulo', country: 'Brasil' },
+    { city: 'Río de Janeiro', country: 'Brasil' },
+    { city: 'Brasília', country: 'Brasil' },
+    { city: 'Asunción', country: 'Paraguay' },
+    { city: 'Ciudad del Este', country: 'Paraguay' },
+    { city: 'La Paz', country: 'Bolivia' },
+    { city: 'Santa Cruz de la Sierra', country: 'Bolivia' },
+    { city: 'Bogotá', country: 'Colombia' },
+    { city: 'Medellín', country: 'Colombia' },
+    { city: 'Cali', country: 'Colombia' },
+    { city: 'Ciudad de México', country: 'México' },
+    { city: 'Cancún', country: 'México' },
+    { city: 'Guadalajara', country: 'México' },
     { city: 'Madrid', country: 'España' },
     { city: 'Barcelona', country: 'España' },
     { city: 'Sevilla', country: 'España' },
     { city: 'Valencia', country: 'España' },
-    { city: 'Lisboa', country: 'Portugal' },
-    { city: 'Santiago', country: 'Chile' },
-    { city: 'Valparaíso', country: 'Chile' },
-    { city: 'Punta del Este', country: 'Uruguay' },
-    { city: 'Montevideo', country: 'Uruguay' },
-    { city: 'São Paulo', country: 'Brasil' },
-    { city: 'Río de Janeiro', country: 'Brasil' },
-    { city: 'Miami', country: 'Estados Unidos' },
+    { city: 'Málaga', country: 'España' },
     { city: 'Nueva York', country: 'Estados Unidos' },
+    { city: 'Miami', country: 'Estados Unidos' },
     { city: 'Los Ángeles', country: 'Estados Unidos' },
-    { city: 'Ciudad de México', country: 'México' },
-    { city: 'Bogotá', country: 'Colombia' },
-    { city: 'Lima', country: 'Perú' }
+    { city: 'Lisboa', country: 'Portugal' },
+    { city: 'Oporto', country: 'Portugal' },
 ];
 
 const ARCHITECTURAL_STYLES = [
@@ -544,6 +570,29 @@ const ARCHITECTURAL_STYLES = [
     t('style.nordic'), t('style.colonial'), t('style.art_deco'), t('style.bauhaus'), t('style.organic'),
     t('style.hightech'), t('style.neoclassic'), t('style.gothic'), t('style.baroque'), t('style.renaissance'), t('style.other')
 ];
+
+function initCountrySelector(provinceSelectId) {
+    var countrySelect = document.getElementById('country-select');
+    var provinceSelect = document.getElementById(provinceSelectId || 'province-select');
+    if (!countrySelect || !provinceSelect) return;
+
+    function updateProvinces() {
+        var country = countrySelect.value;
+        var currentValue = provinceSelect.value;
+        var states = COUNTRY_STATES[country] || [];
+        provinceSelect.innerHTML = '<option value="">' + window.t('user.select_state') + '</option>';
+        states.forEach(function(s) {
+            var opt = document.createElement('option');
+            opt.value = s;
+            opt.textContent = s;
+            if (s === currentValue) opt.selected = true;
+            provinceSelect.appendChild(opt);
+        });
+    }
+
+    countrySelect.addEventListener('change', updateProvinces);
+    if (countrySelect.value) updateProvinces();
+}
 
 function initZoneAutocomplete() {
     const zoneInput = document.getElementById('zone-input');
@@ -575,10 +624,16 @@ function initZoneAutocomplete() {
     };
 
     const update = () => {
+        var countrySelect = document.getElementById('country-select');
+        var selectedCountry = countrySelect ? countrySelect.value : '';
         const query = zoneInput.value.trim().toLowerCase();
+        var pool = CITY_SUGGESTIONS;
+        if (selectedCountry) {
+            pool = pool.filter(function(item) { return item.country === selectedCountry; });
+        }
         const items = query.length === 0
-            ? CITY_SUGGESTIONS.slice(0, 5)
-            : CITY_SUGGESTIONS.filter(item => item.city.toLowerCase().includes(query) || item.country.toLowerCase().includes(query));
+            ? pool.slice(0, 5)
+            : pool.filter(item => item.city.toLowerCase().includes(query) || item.country.toLowerCase().includes(query));
         renderSuggestions(items, zoneInput.value.trim());
     };
 
