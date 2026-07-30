@@ -36,6 +36,10 @@
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2"><i data-lucide="list" class="w-3 h-3"></i> {{ t('admin.options') }}</span>
             </button>
+            <button onclick="showTab('notifications')" id="tab-notifications"
+                class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white">
+                <span class="flex items-center gap-2"><i data-lucide="bell" class="w-3 h-3"></i> {{ t('admin.notifications') }}</span>
+            </button>
             <a href="{{ url_for('admin.user_management_view') }}"
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2"><i data-lucide="users" class="w-3 h-3"></i> {{ t('admin.users') }}</span>
@@ -151,7 +155,7 @@
                 <div class="p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between">
                     <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('admin.top_zones') }}</h3>
                     <div class="flex items-center gap-2">
-                        <input id="zone-filter-input" type="text" placeholder="Filtrar zona..."
+                        <input id="zone-filter-input" type="text" placeholder="Filtrar zona..." aria-label="Filtrar zona"
                                oninput="filterZoneChart()"
                                class="px-2 py-1 text-[10px] border border-midnight/20 rounded focus:border-gold focus:outline-none w-28">
                         <button onclick="exportChart('chart-zone', 'leads-zonas')" class="p-1 text-midnight/30 hover:text-gold transition-colors" title="Exportar PNG" aria-label="Exportar gráfico de zonas como PNG">
@@ -307,13 +311,13 @@
                 <!-- Filters -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4 pa-filters">
                     <div>
-                        <label class="block text-[9px] uppercase tracking-widest font-bold text-midnight/50 mb-1.5">Profesional</label>
+                        <label for="pa-profesional" class="block text-[9px] uppercase tracking-widest font-bold text-midnight/50 mb-1.5">Profesional</label>
                         <select id="pa-profesional" class="w-full px-2.5 py-2 border border-midnight/20 rounded text-[11px] focus:border-gold focus:outline-none bg-white">
                             <option value="">{{ t('admin.filter_all') }}</option>
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[9px] uppercase tracking-widest font-bold text-midnight/50 mb-1.5">Evento</label>
+                        <label for="pa-evento" class="block text-[9px] uppercase tracking-widest font-bold text-midnight/50 mb-1.5">Evento</label>
                         <select id="pa-evento" class="w-full px-2.5 py-2 border border-midnight/20 rounded text-[11px] focus:border-gold focus:outline-none bg-white">
                             <option value="">{{ t('admin.filter_all') }}</option>
                             <option value="phone_revealed">Revelado</option>
@@ -321,11 +325,11 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[9px] uppercase tracking-widest font-bold text-midnight/50 mb-1.5">Desde</label>
+                        <label for="pa-desde" class="block text-[9px] uppercase tracking-widest font-bold text-midnight/50 mb-1.5">Desde</label>
                         <input type="date" id="pa-desde" class="w-full px-2.5 py-2 border border-midnight/20 rounded text-[11px] focus:border-gold focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-[9px] uppercase tracking-widest font-bold text-midnight/50 mb-1.5">Hasta</label>
+                        <label for="pa-hasta" class="block text-[9px] uppercase tracking-widest font-bold text-midnight/50 mb-1.5">Hasta</label>
                         <input type="date" id="pa-hasta" class="w-full px-2.5 py-2 border border-midnight/20 rounded text-[11px] focus:border-gold focus:outline-none">
                     </div>
                 </div>
@@ -374,11 +378,11 @@
                 <div id="pa-pagination" class="hidden flex items-center justify-between mt-4 pt-4 border-t border-midnight/10">
                     <p id="pa-info" class="text-[10px] text-midnight/60 font-bold tracking-wider"></p>
                     <div class="flex gap-1">
-                        <button id="pa-prev" onclick="loadPhoneAuditPage(currentPaPage - 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                        <button id="pa-prev" aria-label="Página anterior" onclick="loadPhoneAuditPage(currentPaPage - 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>
                             <i data-lucide="chevron-left" class="w-3 h-3"></i>
                         </button>
                         <span id="pa-page-indicator" class="px-2.5 py-1 text-[10px] font-bold text-midnight/50"></span>
-                        <button id="pa-next" onclick="loadPhoneAuditPage(currentPaPage + 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                        <button id="pa-next" aria-label="Página siguiente" onclick="loadPhoneAuditPage(currentPaPage + 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>
                             <i data-lucide="chevron-right" class="w-3 h-3"></i>
                         </button>
                     </div>
@@ -602,11 +606,11 @@
                 <div id="reports-pagination" class="hidden flex items-center justify-between px-4 py-3 border-t border-midnight/10">
                     <p id="reports-page-info" class="text-[10px] text-midnight/60 font-bold tracking-wider"></p>
                     <div class="flex gap-1">
-                        <button id="reports-prev" onclick="loadReportsPage(currentReportsPage - 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                        <button id="reports-prev" aria-label="Página anterior" onclick="loadReportsPage(currentReportsPage - 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>
                             <i data-lucide="chevron-left" class="w-3 h-3"></i>
                         </button>
                         <span id="reports-page-indicator" class="px-2.5 py-1 text-[10px] font-bold text-midnight/50"></span>
-                        <button id="reports-next" onclick="loadReportsPage(currentReportsPage + 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                        <button id="reports-next" aria-label="Página siguiente" onclick="loadReportsPage(currentReportsPage + 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>
                             <i data-lucide="chevron-right" class="w-3 h-3"></i>
                         </button>
                     </div>
@@ -745,6 +749,67 @@
                 </div>
             </div>
 
+        </div>
+    </div>
+</div>
+
+<!-- ===== TAB: NOTIFICACIONES ===== -->
+<div id="panel-notifications" class="space-y-6 hidden">
+
+    <!-- Configuración -->
+    <div class="bg-white dark:!bg-[#1a2332] rounded-xl shadow-sm border border-midnight/10 dark:border-white/10 p-6 settings-card">
+        <h3 class="text-sm font-bold uppercase tracking-widest text-midnight dark:text-white mb-4">{{ t('profile.notif_title') }}</h3>
+        <div class="space-y-4">
+            <label class="flex items-center justify-between">
+                <span class="text-xs text-midnight/70 dark:text-white/70">{{ t('profile.notif_email') }}</span>
+                <input type="checkbox" id="admin-notif-email" class="toggle-input" checked onchange="saveAdminNotifPrefs()">
+                <span class="toggle-slider" aria-hidden="true"></span>
+            </label>
+            <label class="flex items-center justify-between">
+                <span class="text-xs text-midnight/70 dark:text-white/70">{{ t('profile.notif_sms') }}</span>
+                <input type="checkbox" id="admin-notif-sms" class="toggle-input" checked onchange="saveAdminNotifPrefs()">
+                <span class="toggle-slider" aria-hidden="true"></span>
+            </label>
+            <label class="flex items-center justify-between">
+                <span class="text-xs text-midnight/70 dark:text-white/70">{{ t('profile.notif_leads') }}</span>
+                <input type="checkbox" id="admin-notif-leads" class="toggle-input" checked onchange="saveAdminNotifPrefs()">
+                <span class="toggle-slider" aria-hidden="true"></span>
+            </label>
+            <span id="admin-notif-save-msg" class="hidden text-[10px] font-medium text-emerald-600">{{ t('admin.notif_config_saved') }}</span>
+        </div>
+    </div>
+
+    <!-- Log de envíos -->
+    <div class="bg-white dark:!bg-[#1a2332] rounded-xl shadow-sm border border-midnight/10 dark:border-white/10 p-6">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h3 class="text-sm font-bold uppercase tracking-widest text-midnight dark:text-white">{{ t('admin.notif_log') }}</h3>
+                <p class="text-[11px] text-midnight/50 dark:text-white/50 mt-1">{{ t('admin.notif_log_desc') }}</p>
+            </div>
+            <div class="relative">
+                <input type="text" id="notif-log-search" placeholder="{{ t('notif.delete') }}..." class="w-48 px-3 py-1.5 text-[11px] border border-midnight/20 dark:border-white/20 rounded bg-transparent text-midnight dark:text-white focus:border-gold focus:outline-none" oninput="loadNotificationLog(1)">
+                <i data-lucide="search" class="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-midnight/30 dark:text-white/30"></i>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="table-header-border">
+                        <th class="font-extrabold text-[11px] text-gold px-4 py-4">#</th>
+                        <th class="font-extrabold text-[11px] text-gold px-4 py-4">{{ t('admin.notif_to') }}</th>
+                        <th class="font-extrabold text-[11px] text-gold px-4 py-4">{{ t('admin.notif_subject') }}</th>
+                        <th class="font-extrabold text-[11px] text-gold px-4 py-4">{{ t('admin.notif_date') }}</th>
+                    </tr>
+                </thead>
+                <tbody id="notif-log-body">
+                    <tr><td colspan="4" class="p-6 text-center text-xs text-midnight/40 dark:text-white/40">{{ t('nav.loading') }}</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="notif-log-pagination" class="hidden flex items-center justify-between mt-4 pt-4 border-t border-midnight/10 dark:border-white/10">
+            <button id="notif-log-prev" onclick="loadNotificationLog(currentNotifLogPage - 1)" class="text-[10px] uppercase tracking-wider font-bold text-midnight/40 hover:text-gold transition-colors">{{ t('notif.page_prev') }}</button>
+            <span id="notif-log-page-info" class="text-[10px] text-midnight/40 dark:text-white/40"></span>
+            <button id="notif-log-next" onclick="loadNotificationLog(currentNotifLogPage + 1)" class="text-[10px] uppercase tracking-wider font-bold text-midnight/40 hover:text-gold transition-colors">{{ t('notif.page_next') }}</button>
         </div>
     </div>
 </div>

@@ -4,6 +4,7 @@ function showTab(tab) {
     document.getElementById('panel-management').classList.add('hidden');
     document.getElementById('panel-reports').classList.add('hidden');
     document.getElementById('panel-form-options').classList.add('hidden');
+    document.getElementById('panel-notifications').classList.add('hidden');
     document.getElementById('panel-' + tab).classList.remove('hidden');
 
     document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -19,6 +20,10 @@ function showTab(tab) {
     }
     if (tab === 'form-options') {
         loadFormOptions();
+    }
+    if (tab === 'notifications') {
+        loadAdminNotifPrefs();
+        loadNotificationLog(1);
     }
 }
 
@@ -1880,3 +1885,89 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(initPhoneAudit, 100);
     }
 });
+
+// ================================================================
+// NOTIFICATIONS TAB
+// ================================================================
+var currentNotifLogPage = 1;
+
+function loadAdminNotifPrefs() {
+    fetch('/api/profile/settings')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (!data.success) return;
+        setToggle('admin-notif-email', data.email_notifications);
+        setToggle('admin-notif-sms', data.sms_notifications);
+        setToggle('admin-notif-leads', data.lead_alerts);
+    })
+    .catch(function() {});
+}
+
+function saveAdminNotifPrefs() {
+    var data = {
+        email_notifications: document.getElementById('admin-notif-email')?.checked ? 1 : 0,
+        sms_notifications: document.getElementById('admin-notif-sms')?.checked ? 1 : 0,
+        lead_alerts: document.getElementById('admin-notif-leads')?.checked ? 1 : 0,
+    };
+    fetch('/api/profile/settings', {
+        method: 'PUT',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(result) {
+        if (result.success) {
+            var msg = document.getElementById('admin-notif-save-msg');
+            if (msg) { msg.classList.remove('hidden'); setTimeout(function() { msg.classList.add('hidden'); }, 3000); }
+        }
+    })
+    .catch(function() {});
+}
+
+function loadNotificationLog(page) {
+    currentNotifLogPage = page;
+    var search = document.getElementById('notif-log-search')?.value || '';
+    var tbody = document.getElementById('notif-log-body');
+    var pagination = document.getElementById('notif-log-pagination');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-xs text-midnight/40 dark:text-white/40">' + window.t('nav.loading') + '</td></tr>';
+    fetch('/api/admin/notification-log?page=' + page + '&q=' + encodeURIComponent(search))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (!data.success || !data.items || data.items.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-xs text-midnight/40 dark:text-white/40">' + window.t('admin.notif_no_results') + '</td></tr>';
+            if (pagination) pagination.classList.add('hidden');
+            return;
+        }
+        var html = '';
+        data.items.forEach(function(n) {
+            html += '<tr class="border-b border-midnight/10 dark:border-white/10">' +
+                '<td class="text-[13px] text-midnight/50 dark:text-white/50 px-4 py-3">' + n.id + '</td>' +
+                '<td class="text-[13px] text-midnight dark:text-white px-4 py-3">' + escapeHtml(n.recipient_username || 'User #' + n.user_id) + '</td>' +
+                '<td class="text-[13px] text-midnight dark:text-white px-4 py-3">' + escapeHtml(n.title || '-') + '</td>' +
+                '<td class="text-[13px] text-midnight/50 dark:text-white/50 px-4 py-3">' + n.created_at + '</td>' +
+                '</tr>';
+        });
+        tbody.innerHTML = html;
+        if (pagination) {
+            if (data.pages > 1) {
+                pagination.classList.remove('hidden');
+                document.getElementById('notif-log-prev').disabled = page <= 1;
+                document.getElementById('notif-log-prev').className = 'text-[10px] uppercase tracking-wider font-bold transition-colors ' + (page <= 1 ? 'text-midnight/20 cursor-not-allowed' : 'text-midnight/40 hover:text-gold');
+                document.getElementById('notif-log-page-info').textContent = window.t('notif.page_of', {page: page, pages: data.pages});
+                document.getElementById('notif-log-next').disabled = page >= data.pages;
+                document.getElementById('notif-log-next').className = 'text-[10px] uppercase tracking-wider font-bold transition-colors ' + (page >= data.pages ? 'text-midnight/20 cursor-not-allowed' : 'text-midnight/40 hover:text-gold');
+            } else {
+                pagination.classList.add('hidden');
+            }
+        }
+    })
+    .catch(function() {
+        tbody.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-xs text-rose-400">' + window.t('nav.error_loading') + '</td></tr>';
+    });
+}
+
+function setToggle(id, val) {
+    var el = document.getElementById(id);
+    if (el) el.checked = val == 1 || val === true;
+}

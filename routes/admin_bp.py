@@ -865,3 +865,19 @@ def admin_send_notification():
         return jsonify({"status": "success", "message": t('admin.notification_sent', lang)})
     else:
         return jsonify({"error": t('admin.notification_target_required', lang)}), 400
+
+
+@admin_bp.route('/api/admin/notification-log')
+@admin_required
+def admin_notification_log():
+    user_id = session['user_id']
+    page = request.args.get('page', 1, type=int)
+    search = request.args.get('q', '').strip()
+    result = models.get_notifications_sent_by(user_id, page=page, search=search)
+    return jsonify({
+        'success': True,
+        'items': result['items'],
+        'total': result['total'],
+        'page': result['page'],
+        'pages': result['pages'],
+    })
