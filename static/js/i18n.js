@@ -16,6 +16,10 @@ window.I18N = {
         'confirm.yes': 'Sí',
 
         // === NAV ===
+        'notif.you': 'Tú',
+        'notif.no_notifications': 'Sin notificaciones',
+        'notif.page_of': 'Página {page} de {pages}',
+        'notif.delete': 'Eliminar',
         'nav.loading': 'Cargando...',
         'nav.no_notifications': 'Sin notificaciones',
         'nav.error_loading': 'Error al cargar',
@@ -451,6 +455,7 @@ window.I18N = {
         'status.dismissed': 'Descartado',
         'admin.disable_account_btn': 'Dar de Baja',
         'admin.reactivate_account_btn': 'Reactivar',
+        'admin.notif_no_results': 'Sin resultados',
         'dashboard.leads': 'Leads',
         'dashboard.phone_success_rate': '% de intentos exitosos',
         'dashboard.this_month': 'Este mes',
@@ -495,6 +500,10 @@ window.I18N = {
         'confirm.yes': 'Yes',
 
         // === NAV ===
+        'notif.you': 'You',
+        'notif.no_notifications': 'No notifications',
+        'notif.page_of': 'Page {page} of {pages}',
+        'notif.delete': 'Delete',
         'nav.loading': 'Loading...',
         'nav.no_notifications': 'No notifications',
         'nav.error_loading': 'Error loading',
@@ -930,6 +939,7 @@ window.I18N = {
         'status.dismissed': 'Dismissed',
         'admin.disable_account_btn': 'Disable',
         'admin.reactivate_account_btn': 'Reactivate',
+        'admin.notif_no_results': 'No results',
         'dashboard.leads': 'Leads',
         'dashboard.phone_success_rate': '% successful attempts',
         'dashboard.this_month': 'This month',
