@@ -522,46 +522,46 @@ const COUNTRY_STATES = {
 };
 
 const CITY_SUGGESTIONS = [
-    { city: 'Córdoba', country: 'Argentina' },
-    { city: 'Buenos Aires', country: 'Argentina' },
-    { city: 'Rosario', country: 'Argentina' },
-    { city: 'Mendoza', country: 'Argentina' },
-    { city: 'Mar del Plata', country: 'Argentina' },
-    { city: 'Salta', country: 'Argentina' },
-    { city: 'Villa General Belgrano', country: 'Argentina' },
-    { city: 'Mina Clavero', country: 'Argentina' },
-    { city: 'Merlo', country: 'Argentina' },
-    { city: 'San Luis Capital', country: 'Argentina' },
-    { city: 'Santa Rosa de Calamuchita', country: 'Argentina' },
-    { city: 'Montevideo', country: 'Uruguay' },
-    { city: 'Punta del Este', country: 'Uruguay' },
-    { city: 'Colonia del Sacramento', country: 'Uruguay' },
-    { city: 'Santiago', country: 'Chile' },
-    { city: 'Valparaíso', country: 'Chile' },
-    { city: 'Viña del Mar', country: 'Chile' },
-    { city: 'São Paulo', country: 'Brasil' },
-    { city: 'Río de Janeiro', country: 'Brasil' },
-    { city: 'Brasília', country: 'Brasil' },
-    { city: 'Asunción', country: 'Paraguay' },
-    { city: 'Ciudad del Este', country: 'Paraguay' },
-    { city: 'La Paz', country: 'Bolivia' },
-    { city: 'Santa Cruz de la Sierra', country: 'Bolivia' },
-    { city: 'Bogotá', country: 'Colombia' },
-    { city: 'Medellín', country: 'Colombia' },
-    { city: 'Cali', country: 'Colombia' },
-    { city: 'Ciudad de México', country: 'México' },
-    { city: 'Cancún', country: 'México' },
-    { city: 'Guadalajara', country: 'México' },
-    { city: 'Madrid', country: 'España' },
-    { city: 'Barcelona', country: 'España' },
-    { city: 'Sevilla', country: 'España' },
-    { city: 'Valencia', country: 'España' },
-    { city: 'Málaga', country: 'España' },
-    { city: 'Nueva York', country: 'Estados Unidos' },
-    { city: 'Miami', country: 'Estados Unidos' },
-    { city: 'Los Ángeles', country: 'Estados Unidos' },
-    { city: 'Lisboa', country: 'Portugal' },
-    { city: 'Oporto', country: 'Portugal' },
+    { city: 'Córdoba', country: 'Argentina', state: 'Córdoba' },
+    { city: 'Villa General Belgrano', country: 'Argentina', state: 'Córdoba' },
+    { city: 'Mina Clavero', country: 'Argentina', state: 'Córdoba' },
+    { city: 'Santa Rosa de Calamuchita', country: 'Argentina', state: 'Córdoba' },
+    { city: 'Buenos Aires', country: 'Argentina', state: 'CABA' },
+    { city: 'Rosario', country: 'Argentina', state: 'Santa Fe' },
+    { city: 'Mendoza', country: 'Argentina', state: 'Mendoza' },
+    { city: 'Mar del Plata', country: 'Argentina', state: 'Buenos Aires' },
+    { city: 'Salta', country: 'Argentina', state: 'Salta' },
+    { city: 'Merlo', country: 'Argentina', state: 'San Luis' },
+    { city: 'San Luis Capital', country: 'Argentina', state: 'San Luis' },
+    { city: 'Montevideo', country: 'Uruguay', state: 'Montevideo' },
+    { city: 'Punta del Este', country: 'Uruguay', state: 'Maldonado' },
+    { city: 'Colonia del Sacramento', country: 'Uruguay', state: 'Colonia' },
+    { city: 'Santiago', country: 'Chile', state: 'Metropolitana de Santiago' },
+    { city: 'Valparaíso', country: 'Chile', state: 'Valparaíso' },
+    { city: 'Viña del Mar', country: 'Chile', state: 'Valparaíso' },
+    { city: 'São Paulo', country: 'Brasil', state: 'São Paulo' },
+    { city: 'Río de Janeiro', country: 'Brasil', state: 'Río de Janeiro' },
+    { city: 'Brasília', country: 'Brasil', state: 'Distrito Federal' },
+    { city: 'Asunción', country: 'Paraguay', state: 'Asunción' },
+    { city: 'Ciudad del Este', country: 'Paraguay', state: 'Alto Paraná' },
+    { city: 'La Paz', country: 'Bolivia', state: 'La Paz' },
+    { city: 'Santa Cruz de la Sierra', country: 'Bolivia', state: 'Santa Cruz' },
+    { city: 'Bogotá', country: 'Colombia', state: 'Bogotá D.C.' },
+    { city: 'Medellín', country: 'Colombia', state: 'Antioquia' },
+    { city: 'Cali', country: 'Colombia', state: 'Valle del Cauca' },
+    { city: 'Ciudad de México', country: 'México', state: 'Ciudad de México' },
+    { city: 'Cancún', country: 'México', state: 'Quintana Roo' },
+    { city: 'Guadalajara', country: 'México', state: 'Jalisco' },
+    { city: 'Madrid', country: 'España', state: 'Madrid' },
+    { city: 'Barcelona', country: 'España', state: 'Cataluña' },
+    { city: 'Sevilla', country: 'España', state: 'Andalucía' },
+    { city: 'Valencia', country: 'España', state: 'Comunidad Valenciana' },
+    { city: 'Málaga', country: 'España', state: 'Andalucía' },
+    { city: 'Nueva York', country: 'Estados Unidos', state: 'Nueva York' },
+    { city: 'Miami', country: 'Estados Unidos', state: 'Florida' },
+    { city: 'Los Ángeles', country: 'Estados Unidos', state: 'California' },
+    { city: 'Lisboa', country: 'Portugal', state: 'Lisboa' },
+    { city: 'Oporto', country: 'Portugal', state: 'Porto' },
 ];
 
 const ARCHITECTURAL_STYLES = [
@@ -571,16 +571,40 @@ const ARCHITECTURAL_STYLES = [
     t('style.hightech'), t('style.neoclassic'), t('style.gothic'), t('style.baroque'), t('style.renaissance'), t('style.other')
 ];
 
-function initCountrySelector(provinceSelectId) {
-    var countrySelect = document.getElementById('country-select');
+const STATES_TERM = {
+    'Estados Unidos': { label: 'Estado', placeholder: 'Seleccionar estado' },
+    'México': { label: 'Estado', placeholder: 'Seleccionar estado' },
+    'Brasil': { label: 'Estado', placeholder: 'Seleccionar estado' },
+};
+
+function initCountrySelector(provinceSelectId, countrySelectId) {
+    var countrySelect = document.getElementById(countrySelectId || 'country-select');
     var provinceSelect = document.getElementById(provinceSelectId || 'province-select');
     if (!countrySelect || !provinceSelect) return;
+
+    var provinceLabel = document.getElementById(provinceSelect.id + '-label');
+    if (!provinceLabel) {
+        provinceLabel = document.querySelector('label[for="' + provinceSelect.id + '"]');
+    }
+
+    function getStateTerm(country) {
+        var fallback = { label: window.t('user.province'), placeholder: window.t('user.select_province') };
+        var lang = window.__LANG || 'es';
+        if (lang === 'es') {
+            return STATES_TERM[country] || fallback;
+        }
+        return fallback;
+    }
 
     function updateProvinces() {
         var country = countrySelect.value;
         var currentValue = provinceSelect.value;
         var states = COUNTRY_STATES[country] || [];
-        provinceSelect.innerHTML = '<option value="">' + window.t('user.select_state') + '</option>';
+        var term = getStateTerm(country);
+        provinceSelect.innerHTML = '<option value="">' + term.placeholder + '</option>';
+        if (provinceLabel) {
+            provinceLabel.textContent = term.label;
+        }
         states.forEach(function(s) {
             var opt = document.createElement('option');
             opt.value = s;
@@ -588,9 +612,15 @@ function initCountrySelector(provinceSelectId) {
             if (s === currentValue) opt.selected = true;
             provinceSelect.appendChild(opt);
         });
+        var zoneInput = document.getElementById('zone-input');
+        if (zoneInput && zoneInput._zoneAutocompleteUpdate) zoneInput._zoneAutocompleteUpdate();
     }
 
     countrySelect.addEventListener('change', updateProvinces);
+    provinceSelect.addEventListener('change', function() {
+        var zoneInput = document.getElementById('zone-input');
+        if (zoneInput && zoneInput._zoneAutocompleteUpdate) zoneInput._zoneAutocompleteUpdate();
+    });
     if (countrySelect.value) updateProvinces();
 }
 
@@ -616,8 +646,9 @@ function initZoneAutocomplete() {
         }
 
         suggestions.innerHTML = items.map(item => {
-            return `<li role="option" class="cursor-pointer px-4 py-3 border-b border-slate-100 hover:bg-slate-50" data-value="${escapeHtml(item.city + ', ' + item.country)}">
-                        <strong class="text-midnight">${escapeHtml(item.city)}</strong><span class="ml-2 text-[11px] text-midnight/60">${escapeHtml(item.country)}</span>
+            var stateInfo = item.state ? ', <span class="text-midnight/40">' + escapeHtml(item.state) + '</span>' : '';
+            return `<li role="option" class="cursor-pointer px-4 py-3 border-b border-slate-100 hover:bg-slate-50" data-value="${escapeHtml(item.city)}">
+                        <strong class="text-midnight">${escapeHtml(item.city)}</strong>${stateInfo}<span class="ml-2 text-[11px] text-midnight/60">${escapeHtml(item.country)}</span>
                     </li>`;
         }).join('');
         suggestions.classList.remove('hidden');
@@ -625,17 +656,26 @@ function initZoneAutocomplete() {
 
     const update = () => {
         var countrySelect = document.getElementById('country-select');
+        var provinceSelect = document.getElementById('province-select');
         var selectedCountry = countrySelect ? countrySelect.value : '';
+        var selectedProvince = provinceSelect ? provinceSelect.value : '';
         const query = zoneInput.value.trim().toLowerCase();
         var pool = CITY_SUGGESTIONS;
         if (selectedCountry) {
             pool = pool.filter(function(item) { return item.country === selectedCountry; });
         }
+        if (!selectedProvince) {
+            renderSuggestions([], query);
+            return;
+        }
+        pool = pool.filter(function(item) { return item.state === selectedProvince; });
         const items = query.length === 0
             ? pool.slice(0, 5)
             : pool.filter(item => item.city.toLowerCase().includes(query) || item.country.toLowerCase().includes(query));
         renderSuggestions(items, zoneInput.value.trim());
     };
+
+    zoneInput._zoneAutocompleteUpdate = update;
 
     zoneInput.addEventListener('input', update);
     zoneInput.addEventListener('focus', update);
@@ -650,7 +690,7 @@ function initZoneAutocomplete() {
         const target = event.target.closest('li[data-value]');
         if (!target) return;
         zoneInput.value = target.getAttribute('data-value');
-        suggestions.classList.add('hidden');
+        suggestions.classList.remove('hidden');
     });
 }
 

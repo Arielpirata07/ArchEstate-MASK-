@@ -92,9 +92,9 @@ window.__FORM_OPTIONS = {{ {
                                     class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 transition-all text-sm">
                             </div>
                             <div>
-                                <label for="edit-province" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Provincia</label>
+                                <label for="edit-province" id="edit-province-label" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">{{ t('user.province') }}</label>
                                 <select id="edit-province" name="province" class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 transition-all text-sm bg-transparent">
-                                    <option value="">Seleccionar provincia</option>
+                                    <option value="">{{ t('user.select_province') }}</option>
                                     {% for opt in form_options.get('province', []) %}
                                     <option value="{{ opt.value }}" {% if lead.province == opt.value %}selected{% endif %}>{{ opt.label }}</option>
                                     {% endfor %}

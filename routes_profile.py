@@ -507,6 +507,13 @@ def api_delete_professional_photo():
 # ============================================================
 
 
+@profile_bp.route('/notificaciones')
+@decorators.login_required
+def notifications_view():
+    lang = get_language()
+    return render_template('notifications.html')
+
+
 @profile_bp.route('/api/profile/notifications')
 @decorators.login_required
 def profile_notifications():

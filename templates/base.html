@@ -249,35 +249,9 @@
             <div class="p-4 text-center text-xs text-midnight/40 dark:text-white/40">{{ t('nav.loading') }}</div>
         </div>
         <div class="border-t border-gold/20 dark:border-gold-light/20">
-            <button onclick="openNotifHistory()" class="w-full px-4 py-2.5 text-[9px] uppercase tracking-widest font-bold text-gold dark:text-gold-light hover:bg-midnight/5 dark:hover:bg-white/5 transition-colors flex items-center justify-center gap-1.5">
+            <a href="{{ url_for('profile.notifications_view') }}" class="w-full px-4 py-2.5 text-[9px] uppercase tracking-widest font-bold text-gold dark:text-gold-light hover:bg-midnight/5 dark:hover:bg-white/5 transition-colors flex items-center justify-center gap-1.5">
                 <i data-lucide="list" class="w-3 h-3"></i> {{ t('notif.view_all') }}
-            </button>
-        </div>
-    </div>
-
-    <!-- Notification history modal -->
-    <div id="notif-history-modal" class="hidden fixed inset-0 z-[60] bg-midnight/60 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="{{ t('notif.history_title') }}">
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg max-h-[80vh] bg-white dark:!bg-[#1a2332] border border-gold/20 dark:border-gold-light/20 rounded-lg shadow-xl overflow-hidden flex flex-col">
-            <div class="flex items-center justify-between px-5 py-4 border-b border-gold/20 dark:border-gold-light/20 bg-midnight-light shrink-0">
-                <h3 class="text-xs font-bold uppercase tracking-widest text-gold dark:text-gold-light">{{ t('notif.history_title') }}</h3>
-                <div class="flex items-center gap-2">
-                    <button onclick="deleteReadNotifications()" class="text-[9px] uppercase tracking-wider text-rose-400 hover:text-rose-300 transition-colors" title="{{ t('notif.delete_read') }}">
-                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                    </button>
-                    <button onclick="markAllRead()" class="text-[9px] uppercase tracking-wider text-white/40 hover:text-gold dark:hover:text-gold-light transition-colors">{{ t('nav.mark_all_read') }}</button>
-                    <button onclick="closeNotifHistory()" class="p-1 text-white/40 hover:text-white transition-colors" aria-label="Cerrar">
-                        <i data-lucide="x" class="w-4 h-4"></i>
-                    </button>
-                </div>
-            </div>
-            <div id="notif-history-list" class="flex-1 overflow-y-auto">
-                <div class="p-4 text-center text-xs text-midnight/40 dark:text-white/40">{{ t('nav.loading') }}</div>
-            </div>
-            <div id="notif-history-pagination" class="hidden flex items-center justify-between px-5 py-3 border-t border-gold/20 dark:border-gold-light/20 bg-midnight-light/50 shrink-0 text-[10px]">
-                <button id="notif-page-prev" onclick="notifHistoryPage(currentNotifPage - 1)" class="text-white/40 hover:text-gold transition-colors uppercase tracking-wider font-bold">{{ t('notif.page_prev') }}</button>
-                <span id="notif-page-info" class="text-white/40"></span>
-                <button id="notif-page-next" onclick="notifHistoryPage(currentNotifPage + 1)" class="text-white/40 hover:text-gold transition-colors uppercase tracking-wider font-bold">{{ t('notif.page_next') }}</button>
-            </div>
+            </a>
         </div>
     </div>
     {% endif %}
@@ -408,112 +382,6 @@
                 }
             }).catch(function() {});
     }
-
-    /* Notification history */
-    var currentNotifPage = 1;
-
-    function openNotifHistory() {
-        var dd = document.getElementById('notif-dropdown');
-        if (dd) { dd.classList.add('hidden'); notifDropdownOpen = false; }
-        var modal = document.getElementById('notif-history-modal');
-        if (!modal) return;
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-        currentNotifPage = 1;
-        notifHistoryPage(1);
-    }
-
-    function closeNotifHistory() {
-        var modal = document.getElementById('notif-history-modal');
-        if (modal) modal.classList.add('hidden');
-        document.body.style.overflow = '';
-    }
-
-    function notifHistoryPage(page) {
-        var list = document.getElementById('notif-history-list');
-        var pagination = document.getElementById('notif-history-pagination');
-        if (!list) return;
-        list.innerHTML = '<div class="p-4 text-center text-xs text-midnight/40 dark:text-white/40">' + window.t('nav.loading') + '</div>';
-        fetch('{{ url_for("profile.all_notifications") }}?page=' + page)
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (!data.notifications || data.notifications.length === 0) {
-                    list.innerHTML = '<div class="p-8 text-center text-xs text-midnight/40 dark:text-white/40">' + window.t('notif.no_notifications') + '</div>';
-                    if (pagination) pagination.classList.add('hidden');
-                    return;
-                }
-                var html = '';
-                data.notifications.forEach(function(n) {
-                    var actorLabel = '';
-                    if (n.actor_username) {
-                        actorLabel = '<span class="text-[9px] uppercase tracking-wider ' + (n.actor_id && n.actor_id === data.current_user_id ? 'text-gold' : 'text-midnight/30 dark:text-white/30') + '">' + (n.actor_id && n.actor_id === data.current_user_id ? window.t('notif.you') : escapeHtml(n.actor_username)) + '</span>';
-                    }
-                    html += '<div class="px-5 py-3 border-b border-midnight/10 dark:border-white/10 hover:bg-midnight/5 dark:hover:bg-white/5 transition-colors ' + (n.is_read ? '' : 'bg-gold/5 dark:bg-gold-light/10') + '">' +
-                        '<div class="flex items-start justify-between gap-2">' +
-                        '<div class="min-w-0 flex-1">' +
-                        '<p class="text-xs font-semibold text-midnight dark:text-white truncate">' + escapeHtml(n.title) + '</p>' +
-                        (n.body ? '<p class="text-[11px] text-midnight/50 dark:text-white/50 mt-0.5">' + escapeHtml(n.body) + '</p>' : '') +
-                        '<div class="flex items-center gap-2 mt-1">' +
-                        actorLabel +
-                        '<p class="text-[9px] text-midnight/30 dark:text-white/30">' + n.created_at + '</p>' +
-                        '</div>' +
-                        '</div>' +
-                        '<div class="flex items-center gap-1.5 shrink-0">' +
-                        (!n.is_read ? '<button onclick="markRead(' + n.id + ')" class="text-[9px] uppercase tracking-wider text-gold dark:text-gold-light hover:text-white transition-colors">' + window.t('nav.read') + '</button>' : '') +
-                        '<button onclick="deleteNotification(' + n.id + ')" class="text-[9px] text-midnight/30 hover:text-rose-500 transition-colors p-1" title="' + window.t('notif.delete') + '"><i data-lucide="trash-2" class="w-3 h-3"></i></button>' +
-                        '</div>' +
-                        '</div></div>';
-                });
-                list.innerHTML = html;
-                if (window.lucide) lucide.createIcons(list);
-                currentNotifPage = page;
-                if (pagination) {
-                    if (data.pages > 1) {
-                        pagination.classList.remove('hidden');
-                        document.getElementById('notif-page-prev').disabled = page <= 1;
-                        document.getElementById('notif-page-prev').className = 'uppercase tracking-wider font-bold transition-colors ' + (page <= 1 ? 'text-white/20 cursor-not-allowed' : 'text-white/40 hover:text-gold');
-                        document.getElementById('notif-page-info').textContent = window.t('notif.page_of', {page: page, pages: data.pages});
-                        document.getElementById('notif-page-next').disabled = page >= data.pages;
-                        document.getElementById('notif-page-next').className = 'uppercase tracking-wider font-bold transition-colors ' + (page >= data.pages ? 'text-white/20 cursor-not-allowed' : 'text-white/40 hover:text-gold');
-                    } else {
-                        pagination.classList.add('hidden');
-                    }
-                }
-                var badge = document.getElementById('notif-badge');
-                if (badge && data.unread > 0) { badge.textContent = data.unread; }
-                else if (badge) { badge.remove(); }
-            })
-            .catch(function() {
-                list.innerHTML = '<div class="p-4 text-center text-xs text-rose-400">' + window.t('nav.error_loading') + '</div>';
-            });
-    }
-
-    function deleteNotification(nid) {
-        fetch('{{ url_for("profile.delete_notification", notification_id=0) }}'.replace('0', nid), {
-            method: 'DELETE'
-        }).then(function(r) { return r.json(); }).then(function(data) {
-            if (data.success) { notifHistoryPage(currentNotifPage); loadNotifications(); }
-        }).catch(function() {});
-    }
-
-    function deleteReadNotifications() {
-        fetch('{{ url_for("profile.delete_read_notifications") }}', {method: 'POST'})
-            .then(function(r) { return r.json(); }).then(function(data) {
-                if (data.success) { notifHistoryPage(1); loadNotifications(); }
-            }).catch(function() {});
-    }
-
-    /* Close modal on outside click */
-    document.addEventListener('click', function(e) {
-        var modal = document.getElementById('notif-history-modal');
-        if (modal && !modal.classList.contains('hidden') && e.target === modal) {
-            closeNotifHistory();
-        }
-    });
-
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeNotifHistory();
-    });
 
     /* Close dropdown on click outside */
     document.addEventListener('click', function(e) {

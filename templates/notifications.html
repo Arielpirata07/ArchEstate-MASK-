@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block title %}{{ t('notif.history_title') }} | ArchEstate{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6">
+
+    <!-- Header -->
+    <div class="flex items-center justify-between border-b border-midnight/10 dark:border-white/10 pb-6">
+        <div>
+            <h2 class="text-3xl font-serif italic text-midnight dark:text-white">{{ t('notif.history_title') }}</h2>
+            <p class="text-sm text-midnight/50 dark:text-white/50 mt-1">{{ t('notif.page_of', page=1, pages=1) }}</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <button onclick="deleteReadNotifications()"
+                class="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-rose-500 hover:text-rose-600 border border-rose-200 hover:border-rose-300 rounded transition-all flex items-center gap-1.5">
+                <i data-lucide="trash-2" class="w-3 h-3"></i>
+                {{ t('notif.delete_read') }}
+            </button>
+            <button onclick="notifPage(1)"
+                class="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-gold hover:text-midnight border border-gold/30 hover:border-gold rounded transition-all flex items-center gap-1.5">
+                <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+                {{ t('nav.mark_all_read') }}
+            </button>
+        </div>
+    </div>
+
+    <!-- Notification list -->
+    <div id="notif-list-page" class="bg-white dark:!bg-[#1a2332] rounded-xl shadow-sm border border-midnight/10 dark:border-white/10">
+        <div class="p-8 text-center text-xs text-midnight/40 dark:text-white/40">{{ t('nav.loading') }}</div>
+    </div>
+
+    <!-- Pagination -->
+    <div id="notif-page-pagination" class="hidden flex items-center justify-between pt-4">
+        <button id="notif-page-prev" onclick="notifPage(currentNotifPage - 1)"
+            class="text-[10px] uppercase tracking-wider font-bold text-midnight/40 hover:text-gold dark:text-white/40 dark:hover:text-gold-light transition-colors">
+            {{ t('notif.page_prev') }}
+        </button>
+        <span id="notif-page-info" class="text-xs text-midnight/40 dark:text-white/40"></span>
+        <button id="notif-page-next" onclick="notifPage(currentNotifPage + 1)"
+            class="text-[10px] uppercase tracking-wider font-bold text-midnight/40 hover:text-gold dark:text-white/40 dark:hover:text-gold-light transition-colors">
+            {{ t('notif.page_next') }}
+        </button>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+var currentNotifPage = 1;
+
+function notifPage(page) {
+    var list = document.getElementById('notif-list-page');
+    var pagination = document.getElementById('notif-page-pagination');
+    if (!list) return;
+    list.innerHTML = '<div class="p-8 text-center text-xs text-midnight/40 dark:text-white/40">' + window.t('nav.loading') + '</div>';
+
+    fetch('{{ url_for("profile.all_notifications") }}?page=' + page)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (!data.notifications || data.notifications.length === 0) {
+                list.innerHTML = '<div class="p-8 text-center text-xs text-midnight/40 dark:text-white/40">' + window.t('notif.no_notifications') + '</div>';
+                if (pagination) pagination.classList.add('hidden');
+                return;
+            }
+
+            var html = '';
+            data.notifications.forEach(function(n) {
+                var actorLabel = '';
+                if (n.actor_username) {
+                    actorLabel = '<span class="text-[10px] uppercase tracking-wider ' + (n.actor_id && n.actor_id === data.current_user_id ? 'text-gold' : 'text-midnight/30 dark:text-white/30') + '">' + (n.actor_id && n.actor_id === data.current_user_id ? window.t('notif.you') : escapeHtml(n.actor_username)) + '</span>';
+                }
+                html += '<div class="px-6 py-4 border-b border-midnight/10 dark:border-white/10 hover:bg-midnight/5 dark:hover:bg-white/5 transition-colors ' + (n.is_read ? '' : 'bg-gold/5 dark:bg-gold-light/10') + '">' +
+                    '<div class="flex items-start justify-between gap-3">' +
+                    '<div class="min-w-0 flex-1">' +
+                    '<p class="text-sm font-semibold text-midnight dark:text-white">' + escapeHtml(n.title) + '</p>' +
+                    (n.body ? '<p class="text-xs text-midnight/50 dark:text-white/50 mt-0.5">' + escapeHtml(n.body) + '</p>' : '') +
+                    '<div class="flex items-center gap-2 mt-1.5">' +
+                    actorLabel +
+                    '<span class="text-[10px] text-midnight/30 dark:text-white/30">' + n.created_at + '</span>' +
+                    '</div>' +
+                    '</div>' +
+                    '<div class="flex items-center gap-2 shrink-0">' +
+                    '<button onclick="markReadNotifPage(' + n.id + ')" class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded border transition-all ' +
+                    (n.is_read
+                        ? 'border-transparent text-midnight/20 dark:text-white/20 cursor-default'
+                        : 'border-gold/30 text-gold hover:bg-gold hover:text-white') +
+                    '">' + window.t('nav.read') + '</button>' +
+                    '<button onclick="deleteNotification(' + n.id + ')" class="p-1.5 text-midnight/30 hover:text-rose-500 transition-colors" title="' + window.t('notif.delete') + '">' +
+                    '<i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>' +
+                    '</div>' +
+                    '</div></div>';
+            });
+            list.innerHTML = html;
+            if (window.lucide) lucide.createIcons(list);
+
+            currentNotifPage = page;
+            if (pagination) {
+                if (data.pages > 1) {
+                    pagination.classList.remove('hidden');
+                    var prev = document.getElementById('notif-page-prev');
+                    var next = document.getElementById('notif-page-next');
+                    var info = document.getElementById('notif-page-info');
+                    prev.disabled = page <= 1;
+                    prev.className = 'text-[10px] uppercase tracking-wider font-bold transition-colors ' + (page <= 1 ? 'text-midnight/20 dark:text-white/20 cursor-not-allowed' : 'text-midnight/40 hover:text-gold dark:text-white/40 dark:hover:text-gold-light');
+                    next.disabled = page >= data.pages;
+                    next.className = 'text-[10px] uppercase tracking-wider font-bold transition-colors ' + (page >= data.pages ? 'text-midnight/20 dark:text-white/20 cursor-not-allowed' : 'text-midnight/40 hover:text-gold dark:text-white/40 dark:hover:text-gold-light');
+                    info.textContent = window.t('notif.page_of', {page: page, pages: data.pages});
+                    document.querySelector('.font-serif p').textContent = window.t('notif.page_of', {page: page, pages: data.pages});
+                } else {
+                    pagination.classList.add('hidden');
+                    document.querySelector('.font-serif p').textContent = window.t('notif.page_of', {page: 1, pages: 1});
+                }
+            }
+
+            var badge = document.getElementById('notif-badge');
+            if (badge && data.unread > 0) { badge.textContent = data.unread; }
+            else if (badge) { badge.remove(); }
+        })
+        .catch(function() {
+            list.innerHTML = '<div class="p-8 text-center text-xs text-rose-400">' + window.t('nav.error_loading') + '</div>';
+        });
+}
+
+function markReadNotifPage(nid) {
+    fetch('{{ url_for("profile.mark_notification_read") }}', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({notification_id: nid})
+    }).then(function(r) { return r.json(); }).then(function(data) {
+        if (data.success) notifPage(currentNotifPage);
+    }).catch(function() {});
+}
+
+function deleteNotification(nid) {
+    fetch('/api/profile/notifications/' + nid, { method: 'DELETE' })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                notifPage(currentNotifPage);
+                var badge = document.getElementById('notif-badge');
+                fetch('{{ url_for("profile.profile_notifications") }}')
+                    .then(function(r) { return r.json(); })
+                    .then(function(d) {
+                        if (badge && d.unread > 0) badge.textContent = d.unread;
+                        else if (badge) badge.remove();
+                    }).catch(function() {});
+            }
+        }).catch(function() {});
+}
+
+function deleteReadNotifications() {
+    fetch('{{ url_for("profile.delete_read_notifications") }}', {method: 'POST'})
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                notifPage(1);
+                var badge = document.getElementById('notif-badge');
+                if (badge) badge.remove();
+            }
+        }).catch(function() {});
+}
+
+notifPage(1);
+</script>
+{% endblock %}

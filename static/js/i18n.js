@@ -482,6 +482,8 @@ window.I18N = {
         'success.option_deactivated': 'Opción desactivada',
         'success.option_deleted': 'Opción eliminada',
         'success.option_updated': 'Opción actualizada',
+        'user.select_province': 'Seleccionar provincia',
+        'user.province': 'Provincia',
     },
     en: {
         // === TOAST ===
@@ -966,6 +968,8 @@ window.I18N = {
         'success.option_deactivated': 'Option deactivated',
         'success.option_deleted': 'Option deleted',
         'success.option_updated': 'Option updated',
+        'user.select_province': 'Select province',
+        'user.province': 'Province',
     }
 };
 

@@ -1134,7 +1134,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     setupAvatarRing('avatar-preview', 'avatar-ring');
     setupAvatarRing('pro-photo-preview', 'pro-photo-ring');
-    initCountrySelector('pro-province');
+    initCountrySelector('pro-province', 'pro-country');
 
     // Auto-focus y navegación entre dígitos del modal
     const digits = document.querySelectorAll('.verify-digit');
