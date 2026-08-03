@@ -295,6 +295,7 @@ function updateCountryCode() {
     const currentPhone = phoneInput.value.trim();
     if (currentPhone) {
         const fullPhone = formatPhoneWithCountry(currentPhone, countryCode);
+        phoneInput.value = fullPhone.replace(countryCode + ' ', '');
     }
 }
 

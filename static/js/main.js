@@ -352,18 +352,22 @@ function initUserForm() {
                 }
                 if (provincePrefix && localDigits) {
                     let mobilePrefix = '';
-                    if (localDigits.startsWith('15')) { mobilePrefix = '15'; localDigits = localDigits.substring(2); }
+                    if (localDigits.startsWith('15')) { mobilePrefix = '15'; localDigits = localDigits.substring(1); }
                     else if (localDigits.startsWith('9')) { mobilePrefix = '9'; localDigits = localDigits.substring(1); }
                     if (localDigits.startsWith(provincePrefix)) {
                         localDigits = localDigits.substring(provincePrefix.length);
                     }
-                    if (mobilePrefix) {
-                        data.phone = `${countryCode} ${mobilePrefix} ${provincePrefix} ${localDigits}`;
-                    } else {
-                        data.phone = `${countryCode} ${provincePrefix} ${localDigits}`;
-                    }
+                    data.phone = `${countryCode} 9 ${provincePrefix} ${localDigits}`;
                 } else {
-                    data.phone = `${countryCode} ${phone}`;
+                    if (countryCode === '+54') {
+                        let d = phone.replace(/\D/g, '');
+                        if (d.startsWith('9')) d = d.substring(1);
+                        else if (d.startsWith('15')) d = d.substring(1);
+                        if (!d.startsWith('9')) d = '9' + d;
+                        data.phone = `${countryCode} ${d}`;
+                    } else {
+                        data.phone = `${countryCode} ${phone}`;
+                    }
                 }
             }
 
