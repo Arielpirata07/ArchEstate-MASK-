@@ -158,7 +158,7 @@
                                         <option value="other">Otra...</option>
                                     </select>
                                     <input id="profile-custom-area" type="tel" maxlength="5" placeholder="Cod." aria-label="Código de área personalizado" class="px-2 py-2 border border-midnight/20 rounded text-sm bg-white text-midnight w-14 flex-shrink-0 hidden">
-                                    <input id="profile-phone" type="tel" value="{{ user.phone if user and user.phone else '' }}" class="input-field flex-1" placeholder="9 11 1234 5678" maxlength="16" oninput="validateProfilePhone()">
+                                    <input id="profile-phone" type="tel" autocomplete="tel" inputmode="tel" autocapitalize="off" spellcheck="false" value="{{ user.phone if user and user.phone else '' }}" class="input-field flex-1" placeholder="9 11 1234 5678" maxlength="16" oninput="validateProfilePhone()">
                                 </div>
                                 <div class="flex items-center justify-between mt-1">
                                     <p id="profile-phone-hint" class="text-[9px] hint-text">{{ t('profile.phone_hint') }}</p>

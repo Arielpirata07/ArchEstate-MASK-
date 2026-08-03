@@ -261,15 +261,13 @@ function formatPhoneWithCountry(phone, countryCode) {
     const codeLen = countryCodeDigits.length;
 
     if (countryCode === '+54' && digits.length >= 2) {
-        const mobilePrefix = digits.substring(0, 1);
-        const areaCode = digits.substring(1, codeLen + 1);
-        const rest = digits.substring(codeLen + 1);
-
-        if (mobilePrefix === '9' || mobilePrefix === '15') {
-            formatted += mobilePrefix + ' ' + (areaCode ? areaCode + ' ' : '') + rest.replace(/(\d{4})/g, '$1 ').trim();
-        } else {
-            formatted += (areaCode ? areaCode + ' ' : '') + rest.replace(/(\d{4})/g, '$1 ').trim();
-        }
+        var d = digits;
+        if (d.startsWith('9')) d = d.substring(1);
+        else if (d.startsWith('15')) d = d.substring(1);
+        if (!d.startsWith('9')) d = '9' + d;
+        const areaCode = d.substring(1, codeLen);
+        const rest = d.substring(codeLen);
+        formatted += '9 ' + areaCode + ' ' + rest.replace(/(\d{4})/g, '$1 ').trim();
     } else if (countryCode === '+1' && digits.length >= 10) {
         formatted = countryCode + ' (' + digits.substring(0, 3) + ') ' + digits.substring(3, 6) + '-' + digits.substring(6);
     } else if (countryCode === '+34' && digits.length >= 9) {
@@ -307,18 +305,17 @@ function applyPhoneProvincePrefix() {
     const raw = phoneInput.value.trim().replace(/\D/g, '');
     const prefixes = ['221','223','341','351','261','264','266','280','291','299','379','381','383','387','388','358','342','343','345','362','364','370','375','376','377','378','385','11'];
     var searchRaw = raw;
-    var mobilePrefix = '';
-    if (raw.startsWith('15')) { searchRaw = raw.substring(2); mobilePrefix = '15'; }
-    else if (raw.startsWith('9')) { searchRaw = raw.substring(1); mobilePrefix = '9'; }
-    const hasPrefix = prefixes.some(p => searchRaw.startsWith(p));
-    if (!hasPrefix && raw.length > 0) {
-        phoneInput.value = prefix + ' ' + (mobilePrefix ? mobilePrefix + ' ' : '') + searchRaw;
-    } else if (raw.length > 0) {
-        var cleaned = searchRaw;
-        for (var i = 0; i < prefixes.length; i++) {
-            if (cleaned.startsWith(prefixes[i])) { cleaned = cleaned.substring(prefixes[i].length).replace(/^\s+/, ''); break; }
-        }
-        phoneInput.value = prefix + ' ' + (mobilePrefix ? mobilePrefix + ' ' : '') + cleaned;
+    if (searchRaw.startsWith('15')) searchRaw = searchRaw.substring(1);
+    else if (searchRaw.startsWith('9')) searchRaw = searchRaw.substring(1);
+    if (!searchRaw.startsWith('9')) searchRaw = '9' + searchRaw;
+    var areaCode = '';
+    for (var i = 0; i < prefixes.length; i++) {
+        if (searchRaw.substring(1).startsWith(prefixes[i])) { areaCode = prefixes[i]; break; }
+    }
+    if (areaCode) {
+        phoneInput.value = prefix + ' 9 ' + areaCode + ' ' + searchRaw.substring(1 + areaCode.length);
+    } else if (searchRaw.length > 1) {
+        phoneInput.value = prefix + ' 9 ' + searchRaw.substring(1);
     }
 }
 

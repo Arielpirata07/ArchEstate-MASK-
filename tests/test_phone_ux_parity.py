@@ -201,6 +201,28 @@ class TestPhoneUxInRegisterPage:
         assert b'/static/js/auth.js' in resp.data
 
 
+class TestPhoneAutocompleteInProfileAndUserPages:
+    """Los campos de teléfono deben exponer el atributo de autofill del navegador."""
+
+    def test_profile_phone_input_has_tel_autocomplete(self, auth_client):
+        resp = auth_client.get('/mi-perfil')
+        assert resp.status_code == 200
+        assert b'id="profile-phone"' in resp.data
+        assert b'autocomplete="tel"' in resp.data
+        assert b'inputmode="tel"' in resp.data
+        assert b'autocapitalize="off"' in resp.data
+        assert b'spellcheck="false"' in resp.data
+
+    def test_user_phone_input_has_tel_autocomplete(self, auth_client):
+        resp = auth_client.get('/usuario')
+        assert resp.status_code == 200
+        assert b'id="phone-input"' in resp.data
+        assert b'autocomplete="tel"' in resp.data
+        assert b'inputmode="tel"' in resp.data
+        assert b'autocapitalize="off"' in resp.data
+        assert b'spellcheck="false"' in resp.data
+
+
 # --- Regresión: el bug del status icon que se quedaba con último estado ----
 
 class TestStatusIconReset:
