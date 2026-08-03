@@ -17,6 +17,12 @@ window.I18N = {
 
         // === NAV ===
         'notif.you': 'Tú',
+        'notif.you_sent': 'Enviado por vos',
+        'notif.type_assigned': 'Asignado',
+        'notif.type_new_lead': 'Nuevo lead',
+        'notif.type_status': 'Estado',
+        'notif.type_admin': 'Admin',
+        'notif.type_system': 'Sistema',
         'notif.no_notifications': 'Sin notificaciones',
         'notif.page_of': 'Página {page} de {pages}',
         'notif.delete': 'Eliminar',
@@ -503,6 +509,12 @@ window.I18N = {
 
         // === NAV ===
         'notif.you': 'You',
+        'notif.you_sent': 'Sent by you',
+        'notif.type_assigned': 'Assigned',
+        'notif.type_new_lead': 'New lead',
+        'notif.type_status': 'Status',
+        'notif.type_admin': 'Admin',
+        'notif.type_system': 'System',
         'notif.no_notifications': 'No notifications',
         'notif.page_of': 'Page {page} of {pages}',
         'notif.delete': 'Delete',

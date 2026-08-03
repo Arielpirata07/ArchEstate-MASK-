@@ -143,6 +143,8 @@ def init_db(app):
             cursor.execute('INSERT INTO schema_version (version) VALUES (4)')
         if current_ver < 5:
             cursor.execute('INSERT INTO schema_version (version) VALUES (5)')
+        if current_ver < 6:
+            cursor.execute('INSERT INTO schema_version (version) VALUES (6)')
 
         cursor.execute('PRAGMA table_info(users)')
         user_columns = [row[1] for row in cursor.fetchall()]
@@ -445,6 +447,12 @@ def init_db(app):
         if 'actor_id' not in notif_cols:
             cursor.execute("ALTER TABLE notifications ADD COLUMN actor_id INTEGER REFERENCES users(id)")
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_notifications_actor ON notifications(actor_id)')
+
+        if current_ver < 6:
+            cursor.execute("UPDATE notifications SET type = 'lead' WHERE type = 'lead'")
+            cursor.execute("UPDATE notifications SET type = 'lead_assigned' WHERE title LIKE '%asignado%' AND type = 'lead'")
+            cursor.execute("UPDATE notifications SET type = 'lead_new' WHERE title LIKE '%nuevo lead%' AND type = 'lead'")
+            cursor.execute("UPDATE notifications SET type = 'lead_status' WHERE (title LIKE '%visto%' OR title LIKE '%contactado%') AND type = 'lead'")
 
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS password_reset_tokens (

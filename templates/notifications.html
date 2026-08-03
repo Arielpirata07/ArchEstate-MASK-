@@ -68,17 +68,35 @@ function notifPage(page) {
             var html = '';
             data.notifications.forEach(function(n) {
                 var actorLabel = '';
-                if (n.actor_username) {
-                    actorLabel = '<span class="text-[10px] uppercase tracking-wider ' + (n.actor_id && n.actor_id === data.current_user_id ? 'text-gold' : 'text-midnight/30 dark:text-white/30') + '">' + (n.actor_id && n.actor_id === data.current_user_id ? window.t('notif.you') : escapeHtml(n.actor_username)) + '</span>';
+                var isSelf = n.actor_id && n.actor_id === data.current_user_id;
+                if (isSelf) {
+                    actorLabel = '<span class="text-[10px] uppercase tracking-wider text-gold">' + window.t('notif.you_sent') + '</span>';
+                } else if (n.actor_username) {
+                    actorLabel = '<span class="text-[10px] uppercase tracking-wider text-midnight/30 dark:text-white/30">' + escapeHtml(n.actor_username) + '</span>';
                 }
-                html += '<div class="px-6 py-4 border-b border-midnight/10 dark:border-white/10 hover:bg-midnight/5 dark:hover:bg-white/5 transition-colors ' + (n.is_read ? '' : 'bg-gold/5 dark:bg-gold-light/10') + '">' +
+                var typeConfig = {
+                    'lead_assigned': { icon: 'user-check', color: 'text-blue-500', border: 'border-l-blue-500', label: window.t('notif.type_assigned') },
+                    'lead_new': { icon: 'bell-ring', color: 'text-emerald-500', border: 'border-l-emerald-500', label: window.t('notif.type_new_lead') },
+                    'lead_status': { icon: 'check-circle', color: 'text-amber-500', border: 'border-l-amber-500', label: window.t('notif.type_status') },
+                    'admin_message': { icon: 'shield', color: 'text-gold', border: 'border-l-gold', label: window.t('notif.type_admin') },
+                    'system': { icon: 'info', color: 'text-midnight/40 dark:text-white/40', border: 'border-l-midnight/20', label: window.t('notif.type_system') },
+                    'lead': { icon: 'bell', color: 'text-midnight/40 dark:text-white/40', border: 'border-l-midnight/20', label: '' }
+                };
+                var tc = typeConfig[n.type] || typeConfig['lead'];
+                html += '<div class="px-6 py-4 border-b border-midnight/10 dark:border-white/10 hover:bg-midnight/5 dark:hover:bg-white/5 transition-colors border-l-2 ' + tc.border + (n.is_read ? '' : ' bg-gold/5 dark:bg-gold-light/10') + '">' +
                     '<div class="flex items-start justify-between gap-3">' +
-                    '<div class="min-w-0 flex-1">' +
+                    '<div class="min-w-0 flex-1 flex items-start gap-3">' +
+                    '<i data-lucide="' + tc.icon + '" class="w-4 h-4 mt-0.5 ' + tc.color + ' flex-shrink-0"></i>' +
+                    '<div class="min-w-0">' +
+                    '<div class="flex items-center gap-2">' +
                     '<p class="text-sm font-semibold text-midnight dark:text-white">' + escapeHtml(n.title) + '</p>' +
+                    (tc.label ? '<span class="px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-widest rounded ' + tc.color + ' bg-current/10">' + tc.label + '</span>' : '') +
+                    '</div>' +
                     (n.body ? '<p class="text-xs text-midnight/50 dark:text-white/50 mt-0.5">' + escapeHtml(n.body) + '</p>' : '') +
                     '<div class="flex items-center gap-2 mt-1.5">' +
                     actorLabel +
                     '<span class="text-[10px] text-midnight/30 dark:text-white/30">' + n.created_at + '</span>' +
+                    '</div>' +
                     '</div>' +
                     '</div>' +
                     '<div class="flex items-center gap-2 shrink-0">' +

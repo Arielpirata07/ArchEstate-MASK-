@@ -190,13 +190,15 @@ def notify_lead_created(lead_id: int) -> list:
             _create_notification(pro['id'], lead_id,
                 title=t('notif.lead_assigned_title', lang, type=lead["type"], zone=lead["zone"]),
                 body=t('notif.lead_assigned_body', lang, property_type=lead["property_type"], currency=lead.get("currency", ""), budget=lead.get("budget", "")),
-                actor_id=assigner_user_id
+                actor_id=assigner_user_id,
+                notif_type='lead_assigned'
             )
         else:
             _create_notification(pro['id'], lead_id,
                 title=t('notif.new_lead_title', lang, type=lead["type"], zone=lead["zone"]),
                 body=t('notif.new_lead_body', lang, property_type=lead["property_type"], currency=lead.get("currency", ""), budget=lead.get("budget", "")),
-                actor_id=assigner_user_id
+                actor_id=assigner_user_id,
+                notif_type='lead_new'
             )
 
         # Route channel: email / whatsapp / ambos / auto
@@ -300,14 +302,14 @@ def _send_client_status_email(client_user_id: int, lead_id: int, subject: str, b
     sender.send(user['email'], subject, html)
 
 
-def _create_notification(user_id: int, lead_id: int, title: str, body: str = '', actor_id: int = 0) -> None:
+def _create_notification(user_id: int, lead_id: int, title: str, body: str = '', actor_id: int = 0, notif_type: str = 'lead') -> None:
     """Inserta una notificación en la tabla notifications."""
     conn = None
     try:
         conn = models.get_db_connection()
         conn.execute(
-            'INSERT INTO notifications (user_id, lead_id, title, body, actor_id) VALUES (?, ?, ?, ?, ?)',
-            (user_id, lead_id, title[:255], body[:500], actor_id if actor_id else None)
+            'INSERT INTO notifications (user_id, lead_id, title, body, actor_id, type) VALUES (?, ?, ?, ?, ?, ?)',
+            (user_id, lead_id, title[:255], body[:500], actor_id if actor_id else None, notif_type)
         )
         conn.commit()
     except Exception:
@@ -380,7 +382,7 @@ def notify_lead_status_change(lead_id: int, professional_id: int, new_status: st
             zone=lead_data.get('zone', ''),
         )
 
-        _create_notification(lead_owner_id, lead_id, title=client_title, body=client_body, actor_id=professional_id)
+        _create_notification(lead_owner_id, lead_id, title=client_title, body=client_body, actor_id=professional_id, notif_type='lead_status')
 
         client_prefs = models.get_user_preferences(lead_owner_id)
         client_user = models.get_user_by_id(lead_owner_id)
@@ -509,7 +511,7 @@ def _get_admin_users() -> list:
 
 def send_internal_notification(target_user_id: int, title: str, body: str = '', lead_id: int = 0, actor_id: int = 0) -> bool:
     """Envía una notificación interna a un usuario específico."""
-    _create_notification(target_user_id, lead_id, title=title, body=body, actor_id=actor_id)
+    _create_notification(target_user_id, lead_id, title=title, body=body, actor_id=actor_id, notif_type='admin_message')
     return True
 
 
@@ -518,6 +520,6 @@ def notify_admins(title: str, body: str = '', lead_id: int = 0, actor_id: int = 
     admins = _get_admin_users()
     notified = []
     for admin in admins:
-        _create_notification(admin['id'], lead_id, title=title, body=body, actor_id=actor_id)
+        _create_notification(admin['id'], lead_id, title=title, body=body, actor_id=actor_id, notif_type='system')
         notified.append(admin['email'])
     return notified
