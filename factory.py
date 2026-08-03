@@ -62,6 +62,15 @@ def create_app():
             grouped.setdefault(opt['category'], []).append(opt)
         return dict(form_options=grouped)
 
+    @app.context_processor
+    def inject_phone_area_codes():
+        from models import get_phone_area_codes
+        codes = get_phone_area_codes(active_only=True)
+        grouped = {}
+        for c in codes:
+            grouped.setdefault(c['country_code'], []).append(c)
+        return dict(phone_area_codes=grouped)
+
     @app.route('/health')
     def health():
         try:
@@ -81,6 +90,7 @@ def create_app():
     from routes.phone_bp import phone_bp
     from routes.lead_bp import lead_bp
     from routes.form_options_bp import form_options_bp
+    from routes.phone_area_codes_bp import phone_area_codes_bp
     from routes.whatsapp_bp import whatsapp_bp
     from routes_profile import profile_bp
 
@@ -92,6 +102,7 @@ def create_app():
     app.register_blueprint(phone_bp)
     app.register_blueprint(lead_bp)
     app.register_blueprint(form_options_bp)
+    app.register_blueprint(phone_area_codes_bp)
     app.register_blueprint(whatsapp_bp)
     app.register_blueprint(profile_bp)
 
