@@ -558,6 +558,11 @@ window.__FORM_OPTIONS = {{ {
                                      <option value="+34">+34</option>
                                      <option value="+1">+1</option>
                                  </select>
+                                 <div id="province-search-wrapper" class="hidden">
+                                     <input id="province-search" type="text" placeholder="Buscar ciudad..."
+                                         oninput="filterProvinceSelect('phone-province', this.value)"
+                                         class="px-2 py-1 text-[11px] border border-midnight/20 rounded focus:border-gold focus:outline-none w-32">
+                                 </div>
                                  <select id="phone-province" aria-label="Código de área" onchange="applyPhoneProvincePrefix()" class="w-16 bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 text-sm text-midnight hidden">
                                  </select>
                                 <input
@@ -697,27 +702,47 @@ window.__FORM_OPTIONS = {{ {
 <script>
 (function() {
     var sel = document.getElementById('phone-province');
-    if (!sel || typeof AR_PHONE_AREAS === 'undefined') return;
-    var provinces = {};
-    var codes = Object.keys(AR_PHONE_AREAS).sort(function(a, b) {
-        var pa = AR_PHONE_AREAS[a].province;
-        var pb = AR_PHONE_AREAS[b].province;
-        if (pa !== pb) return pa.localeCompare(pb);
-        return a.length - b.length;
-    });
-    codes.forEach(function(code) {
-        var area = AR_PHONE_AREAS[code];
-        if (!provinces[area.province]) provinces[area.province] = [];
-        provinces[area.province].push({ code: code, city: area.city });
-    });
-    Object.keys(provinces).sort().forEach(function(prov) {
-        provinces[prov].forEach(function(item) {
-            var opt = document.createElement('option');
-            opt.value = item.code;
-            opt.textContent = item.city;
-            sel.appendChild(opt);
+    if (!sel) return;
+    var dbCodes = {{ phone_area_codes.get('+54', []) | tojson }};
+    if (dbCodes && dbCodes.length) {
+        var provinces = {};
+        dbCodes.forEach(function(c) {
+            if (!provinces[c.province]) provinces[c.province] = [];
+            provinces[c.province].push({ code: c.code, city: c.city });
         });
-    });
+        Object.keys(provinces).sort().forEach(function(prov) {
+            provinces[prov].forEach(function(item) {
+                var opt = document.createElement('option');
+                opt.value = item.code;
+                opt.textContent = item.city;
+                sel.appendChild(opt);
+            });
+        });
+    } else if (typeof AR_PHONE_AREAS !== 'undefined') {
+        var provinces = {};
+        var codes = Object.keys(AR_PHONE_AREAS).sort(function(a, b) {
+            var pa = AR_PHONE_AREAS[a].province;
+            var pb = AR_PHONE_AREAS[b].province;
+            if (pa !== pb) return pa.localeCompare(pb);
+            return a.length - b.length;
+        });
+        codes.forEach(function(code) {
+            var area = AR_PHONE_AREAS[code];
+            if (!provinces[area.province]) provinces[area.province] = [];
+            provinces[area.province].push({ code: code, city: area.city });
+        });
+        Object.keys(provinces).sort().forEach(function(prov) {
+            provinces[prov].forEach(function(item) {
+                var opt = document.createElement('option');
+                opt.value = item.code;
+                opt.textContent = item.city;
+                sel.appendChild(opt);
+            });
+        });
+    }
+    var totalOpts = sel.options.length;
+    var wrapper = document.getElementById('province-search-wrapper');
+    if (wrapper && totalOpts > 20) wrapper.classList.remove('hidden');
 })();
 </script>
 <script src="{{ url_for('static', filename='js/user.js') }}" defer></script>

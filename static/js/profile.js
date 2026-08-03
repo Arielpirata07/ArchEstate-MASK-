@@ -538,6 +538,17 @@ function savePreferredChannel() {
     .catch(() => {});
 }
 
+function filterProvinceSelect(selectId, query) {
+    var sel = document.getElementById(selectId);
+    if (!sel) return;
+    var q = query.toLowerCase();
+    for (var i = 0; i < sel.options.length; i++) {
+        var opt = sel.options[i];
+        if (opt.value === 'other') continue;
+        opt.style.display = !q || opt.text.toLowerCase().indexOf(q) !== -1 ? '' : 'none';
+    }
+}
+
 function detectArgAreaCode(digits) {
     if (typeof getArPhoneArea !== 'function') return null;
     let d = String(digits || '').replace(/\D/g, '');
