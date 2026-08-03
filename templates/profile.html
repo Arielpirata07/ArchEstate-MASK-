@@ -127,34 +127,6 @@
                                         <option value="+1">+1</option>
                                     </select>
                                     <select id="profile-province" aria-label="Código de área" onchange="applyProvincePrefix()" class="px-2 py-2 border border-midnight/20 rounded text-sm bg-white text-midnight w-16 flex-shrink-0 hidden">
-                                        <option value="221">La Plata</option>
-                                        <option value="223">Mar del Plata</option>
-                                        <option value="341">Rosario</option>
-                                        <option value="351">Cordoba</option>
-                                        <option value="261">Mendoza</option>
-                                        <option value="264">San Juan</option>
-                                        <option value="266">San Luis</option>
-                                        <option value="280">Tucuman</option>
-                                        <option value="291">Bahia Blanca</option>
-                                        <option value="299">Neuquen</option>
-                                        <option value="379">Corrientes</option>
-                                        <option value="381">Sgo. del Estero</option>
-                                        <option value="383">Catamarca</option>
-                                        <option value="387">Jujuy</option>
-                                        <option value="388">Salta</option>
-                                        <option value="358">Rio Cuarto</option>
-                                        <option value="342">Santa Fe</option>
-                                        <option value="343">Parana</option>
-                                        <option value="345">Concep. del Uruguay</option>
-                                        <option value="362">Resistencia</option>
-                                        <option value="364">Formosa</option>
-                                        <option value="370">Posadas</option>
-                                        <option value="375">Goya</option>
-                                        <option value="376">Eldorado</option>
-                                        <option value="377">Pto. Iguazu</option>
-                                        <option value="378">Obera</option>
-                                        <option value="385">La Rioja</option>
-                                        <option value="11">CABA</option>
                                         <option value="other">Otra...</option>
                                     </select>
                                     <input id="profile-custom-area" type="tel" maxlength="5" placeholder="Cod." aria-label="Código de área personalizado" class="px-2 py-2 border border-midnight/20 rounded text-sm bg-white text-midnight w-14 flex-shrink-0 hidden">
@@ -165,6 +137,7 @@
                                     <p id="profile-phone-valid" class="hidden text-[9px] font-medium text-emerald-600">{{ t('profile.phone_valid') }}</p>
                                     <p id="profile-phone-invalid" class="hidden text-[9px] font-medium text-rose-600">{{ t('profile.phone_invalid') }}</p>
                                 </div>
+                                <p id="profile-phone-city" class="hidden text-[9px] font-medium text-midnight/40 mt-0.5"></p>
                                 <div id="profile-phone-suggestion" class="hidden mt-1">
                                     <button type="button" onclick="showPhoneCorrection()" class="text-[9px] text-amber-600 hover:text-amber-800 dark:hover:text-amber-300 transition-colors cursor-pointer">
                                         {{ t('profile.phone_correct') }}
@@ -879,6 +852,34 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/phone-areas.js') }}"></script>
+<script>
+(function() {
+    var sel = document.getElementById('profile-province');
+    if (!sel || typeof AR_PHONE_AREAS === 'undefined') return;
+    var provinces = {};
+    var codes = Object.keys(AR_PHONE_AREAS).sort(function(a, b) {
+        var pa = AR_PHONE_AREAS[a].province;
+        var pb = AR_PHONE_AREAS[b].province;
+        if (pa !== pb) return pa.localeCompare(pb);
+        return a.length - b.length;
+    });
+    codes.forEach(function(code) {
+        var area = AR_PHONE_AREAS[code];
+        if (!provinces[area.province]) provinces[area.province] = [];
+        provinces[area.province].push({ code: code, city: area.city });
+    });
+    var otherOpt = sel.querySelector('option[value="other"]');
+    Object.keys(provinces).sort().forEach(function(prov) {
+        provinces[prov].forEach(function(item) {
+            var opt = document.createElement('option');
+            opt.value = item.code;
+            opt.textContent = item.city;
+            sel.insertBefore(opt, otherOpt);
+        });
+    });
+})();
+</script>
 <script src="{{ url_for('static', filename='js/profile.js') }}" defer></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {

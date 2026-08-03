@@ -392,9 +392,11 @@ function validateProfilePhone() {
     const invalid = document.getElementById('profile-phone-invalid');
     const suggestionEl = document.getElementById('profile-phone-suggestion');
     const previewEl = document.getElementById('phone-correction-preview');
+    const cityEl = document.getElementById('profile-phone-city');
     _lastPhoneSuggestion = '';
     if (suggestionEl) suggestionEl.classList.add('hidden');
     if (previewEl) previewEl.classList.add('hidden');
+    if (cityEl) { cityEl.classList.add('hidden'); cityEl.textContent = ''; }
     const raw = input.value.trim();
     if (!raw) {
         if (hint) hint.classList.remove('hidden');
@@ -418,6 +420,11 @@ function validateProfilePhone() {
     }
     const isArgentina = countryCode === '+54';
     if (isArgentina && localDigits.length > 0) {
+        const area = detectArgAreaCode(localDigits);
+        if (area && cityEl) {
+            cityEl.textContent = area.city + ', ' + area.province;
+            cityEl.classList.remove('hidden');
+        }
         const suggestion = suggestArgPhone(localDigits);
         if (suggestion) {
             _lastPhoneSuggestion = suggestion;
@@ -531,8 +538,21 @@ function savePreferredChannel() {
     .catch(() => {});
 }
 
+function detectArgAreaCode(digits) {
+    if (typeof getArPhoneArea !== 'function') return null;
+    let d = String(digits || '').replace(/\D/g, '');
+    if (d.startsWith('0') && d.length > 7) d = d.substring(1);
+    if (d.startsWith('15')) d = d.substring(2);
+    else if (d.startsWith('9')) d = d.substring(1);
+    for (const prefix of AR_PHONE_PREFIXES) {
+        if (d.startsWith(prefix) && d.length > prefix.length) {
+            return getArPhoneArea(prefix);
+        }
+    }
+    return null;
+}
+
 function suggestArgPhone(digits) {
-    const knownPrefixes = ['11','221','223','341','351','261','264','266','280','291','299','379','381','383','387','388','358','342','343','345','362','364','370','375','376','377','378','385','3541'];
     let searchDigits = String(digits || '').replace(/\D/g, '');
     if (searchDigits.startsWith('0') && searchDigits.length > 7) {
         searchDigits = searchDigits.substring(1);
@@ -540,7 +560,7 @@ function suggestArgPhone(digits) {
     let mobilePrefix = '';
     if (searchDigits.startsWith('15')) { mobilePrefix = '15'; searchDigits = searchDigits.substring(2); }
     else if (searchDigits.startsWith('9')) { mobilePrefix = '9'; searchDigits = searchDigits.substring(1); }
-    for (const prefix of knownPrefixes) {
+    for (const prefix of AR_PHONE_PREFIXES) {
         if (searchDigits.startsWith(prefix)) {
             const local = searchDigits.substring(prefix.length);
             if (local.length >= 6 && local.length <= 8 && (!mobilePrefix || mobilePrefix === '15')) {
