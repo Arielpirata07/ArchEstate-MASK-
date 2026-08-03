@@ -351,13 +351,13 @@ function initUserForm() {
                     localDigits = localDigits.substring(codeDigits.length);
                 }
                 if (provincePrefix && localDigits) {
-                    let mobilePrefix = '';
-                    if (localDigits.startsWith('15')) { mobilePrefix = '15'; localDigits = localDigits.substring(1); }
-                    else if (localDigits.startsWith('9')) { mobilePrefix = '9'; localDigits = localDigits.substring(1); }
-                    if (localDigits.startsWith(provincePrefix)) {
-                        localDigits = localDigits.substring(provincePrefix.length);
+                    if (localDigits.startsWith('15')) localDigits = localDigits.substring(1);
+                    else if (localDigits.startsWith('9')) localDigits = localDigits.substring(1);
+                    if (!localDigits.startsWith('9')) localDigits = '9' + localDigits;
+                    if (localDigits.substring(1).startsWith(provincePrefix)) {
+                        localDigits = localDigits.substring(0, 1) + localDigits.substring(1 + provincePrefix.length);
                     }
-                    data.phone = `${countryCode} 9 ${provincePrefix} ${localDigits}`;
+                    data.phone = `${countryCode} ${localDigits.substring(0, 1)} ${provincePrefix} ${localDigits.substring(1)}`;
                 } else {
                     if (countryCode === '+54') {
                         let d = phone.replace(/\D/g, '');

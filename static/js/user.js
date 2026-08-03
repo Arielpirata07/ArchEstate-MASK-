@@ -265,8 +265,8 @@ function formatPhoneWithCountry(phone, countryCode) {
         if (d.startsWith('9')) d = d.substring(1);
         else if (d.startsWith('15')) d = d.substring(1);
         if (!d.startsWith('9')) d = '9' + d;
-        const areaCode = d.substring(1, codeLen);
-        const rest = d.substring(codeLen);
+        const areaCode = d.substring(1, codeLen + 1);
+        const rest = d.substring(codeLen + 1);
         formatted += '9 ' + areaCode + ' ' + rest.replace(/(\d{4})/g, '$1 ').trim();
     } else if (countryCode === '+1' && digits.length >= 10) {
         formatted = countryCode + ' (' + digits.substring(0, 3) + ') ' + digits.substring(3, 6) + '-' + digits.substring(6);
