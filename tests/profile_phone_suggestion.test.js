@@ -76,6 +76,7 @@ test('suggest and apply phone correction for Villa Carlos Paz', () => {
   context.window.document = documentStub;
   context.window.window = context.window;
   vm.createContext(context);
+  vm.runInContext(fs.readFileSync('static/js/phone-areas.js', 'utf8'), context);
   vm.runInContext(fs.readFileSync('static/js/profile.js', 'utf8'), context);
 
   phoneInput.value = '3541388368';
