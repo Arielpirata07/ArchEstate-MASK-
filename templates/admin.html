@@ -36,6 +36,10 @@
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2"><i data-lucide="list" class="w-3 h-3"></i> {{ t('admin.options') }}</span>
             </button>
+            <button onclick="showTab('phone-area-codes')" id="tab-phone-area-codes"
+                class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white">
+                <span class="flex items-center gap-2"><i data-lucide="phone" class="w-3 h-3"></i> {{ t('admin.phone_area_codes') }}</span>
+            </button>
             <button onclick="showTab('notifications')" id="tab-notifications"
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2"><i data-lucide="bell" class="w-3 h-3"></i> {{ t('admin.notifications') }}</span>
@@ -665,6 +669,52 @@
         </div>
     </div>
 
+    <!-- ===== TAB: PHONE AREA CODES ===== -->
+    <div id="panel-phone-area-codes" class="hidden space-y-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-bold text-midnight">{{ t('admin.phone_area_codes') }}</h3>
+                <p class="text-xs text-midnight/50">{{ t('admin.phone_area_codes_desc') }}</p>
+            </div>
+            <button onclick="openCreateAreaCodeModal()" class="px-4 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all flex items-center gap-2">
+                <i data-lucide="plus" class="w-3 h-3"></i> {{ t('admin.new_area_code') }}
+            </button>
+        </div>
+
+        <div class="sticky top-0 z-30 bg-white py-3 space-y-3">
+            <div class="relative w-full">
+                <label for="pac-search" class="sr-only">{{ t('pac.search_placeholder') }}</label>
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i data-lucide="search" class="w-3 h-3 text-midnight/30"></i>
+                </div>
+                <input id="pac-search" type="text" placeholder="{{ t('pac.search_placeholder') }}"
+                    oninput="filterPhoneAreaCodes(this.value)"
+                    class="w-full pl-9 pr-4 py-2 bg-white border border-midnight/10 rounded text-sm focus:border-gold focus:ring-0 transition-all outline-none">
+            </div>
+            <div id="pac-results-count" class="text-[10px] text-midnight/50 font-bold" aria-live="polite"></div>
+            <div class="flex gap-2 flex-wrap" id="pac-country-filters" role="tablist" aria-label="{{ t('pac.filter_by_country') }}"></div>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-midnight/5">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="bg-paper-dark table-header-border">
+                        <th class="text-left px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('pac.code') }}</th>
+                        <th class="text-left px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('pac.city') }}</th>
+                        <th class="text-left px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('pac.province') }}</th>
+                        <th class="text-left px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('pac.country') }}</th>
+                        <th class="text-left px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.order') }}</th>
+                        <th class="text-left px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.state') }}</th>
+                        <th class="text-right px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody id="phone-area-codes-tbody" class="divide-y divide-midnight/5">
+                    <tr><td colspan="7" class="text-center py-8 text-midnight/60">{{ t('pac.loading') }}</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
 </div>
 
 <!-- ===== MODAL: DETALLE DE LEAD REPORTADO ===== -->
@@ -847,6 +897,72 @@
                     <button id="confirmNotifyBtn" onclick="confirmNotify()" class="flex-1 py-3 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all flex items-center justify-center gap-2">
                         <i data-lucide="send" class="w-3 h-3"></i>
                         {{ t('admin.send') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODAL: PHONE AREA CODE ===== -->
+<div id="areaCodeModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="pac-modal-title">
+    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeAreaCodeModal()"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg">
+        <div class="bg-white rounded-lg shadow-2xl overflow-hidden">
+            <div class="border-t-4 border-gold px-8 pt-6 pb-4 flex items-start justify-between">
+                <div>
+                    <p class="text-[10px] uppercase tracking-widest font-bold text-gold mb-1">{{ t('pac.area_code') }}</p>
+                    <h3 id="pac-modal-title" class="text-xl font-serif"></h3>
+                </div>
+                <button onclick="closeAreaCodeModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="Cerrar">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="px-8 pb-8 space-y-4">
+                <input type="hidden" id="pac-area-id">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="pac-code" class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">{{ t('pac.code') }}</label>
+                        <input id="pac-code" type="text" maxlength="10" class="w-full border border-midnight/20 rounded px-4 py-2 text-sm focus:border-gold focus:outline-none" placeholder="11, 341, 3541...">
+                    </div>
+                    <div>
+                        <label for="pac-country-code" class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">{{ t('pac.country_code') }}</label>
+                        <input id="pac-country-code" type="text" maxlength="5" class="w-full border border-midnight/20 rounded px-4 py-2 text-sm focus:border-gold focus:outline-none" placeholder="+54">
+                    </div>
+                </div>
+                <div>
+                    <label for="pac-city" class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">{{ t('pac.city') }}</label>
+                    <input id="pac-city" type="text" maxlength="200" class="w-full border border-midnight/20 rounded px-4 py-2 text-sm focus:border-gold focus:outline-none" placeholder="Buenos Aires, Rosario...">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="pac-province" class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">{{ t('pac.province') }}</label>
+                        <input id="pac-province" type="text" maxlength="100" class="w-full border border-midnight/20 rounded px-4 py-2 text-sm focus:border-gold focus:outline-none" placeholder="CABA, Santa Fe...">
+                    </div>
+                    <div>
+                        <label for="pac-country" class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">{{ t('pac.country') }}</label>
+                        <input id="pac-country" type="text" maxlength="100" class="w-full border border-midnight/20 rounded px-4 py-2 text-sm focus:border-gold focus:outline-none" placeholder="Argentina">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="pac-sort-order" class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">{{ t('admin.order') }}</label>
+                        <input id="pac-sort-order" type="number" min="0" class="w-full border border-midnight/20 rounded px-4 py-2 text-sm focus:border-gold focus:outline-none">
+                    </div>
+                    <div class="flex items-end pb-1">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input id="pac-is-active" type="checkbox" class="toggle-input" checked>
+                            <span class="toggle-slider" aria-hidden="true"></span>
+                            <span class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">{{ t('admin.active') }}</span>
+                        </label>
+                    </div>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button onclick="closeAreaCodeModal()" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-all">
+                        {{ t('admin.cancel') }}
+                    </button>
+                    <button onclick="saveAreaCode()" class="flex-1 py-3 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="save" class="w-3 h-3"></i> {{ t('admin.save') }}
                     </button>
                 </div>
             </div>

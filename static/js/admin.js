@@ -4,6 +4,7 @@ function showTab(tab) {
     document.getElementById('panel-management').classList.add('hidden');
     document.getElementById('panel-reports').classList.add('hidden');
     document.getElementById('panel-form-options').classList.add('hidden');
+    document.getElementById('panel-phone-area-codes').classList.add('hidden');
     document.getElementById('panel-notifications').classList.add('hidden');
     document.getElementById('panel-' + tab).classList.remove('hidden');
 
@@ -20,6 +21,9 @@ function showTab(tab) {
     }
     if (tab === 'form-options') {
         loadFormOptions();
+    }
+    if (tab === 'phone-area-codes') {
+        loadPhoneAreaCodes();
     }
     if (tab === 'notifications') {
         loadAdminNotifPrefs();
@@ -1970,4 +1974,185 @@ function loadNotificationLog(page) {
 function setToggle(id, val) {
     var el = document.getElementById(id);
     if (el) el.checked = val == 1 || val === true;
+}
+
+// ================================================================
+// PHONE AREA CODES CRUD
+// ================================================================
+var allPhoneAreaCodes = [];
+var pacCurrentCountryFilter = '';
+var pacCurrentSearchFilter = '';
+
+function loadPhoneAreaCodes() {
+    fetch('/api/phone-area-codes/all')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        allPhoneAreaCodes = data.codes || [];
+        renderPacCountryFilters();
+        renderPhoneAreaCodes();
+    });
+}
+
+function renderPacCountryFilters() {
+    var container = document.getElementById('pac-country-filters');
+    if (!container) return;
+    var countries = {};
+    allPhoneAreaCodes.forEach(function(c) {
+        countries[c.country_code] = (countries[c.country_code] || 0) + 1;
+    });
+    var html = '<button onclick="filterPacByCountry(\'\')" class="report-filter-chip ' + (!pacCurrentCountryFilter ? 'report-filter-active' : '') + '" data-filter="all">' + window.t('admin.filter_all') + '</button>';
+    Object.keys(countries).sort().forEach(function(cc) {
+        var active = pacCurrentCountryFilter === cc ? ' report-filter-active' : '';
+        html += '<button onclick="filterPacByCountry(\'' + cc + '\')" class="report-filter-chip' + active + '" data-filter="' + cc + '">' + cc + ' (' + countries[cc] + ')</button>';
+    });
+    container.innerHTML = html;
+}
+
+function filterPacByCountry(cc) {
+    pacCurrentCountryFilter = cc;
+    renderPacCountryFilters();
+    renderPhoneAreaCodes();
+}
+
+function filterPhoneAreaCodes(query) {
+    pacCurrentSearchFilter = query.toLowerCase().trim();
+    renderPhoneAreaCodes();
+}
+
+function renderPhoneAreaCodes() {
+    var tbody = document.getElementById('phone-area-codes-tbody');
+    if (!tbody) return;
+    var filtered = allPhoneAreaCodes;
+    if (pacCurrentCountryFilter) {
+        filtered = filtered.filter(function(c) { return c.country_code === pacCurrentCountryFilter; });
+    }
+    if (pacCurrentSearchFilter) {
+        filtered = filtered.filter(function(c) {
+            return c.code.toLowerCase().indexOf(pacCurrentSearchFilter) !== -1 ||
+                   c.city.toLowerCase().indexOf(pacCurrentSearchFilter) !== -1 ||
+                   c.province.toLowerCase().indexOf(pacCurrentSearchFilter) !== -1 ||
+                   c.country.toLowerCase().indexOf(pacCurrentSearchFilter) !== -1;
+        });
+    }
+    var countEl = document.getElementById('pac-results-count');
+    if (countEl) {
+        countEl.textContent = filtered.length + ' / ' + allPhoneAreaCodes.length + ' ' + window.t('pac.codes');
+    }
+    if (!filtered.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-midnight/60">' + window.t('pac.no_results') + '</td></tr>';
+        return;
+    }
+    var html = '';
+    filtered.forEach(function(c) {
+        var activeLabel = c.is_active ? '<span class="text-emerald-600 font-bold">' + window.t('admin.active') + '</span>' : '<span class="text-rose-500 font-bold">' + window.t('admin.inactive') + '</span>';
+        html += '<tr class="hover:bg-paper-dark/50 transition-colors">' +
+            '<td class="text-[13px] text-midnight/50 px-4 py-3 font-mono font-bold">' + escapeHtml(c.code) + '</td>' +
+            '<td class="text-[13px] text-midnight/50 px-4 py-3">' + escapeHtml(c.city) + '</td>' +
+            '<td class="text-[13px] text-midnight/50 px-4 py-3">' + escapeHtml(c.province || '-') + '</td>' +
+            '<td class="text-[13px] text-midnight/50 px-4 py-3">' + escapeHtml(c.country) + ' <span class="text-[10px] text-midnight/30">' + escapeHtml(c.country_code) + '</span></td>' +
+            '<td class="text-[13px] text-midnight/50 px-4 py-3">' + c.sort_order + '</td>' +
+            '<td class="text-[13px] px-4 py-3">' + activeLabel + '</td>' +
+            '<td class="text-right px-4 py-3">' +
+                '<button onclick="openEditAreaCodeModal(' + c.id + ')" class="text-midnight/30 hover:text-gold transition-colors mr-2" title="' + window.t('admin.edit') + '"><i data-lucide="pencil" class="w-3 h-3 inline"></i></button>' +
+                '<button onclick="deletePhoneAreaCode(' + c.id + ')" class="text-midnight/30 hover:text-rose-500 transition-colors" title="' + window.t('admin.delete') + '"><i data-lucide="trash-2" class="w-3 h-3 inline"></i></button>' +
+            '</td></tr>';
+    });
+    tbody.innerHTML = html;
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function openCreateAreaCodeModal() {
+    var modal = document.getElementById('areaCodeModal');
+    if (!modal) return;
+    document.getElementById('pac-modal-title').textContent = window.t('pac.new_area_code');
+    document.getElementById('pac-area-id').value = '';
+    document.getElementById('pac-code').value = '';
+    document.getElementById('pac-city').value = '';
+    document.getElementById('pac-province').value = '';
+    document.getElementById('pac-country').value = 'Argentina';
+    document.getElementById('pac-country-code').value = '+54';
+    document.getElementById('pac-sort-order').value = '0';
+    document.getElementById('pac-is-active').checked = true;
+    modal.classList.remove('hidden');
+}
+
+function openEditAreaCodeModal(id) {
+    var c = allPhoneAreaCodes.find(function(x) { return x.id === id; });
+    if (!c) return;
+    var modal = document.getElementById('areaCodeModal');
+    if (!modal) return;
+    document.getElementById('pac-modal-title').textContent = window.t('pac.edit_area_code');
+    document.getElementById('pac-area-id').value = c.id;
+    document.getElementById('pac-code').value = c.code;
+    document.getElementById('pac-city').value = c.city;
+    document.getElementById('pac-province').value = c.province;
+    document.getElementById('pac-country').value = c.country;
+    document.getElementById('pac-country-code').value = c.country_code;
+    document.getElementById('pac-sort-order').value = c.sort_order;
+    document.getElementById('pac-is-active').checked = c.is_active === 1;
+    modal.classList.remove('hidden');
+}
+
+function closeAreaCodeModal() {
+    var modal = document.getElementById('areaCodeModal');
+    if (modal) modal.classList.add('hidden');
+}
+
+function saveAreaCode() {
+    var id = document.getElementById('pac-area-id').value;
+    var data = {
+        code: document.getElementById('pac-code').value.trim(),
+        city: document.getElementById('pac-city').value.trim(),
+        province: document.getElementById('pac-province').value.trim(),
+        country: document.getElementById('pac-country').value.trim(),
+        country_code: document.getElementById('pac-country-code').value.trim(),
+        sort_order: parseInt(document.getElementById('pac-sort-order').value) || 0,
+        is_active: document.getElementById('pac-is-active').checked ? 1 : 0
+    };
+    if (!data.code || !data.city) {
+        if (typeof showToast !== 'undefined') showToast(window.t('pac.missing_fields'), 'error');
+        return;
+    }
+    var url = id ? '/api/phone-area-codes/' + id : '/api/phone-area-codes';
+    var method = id ? 'PUT' : 'POST';
+    var csrfToken = document.querySelector('meta[name="csrf-token"]');
+    fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken ? csrfToken.content : '' },
+        body: JSON.stringify(data)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+        if (res.error) {
+            if (typeof showToast !== 'undefined') showToast(res.error, 'error');
+            return;
+        }
+        closeAreaCodeModal();
+        loadPhoneAreaCodes();
+        if (typeof showToast !== 'undefined') showToast(window.t('pac.saved'), 'success');
+    })
+    .catch(function() {
+        if (typeof showToast !== 'undefined') showToast(window.t('pac.save_error'), 'error');
+    });
+}
+
+function deletePhoneAreaCode(id) {
+    if (!confirm(window.t('pac.confirm_delete'))) return;
+    var csrfToken = document.querySelector('meta[name="csrf-token"]');
+    fetch('/api/phone-area-codes/' + id, {
+        method: 'DELETE',
+        headers: { 'X-CSRFToken': csrfToken ? csrfToken.content : '' }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+        if (res.error) {
+            if (typeof showToast !== 'undefined') showToast(res.error, 'error');
+            return;
+        }
+        loadPhoneAreaCodes();
+        if (typeof showToast !== 'undefined') showToast(window.t('pac.deleted'), 'success');
+    })
+    .catch(function() {
+        if (typeof showToast !== 'undefined') showToast(window.t('pac.delete_error'), 'error');
+    });
 }
