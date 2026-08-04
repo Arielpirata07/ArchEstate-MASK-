@@ -253,12 +253,12 @@ def forgot_password():
             return redirect(url_for('auth.forgot_password'))
 
         import secrets
-        from datetime import datetime, timedelta
+        from datetime import datetime, timedelta, timezone
 
         user = models.get_user_by_email(email)
         if user:
             token = secrets.token_urlsafe(32)
-            expires_at = (datetime.utcnow() + timedelta(hours=1)).isoformat()
+            expires_at = (datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=1)).isoformat()
             models.create_password_reset_token(user['id'], token, expires_at)
 
             from flask import render_template

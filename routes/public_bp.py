@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 
 from flask import Blueprint, jsonify, render_template, url_for
 
@@ -55,7 +55,7 @@ def landing_stats():
 
 @public_bp.route('/sitemap.xml')
 def sitemap():
-    today = datetime.utcnow().date().isoformat()
+    today = datetime.now(timezone.utc).date().isoformat()
     public_urls = [
         {'loc': url_for('public.index', _external=True), 'changefreq': 'daily', 'priority': '1.0'},
         {'loc': url_for('professional.professional_view', _external=True), 'changefreq': 'weekly', 'priority': '0.7'},

@@ -47,8 +47,6 @@ class SimpleTTLCache:
 _prefs_cache = SimpleTTLCache(ttl_seconds=60)
 _form_options_cache = SimpleTTLCache(ttl_seconds=60)
 
-logger = logging.getLogger(__name__)
-
 
 class DatabaseError(Exception):
     pass
@@ -1121,9 +1119,9 @@ def validate_password_reset_token(token):
             return None
         if row['used']:
             return None
-        from datetime import datetime
+        from datetime import datetime, timezone
         expires = datetime.fromisoformat(row['expires_at'])
-        if datetime.utcnow() > expires:
+        if datetime.now(timezone.utc).replace(tzinfo=None) > expires:
             return None
         return row['user_id']
     finally:

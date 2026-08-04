@@ -5,7 +5,7 @@ import sqlite3
 import sys
 import tempfile
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import config
@@ -17,7 +17,7 @@ def backup_db():
         print(f'DB not found: {db_path}')
         return False
 
-    timestamp = datetime.utcnow().strftime('%Y%m%d_%H%M%S')
+    timestamp = datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')
     backup_dir = os.path.join(os.path.dirname(db_path), 'backups')
     os.makedirs(backup_dir, exist_ok=True)
 

@@ -313,7 +313,7 @@ def _create_notification(user_id: int, lead_id: int, title: str, body: str = '',
         )
         conn.commit()
     except Exception:
-        pass
+        logger.exception('Error creating notification for user_id=%s', user_id)
     finally:
         if conn:
             conn.close()
