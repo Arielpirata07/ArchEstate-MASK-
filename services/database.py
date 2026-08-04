@@ -142,10 +142,13 @@ def date_format_sql(column, fmt):
     return f"strftime('{fmt}', {column})"
 
 
-def now_sql():
+def now_sql(fmt='%Y-%m'):
+    """Devuelve la fecha/hora actual formateada igual que date_format_sql,
+    para poder compararla con columnas formateadas sin importar el driver."""
     if _driver() == 'postgresql':
-        return 'NOW()'
-    return "strftime('%Y-%m', 'now')"
+        pg_fmt = fmt.replace('%Y', 'YYYY').replace('%m', 'MM').replace('%d', 'DD')
+        return f"to_char(NOW(), '{pg_fmt}')"
+    return f"strftime('{fmt}', 'now')"
 
 
 def table_columns(table):

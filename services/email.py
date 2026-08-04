@@ -21,18 +21,18 @@ class SMTPEmailSender:
 
     def __init__(
         self,
-        host: str = '',
-        port: int = 587,
-        user: str = '',
-        password: str = '',
-        from_addr: str = '',
+        host: Optional[str] = None,
+        port: Optional[int] = None,
+        user: Optional[str] = None,
+        password: Optional[str] = None,
+        from_addr: Optional[str] = None,
         use_tls: bool = True,
     ):
-        self.host = host or config.SMTP_HOST
-        self.port = port or config.SMTP_PORT
-        self.user = user or config.SMTP_USER
-        self.password = password or config.SMTP_PASS
-        self.from_addr = from_addr or config.SMTP_FROM
+        self.host = config.SMTP_HOST if host is None else host
+        self.port = config.SMTP_PORT if port is None else port
+        self.user = config.SMTP_USER if user is None else user
+        self.password = config.SMTP_PASS if password is None else password
+        self.from_addr = config.SMTP_FROM if from_addr is None else from_addr
         self.use_tls = use_tls
 
     @property

@@ -1,10 +1,13 @@
 import json
+import os
 import re
 import subprocess
 import uuid
 
 import pytest
 from werkzeug.security import generate_password_hash
+
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 # --- Helpers ---------------------------------------------------------------
@@ -263,7 +266,7 @@ class TestAuthJsSyntax:
         """Verifica que static/js/auth.js se parsea sin errores de sintaxis."""
         result = subprocess.run(
             ['node', '--check', 'static/js/auth.js'],
-            capture_output=True, text=True, cwd='/mnt/c/Users/pcari/OneDrive/Documentos/archestate'
+            capture_output=True, text=True, cwd=REPO_ROOT
         )
         assert result.returncode == 0, f"JS syntax error:\n{result.stderr}"
 
@@ -290,7 +293,7 @@ class TestAuthJsSyntax:
                 `;
                 eval(sandbox);
             '''],
-            capture_output=True, text=True, cwd='/mnt/c/Users/pcari/OneDrive/Documentos/archestate'
+            capture_output=True, text=True, cwd=REPO_ROOT
         )
         assert result.returncode == 0, f"Eval error:\n{result.stderr}"
         import json as _json
