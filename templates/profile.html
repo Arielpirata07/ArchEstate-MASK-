@@ -860,9 +860,19 @@
 <script src="{{ url_for('static', filename='js/phone-areas.js') }}"></script>
 <script>
 (function() {
+    var dbCodes = {{ phone_area_codes.get('+54', []) | tojson }};
+    window.__PHONE_DB_CODES = dbCodes || [];
+    window.__PHONE_DB_LOOKUP = {};
+    window.__PHONE_DB_PREFIXES = [];
+    if (dbCodes && dbCodes.length) {
+        dbCodes.forEach(function(c) {
+            window.__PHONE_DB_LOOKUP[c.code] = { city: c.city, province: c.province };
+        });
+        window.__PHONE_DB_PREFIXES = dbCodes.map(function(c) { return c.code; })
+            .sort(function(a, b) { return b.length - a.length || a.localeCompare(b); });
+    }
     var sel = document.getElementById('profile-province');
     if (!sel) return;
-    var dbCodes = {{ phone_area_codes.get('+54', []) | tojson }};
     if (dbCodes && dbCodes.length) {
         var provinces = {};
         dbCodes.forEach(function(c) {

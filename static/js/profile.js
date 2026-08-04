@@ -550,14 +550,23 @@ function filterProvinceSelect(selectId, query) {
 }
 
 function detectArgAreaCode(digits) {
-    if (typeof getArPhoneArea !== 'function') return null;
     let d = String(digits || '').replace(/\D/g, '');
     if (d.startsWith('0') && d.length > 7) d = d.substring(1);
     if (d.startsWith('15')) d = d.substring(2);
     else if (d.startsWith('9')) d = d.substring(1);
-    for (const prefix of AR_PHONE_PREFIXES) {
-        if (d.startsWith(prefix) && d.length > prefix.length) {
-            return getArPhoneArea(prefix);
+    const dbPrefixes = (typeof __PHONE_DB_PREFIXES !== 'undefined' && __PHONE_DB_PREFIXES.length) ? __PHONE_DB_PREFIXES : null;
+    const dbLookup = (typeof __PHONE_DB_LOOKUP !== 'undefined' && Object.keys(__PHONE_DB_LOOKUP).length) ? __PHONE_DB_LOOKUP : null;
+    if (dbPrefixes && dbLookup) {
+        for (const prefix of dbPrefixes) {
+            if (d.startsWith(prefix) && d.length > prefix.length) {
+                return dbLookup[prefix] || null;
+            }
+        }
+    } else if (typeof getArPhoneArea === 'function' && typeof AR_PHONE_PREFIXES !== 'undefined') {
+        for (const prefix of AR_PHONE_PREFIXES) {
+            if (d.startsWith(prefix) && d.length > prefix.length) {
+                return getArPhoneArea(prefix);
+            }
         }
     }
     return null;
@@ -571,7 +580,8 @@ function suggestArgPhone(digits) {
     let mobilePrefix = '';
     if (searchDigits.startsWith('15')) { mobilePrefix = '15'; searchDigits = searchDigits.substring(2); }
     else if (searchDigits.startsWith('9')) { mobilePrefix = '9'; searchDigits = searchDigits.substring(1); }
-    for (const prefix of AR_PHONE_PREFIXES) {
+    const dbPrefixes = (typeof __PHONE_DB_PREFIXES !== 'undefined' && __PHONE_DB_PREFIXES.length) ? __PHONE_DB_PREFIXES : (typeof AR_PHONE_PREFIXES !== 'undefined' ? AR_PHONE_PREFIXES : []);
+    for (const prefix of dbPrefixes) {
         if (searchDigits.startsWith(prefix)) {
             const local = searchDigits.substring(prefix.length);
             if (local.length >= 6 && local.length <= 8 && (!mobilePrefix || mobilePrefix === '15')) {

@@ -713,7 +713,7 @@ def init_db(app):
             ('342', 'Santa Fe', 'Santa Fe', 'Argentina', '+54', 25),
             ('343', 'Paraná', 'Entre Ríos', 'Argentina', '+54', 26),
             ('345', 'Concepción del Uruguay', 'Entre Ríos', 'Argentina', '+54', 27),
-            ('346', 'San Luis', 'San Luis', 'Argentina', '+54', 28),
+            ('346', 'Alisos', 'Tucumán', 'Argentina', '+54', 28),
             ('348', 'Venado Tuerto', 'Santa Fe', 'Argentina', '+54', 29),
             ('351', 'Córdoba', 'Córdoba', 'Argentina', '+54', 30),
             ('353', 'Villa María', 'Córdoba', 'Argentina', '+54', 31),
@@ -726,7 +726,7 @@ def init_db(app):
             ('377', 'Puerto Iguazú', 'Misiones', 'Argentina', '+54', 38),
             ('378', 'Oberá', 'Misiones', 'Argentina', '+54', 39),
             ('379', 'Corrientes', 'Corrientes', 'Argentina', '+54', 40),
-            ('381', 'Santiago del Estero', 'Santiago del Estero', 'Argentina', '+54', 41),
+            ('381', 'Tucumán', 'Tucumán', 'Argentina', '+54', 41),
             ('383', 'San Fernando del Valle de Catamarca', 'Catamarca', 'Argentina', '+54', 42),
             ('385', 'La Rioja', 'La Rioja', 'Argentina', '+54', 43),
             ('387', 'San Salvador de Jujuy', 'Jujuy', 'Argentina', '+54', 44),
@@ -821,9 +821,21 @@ def init_db(app):
         if cursor.fetchone()[0] == 0:
             is_prod = os.environ.get('FLASK_DEBUG', '0') != '1' and not os.environ.get('PYTEST_CURRENT_TEST')
             if is_prod:
-                import secrets
-                admin_password = secrets.token_urlsafe(12)
-                logger.info('Admin user created (password stored in env)')
+                admin_password = os.environ.get('ADMIN_INITIAL_PASSWORD')
+                if not admin_password:
+                    import secrets
+                    admin_password = secrets.token_urlsafe(12)
+                    pw_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.admin_initial_password')
+                    try:
+                        with open(pw_file, 'w') as f:
+                            f.write(admin_password + '\n')
+                        os.chmod(pw_file, 0o600)
+                        logger.info('Admin user created. Initial password saved to .admin_initial_password')
+                    except OSError as e:
+                        logger.warning('Could not write .admin_initial_password: %s', e)
+                        logger.info('Admin password (copy it NOW): %s', admin_password)
+                else:
+                    logger.info('Admin user created with password from ADMIN_INITIAL_PASSWORD env')
             else:
                 admin_password = 'admin123'
             cursor.execute('INSERT INTO users (username, email, hash, role) VALUES (?, ?, ?, ?)',

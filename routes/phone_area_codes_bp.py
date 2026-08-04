@@ -64,9 +64,10 @@ def update_area_code(area_id):
     existing = models.get_phone_area_code_by_id(area_id)
     if not existing:
         return jsonify({'error': t('form.not_found', lang)}), 404
-    if 'code' in data and data['code'] != existing['code']:
-        cc = data.get('country_code', existing['country_code'])
-        duplicate = models.get_phone_area_code_by_code_country(data['code'], cc)
+    new_code = data.get('code', existing['code'])
+    new_cc = data.get('country_code', existing['country_code'])
+    if new_code != existing['code'] or new_cc != existing['country_code']:
+        duplicate = models.get_phone_area_code_by_code_country(new_code, new_cc)
         if duplicate:
             return jsonify({'error': t('pac.duplicate_code', lang)}), 409
     success = models.update_phone_area_code(area_id, data)

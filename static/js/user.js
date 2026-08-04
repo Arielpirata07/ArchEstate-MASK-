@@ -265,10 +265,11 @@ function formatPhoneWithCountry(phone, countryCode) {
         if (d.startsWith('9')) d = d.substring(1);
         else if (d.startsWith('15')) d = d.substring(2);
         if (!d.startsWith('9')) d = '9' + d;
-        if (typeof AR_PHONE_PREFIXES !== 'undefined') {
+        if (typeof __PHONE_DB_PREFIXES !== 'undefined' && __PHONE_DB_PREFIXES.length || typeof AR_PHONE_PREFIXES !== 'undefined') {
             const localDigits = d.substring(1);
             let areaLen = 2;
-            for (const p of AR_PHONE_PREFIXES) {
+            const pList = (typeof __PHONE_DB_PREFIXES !== 'undefined' && __PHONE_DB_PREFIXES.length) ? __PHONE_DB_PREFIXES : AR_PHONE_PREFIXES;
+            for (const p of pList) {
                 if (localDigits.startsWith(p) && localDigits.length > p.length) { areaLen = p.length; break; }
             }
             const areaCode = d.substring(1, 1 + areaLen);
@@ -321,7 +322,7 @@ function applyPhoneProvincePrefix() {
     if (!searchRaw.startsWith('9')) searchRaw = '9' + searchRaw;
     var areaCode = '';
     var searchArea = searchRaw.substring(1);
-    var prefixesList = (typeof AR_PHONE_PREFIXES !== 'undefined') ? AR_PHONE_PREFIXES : ['221','223','341','351','261','264','266','280','291','299','379','381','383','387','388','358','342','343','345','362','364','370','375','376','377','378','385','11'];
+    var prefixesList = (typeof __PHONE_DB_PREFIXES !== 'undefined' && __PHONE_DB_PREFIXES.length) ? __PHONE_DB_PREFIXES : (typeof AR_PHONE_PREFIXES !== 'undefined' ? AR_PHONE_PREFIXES : ['221','223','341','351','261','264','266','280','291','299','379','381','383','387','388','358','342','343','345','362','364','370','375','376','377','378','385','11']);
     for (var i = 0; i < prefixesList.length; i++) {
         if (searchArea.startsWith(prefixesList[i])) { areaCode = prefixesList[i]; break; }
     }
