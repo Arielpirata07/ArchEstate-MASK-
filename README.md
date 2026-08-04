@@ -10,9 +10,9 @@
 ![Lucide](https://img.shields.io/badge/Lucide_Icons-0.468-735A3A?style=for-the-badge&logo=lucide&logoColor=white)
 ![License](https://img.shields.io/badge/License-Private-blue?style=for-the-badge)
 
-![Tests](https://img.shields.io/badge/Tests-444%20Passed-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)
+![Tests](https://img.shields.io/badge/Tests-464%20Passed-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)
 ![Status](https://img.shields.io/badge/Status-MVP%20Avanzado-0078D4?style=for-the-badge)
-![Updated](https://img.shields.io/badge/Updated-Julio%202026-orange?style=for-the-badge)
+![Updated](https://img.shields.io/badge/Updated-Agosto%202026-orange?style=for-the-badge)
 ![i18n](https://img.shields.io/badge/i18n-ES%2FEN-8B5CF6?style=for-the-badge)
 
 ---
@@ -44,7 +44,7 @@ Conecta clientes de alto nivel adquisitivo con profesionales verificados del sec
 | Capa | Tecnología | Versión |
 |------|------------|---------|
 | **Backend** | Python 3 + Flask | 3.10+ / 3.x |
-| **Base de Datos** | SQLite3 (WAL mode) | stdlib |
+| **Base de Datos** | SQLite3 (WAL mode) / PostgreSQL via `services.database` | stdlib |
 | **Frontend** | HTML5 + Vanilla JS | — |
 | **Estilos** | Tailwind CSS (CDN) | 3.4 |
 | **Gráficas** | Chart.js | 4.4.0 (CDN) |
@@ -138,6 +138,7 @@ Conecta clientes de alto nivel adquisitivo con profesionales verificados del sec
 | **Usuarios** | Tabla con búsqueda en tiempo real y filtro por rol. Badge de estado por fila. Reset de contraseña con validación de fortaleza. Baja/reactivación con campo de motivo. Protección: no se puede operar sobre otros admins ni sobre uno mismo. |
 | **Reportes de Leads** | Vista de leads reportados con acciones: eliminar lead, descartar reporte, restaurar. Detalle en modal con información del reporte. |
 | **Opciones de Formulario** | CRUD completo de opciones: crear, editar, activar/desactivar, eliminar. 11 categorías: property_type, operation_type, currency, parking, orientation, condition, age, budget_range, province, architectural_style, amenities. Validación de duplicados y categorías. |
+| **Códigos de Área** | CRUD completo de códigos de área telefónicos (10 países, 121+ códigos). Autocompletado en DB usado por frontend para validación y sugerencias. |
 
 ### Gestión de Opciones de Formulario
 
@@ -177,7 +178,7 @@ Conecta clientes de alto nivel adquisitivo con profesionales verificados del sec
 | SQL allowlist | Updates de perfil y leads solo permiten campos definidos en `ALLOWED_PROFILE_FIELDS` |
 | Auditoría | Teléfonos revelados, uploads, aprobaciones, bajas, resets, reportes, remember tokens |
 | CSP Header | Content-Security-Policy con allowlists para CDN |
-| Admin password | Aleatorio en producción (impreso en consola al arrancar) |
+| Admin password | Aleatorio en producción, guardado en `.admin_initial_password` (chmod 0600) o variable `ADMIN_INITIAL_PASSWORD` |
 | Session regeneration | Post-login para prevenir session fixation |
 | Error handlers | HTML para navegadores, JSON para API: 400/404/409/410/429/500 |
 
@@ -260,11 +261,14 @@ archestate/
 │   ├── admin_bp.py           # /admin, stats, user management, reports, telemetry
 │   ├── phone_bp.py           # Phone update, OTP send/verify, brute-force
 │   ├── lead_bp.py            # WhatsApp redirect, telemetry, lead reports
-│   └── form_options_bp.py    # CRUD de opciones de formulario (admin)
+│   ├── form_options_bp.py    # CRUD de opciones de formulario (admin)
+│   ├── phone_area_codes_bp.py # CRUD de códigos de área telefónicos (admin)
+│   └── whatsapp_bp.py        # WhatsApp webhook (Twilio)
 ├── routes_profile.py         # Profile, lead editing, avatar, settings, sessions, activity
 ├── scripts/
 │   └── backup_db.py          # SQLite backup with gzip + optional S3 upload
 ├── services/
+│   ├── database.py           # DB abstraction: SQLite/PostgreSQL, table_columns, date_format_sql
 │   ├── verifier.py           # OTP verifier: SmsSimulated, WhatsAppSimulated, TwilioSms, TwilioWhatsApp + VerifierRouter
 │   ├── email.py              # SMTPEmailSender — SMTP with console fallback
 │   └── notifications.py      # Event-driven notifications: lead, status, approval, reports
@@ -286,7 +290,7 @@ archestate/
 │                             #   status_change, professional_status
 ├── scripts/
 │   └── backup_db.py          # SQLite backup with gzip + optional S3 upload
-├── tests/                    # 444 tests (pytest + freezegun + monkeypatch)
+├── tests/                    # 464 tests (pytest + freezegun + monkeypatch)
 ├── .github/
 │   ├── workflows/tests.yml   # CI/CD: pytest + coherence on push/PR
 │   └── dependabot.yml        # Weekly pip updates
@@ -437,6 +441,19 @@ archestate/
 | `admin` | TEXT | Username del operador |
 | `user_id` | INTEGER FK | → `users.id` |
 
+### `phone_area_codes`
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | INTEGER PK | |
+| `code` | TEXT | Código de área (2-4 dígitos) |
+| `city` | TEXT | Nombre de la ciudad |
+| `province` | TEXT | Provincia/estado |
+| `country` | TEXT | País |
+| `country_code` | TEXT | Código país E.164 (+54, +598, etc.) |
+| `sort_order` | INTEGER | Orden dentro del país |
+| `is_active` | INTEGER | `1` activo / `0` inactivo |
+| | | UNIQUE(code, country_code) |
+
 ### Otras tablas
 - **`user_preferences`** — theme, language, notification toggles, preferred_channel, notification_filters (JSON)
 - **`user_login_history`** — IP, user_agent, timestamps de login
@@ -480,6 +497,15 @@ archestate/
 | `POST` | `/api/phone/send-code` | Enviar OTP por SMS/WhatsApp |
 | `POST` | `/api/phone/verify` | Verificar código OTP |
 | `POST` | `/api/whatsapp/webhook` | Webhook Twilio WhatsApp (exento de CSRF) |
+
+### Phone Area Codes
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| `GET` | `/api/phone-area-codes` | Códigos activos agrupados por país (público) |
+| `GET` | `/api/phone-area-codes/all` | Todos los códigos incluyendo inactivos (admin) |
+| `POST` | `/api/phone-area-codes` | Crear código de área (admin) |
+| `PUT` | `/api/phone-area-codes/<id>` | Actualizar código de área (admin) |
+| `DELETE` | `/api/phone-area-codes/<id>` | Eliminar código de área (admin) |
 
 ### Profile & Settings
 | Método | Endpoint | Descripción |
@@ -544,7 +570,7 @@ archestate/
 | **Admin** | `admin` | `admin123` (solo dev/test) |
 | **Profesional** | `pro` | `pro123` |
 
-> En producción, el admin se crea con password aleatorio (impreso en consola al arrancar). Cambiar credenciales después del primer login.
+> En producción, el admin se crea con password aleatorio guardado en `.admin_initial_password` (leer una sola vez después del deploy) o configurar `ADMIN_INITIAL_PASSWORD` en variables de entorno. Cambiar credenciales después del primer login.
 
 ---
 
@@ -564,7 +590,7 @@ Acceder en `http://127.0.0.1:5000`
 ### Ejecutar Tests
 
 ```bash
-python -m pytest tests/ -q            # Todos (444)
+python -m pytest tests/ -q            # Todos (464)
 python -m pytest tests/ -x -v         # Parar en primera falla, verbose
 python -m pytest tests/test_file.py   # Archivo individual
 python verify_coherence.py            # Cross-check schema/routes/templates (89 checks)
@@ -615,6 +641,7 @@ python verify_coherence.py            # Cross-check schema/routes/templates (89 
 |----------|-------------|---------|
 | `SITE_URL` | URL base para emails y links | `http://localhost:5000` |
 | `PREFER_SECURE_COOKIES` | Flags de cookie seguros (HTTPS) | `true` |
+| `ADMIN_INITIAL_PASSWORD` | Password del admin en primer deploy (producción) | Aleatorio guardado en archivo |
 | `SENTRY_DSN` | DSN de Sentry para error tracking (opcional) | — |
 | `STAGING` | `true` = Sentry env staging, cookies no seguras | `false` |
 
@@ -694,6 +721,10 @@ Ver `.plans/deploy-checklist.md` para el checklist completo.
 - [x] Dependabot (weekly pip updates)
 - [x] Staging environment en Render (`TWILIO_SIMULATE=true`)
 - [x] Backup script (SQLite backup + gzip + S3 upload)
+- [x] CRUD de códigos de área telefónicos (10 países, 121+ códigos)
+- [x] Autocompletado de teléfono usa DB en vez de archivo estático
+- [x] Admin password guardado en archivo (no solo log)
+- [x] Validación de duplicados mejorada en códigos de área
 - [ ] Notificaciones internas entre admin y profesional
 - [ ] Asignación automática de leads por especialidad y zona
 - [ ] Paginación en tabla de leads
