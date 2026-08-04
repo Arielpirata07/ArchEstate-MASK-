@@ -19,7 +19,7 @@ import validators
 import utils
 from utils import parse_budget
 import rate_limit
-from services.pdf_helpers import pdf_safe, pdf_val, _style_header_row, _apply_data_border
+from services.export_helpers import pdf_safe, pdf_val, _style_header_row, _apply_data_border
 from i18n import t, get_language
 from services.notifications import notify_admins
 
@@ -232,7 +232,7 @@ def api_update_professional():
     user_id = session['user_id']
     data = request.json or {}
 
-    ALLOWED_FIELDS = {'specialty', 'title', 'province', 'zone', 'country'}
+    ALLOWED_FIELDS = models.ALLOWED_PROFESSIONAL_FIELDS
     update_data = {}
     for field in ALLOWED_FIELDS:
         if field in data:

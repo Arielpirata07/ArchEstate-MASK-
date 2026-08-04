@@ -24,7 +24,7 @@ import utils
 from decorators import login_required, professional_required
 from i18n import t, get_language
 from services.database import date_format_sql, now_sql
-from services.pdf_helpers import pdf_safe, pdf_val, _style_header_row, _apply_data_border
+from services.export_helpers import pdf_safe, pdf_val, _style_header_row, _apply_data_border
 from utils import allowed_file, convert_to_argentina_time
 
 professional_bp = Blueprint('professional', __name__, url_prefix='')
