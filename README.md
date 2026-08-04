@@ -10,7 +10,7 @@
 ![Lucide](https://img.shields.io/badge/Lucide_Icons-0.468-735A3A?style=for-the-badge&logo=lucide&logoColor=white)
 ![License](https://img.shields.io/badge/License-Private-blue?style=for-the-badge)
 
-![Tests](https://img.shields.io/badge/Tests-464%20Passed-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)
+![Tests](https://img.shields.io/badge/Tests-525%20Passed-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)
 ![Status](https://img.shields.io/badge/Status-MVP%20Avanzado-0078D4?style=for-the-badge)
 ![Updated](https://img.shields.io/badge/Updated-Agosto%202026-orange?style=for-the-badge)
 ![i18n](https://img.shields.io/badge/i18n-ES%2FEN-8B5CF6?style=for-the-badge)
@@ -290,7 +290,7 @@ archestate/
 │                             #   status_change, professional_status
 ├── scripts/
 │   └── backup_db.py          # SQLite backup with gzip + optional S3 upload
-├── tests/                    # 464 tests (pytest + freezegun + monkeypatch)
+├── tests/                    # 525 tests (pytest + freezegun + monkeypatch)
 ├── .github/
 │   ├── workflows/tests.yml   # CI/CD: pytest + coherence on push/PR
 │   └── dependabot.yml        # Weekly pip updates
@@ -338,6 +338,8 @@ archestate/
 | `phone` | TEXT | |
 | `email` | TEXT | |
 | `user_id` | INTEGER FK | → `users.id` |
+| `assigned_to` | INTEGER FK | → `users.id` (profesional asignado, puede ser NULL) |
+| `country` | TEXT | País |
 | `phone_format_valid` | INTEGER | `1` si el formato es válido |
 | `bedrooms` | INTEGER | |
 | `bathrooms` | INTEGER | |
@@ -371,6 +373,7 @@ archestate/
 | `license_verified` | INTEGER | `1` si verificada |
 | `province` | TEXT | Provincia de cobertura (24 provincias argentinas) |
 | `zone` | TEXT | Zona/barrios de cobertura (texto libre) |
+| `country` | TEXT | País |
 
 ### `professional_profiles`
 | Columna | Tipo | Notas |
@@ -590,7 +593,7 @@ Acceder en `http://127.0.0.1:5000`
 ### Ejecutar Tests
 
 ```bash
-python -m pytest tests/ -q            # Todos (464)
+python -m pytest tests/ -q            # Todos (525)
 python -m pytest tests/ -x -v         # Parar en primera falla, verbose
 python -m pytest tests/test_file.py   # Archivo individual
 python verify_coherence.py            # Cross-check schema/routes/templates (89 checks)
@@ -632,7 +635,7 @@ python verify_coherence.py            # Cross-check schema/routes/templates (89 
 | `SMTP_HOST` | Host del servidor SMTP | — |
 | `SMTP_PORT` | Puerto SMTP | `587` |
 | `SMTP_USER` | Usuario SMTP | — |
-| `SMTP_PASSWORD` | Contraseña SMTP | — |
+| `SMTP_PASS` | Contraseña SMTP | — |
 | `SMTP_FROM` | Email remitente | `noreply@archestate.com` |
 
 ### Otras
@@ -682,7 +685,7 @@ Ver `.plans/deploy-checklist.md` para el checklist completo.
 
 ## Roadmap
 
-- [x] Tests automatizados (380 tests)
+- [x] Tests automatizados (525 tests)
 - [x] Verificación telefónica con OTP
 - [x] Edición de leads con versionado
 - [x] Tracking Visto/Contactado

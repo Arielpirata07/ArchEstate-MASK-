@@ -45,7 +45,7 @@ TWILIO_SIMULATE=true                      # true = simulado (dev), false = Twili
 SMTP_HOST=
 SMTP_PORT=587
 SMTP_USER=
-SMTP_PASSWORD=
+SMTP_PASS=
 SMTP_FROM=noreply@archestate.com
 
 # Cookies

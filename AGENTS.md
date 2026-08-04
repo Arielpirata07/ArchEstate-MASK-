@@ -23,11 +23,13 @@
 | `services/database.py` | DB abstraction layer: `DBConnection`, `_DBCursor`, `CompatRow`, `get_db_connection()`, `table_columns()`, `date_format_sql()`, `now_sql()`, `is_integrity_error()` |
 | `app_setup.py` | `init_db(app)`, `FilterOptionsCache`, schema migrations, `schema_version` table |
 | `decorators.py` | `@login_required`, `@admin_required`, `@professional_required` — all enforce `is_active` |
-| `rate_limit.py` | File-backed rate limiting (JSON + atomic writes). Pendiente migrar a Redis. |
+| `rate_limit.py` | File-backed rate limiting (JSON + atomic writes). Pendiente migrar a Redis. **Caveat**: con `gunicorn --workers N` el lock es por-worker, el límite efectivo se multiplica por N y puede haber carreras. |
 | `routes_profile.py` | Profile, lead editing, avatar upload (at root, not in `routes/`), `ALLOWED_LEAD_EDIT_FIELDS` |
 | `routes/` | 9 blueprints: `auth_bp`, `public_bp`, `client_bp`, `professional_bp`, `admin_bp`, `phone_bp`, `lead_bp`, `form_options_bp`, `whatsapp_bp` |
 | `services/verifier.py` | OTP verification layer: `SmsSimulatedVerifier`, `WhatsAppSimulatedVerifier`, `TwilioSmsVerifier`, `TwilioWhatsAppVerifier`, `VerifierRouter`, `get_default_router()` |
 | `services/email.py` | `SMTPEmailSender` — SMTP email sender with console fallback |
+| `services/assignment.py` | `auto_assign_lead()` — best-match scoring (specialty/zone/province/workload) |
+| `services/export_helpers.py` | PDF/XLSX export helpers: `pdf_safe`, `pdf_val`, `_style_header_row`, `_apply_data_border` |
 | `services/notifications.py` | `notify_lead_created()`, `notify_lead_status_change()`, `notify_professional_status_change()`, `notify_report_deleted()` — reads `user_preferences` toggles |
 | `wsgi.py` | Gunicorn entry point: `gunicorn wsgi:app` |
 | `render.yaml` | Render deployment blueprint |
@@ -42,7 +44,7 @@
 python app.py                          # Run dev server
 FLASK_DEBUG=true python app.py         # Dev mode with debug
 gunicorn wsgi:app                      # Run with gunicorn (production)
-python -m pytest tests/ -q            # Run all tests (392 total)
+python -m pytest tests/ -q            # Run all tests (525 total)
 python -m pytest tests/ -x -v         # Stop on first failure, verbose
 python -m pytest tests/test_file.py   # Single file
 python verify_coherence.py            # Cross-checks schema/routes/templates
