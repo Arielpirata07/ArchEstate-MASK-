@@ -1,7 +1,5 @@
 import logging
 import os
-import threading
-import time
 
 from werkzeug.security import generate_password_hash
 
@@ -12,28 +10,8 @@ import utils
 logger = logging.getLogger(__name__)
 
 
-class FilterOptionsCache:
-    """Caché simple en memoria para opciones de filtros de leads"""
-    def __init__(self, ttl_seconds=300):
-        self._cache = {}
-        self._timestamps = {}
-        self._ttl = ttl_seconds
-        self._lock = threading.Lock()
-
-    def get(self, key):
-        with self._lock:
-            if key in self._cache:
-                if time.time() - self._timestamps[key] < self._ttl:
-                    return self._cache[key]
-                else:
-                    del self._cache[key]
-                    del self._timestamps[key]
-        return None
-
-    def set(self, key, value):
-        with self._lock:
-            self._cache[key] = value
-            self._timestamps[key] = time.time()
+class FilterOptionsCache(models.SimpleTTLCache):
+    """Caché para opciones de filtros de leads. `invalidate()` limpia todo."""
 
     def invalidate(self):
         with self._lock:
@@ -44,8 +22,13 @@ class FilterOptionsCache:
 filter_cache = FilterOptionsCache(ttl_seconds=300)
 
 
+def _is_prod():
+    """True when running outside dev and tests (production-like)."""
+    return os.environ.get('FLASK_DEBUG', '0') != '1' and not os.environ.get('PYTEST_CURRENT_TEST')
+
+
 def _clean_lead_test_data(cursor):
-    """Limpia datos de prueba sin sentido en la tabla leads."""
+    """Limpia datos de prueba sin sentido en la tabla leads. Solo entornos dev/test."""
     import utils
 
     fixes = [
@@ -815,12 +798,12 @@ def init_db(app):
                 (code, city, province, country, cc, order)
             )
 
-        _clean_lead_test_data(cursor)
+        if not _is_prod():
+            _clean_lead_test_data(cursor)
 
         cursor.execute('SELECT COUNT(*) FROM users')
         if cursor.fetchone()[0] == 0:
-            is_prod = os.environ.get('FLASK_DEBUG', '0') != '1' and not os.environ.get('PYTEST_CURRENT_TEST')
-            if is_prod:
+            if _is_prod():
                 admin_password = os.environ.get('ADMIN_INITIAL_PASSWORD')
                 if not admin_password:
                     import secrets
