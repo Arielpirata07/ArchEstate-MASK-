@@ -4,8 +4,8 @@
 
 /* --- Title Reveal Animation --- */
 .title-reveal {
-    opacity: 0;
-    transform: translateY(40px);
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .title-reveal.animate {
@@ -30,8 +30,8 @@
 
 /* Subtitle fade in */
 .subtitle-reveal {
-    opacity: 0;
-    transform: translateY(20px);
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .subtitle-reveal.animate {
@@ -164,25 +164,25 @@
     }
 }
 
-/* --- Animation Classes --- */
-.fade-in-up {
+/* --- Animation Classes (scroll-triggered via .animate) --- */
+[data-scroll] {
+    opacity: 1;
+}
+
+[data-scroll].fade-in-up.animate {
     animation: fadeInUp 0.8s ease-out forwards;
-    opacity: 0;
 }
 
-.fade-in {
+[data-scroll].fade-in.animate {
     animation: fadeIn 1s ease-out forwards;
-    opacity: 0;
 }
 
-.slide-in-left {
+[data-scroll].slide-in-left.animate {
     animation: slideInLeft 0.8s ease-out forwards;
-    opacity: 0;
 }
 
-.slide-in-right {
+[data-scroll].slide-in-right.animate {
     animation: slideInRight 0.8s ease-out forwards;
-    opacity: 0;
 }
 
 .float-animation {
@@ -268,6 +268,9 @@
     .title-reveal, .title-word, .subtitle-reveal, .scale-in {
         opacity: 1 !important;
     }
+    [data-scroll] {
+        opacity: 1 !important;
+    }
     .hero-img {
         opacity: 1 !important;
         transform: none !important;
@@ -299,10 +302,9 @@
     will-change: transform;
 }
 
-/* --- Scroll Animation Trigger --- */
-.animate {
-    opacity: 1 !important;
-    animation-fill-mode: forwards !important;
+/* --- Scroll Animation Trigger (class añadida por IntersectionObserver) --- */
+[data-scroll].animate {
+    opacity: 1;
 }
 
 /* --- Responsive --- */
@@ -342,15 +344,9 @@
 
 /* --- Hero Image Reveal --- */
 .hero-img {
-    opacity: 0;
-    transform: scale(1.06);
-    transition: opacity 1.8s cubic-bezier(0.22, 1, 0.36, 1),
-                transform 2s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.hero-img.revealed {
     opacity: 1;
     transform: scale(1);
+    transition: none;
 }
 
 /* --- Navbar Scroll Effect --- */

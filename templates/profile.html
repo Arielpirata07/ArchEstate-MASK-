@@ -126,16 +126,26 @@
                                         <option value="+34">+34</option>
                                         <option value="+1">+1</option>
                                     </select>
-                                    <div id="province-search-wrapper" class="hidden">
-                                        <input id="province-search" type="text" placeholder="Buscar ciudad..."
-                                            oninput="filterProvinceSelect('profile-province', this.value)"
-                                            class="px-2 py-1 text-[11px] border border-midnight/20 rounded focus:border-gold focus:outline-none w-32">
+                                    <div class="relative flex-shrink-0" id="province-search-wrap">
+                                        <button type="button" id="province-search-toggle" onclick="toggleProvinceSearch('profile-province', this)"
+                                            class="hidden items-center justify-between gap-2 px-1 py-2 border-0 border-b-2 border-midnight/20 hover:border-gold focus:border-gold transition-colors text-sm text-midnight bg-transparent w-28"
+                                            aria-label="Buscar ciudad" aria-expanded="false" title="Buscar ciudad">
+                                            <span id="province-search-label" class="truncate text-midnight/70">Buscar ciudad</span>
+                                            <i data-lucide="search" class="w-3.5 h-3.5 flex-shrink-0 text-midnight/40"></i>
+                                        </button>
+                                        <div id="province-search-wrapper" class="hidden absolute left-0 top-9 z-20 w-96">
+                                            <input id="province-search" type="text" placeholder="Buscar ciudad..."
+                                                oninput="onProvinceSearchInput('profile-province', this)"
+                                                onkeydown="onProvinceSearchKeydown('profile-province', event)"
+                                                class="px-3 py-2 text-sm bg-white text-midnight border border-midnight/20 rounded shadow focus:border-gold focus:outline-none w-full">
+                                            <ul id="province-search-list" class="hidden absolute top-full left-0 right-0 bg-white border border-slate-200 rounded shadow-md z-10 overflow-y-auto mt-1" role="listbox"></ul>
+                                        </div>
                                     </div>
-                                    <select id="profile-province" aria-label="Código de área" onchange="applyProvincePrefix()" class="px-2 py-2 border border-midnight/20 rounded text-sm bg-white text-midnight w-16 flex-shrink-0 hidden">
+                                    <select id="profile-province" aria-label="Código de área" onchange="applyProvincePrefix()" class="hidden">
                                         <option value="other">Otra...</option>
                                     </select>
                                     <input id="profile-custom-area" type="tel" maxlength="5" placeholder="Cod." aria-label="Código de área personalizado" class="px-2 py-2 border border-midnight/20 rounded text-sm bg-white text-midnight w-14 flex-shrink-0 hidden">
-                                    <input id="profile-phone" type="tel" autocomplete="tel" inputmode="tel" autocapitalize="off" spellcheck="false" value="{{ user.phone if user and user.phone else '' }}" class="input-field flex-1" placeholder="9 11 1234 5678" maxlength="16" oninput="validateProfilePhone()">
+                                    <input id="profile-phone" type="tel" autocomplete="tel" inputmode="tel" autocapitalize="off" spellcheck="false" value="{{ user.phone if user and user.phone else '' }}" class="input-field flex-1 min-w-0" placeholder="9 11 1234 5678" maxlength="16" oninput="validateProfilePhone()">
                                 </div>
                                 <div class="flex items-center justify-between mt-1">
                                     <p id="profile-phone-hint" class="text-[9px] hint-text">{{ t('profile.phone_hint') }}</p>
@@ -791,8 +801,8 @@
     </div>
 </div>
     <!-- Modal de verificación de teléfono -->
-    <div id="verify-phone-modal" class="fixed inset-0 z-50 bg-midnight/60 backdrop-blur-sm hidden items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="verify-phone-title">
-        <div class="bg-white rounded-lg shadow-2xl border-t-4 border-gold overflow-hidden w-full max-w-md mx-4 animate-fadeInUp">
+    <div id="verify-phone-modal" class="modal-anim fixed inset-0 z-50 bg-midnight/60 backdrop-blur-sm hidden items-center justify-center" role="dialog" aria-modal="true" aria-labelledby="verify-phone-title">
+        <div class="modal-panel bg-white rounded-lg shadow-2xl border-t-4 border-gold overflow-hidden w-full max-w-md mx-4">
             <div class="relative p-8">
                 <button type="button" id="close-verify-modal" aria-label="Cerrar"
                     class="absolute top-4 right-4 p-2 rounded hover:bg-paper-dark transition-all duration-200 text-midnight/30 hover:text-gold"
@@ -885,6 +895,7 @@
                 var opt = document.createElement('option');
                 opt.value = item.code;
                 opt.textContent = item.city;
+                opt.setAttribute('data-state', prov);
                 sel.insertBefore(opt, otherOpt);
             });
         });
@@ -907,13 +918,18 @@
                 var opt = document.createElement('option');
                 opt.value = item.code;
                 opt.textContent = item.city;
+                opt.setAttribute('data-state', prov);
                 sel.insertBefore(opt, otherOpt);
             });
         });
     }
     var totalOpts = sel.options.length - 1;
-    var wrapper = document.getElementById('province-search-wrapper');
-    if (wrapper && totalOpts > 20) wrapper.classList.remove('hidden');
+    var toggle = document.getElementById('province-search-toggle');
+    var countrySelect = document.getElementById('profile-country-code');
+    if (toggle && totalOpts > 20 && countrySelect && countrySelect.value === '+54') {
+        toggle.classList.remove('hidden');
+        toggle.classList.add('flex');
+    }
 })();
 </script>
 <script src="{{ url_for('static', filename='js/profile.js') }}" defer></script>

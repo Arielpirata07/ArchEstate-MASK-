@@ -7,7 +7,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="space-y-8">
+<div class="space-y-8 admin-page-shell">
 
     <!-- Header -->
     <div class="flex justify-between items-end border-b border-midnight/10 pb-6 header-entrance">
@@ -95,13 +95,13 @@
 </div>
 
 <!-- ===== MODAL DE RESET DE CONTRASEÑA ===== -->
-<div id="resetModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="resetModalTitle">
+<div id="resetModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="resetModalTitle">
     <!-- Overlay -->
     <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeModal()"></div>
 
     <!-- Panel -->
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
-        <div class="bg-white rounded-lg shadow-2xl border-t-4 border-gold overflow-hidden">
+        <div class="modal-panel bg-white rounded-lg shadow-2xl border-t-4 border-gold overflow-hidden">
 
             <!-- Header del modal -->
             <div class="px-8 pt-8 pb-4">
@@ -188,10 +188,10 @@
 </div>
 
 <!-- ===== MODAL DE DAR DE BAJA ===== -->
-<div id="disableModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="disableModalTitle">
+<div id="disableModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="disableModalTitle">
     <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeDisableModal()"></div>
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
-        <div class="bg-white rounded-lg shadow-2xl border-t-4 border-rose-500 overflow-hidden">
+        <div class="modal-panel bg-white rounded-lg shadow-2xl border-t-4 border-rose-500 overflow-hidden">
             <div class="px-8 pt-8 pb-4">
                 <div class="flex items-start justify-between">
                     <div>
@@ -235,10 +235,10 @@
 </div>
 
 <!-- ===== MODAL DE REACTIVAR ===== -->
-<div id="enableModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="enableModalTitle">
+<div id="enableModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="enableModalTitle">
     <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeEnableModal()"></div>
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
-        <div class="bg-white rounded-lg shadow-2xl border-t-4 border-emerald-500 overflow-hidden">
+        <div class="modal-panel bg-white rounded-lg shadow-2xl border-t-4 border-emerald-500 overflow-hidden">
             <div class="px-8 pt-8 pb-4">
                 <div class="flex items-start justify-between">
                     <div>

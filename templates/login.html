@@ -3,8 +3,8 @@
 {% block title %}{{ t('auth.exclusive_access') }} | ArchEstate{% endblock %}
 
 {% block content %}
-<div class="flex items-center justify-center min-h-[70vh]">
-    <div class="max-w-md w-full">
+<div class="auth-ambient min-h-screen flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+    <div class="w-full max-w-md">
         <div class="bg-white dark:bg-midnight-light p-10 rounded-lg shadow-2xl border-t-4 border-gold transition-colors">
 
             <div class="text-center mb-8 header-entrance">
@@ -39,7 +39,7 @@
                                placeholder="{{ t('auth.username_placeholder') }}"
                                aria-describedby="err-username"
                                data-auth-rules='{"required": true, "messages": {"required": "Ingresá tu nombre de usuario."}}'
-                               class="w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 pr-8 transition-all outline-none">
+                               class="input-animated w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 pr-8 transition-all outline-none">
                     </div>
                     <div id="err-username" class="field-error" data-for="username" aria-live="polite"></div>
                 </div>
@@ -63,7 +63,7 @@
                                placeholder="••••••••"
                                aria-describedby="err-password"
                                data-auth-rules='{"required": true, "messages": {"required": "Ingresá tu contraseña."}}'
-                               class="w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 pr-10 transition-all outline-none">
+                               class="input-animated w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 pr-10 transition-all outline-none">
                         <button type="button"
                                 data-toggle-pass="password"
                                 class="toggle-pass"
@@ -83,7 +83,7 @@
                 </p>
 
                 <button type="submit"
-                        class="btn-submit w-full bg-gold text-white py-4 rounded font-bold uppercase tracking-widest text-xs hover:bg-midnight dark:hover:bg-gold transition-all mt-8 flex items-center justify-center gap-2 group">
+                        class="btn-submit btn-shimmer w-full bg-gold text-white py-4 rounded font-bold uppercase tracking-widest text-xs hover:bg-midnight dark:hover:bg-gold transition-all mt-8 flex items-center justify-center gap-2 group">
                     <span data-label class="flex items-center gap-2">
                         {{ t('auth.login_btn') }}
                         <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform" aria-hidden="true"></i>

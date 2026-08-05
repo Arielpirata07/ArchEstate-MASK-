@@ -20,6 +20,57 @@
     background: rgba(115, 90, 58, 0.4);
 }
 
+/* --- Admin icons visibility --- */
+.admin-page-shell [data-lucide] {
+    width: 1rem !important;
+    height: 1rem !important;
+}
+
+@media (min-width: 768px) {
+    .admin-page-shell [data-lucide] {
+        width: 1.125rem !important;
+        height: 1.125rem !important;
+    }
+}
+
+/* --- Phone area code search / modal sizing --- */
+#pac-search {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+#areaCodeModal,
+#areaCodeModal > .absolute,
+#areaCodeModal .modal-panel,
+#areaCodeModal .absolute {
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+#areaCodeModal > .absolute {
+    overflow: hidden;
+    width: min(95vw, 42rem) !important;
+    max-width: calc(100vw - 1rem) !important;
+}
+
+#areaCodeModal .modal-panel {
+    overflow-x: hidden;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+#areaCodeModal .modal-panel input,
+#areaCodeModal .modal-panel button {
+    max-width: 100%;
+}
+
+#panel-phone-area-codes {
+    max-width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+}
+
 /* --- Audit Entry Animation --- */
 @keyframes auditFadeIn {
     from { opacity: 0; transform: translateY(-10px); }

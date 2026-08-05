@@ -71,20 +71,6 @@ let dashState = {
     allZones:      [],
 };
 
-// ---- Animación de contador ----
-function animateCounter(el, target) {
-    const duration = 700;
-    const start    = performance.now();
-    const from     = 0;
-    const step = (now) => {
-        const t   = Math.min((now - start) / duration, 1);
-        const val = Math.round(from + (target - from) * (1 - Math.pow(1 - t, 3)));
-        el.textContent = val;
-        if (t < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-}
-
 // ---- Helpers ----
 function destroyChart(key) {
     if (charts[key]) { charts[key].destroy(); delete charts[key]; }
@@ -208,7 +194,7 @@ function renderTypeChart() {
                     beginAtZero: true
                 }
             },
-            animation: { duration: 500, easing: 'easeOutQuart' }
+            animation: chartAnim()
         }
     });
 }
@@ -305,7 +291,7 @@ function renderMonthChart() {
                     beginAtZero: true
                 }
             },
-            animation: { duration: 500, easing: 'easeOutQuart' }
+            animation: chartAnim()
         }
     });
 }
@@ -391,7 +377,7 @@ async function initDashboard() {
                         },
                         y: { ticks: { font: { family: 'Manrope', size: 9 } }, grid: { display: false } }
                     },
-                    animation: { duration: 500, easing: 'easeOutQuart' }
+                    animation: chartAnim()
                 }
             });
 
@@ -438,7 +424,7 @@ async function initDashboard() {
                             beginAtZero: true
                         }
                     },
-                    animation: { duration: 500, easing: 'easeOutQuart' }
+                    animation: chartAnim()
                 }
             });
         } else {
@@ -530,7 +516,7 @@ async function loadTelemetry() {
                                 x: { display: false },
                                 y: { display: false, beginAtZero: true }
                             },
-                            animation: { duration: 400 }
+                            animation: chartAnim(400)
                         }
                     });
                 }
@@ -873,13 +859,13 @@ function openDeactivateModal(userId, username, activate) {
         reasonW.classList.remove('hidden');
     }
 
-    document.getElementById('deactivateModal').classList.remove('hidden');
+    openModalAnim(document.getElementById('deactivateModal'));
     document.body.style.overflow = 'hidden';
     if (window.lucide) lucide.createIcons();
 }
 
 function closeDeactivateModal() {
-    document.getElementById('deactivateModal').classList.add('hidden');
+    closeModalAnim(document.getElementById('deactivateModal'));
     document.body.style.overflow = '';
     deactivateTargetId   = null;
     deactivateTargetName = null;
@@ -902,13 +888,13 @@ function openNotifyModal(proId, proName) {
     document.getElementById('notifySubject').value = '';
     document.getElementById('notifyMessage').value = '';
     document.getElementById('notifyModalError').classList.add('hidden');
-    document.getElementById('notifyModal').classList.remove('hidden');
+    openModalAnim(document.getElementById('notifyModal'));
     document.body.style.overflow = 'hidden';
     setTimeout(() => document.getElementById('notifySubject').focus(), 100);
 }
 
 function closeNotifyModal() {
-    document.getElementById('notifyModal').classList.add('hidden');
+    closeModalAnim(document.getElementById('notifyModal'));
     document.body.style.overflow = '';
     notifyTargetId = null;
 }
@@ -1148,7 +1134,7 @@ function viewLeadDetail(leadId) {
         <div class="flex justify-center py-8">
             <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-gold"></div>
         </div>`;
-    document.getElementById('leadDetailModal').classList.remove('hidden');
+    openModalAnim(document.getElementById('leadDetailModal'));
     if (window.lucide) lucide.createIcons();
 
     fetch(`/api/admin/lead/${leadId}`)
@@ -1247,7 +1233,7 @@ function renderLeadDetail(lead) {
 }
 
 function closeLeadDetailModal() {
-    document.getElementById('leadDetailModal').classList.add('hidden');
+    closeModalAnim(document.getElementById('leadDetailModal'));
 }
 
 function deleteLead(reportId, leadId) {
@@ -2073,7 +2059,7 @@ function openCreateAreaCodeModal() {
     document.getElementById('pac-country-code').value = '+54';
     document.getElementById('pac-sort-order').value = '0';
     document.getElementById('pac-is-active').checked = true;
-    modal.classList.remove('hidden');
+    openModalAnim(modal);
 }
 
 function openEditAreaCodeModal(id) {
@@ -2090,12 +2076,12 @@ function openEditAreaCodeModal(id) {
     document.getElementById('pac-country-code').value = c.country_code;
     document.getElementById('pac-sort-order').value = c.sort_order;
     document.getElementById('pac-is-active').checked = c.is_active === 1;
-    modal.classList.remove('hidden');
+    openModalAnim(modal);
 }
 
 function closeAreaCodeModal() {
     var modal = document.getElementById('areaCodeModal');
-    if (modal) modal.classList.add('hidden');
+    if (modal) closeModalAnim(modal);
 }
 
 function saveAreaCode() {

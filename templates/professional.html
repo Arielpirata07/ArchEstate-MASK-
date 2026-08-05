@@ -367,7 +367,7 @@ window.__FORM_OPTIONS = {{ {
             <div class="p-8 space-y-8">
                 <!-- Header: title + month selector -->
                 <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-                    <div class="stats-entrance stagger-1">
+                    <div class="stats-entrance">
                         <div class="flex items-center gap-3 mb-1">
                             <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center shadow-inner">
                                 <i data-lucide="trending-up" class="w-4 h-4 text-gold"></i>
@@ -376,7 +376,7 @@ window.__FORM_OPTIONS = {{ {
                         </div>
                         <p class="text-[11px] text-midnight/60 ml-11">{{ t('pro.market_desc') }}</p>
                     </div>
-                    <div class="flex items-center gap-3 stats-entrance stagger-2">
+                    <div class="flex items-center gap-3 stats-entrance">
                         <label for="statsMonthSelect" class="text-[10px] uppercase tracking-widest font-bold text-midnight/50">{{ t('pro.month') }}</label>
                         <div class="relative">
                             <select id="statsMonthSelect" onchange="loadMarketStats()"
@@ -389,7 +389,7 @@ window.__FORM_OPTIONS = {{ {
 
                 <!-- Lo más buscado: premium highlight cards -->
                 <div>
-                    <div class="flex items-center gap-2 mb-4 stats-entrance stagger-3">
+                    <div class="flex items-center gap-2 mb-4 stats-entrance">
                         <div class="h-px flex-1 bg-gradient-to-r from-gold/40 to-transparent"></div>
                         <div class="flex items-center gap-1.5 px-3">
                             <i data-lucide="flame" class="w-4 h-4 text-gold"></i>
@@ -398,7 +398,7 @@ window.__FORM_OPTIONS = {{ {
                         <div class="h-px flex-1 bg-gradient-to-l from-gold/40 to-transparent"></div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                        <div class="top-searched-card stats-entrance stagger-4" data-index="0">
+                        <div class="top-searched-card stats-entrance" data-index="0">
                             <div class="flex items-center justify-between mb-3">
                                 <div class="flex items-center gap-2.5">
                                     <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center shadow-inner icon-glow">
@@ -416,7 +416,7 @@ window.__FORM_OPTIONS = {{ {
                             </div>
                             <p id="topPropertyTypeSub" class="text-[10px] text-midnight/25 mt-2 font-medium"></p>
                         </div>
-                        <div class="top-searched-card stats-entrance stagger-5" data-index="1">
+                        <div class="top-searched-card stats-entrance" data-index="1">
                             <div class="flex items-center justify-between mb-3">
                                 <div class="flex items-center gap-2.5">
                                     <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center shadow-inner icon-glow">
@@ -434,7 +434,7 @@ window.__FORM_OPTIONS = {{ {
                             </div>
                             <p id="topZoneSub" class="text-[10px] text-midnight/25 mt-2 font-medium"></p>
                         </div>
-                        <div class="top-searched-card stats-entrance stagger-6" data-index="2">
+                        <div class="top-searched-card stats-entrance" data-index="2">
                             <div class="flex items-center justify-between mb-3">
                                 <div class="flex items-center gap-2.5">
                                     <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-gold/20 to-gold/5 flex items-center justify-center shadow-inner icon-glow">
@@ -457,7 +457,7 @@ window.__FORM_OPTIONS = {{ {
 
                 <!-- KPI Row -->
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="kpi-card stats-entrance stagger-7">
+                    <div class="kpi-card stats-entrance">
                         <div class="kpi-card-accent bg-gradient-to-r from-gold to-gold-light"></div>
                         <div class="flex items-center gap-2 mb-2">
                             <i data-lucide="file-text" class="w-3.5 h-3.5 text-gold"></i>
@@ -466,7 +466,7 @@ window.__FORM_OPTIONS = {{ {
                         <p id="kpiTotal" class="kpi-value">—</p>
                         <p id="kpiTotalGrowth" class="kpi-trend hidden"></p>
                     </div>
-                    <div class="kpi-card stats-entrance stagger-8">
+                    <div class="kpi-card stats-entrance">
                         <div class="kpi-card-accent bg-gradient-to-r from-blue-400 to-blue-500"></div>
                         <div class="flex items-center gap-2 mb-2">
                             <i data-lucide="calendar-arrow-left" class="w-3.5 h-3.5 text-blue-500"></i>
@@ -475,7 +475,7 @@ window.__FORM_OPTIONS = {{ {
                         <p id="kpiPrevTotal" class="kpi-value">—</p>
                         <p id="kpiPrevLabel" class="text-[10px] text-midnight/30 mt-1"></p>
                     </div>
-                    <div class="kpi-card stats-entrance stagger-9">
+                    <div class="kpi-card stats-entrance">
                         <div class="kpi-card-accent bg-gradient-to-r from-emerald-400 to-emerald-500"></div>
                         <div class="flex items-center gap-2 mb-2">
                             <i data-lucide="wallet" class="w-3.5 h-3.5 text-emerald-500"></i>
@@ -483,7 +483,7 @@ window.__FORM_OPTIONS = {{ {
                         </div>
                         <p id="kpiAvgBudget" class="kpi-value">—</p>
                     </div>
-                    <div class="kpi-card stats-entrance stagger-10">
+                    <div class="kpi-card stats-entrance">
                         <div class="kpi-card-accent bg-gradient-to-r from-violet-400 to-violet-500"></div>
                         <div class="flex items-center gap-2 mb-2">
                             <i data-lucide="layers" class="w-3.5 h-3.5 text-violet-500"></i>
@@ -495,7 +495,7 @@ window.__FORM_OPTIONS = {{ {
 
                 <!-- Charts -->
                 <div>
-                    <div class="flex items-center gap-2 mb-4 stats-entrance stagger-11">
+                    <div class="flex items-center gap-2 mb-4 stats-entrance">
                         <div class="h-px flex-1 bg-gradient-to-r from-gold/20 to-transparent"></div>
                         <div class="flex items-center gap-1.5 px-3">
                             <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-midnight/30"></i>
@@ -504,7 +504,7 @@ window.__FORM_OPTIONS = {{ {
                         <div class="h-px flex-1 bg-gradient-to-l from-gold/20 to-transparent"></div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="chart-card stats-entrance stagger-12">
+                        <div class="chart-card stats-entrance">
                             <div class="flex items-center justify-between mb-4">
                                 <h4 class="text-[10px] font-bold uppercase tracking-widest text-midnight/50">{{ t('pro.property_type') }}</h4>
                                 <span id="chartPropTypeCount" class="chart-count-badge"></span>
@@ -513,7 +513,7 @@ window.__FORM_OPTIONS = {{ {
                                 <canvas id="chart-prop-type"></canvas>
                             </div>
                         </div>
-                        <div class="chart-card stats-entrance stagger-13">
+                        <div class="chart-card stats-entrance">
                             <div class="flex items-center justify-between mb-4">
                                 <h4 class="text-[10px] font-bold uppercase tracking-widest text-midnight/50">Zonas</h4>
                                 <span id="chartZonesCount" class="chart-count-badge"></span>
@@ -522,7 +522,7 @@ window.__FORM_OPTIONS = {{ {
                                 <canvas id="chart-zones"></canvas>
                             </div>
                         </div>
-                        <div class="chart-card stats-entrance stagger-14">
+                        <div class="chart-card stats-entrance">
                             <div class="flex items-center justify-between mb-4">
                                 <h4 class="text-[10px] font-bold uppercase tracking-widest text-midnight/50">{{ t('pro.monthly_evolution') }}</h4>
                                 <span id="chartTrendCount" class="chart-count-badge"></span>
@@ -531,7 +531,7 @@ window.__FORM_OPTIONS = {{ {
                                 <canvas id="chart-trend"></canvas>
                             </div>
                         </div>
-                        <div class="chart-card stats-entrance stagger-15">
+                        <div class="chart-card stats-entrance">
                             <div class="flex items-center justify-between mb-4">
                                 <h4 class="text-[10px] font-bold uppercase tracking-widest text-midnight/50">Tipo de Operación</h4>
                                 <span id="chartOpTypeCount" class="chart-count-badge"></span>
@@ -565,10 +565,10 @@ window.__FORM_OPTIONS = {{ {
     {% endif %}
 
     <!-- Modal: Reportar Lead -->
-    <div id="reportModal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="reportModalTitle">
+    <div id="reportModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="reportModalTitle">
         <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm"></div>
         <div class="flex items-center justify-center min-h-full p-4">
-            <div class="relative bg-white rounded-lg shadow-2xl border-t-4 border-rose-600 max-w-md w-full p-8 transform transition-all">
+            <div class="modal-panel relative bg-white rounded-lg shadow-2xl border-t-4 border-rose-600 max-w-md w-full p-8 transform transition-all">
                 <div class="flex items-center gap-3 mb-6">
                     <div class="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center flex-shrink-0">
                         <i data-lucide="flag" class="w-5 h-5 text-rose-600"></i>

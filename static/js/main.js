@@ -44,16 +44,41 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
+/**
+ * Contador animado compartido (dashboards admin/profesional).
+ */
+function animateCounter(el, target) {
+    if (!el) return;
+    const duration = 700;
+    const start = performance.now();
+    const from = 0;
+    const step = (now) => {
+        const progress = Math.min((now - start) / duration, 1);
+        const val = Math.round(from + (target - from) * (1 - Math.pow(1 - progress, 3)));
+        el.textContent = val;
+        if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+}
+
+/**
+ * Configuración de animación para Chart.js que respeta prefers-reduced-motion.
+ */
+function chartAnim(duration, easing) {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+    return { duration: duration || 500, easing: easing || 'easeOutQuart' };
+}
+
 function showConfirm(message) {
     return new Promise(function (resolve) {
         var overlay = document.createElement('div');
-        overlay.className = 'fixed inset-0 z-50 bg-midnight/60 backdrop-blur-sm flex items-center justify-center';
+        overlay.className = 'modal-anim fixed inset-0 z-50 bg-midnight/60 backdrop-blur-sm flex items-center justify-center';
         overlay.setAttribute('role', 'dialog');
         overlay.setAttribute('aria-modal', 'true');
         overlay.setAttribute('aria-label', message);
 
         var modal = document.createElement('div');
-        modal.className = 'bg-white rounded-lg shadow-2xl border-t-4 border-gold overflow-hidden w-full max-w-md mx-4';
+        modal.className = 'modal-panel bg-white rounded-lg shadow-2xl border-t-4 border-gold overflow-hidden w-full max-w-md mx-4';
 
         modal.innerHTML =
             '<div class="p-6"><p class="text-sm text-midnight leading-relaxed">' +
@@ -66,6 +91,7 @@ function showConfirm(message) {
 
         overlay.appendChild(modal);
         document.body.appendChild(overlay);
+        openModalAnim(overlay);
 
         function onKeydown(e) {
             if (e.key === 'Escape') { cleanup(); resolve(false); }
@@ -74,7 +100,7 @@ function showConfirm(message) {
 
         function cleanup() {
             document.removeEventListener('keydown', onKeydown);
-            overlay.remove();
+            closeModalAnim(overlay, function() { overlay.remove(); });
         }
 
         setTimeout(function () { modal.querySelector('.confirm-ok').focus(); }, 50);
@@ -104,9 +130,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Inicializar ripple effect en botones
     initRippleEffect();
-
-    // Inicializar modal animations
-    initModalAnimations();
 
     // Inicializar navbar scroll effect
     initNavbarScroll();
@@ -945,22 +968,22 @@ function initBudgetPopup() {
     });
     unlimitedCheckbox.addEventListener('change', toggleUnlimited);
     trigger.addEventListener('click', () => {
-        popup.classList.remove('hidden');
+        openModalAnim(popup);
         popup.scrollTop = 0;
     });
-    close.addEventListener('click', () => popup.classList.add('hidden'));
+    close.addEventListener('click', () => closeModalAnim(popup));
     popup.addEventListener('click', (event) => {
-        if (event.target === popup) popup.classList.add('hidden');
+        if (event.target === popup) closeModalAnim(popup);
     });
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape' && !popup.classList.contains('hidden')) {
-            popup.classList.add('hidden');
+            closeModalAnim(popup);
         }
     });
     resetBtn.addEventListener('click', resetBudget);
     acceptBtn.addEventListener('click', () => {
         updateBudgetOutput();
-        popup.classList.add('hidden');
+        closeModalAnim(popup);
     });
 
     fetchBudgetStats();
@@ -1199,7 +1222,7 @@ function initMobileMenu() {
     }
 
     function openMenu() {
-        mobileMenu.classList.remove('hidden');
+        openModalAnim(mobileMenu);
         menuBtn.setAttribute('aria-expanded', 'true');
         document.body.style.overflow = 'hidden';
 
@@ -1214,7 +1237,7 @@ function initMobileMenu() {
     }
 
     function closeMenu() {
-        mobileMenu.classList.add('hidden');
+        closeModalAnim(mobileMenu);
         menuBtn.setAttribute('aria-expanded', 'false');
         document.body.style.overflow = '';
 
@@ -1285,7 +1308,12 @@ function initMobileMenu() {
  * Scroll Animation Observer
  */
 function initScrollObserver() {
-    if (!('IntersectionObserver' in window)) return;
+    if (!('IntersectionObserver' in window)) {
+        document.querySelectorAll('.animate-on-scroll').forEach(el => {
+            el.classList.add('animate-in');
+        });
+        return;
+    }
 
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -1327,29 +1355,26 @@ function initRippleEffect() {
 
 /**
  * Modal Animations
+ * openModalAnim / closeModalAnim: animan cualquier overlay con la clase
+ * "modal-anim" (fade del overlay + scale del panel). Patrón de dos pasos:
+ * quitar hidden → reflow → añadir modal-open para disparar la transición.
  */
-function initModalAnimations() {
-    // Observe modal overlays and animate them
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach(mutation => {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                const el = mutation.target;
-                if (el.classList.contains('modal-overlay')) {
-                    if (el.classList.contains('hidden')) {
-                        el.classList.remove('modal-visible');
-                        el.classList.add('modal-hidden');
-                    } else {
-                        el.classList.remove('modal-hidden');
-                        el.classList.add('modal-visible');
-                    }
-                }
-            }
-        });
+function openModalAnim(el) {
+    if (!el) return;
+    el.classList.remove('hidden');
+    void el.offsetWidth;
+    requestAnimationFrame(function() {
+        el.classList.add('modal-open');
     });
+}
 
-    document.querySelectorAll('.modal-overlay').forEach(modal => {
-        observer.observe(modal, { attributes: true, attributeFilter: ['class'] });
-    });
+function closeModalAnim(el, done) {
+    if (!el) return;
+    el.classList.remove('modal-open');
+    setTimeout(function() {
+        el.classList.add('hidden');
+        if (typeof done === 'function') done();
+    }, 300);
 }
 
 /**

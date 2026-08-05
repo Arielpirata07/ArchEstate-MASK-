@@ -202,7 +202,8 @@ function normalizeArgentineAreaCode(value) {
 function getSelectedArgentineAreaCode() {
     const provinceSelect = document.getElementById('profile-province');
     const customAreaInput = document.getElementById('profile-custom-area');
-    if (!provinceSelect || provinceSelect.classList.contains('hidden')) {
+    const countryCodeEl = document.getElementById('profile-country-code');
+    if (!provinceSelect || !countryCodeEl || countryCodeEl.value !== '+54') {
         return '';
     }
     if (provinceSelect.value === 'other') {
@@ -262,7 +263,7 @@ function initPhoneFromServer() {
             const codeDigits = code.replace('+', '');
             const withoutCode = digits.substring(codeDigits.length);
             if (code === '+54' && provinceSelect) {
-                provinceSelect.classList.remove('hidden');
+                showProvinceSearchToggle(provinceSelect.options.length - 1 > 20);
                 let searchDigits = withoutCode;
                 let mobilePrefix = '';
                 if (searchDigits.startsWith('15')) { mobilePrefix = '15'; searchDigits = searchDigits.substring(2); }
@@ -318,10 +319,10 @@ function updateProfilePhoneFormat() {
     const provinceSelect = document.getElementById('profile-province');
     const customAreaInput = document.getElementById('profile-custom-area');
     if (countryCode === '+54') {
-        provinceSelect.classList.remove('hidden');
+        showProvinceSearchToggle(provinceSelect.options.length - 1 > 20);
     } else {
-        provinceSelect.classList.add('hidden');
         if (customAreaInput) customAreaInput.classList.add('hidden');
+        showProvinceSearchToggle(false);
     }
     validateProfilePhone();
 }
@@ -541,13 +542,200 @@ function savePreferredChannel() {
 function filterProvinceSelect(selectId, query) {
     var sel = document.getElementById(selectId);
     if (!sel) return;
-    var q = query.toLowerCase();
-    for (var i = 0; i < sel.options.length; i++) {
-        var opt = sel.options[i];
-        if (opt.value === 'other') continue;
-        opt.style.display = !q || opt.text.toLowerCase().indexOf(q) !== -1 ? '' : 'none';
+    
+    if (!sel._allOptions) {
+        // Guardar copia de las opciones originales la primera vez que se filtra
+        sel._allOptions = Array.from(sel.options).map(o => ({ value: o.value, text: o.text }));
+    }
+    
+    var currentVal = sel.value;
+    var q = (query || '').toLowerCase().trim();
+    
+    sel.innerHTML = '';
+    
+    sel._allOptions.forEach(function(item) {
+        if (item.value === 'other' || !q || item.text.toLowerCase().indexOf(q) !== -1 || String(item.value).toLowerCase().indexOf(q) !== -1) {
+            var opt = document.createElement('option');
+            opt.value = item.value;
+            opt.textContent = item.text;
+            if (item.value === currentVal) opt.selected = true;
+            sel.appendChild(opt);
+        }
+    });
+}
+
+function toggleProvinceSearch(selectId, btn) {
+    var wrapper = document.getElementById('province-search-wrapper');
+    if (!wrapper) return;
+    var isOpen = !wrapper.classList.contains('hidden');
+    if (isOpen) {
+        wrapper.classList.add('hidden');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+    } else {
+        wrapper.classList.remove('hidden');
+        if (btn) btn.setAttribute('aria-expanded', 'true');
+        var input = document.getElementById('province-search');
+        if (input) {
+            input.focus();
+            input.select();
+            onProvinceSearchInput(selectId, input);
+        }
     }
 }
+
+function provinceNormalize(s) {
+    return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+function getProvinceOptions(selectId) {
+    var sel = document.getElementById(selectId);
+    if (!sel) return [];
+    if (!sel._allOptions) {
+        sel._allOptions = Array.from(sel.options).map(function(o) {
+            return { value: o.value, text: o.textContent, state: o.getAttribute('data-state') || '' };
+        });
+    }
+    return sel._allOptions;
+}
+
+function provinceApplyFunction(selectId) {
+    if (selectId === 'profile-province' && typeof applyProvincePrefix === 'function') return applyProvincePrefix;
+    if (typeof applyPhoneProvincePrefix === 'function') return applyPhoneProvincePrefix;
+    return null;
+}
+
+function onProvinceSearchInput(selectId, input) {
+    var list = document.getElementById('province-search-list');
+    if (!list) return;
+    var q = provinceNormalize(input.value);
+    var matches = [];
+    getProvinceOptions(selectId).forEach(function(o) {
+        if (o.value === 'other') return;
+        if (!q || provinceNormalize(o.text).indexOf(q) !== -1) matches.push(o);
+    });
+    list.innerHTML = '';
+    var hasOther = getProvinceOptions(selectId).some(function(o) { return o.value === 'other'; });
+    if (!matches.length && !hasOther) {
+        list.innerHTML = '<li role="status" class="px-4 py-3 text-sm text-midnight/60">' + escapeHtml(window.t('autocomplete.no_matches')) + '</li>';
+    } else {
+        var html = '';
+        if (hasOther) {
+            html += '<li role="option" class="cursor-pointer px-4 py-3 border-b border-slate-100 hover:bg-slate-50" data-value="other"><strong class="text-midnight">Otra (código manual)...</strong></li>';
+        }
+        html += matches.slice(0, 50).map(function(o) {
+            var stateInfo = o.state ? '<span class="ml-2 text-[11px] text-midnight/60">' + escapeHtml(o.state) + '</span>' : '';
+            return '<li role="option" class="cursor-pointer px-4 py-3 border-b border-slate-100 hover:bg-slate-50" data-value="' + escapeHtml(o.value) + '">' +
+                '<strong class="text-midnight">' + escapeHtml(o.text) + '</strong>' + stateInfo + '</li>';
+        }).join('');
+        list.innerHTML = html;
+    }
+    list.classList.remove('hidden');
+    list.setAttribute('data-select-id', selectId);
+}
+
+function provinceSelectCity(selectId, value) {
+    var sel = document.getElementById(selectId);
+    if (!sel) return;
+    sel.value = value;
+    var opt = sel.options[sel.selectedIndex];
+    var label = document.getElementById('province-search-label');
+    if (label) {
+        if (opt && opt.textContent) {
+            label.textContent = opt.textContent;
+            label.classList.remove('text-midnight/70');
+        } else {
+            label.textContent = 'Buscar ciudad';
+            label.classList.add('text-midnight/70');
+        }
+    }
+    var apply = provinceApplyFunction(selectId);
+    if (apply) apply();
+    var wrapper = document.getElementById('province-search-wrapper');
+    if (wrapper) wrapper.classList.add('hidden');
+    var btn = document.getElementById('province-search-toggle');
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+    var input = document.getElementById('province-search');
+    if (input) input.value = '';
+    var list = document.getElementById('province-search-list');
+    if (list) {
+        list.classList.add('hidden');
+        list.innerHTML = '';
+    }
+}
+
+function onProvinceSearchKeydown(selectId, e) {
+    var list = document.getElementById('province-search-list');
+    if (!list || list.classList.contains('hidden')) return;
+    var items = list.querySelectorAll('li[data-value]');
+    if (!items.length) return;
+    var highlighted = list.querySelector('li.highlighted');
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        var current = Array.prototype.indexOf.call(items, highlighted);
+        var next;
+        if (current === -1) {
+            next = e.key === 'ArrowDown' ? 0 : items.length - 1;
+        } else {
+            next = e.key === 'ArrowDown'
+                ? (current + 1) % items.length
+                : (current - 1 + items.length) % items.length;
+        }
+        if (highlighted) highlighted.classList.remove('highlighted');
+        items[next].classList.add('highlighted');
+    } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (highlighted) {
+            provinceSelectCity(selectId, highlighted.dataset.value);
+        }
+    } else if (e.key === 'Escape') {
+        list.classList.add('hidden');
+    }
+}
+
+function showProvinceSearchToggle(show) {
+    var btn = document.getElementById('province-search-toggle');
+    if (!btn) return;
+    if (show) {
+        btn.classList.remove('hidden');
+        btn.classList.add('flex');
+    } else {
+        btn.classList.add('hidden');
+        btn.classList.remove('flex');
+        btn.setAttribute('aria-expanded', 'false');
+        var wrapper = document.getElementById('province-search-wrapper');
+        if (wrapper) wrapper.classList.add('hidden');
+    }
+}
+
+document.addEventListener('click', function(e) {
+    var wrap = document.getElementById('province-search-wrap');
+    var wrapper = document.getElementById('province-search-wrapper');
+    if (!wrap || !wrapper || wrapper.classList.contains('hidden')) return;
+    if (wrap.contains(e.target)) return;
+    wrapper.classList.add('hidden');
+    var btn = document.getElementById('province-search-toggle');
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+});
+
+document.addEventListener('click', function(e) {
+    var list = document.getElementById('province-search-list');
+    if (!list || list.classList.contains('hidden')) return;
+    var target = e.target.closest ? e.target.closest('li[data-value]') : null;
+    if (!target || !list.contains(target)) return;
+    provinceSelectCity(list.getAttribute('data-select-id'), target.getAttribute('data-value'));
+});
+
+(function() {
+    var label = document.getElementById('province-search-label');
+    if (!label) return;
+    var sel = document.getElementById('phone-province') || document.getElementById('profile-province');
+    if (!sel) return;
+    var opt = sel.options[sel.selectedIndex];
+    if (opt && opt.value) {
+        label.textContent = opt.textContent;
+        label.classList.remove('text-midnight/70');
+    }
+})();
 
 function detectArgAreaCode(digits) {
     let d = String(digits || '').replace(/\D/g, '');
@@ -1250,8 +1438,8 @@ document.addEventListener('DOMContentLoaded', () => {
 function openPhoneVerifyModal() {
     const modal = document.getElementById('verify-phone-modal');
     if (modal) {
-        modal.classList.remove('hidden');
         modal.classList.add('flex');
+        openModalAnim(modal);
         document.querySelectorAll('.verify-digit').forEach(inp => inp.value = '');
         document.getElementById('verify-error').classList.add('hidden');
         document.getElementById('verify-success').classList.add('hidden');
@@ -1292,8 +1480,7 @@ async function autoSendVerificationCode() {
 function closePhoneVerifyModal() {
     const modal = document.getElementById('verify-phone-modal');
     if (modal) {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
+        closeModalAnim(modal);
     }
 }
 

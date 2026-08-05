@@ -26,6 +26,13 @@
         var isDark = theme === 'dark';
         html.classList.toggle('dark', isDark);
         if (label) label.textContent = isDark ? t('theme.light') : t('theme.dark');
+
+        // Transición suave solo durante el cambio de tema (se remueve a los 400ms)
+        html.classList.add('theme-transition');
+        clearTimeout(applyTheme._timer);
+        applyTheme._timer = setTimeout(function() {
+            html.classList.remove('theme-transition');
+        }, 400);
     }
 
     function getSystemTheme() {

@@ -426,6 +426,184 @@ button, [role="button"], a {
     transition: transform 0.3s ease, color 0.3s ease;
 }
 
+/* --- Hover Utility Classes (design.md) --- */
+.hover-lift {
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hover-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.hover-scale {
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.hover-scale:hover {
+    transform: scale(1.08);
+}
+.hover-scale:active {
+    transform: scale(0.95);
+}
+
+.hover-glow {
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
+}
+.hover-glow:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px rgba(115, 90, 58, 0.2);
+}
+
+.hover-bright {
+    transition: filter 0.2s ease, transform 0.15s ease;
+}
+.hover-bright:hover {
+    filter: brightness(1.1);
+}
+.hover-bright:active {
+    transform: scale(0.97);
+}
+
+/* --- Gold Shimmer (CTA sweep on hover) --- */
+.btn-shimmer {
+    position: relative;
+    overflow: hidden;
+}
+.btn-shimmer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+    transform: skewX(-20deg);
+    transition: left 0.6s ease;
+}
+.btn-shimmer:hover::after {
+    left: 150%;
+}
+
+/* --- Animated Input (gold line grows from center on focus) --- */
+.input-animated {
+    position: relative;
+}
+.input-animated::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    width: 0;
+    height: 2px;
+    background: #735A3A;
+    transform: translateX(-50%);
+    transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.input-animated:focus-within::after {
+    width: 100%;
+}
+.dark .input-animated::after {
+    background: #A68A64;
+}
+
+/* --- Skeleton Loaders --- */
+.skeleton {
+    background: linear-gradient(90deg, rgba(0, 0, 0, 0.05) 25%, rgba(0, 0, 0, 0.1) 50%, rgba(0, 0, 0, 0.05) 75%);
+    background-size: 200% 100%;
+    animation: shimmerSweep 1.5s infinite;
+    border-radius: 0.5rem;
+}
+.dark .skeleton {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.05) 25%, rgba(255, 255, 255, 0.1) 50%, rgba(255, 255, 255, 0.05) 75%);
+    background-size: 200% 100%;
+}
+.skeleton-text { height: 0.75rem; margin-bottom: 0.5rem; }
+.skeleton-heading { height: 1.5rem; width: 60%; margin-bottom: 1rem; }
+.skeleton-card { height: 8rem; border-radius: 0.5rem; }
+.skeleton-circle { width: 2.5rem; height: 2.5rem; border-radius: 9999px; }
+
+@keyframes shimmerSweep {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
+}
+
+/* --- Badge Pop (notification count update) --- */
+.badge-pop {
+    animation: badgePop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes badgePop {
+    0% { transform: scale(0.5); }
+    60% { transform: scale(1.25); }
+    100% { transform: scale(1); }
+}
+
+/* --- Table Row Gold Accent (hover) --- */
+tbody.stagger-rows tr {
+    transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+tbody.stagger-rows tr:hover {
+    box-shadow: inset 3px 0 0 0 var(--accent);
+}
+
+/* --- Navbar Underline Draw --- */
+.nav-underline {
+    position: relative;
+}
+.nav-underline::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    height: 2px;
+    width: 100%;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nav-underline:hover::after,
+.nav-underline.is-active::after {
+    transform: scaleX(1);
+}
+
+/* --- Auth Ambient Background --- */
+.auth-ambient {
+    position: relative;
+    overflow: hidden;
+}
+.auth-ambient::before,
+.auth-ambient::after {
+    content: '';
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(60px);
+    z-index: -1;
+}
+.auth-ambient::before {
+    top: -10%;
+    left: -10%;
+    width: 45%;
+    height: 45%;
+    background: rgba(115, 90, 58, 0.12);
+    animation: authDrift 16s ease-in-out infinite;
+}
+.auth-ambient::after {
+    bottom: -15%;
+    right: -10%;
+    width: 50%;
+    height: 50%;
+    background: rgba(166, 138, 100, 0.1);
+    animation: authDriftReverse 20s ease-in-out infinite;
+}
+@keyframes authDrift {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(30px, 25px) scale(1.1); }
+}
+@keyframes authDriftReverse {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(-35px, -20px) scale(1.08); }
+}
+
 /* --- Button Ripple Effect --- */
 .btn-ripple {
     position: relative;
@@ -458,6 +636,12 @@ button, [role="button"], a {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* --- Panel/modal entrance (legacy classes) --- */
+.animate-fade-in,
+.animate-fadeInUp {
+    animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 /* --- Scroll Animation Classes --- */
@@ -519,6 +703,12 @@ button, [role="button"], a {
     animation: pageEntrance 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+.landing-page {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+}
+
 /* --- Header Entrance (staggered per view) --- */
 .page-entrance.page-loaded .header-entrance {
     animation: pageEntrance 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.15s forwards;
@@ -527,13 +717,6 @@ button, [role="button"], a {
 .header-entrance {
     opacity: 0;
 }
-
-/* Stagger delays */
-.stagger-1 { transition-delay: 0.1s !important; }
-.stagger-2 { transition-delay: 0.2s !important; }
-.stagger-3 { transition-delay: 0.3s !important; }
-.stagger-4 { transition-delay: 0.4s !important; }
-.stagger-5 { transition-delay: 0.5s !important; }
 
 /* --- Table Row Stagger --- */
 .stagger-rows tr.table-row-animate {
@@ -575,6 +758,34 @@ button, [role="button"], a {
 .modal-overlay.modal-visible {
     opacity: 1;
     pointer-events: auto;
+}
+
+/* --- Modal Transition System (overlay fade + panel scale) --- */
+.modal-anim {
+    opacity: 0;
+    transition: opacity 0.25s ease;
+}
+
+.modal-anim.modal-open {
+    opacity: 1;
+}
+
+.modal-anim .modal-panel {
+    transform: translateY(14px) scale(0.97);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-anim.modal-open .modal-panel {
+    transform: translateY(0) scale(1);
+}
+
+/* Dropdown (overlay + panel en el mismo elemento) */
+.modal-anim.modal-panel {
+    transform: translateY(10px);
+    transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.modal-anim.modal-open.modal-panel {
+    transform: translateY(0);
 }
 
 /* --- Table Row Stagger --- */
@@ -693,6 +904,30 @@ textarea {
 .dark .text-rose-500 { color: #fb7185 !important; }
 .dark .border-rose-200,
 .dark .border-rose-100 { border-color: rgba(225, 29, 72, 0.3) !important; }
+
+/* --- Danger ghost button (borrar leídas) --- */
+.btn-danger-ghost {
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.btn-danger-ghost:hover {
+    background: rgba(225, 29, 72, 0.08);
+    border-color: rgba(225, 29, 72, 0.4);
+}
+.btn-danger-ghost:focus-visible {
+    outline: 2px solid rgba(225, 29, 72, 0.5);
+    outline-offset: 2px;
+}
+.dark .btn-danger-ghost:hover {
+    background: rgba(225, 29, 72, 0.18);
+    border-color: rgba(225, 29, 72, 0.55);
+}
+
+/* --- Hover items de notificaciones (dark) --- */
+.dark .hover\:bg-white\/10:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+
 .dark .bg-emerald-50 { background: rgba(5, 150, 105, 0.1) !important; }
 .dark .text-emerald-700 { color: #6ee7b7 !important; }
 .dark .text-emerald-600 { color: #6ee7b7 !important; }
@@ -844,4 +1079,14 @@ textarea {
     transform: translate(-50%, -50%);
     transition: opacity 0.3s ease;
     will-change: left, top;
+}
+
+/* --- Province search dropdown keyboard highlight --- */
+#province-search-list li.highlighted {
+    background-color: #f1f5f9;
+}
+
+/* --- Province search dropdown scroll area --- */
+#province-search-list {
+    max-height: 15rem;
 }

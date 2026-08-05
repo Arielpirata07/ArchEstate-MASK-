@@ -152,14 +152,14 @@ function openResetModal(userId, username) {
     document.getElementById('passwordMatchError').classList.add('hidden');
     document.getElementById('strengthBar').classList.add('hidden');
 
-    document.getElementById('resetModal').classList.remove('hidden');
+    openModalAnim(document.getElementById('resetModal'));
     document.body.style.overflow = 'hidden';
 
     setTimeout(() => document.getElementById('newPasswordInput').focus(), 100);
 }
 
 function closeModal() {
-    document.getElementById('resetModal').classList.add('hidden');
+    closeModalAnim(document.getElementById('resetModal'));
     document.body.style.overflow = '';
     targetUserId   = null;
     targetUsername = null;
@@ -311,13 +311,13 @@ function openDisableModal(userId, username) {
     disableTargetName = username;
     document.getElementById('disable-username').textContent = username;
     document.getElementById('disableReason').value = '';
-    document.getElementById('disableModal').classList.remove('hidden');
+    openModalAnim(document.getElementById('disableModal'));
     document.body.style.overflow = 'hidden';
     setTimeout(() => document.getElementById('disableReason').focus(), 100);
 }
 
 function closeDisableModal() {
-    document.getElementById('disableModal').classList.add('hidden');
+    closeModalAnim(document.getElementById('disableModal'));
     document.body.style.overflow = '';
     disableTargetId   = null;
     disableTargetName = null;
@@ -359,12 +359,12 @@ function openEnableModal(userId, username) {
     enableTargetId   = userId;
     enableTargetName = username;
     document.getElementById('enable-username').textContent = username;
-    document.getElementById('enableModal').classList.remove('hidden');
+    openModalAnim(document.getElementById('enableModal'));
     document.body.style.overflow = 'hidden';
 }
 
 function closeEnableModal() {
-    document.getElementById('enableModal').classList.add('hidden');
+    closeModalAnim(document.getElementById('enableModal'));
     document.body.style.overflow = '';
     enableTargetId   = null;
     enableTargetName = null;

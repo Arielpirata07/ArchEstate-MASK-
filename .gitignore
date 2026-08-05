@@ -46,3 +46,7 @@ Thumbs.db
 # Uploads
 uploads/
 static/uploads/.git-rewrite/
+
+# Secrets & scratch
+.admin_initial_password
+*.patch

@@ -1,7 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) document.documentElement.classList.add('reduced-motion');
-
     initScrollAnimations();
     initParallax();
     initTypingEffect();
@@ -166,12 +163,12 @@ async function fetchAndAnimateCounters() {
 
         // Stagger: cada contador inicia 200ms despues del anterior
         setTimeout(() => {
-            animateCounter(counter, target, 2000);
+            animateLandingCounter(counter, target, 2000);
         }, 300 + (index * 200));
     });
 }
 
-function animateCounter(element, target, duration) {
+function animateLandingCounter(element, target, duration) {
     const start = 0;
     const startTime = performance.now();
 

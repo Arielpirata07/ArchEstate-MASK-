@@ -954,13 +954,13 @@ function openReportModal(leadId) {
     currentReportLeadId = leadId;
     document.getElementById('reportLeadId').textContent = '#' + leadId;
     document.getElementById('reportNotes').value = '';
-    document.getElementById('reportModal').classList.remove('hidden');
+    openModalAnim(document.getElementById('reportModal'));
     if (window.lucide) lucide.createIcons();
 }
 
 function closeReportModal() {
     currentReportLeadId = null;
-    document.getElementById('reportModal').classList.add('hidden');
+    closeModalAnim(document.getElementById('reportModal'));
 }
 
 document.addEventListener('click', function(e) {
@@ -1086,19 +1086,6 @@ const statsCharts = {};
 
 function destroyStatsChart(key) {
     if (statsCharts[key]) { statsCharts[key].destroy(); delete statsCharts[key]; }
-}
-
-function animateCounter(el, target) {
-    const duration = 700;
-    const start = performance.now();
-    const from = 0;
-    const step = (now) => {
-        const progress = Math.min((now - start) / duration, 1);
-        const val = Math.round(from + (target - from) * (1 - Math.pow(1 - progress, 3)));
-        el.textContent = val;
-        if (progress < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
 }
 
 function formatMonthLabel(ym) {
@@ -1332,7 +1319,7 @@ function renderStatsCharts(stats) {
                         }
                     })
                 },
-                animation: { duration: 500, easing: 'easeOutQuart' }
+                animation: chartAnim()
             }
         });
     }
@@ -1378,7 +1365,7 @@ function renderStatsCharts(stats) {
                     },
                     y: { ticks: { font: { family: 'Manrope', size: 9 } }, grid: { display: false } }
                 },
-                animation: { duration: 500, easing: 'easeOutQuart' }
+                animation: chartAnim()
             }
         });
     }
@@ -1441,7 +1428,7 @@ function renderStatsCharts(stats) {
                         beginAtZero: true
                     }
                 },
-                animation: { duration: 500, easing: 'easeOutQuart' }
+                animation: chartAnim()
             }
         });
     }
@@ -1481,7 +1468,7 @@ function renderStatsCharts(stats) {
                         }
                     })
                 },
-                animation: { duration: 500, easing: 'easeOutQuart' }
+                animation: chartAnim()
             }
         });
     }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ lang }}" class="{% if user_theme == 'dark' %}dark{% endif %} theme-transition">
+<html lang="{{ lang }}" class="{% if user_theme == 'dark' %}dark{% endif %}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -120,21 +120,21 @@
             <!-- Desktop Nav -->
             <div class="hidden md:flex gap-6">
                 {% if session.get('role') != 'professional' %}
-                <a href="{{ url_for('client.user_view') }}" class="text-[10px] uppercase tracking-widest font-bold transition-colors {% if request.path == url_for('client.user_view') %}text-gold border-b-2 border-gold pb-1{% else %}text-white/60 hover:text-gold{% endif %}">{{ t('nav.request') }}</a>
+                <a href="{{ url_for('client.user_view') }}" class="text-[10px] uppercase tracking-widest font-bold transition-colors nav-underline {% if request.path == url_for('client.user_view') %}text-gold is-active pb-1{% else %}text-white/60 hover:text-gold{% endif %}">{{ t('nav.request') }}</a>
                 {% endif %}
                 {% if not session.get('user_id') %}
-                <a href="{{ url_for('professional.professional_view') }}" class="text-[10px] uppercase tracking-widest font-bold transition-colors {% if request.path == url_for('professional.professional_view') %}text-gold border-b-2 border-gold pb-1{% else %}text-white/60 hover:text-gold{% endif %}">{{ t('nav.professional') }}</a>
+                <a href="{{ url_for('professional.professional_view') }}" class="text-[10px] uppercase tracking-widest font-bold transition-colors nav-underline {% if request.path == url_for('professional.professional_view') %}text-gold is-active pb-1{% else %}text-white/60 hover:text-gold{% endif %}">{{ t('nav.professional') }}</a>
                 {% endif %}
 
                 {% if session.get('role') == 'admin' %}
-                <a href="{{ url_for('admin.admin_view') }}" class="text-[10px] uppercase tracking-widest font-bold flex items-center gap-1 transition-colors {% if request.path.startswith('/admin') %}text-gold border-b-2 border-gold pb-1{% else %}text-gold hover:text-white{% endif %}">
+                <a href="{{ url_for('admin.admin_view') }}" class="text-[10px] uppercase tracking-widest font-bold flex items-center gap-1 transition-colors nav-underline {% if request.path.startswith('/admin') %}text-gold is-active pb-1{% else %}text-gold hover:text-white{% endif %}">
                     <i data-lucide="shield-check" class="w-3 h-3" aria-hidden="true"></i>
                     {{ t('nav.admin') }}
                 </a>
                 {% endif %}
 
                 {% if session.get('user_id') and session.get('role') != 'admin' %}
-                <a href="{{ url_for('profile.profile_view') }}" class="text-[10px] uppercase tracking-widest font-bold flex items-center gap-1 transition-colors {% if request.path == url_for('profile.profile_view') %}text-gold border-b-2 border-gold pb-1{% else %}text-white/60 hover:text-gold{% endif %}">
+                <a href="{{ url_for('profile.profile_view') }}" class="text-[10px] uppercase tracking-widest font-bold flex items-center gap-1 transition-colors nav-underline {% if request.path == url_for('profile.profile_view') %}text-gold is-active pb-1{% else %}text-white/60 hover:text-gold{% endif %}">
                     <i data-lucide="settings" class="w-3 h-3" aria-hidden="true"></i>
                     {{ t('nav.profile') }}
                 </a>
@@ -159,7 +159,7 @@
                 <button id="notif-bell" class="relative p-2 text-white/60 hover:text-gold transition-colors" aria-label="{{ t('nav.notifications') }}" onclick="toggleNotifications()">
                     <i data-lucide="bell" class="w-4 h-4" aria-hidden="true"></i>
                     {% if unread_notifications > 0 %}
-                    <span id="notif-badge" class="absolute -top-0.5 -right-0.5 flex items-center justify-center w-4 h-4 text-[9px] font-bold text-white bg-rose-500 rounded-full">{{ unread_notifications }}</span>
+                    <span id="notif-badge" class="badge-pop absolute -top-0.5 -right-0.5 flex items-center justify-center w-4 h-4 text-[9px] font-bold text-white bg-rose-500 rounded-full">{{ unread_notifications }}</span>
                     {% endif %}
                 </button>
                 <span class="text-[10px] text-white/40 uppercase font-bold tracking-tighter">{{ active_role }}: {{ session.get('username') }}</span>
@@ -184,7 +184,7 @@
     </nav>
 
     <!-- Mobile Menu -->
-    <div id="mobile-menu" class="fixed inset-0 z-40 bg-midnight/95 backdrop-blur-sm hidden md:hidden" role="dialog" aria-label="{{ t('nav.profile') }}">
+    <div id="mobile-menu" class="modal-anim fixed inset-0 z-40 bg-midnight/95 backdrop-blur-sm hidden md:hidden" role="dialog" aria-label="{{ t('nav.profile') }}">
         <div class="flex flex-col items-center justify-center h-full gap-8">
             {% if session.get('role') != 'professional' %}
             <a href="{{ url_for('client.user_view') }}" class="text-lg uppercase tracking-widest font-bold transition-colors mobile-menu-link {% if request.path == url_for('client.user_view') %}text-gold{% else %}text-white/80 hover:text-gold{% endif %}" {% if request.path == url_for('client.user_view') %}aria-current="page"{% endif %}>{{ t('mobile.solicitud') }}</a>
@@ -240,13 +240,17 @@
 
     <!-- Notifications dropdown -->
     {% if session.get('user_id') %}
-    <div id="notif-dropdown" class="hidden fixed right-4 top-20 z-50 w-80 bg-white dark:!bg-[#1a2332] border border-gold/20 dark:border-gold-light/20 rounded-lg shadow-xl overflow-hidden" role="dialog" aria-label="{{ t('nav.notifications') }}">
+    <div id="notif-dropdown" class="modal-anim modal-panel hidden fixed right-4 top-20 z-50 w-80 bg-white dark:!bg-[#1a2332] border border-gold/20 dark:border-gold-light/20 rounded-lg shadow-xl overflow-hidden" role="dialog" aria-label="{{ t('nav.notifications') }}">
         <div class="flex items-center justify-between px-4 py-3 border-b border-gold/20 dark:border-gold-light/20 bg-midnight-light">
             <h3 class="text-xs font-bold uppercase tracking-widest text-gold dark:text-gold-light">{{ t('nav.notifications') }}</h3>
             <button onclick="markAllRead()" class="text-[9px] uppercase tracking-wider text-white/40 hover:text-gold dark:hover:text-gold-light transition-colors">{{ t('nav.mark_all_read') }}</button>
         </div>
         <div id="notif-list" class="max-h-80 overflow-y-auto">
-            <div class="p-4 text-center text-xs text-midnight/40 dark:text-white/40">{{ t('nav.loading') }}</div>
+            <div class="p-4 space-y-3">
+                <div class="skeleton skeleton-heading"></div>
+                <div class="skeleton skeleton-text w-3/4"></div>
+                <div class="skeleton skeleton-text w-1/2"></div>
+            </div>
         </div>
         <div class="border-t border-gold/20 dark:border-gold-light/20">
             <a href="{{ url_for('profile.notifications_view') }}" class="w-full px-4 py-2.5 text-[9px] uppercase tracking-widest font-bold text-gold dark:text-gold-light hover:bg-midnight/5 dark:hover:bg-white/5 transition-colors flex items-center justify-center gap-1.5">
@@ -279,7 +283,7 @@
     {% endwith %}
 
     <!-- CONTENIDO DINÁMICO (Aquí se inyectan las vistas) -->
-    <main id="main-content" class="flex-grow pt-24 pb-12 px-6 max-w-7xl mx-auto w-full page-entrance" role="main">
+    <main id="main-content" class="flex-grow pt-24 pb-12 px-6 max-w-7xl mx-auto w-full {% if request.path == '/' %}landing-page{% else %}page-entrance{% endif %}" role="main">
         {% block content %}{% endblock %}
     </main>
 
@@ -315,8 +319,12 @@
         var dd = document.getElementById('notif-dropdown');
         if (!dd) return;
         notifDropdownOpen = !notifDropdownOpen;
-        dd.classList.toggle('hidden', !notifDropdownOpen);
-        if (notifDropdownOpen) loadNotifications();
+        if (notifDropdownOpen) {
+            openModalAnim(dd);
+            loadNotifications();
+        } else {
+            closeModalAnim(dd);
+        }
     }
 
     function loadNotifications() {
@@ -348,7 +356,7 @@
                     'lead': { icon: 'bell', color: 'text-midnight/40 dark:text-white/40', border: 'border-l-midnight/20' }
                 };
                 var tc = typeConfig[n.type] || typeConfig['lead'];
-                html += '<div class="px-4 py-3 border-b border-midnight/10 dark:border-white/10 hover:bg-midnight/5 dark:hover:bg-white/5 transition-colors border-l-2 ' + tc.border + (n.is_read ? '' : ' bg-gold/5 dark:bg-gold-light/10') + '">' +
+                html += '<div class="px-4 py-3 border-b border-midnight/10 dark:border-white/10 hover:bg-midnight/5 dark:hover:bg-white/10 transition-colors border-l-2 ' + tc.border + (n.is_read ? '' : ' bg-gold/5 dark:bg-gold-light/10') + '">' +
                     '<div class="flex items-start justify-between gap-2">' +
                     '<div class="min-w-0 flex items-start gap-2">' +
                     '<i data-lucide="' + tc.icon + '" class="w-3 h-3 mt-0.5 ' + tc.color + ' flex-shrink-0"></i>' +
@@ -368,6 +376,9 @@
                 var badge = document.getElementById('notif-badge');
                 if (badge && data.unread > 0) {
                     badge.textContent = data.unread;
+                    badge.classList.remove('badge-pop');
+                    void badge.offsetWidth;
+                    badge.classList.add('badge-pop');
                 } else if (badge) {
                     badge.remove();
                 }
@@ -403,7 +414,7 @@
         var dd = document.getElementById('notif-dropdown');
         var bell = document.getElementById('notif-bell');
         if (notifDropdownOpen && dd && !dd.contains(e.target) && !bell.contains(e.target)) {
-            dd.classList.add('hidden');
+            closeModalAnim(dd);
             notifDropdownOpen = false;
         }
     });
