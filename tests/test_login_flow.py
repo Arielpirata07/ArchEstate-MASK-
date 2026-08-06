@@ -160,3 +160,25 @@ class TestLoginPageDoesNotLeakInfo:
         # Y deben ser idénticos (mismo mensaje genérico)
         assert flash1.group(1).strip() == flash2.group(1).strip(), \
             f"Mensajes diferentes: {flash1.group(1)!r} vs {flash2.group(1)!r}"
+
+
+class TestForgotPassword:
+    """El flujo de recuperación de contraseña debe renderizar sus vistas."""
+
+    def test_forgot_password_page_renders(self, client):
+        """/forgot-password (GET) debe renderizar el form sin errores 500."""
+        resp = client.get('/forgot-password')
+        assert resp.status_code == 200
+        assert b'name="email"' in resp.data
+
+    def test_forgot_password_post_redirects_to_login(self, client):
+        """POST /forgot-password con email de usuario registrado → /login."""
+        resp = client.post('/forgot-password', data={'email': 'admin@example.com'})
+        assert resp.status_code == 302
+        assert '/login' in resp.headers.get('Location', '')
+
+    def test_reset_password_page_with_invalid_token_redirects(self, client):
+        """/reset-password con token inválido → redirige a /forgot-password."""
+        resp = client.get('/reset-password/token-invalido-123')
+        assert resp.status_code == 302
+        assert '/forgot-password' in resp.headers.get('Location', '')

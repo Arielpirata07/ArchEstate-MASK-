@@ -261,7 +261,6 @@ def forgot_password():
             expires_at = (datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=1)).isoformat()
             models.create_password_reset_token(user['id'], token, expires_at)
 
-            from flask import render_template
             from services.email import get_email_sender
             reset_url = f"{config.SITE_URL}{url_for('auth.reset_password', token=token)}"
             html_body = render_template('email/password_reset.html', reset_url=reset_url, user=user)
