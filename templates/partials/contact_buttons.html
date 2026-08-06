@@ -30,7 +30,7 @@
       <a href="/api/lead/{{ lead_id }}/r/whatsapp"
          data-wa-link
          data-lead-id="{{ lead_id }}"
-         class="contact-btn contact-btn-whatsapp inline-flex items-center gap-1.5 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-widest transition-all"
+         class="contact-btn contact-btn-whatsapp inline-flex items-center gap-1.5 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-widest transition-colors"
          aria-label="Contactar por WhatsApp">
         <i data-lucide="message-circle" class="w-3 h-3" aria-hidden="true"></i>
         WhatsApp
@@ -41,7 +41,7 @@
       <a href="sms:{{ phone_for_tel }}?&body={{ wa_message | urlencode }}"
          data-sms-link
          data-lead-id="{{ lead_id }}"
-         class="contact-btn contact-btn-sms inline-flex items-center gap-1.5 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-widest transition-all"
+         class="contact-btn contact-btn-sms inline-flex items-center gap-1.5 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-widest transition-colors"
          aria-label="Enviar mensaje SMS">
         <i data-lucide="smartphone" class="w-3 h-3" aria-hidden="true"></i>
         SMS

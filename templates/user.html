@@ -67,7 +67,7 @@ window.__FORM_OPTIONS = {{ {
                         <!-- Tipo de Operación -->
                         <div>
                             <label for="operation-select" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.operation_type') }}</label>
-                            <select id="operation-select" name="type" required class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                            <select id="operation-select" name="type" required class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm">
                                 <option value="">{{ t('user.step_select') }}</option>
                                 {% for opt in form_options.get('operation_type', []) %}
                                 <option value="{{ opt.value }}">{{ opt.label }}</option>
@@ -79,7 +79,7 @@ window.__FORM_OPTIONS = {{ {
                         <div>
                             <label for="budget-popup-trigger" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.budget') }}</label>
                             <button type="button" id="budget-popup-trigger"
-                                    class="w-full py-3 px-4 rounded border-2 border-midnight/20 bg-paper-dark text-midnight font-semibold transition-all hover:border-gold text-left">
+                                    class="w-full py-3 px-4 rounded border-2 border-midnight/20 bg-paper-dark text-midnight font-semibold transition-colors hover:border-gold text-left">
                                 {{ t('user.budget_range') }} $0 — $10.000.000.000
                             </button>
                             <input type="hidden" id="budget-hidden" name="budget" value="0 - 10000000000">
@@ -91,7 +91,7 @@ window.__FORM_OPTIONS = {{ {
                                     <div class="flex items-center justify-between mb-6">
                                         <h3 class="text-lg font-serif">Presupuesto</h3>
                                         <button type="button" id="budget-popup-close" aria-label="Cerrar selector de presupuesto"
-                                                class="w-10 h-10 rounded-full flex items-center justify-center text-midnight/60 hover:text-midnight hover:bg-midnight/5 transition-all">
+                                                class="w-10 h-10 rounded-full flex items-center justify-center text-midnight/60 hover:text-midnight hover:bg-midnight/5 transition-colors">
                                             <i data-lucide="x" class="w-5 h-5"></i>
                                         </button>
                                     </div>
@@ -136,11 +136,11 @@ window.__FORM_OPTIONS = {{ {
 
                                     <div class="flex gap-3">
                                         <button type="button" id="budget-reset"
-                                                class="flex-1 py-3 rounded border-2 border-midnight/20 text-midnight font-semibold transition-all hover:bg-midnight/5">
+                                                class="flex-1 py-3 rounded border-2 border-midnight/20 text-midnight font-semibold transition-colors hover:bg-midnight/5">
                                             Restablecer
                                         </button>
                                         <button type="button" id="budget-accept"
-                                                class="flex-1 py-3 rounded bg-midnight text-white font-semibold transition-all hover:bg-midnight-light dark:hover:bg-midnight/80">
+                                                class="flex-1 py-3 rounded bg-midnight text-white font-semibold transition-colors hover:bg-midnight-light dark:hover:bg-midnight/80">
                                             Aceptar
                                         </button>
                                     </div>
@@ -151,7 +151,7 @@ window.__FORM_OPTIONS = {{ {
                         <!-- País -->
                         <div>
                             <label for="country-select" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.country') }}</label>
-                            <select id="country-select" name="country" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                            <select id="country-select" name="country" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm">
                                 <option value="">{{ t('user.select_country') }}</option>
                                 {% for opt in form_options.get('country', []) %}
                                 <option value="{{ opt.value }}">{{ opt.label }}</option>
@@ -163,7 +163,7 @@ window.__FORM_OPTIONS = {{ {
                         <div>
                             <label for="zone-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.zone') }}</label>
                             <div class="relative">
-                                <input id="zone-input" name="zone" type="text" placeholder="Ej. Costa Brava, Madrid Centro..." class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm" required>
+                                <input id="zone-input" name="zone" type="text" placeholder="Ej. Costa Brava, Madrid Centro..." class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm" required>
                                 <ul id="zone-suggestions" class="hidden absolute top-full left-0 right-0 bg-white border border-slate-200 rounded shadow-md z-10" role="listbox"></ul>
                             </div>
                         </div>
@@ -171,7 +171,7 @@ window.__FORM_OPTIONS = {{ {
                         <!-- Provincia / Estado -->
                         <div>
                             <label for="province-select" id="province-label" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.province') }}</label>
-                            <select id="province-select" name="province" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                            <select id="province-select" name="province" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm">
                                 <option value="">{{ t('user.select_province') }}</option>
                             </select>
                         </div>
@@ -180,7 +180,7 @@ window.__FORM_OPTIONS = {{ {
                         <div>
                             <label for="architectural-style-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.arch_style') }}</label>
                             <div class="relative">
-                                <input id="architectural-style-input" name="architectural_style" type="text" placeholder="Ej. Moderno, Clásico, Minimalista..." class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                <input id="architectural-style-input" name="architectural_style" type="text" placeholder="Ej. Moderno, Clásico, Minimalista..." class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm">
                                 <ul id="architectural-style-suggestions" class="hidden absolute top-full left-0 right-0 bg-white border border-slate-200 rounded shadow-md z-10" role="listbox"></ul>
                             </div>
                         </div>
@@ -201,29 +201,29 @@ window.__FORM_OPTIONS = {{ {
                             <div>
                                 <label for="ambientes-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.rooms') }}</label>
                                 <div class="flex items-center gap-3">
-                                    <button type="button" onclick="stepNum('ambientes',-1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-base md:text-lg leading-none">−</button>
+                                    <button type="button" onclick="stepNum('ambientes',-1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-base md:text-lg leading-none">−</button>
                                     <input id="ambientes-input" name="ambientes" type="number" min="1" max="20" value="" placeholder="—"
                                            class="w-12 text-center bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-1 text-sm font-semibold">
-                                    <button type="button" onclick="stepNum('ambientes',1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-base md:text-lg leading-none">+</button>
+                                    <button type="button" onclick="stepNum('ambientes',1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-base md:text-lg leading-none">+</button>
                                 </div>
                                 <p class="text-[9px] text-midnight/30 mt-1">{{ t('user.rooms_hint') }}</p>
                             </div>
                             <div>
                                 <label for="bedrooms-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.bedrooms') }}</label>
                                 <div class="flex items-center gap-3">
-                                    <button type="button" aria-label="Reducir dormitorios" onclick="stepNum('bedrooms',-1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-base md:text-lg leading-none">−</button>
+                                    <button type="button" aria-label="Reducir dormitorios" onclick="stepNum('bedrooms',-1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-base md:text-lg leading-none">−</button>
                                     <input id="bedrooms-input" name="bedrooms" type="number" min="0" max="20" value="" placeholder="—"
                                            class="w-12 text-center bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-1 text-sm font-semibold">
-                                    <button type="button" aria-label="Aumentar dormitorios" onclick="stepNum('bedrooms',1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-base md:text-lg leading-none">+</button>
+                                    <button type="button" aria-label="Aumentar dormitorios" onclick="stepNum('bedrooms',1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-base md:text-lg leading-none">+</button>
                                 </div>
                             </div>
                             <div>
                                 <label for="bathrooms-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.bathrooms') }}</label>
                                 <div class="flex items-center gap-3">
-                                    <button type="button" aria-label="Reducir baños" onclick="stepNum('bathrooms',-1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-base md:text-lg leading-none">−</button>
+                                    <button type="button" aria-label="Reducir baños" onclick="stepNum('bathrooms',-1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-base md:text-lg leading-none">−</button>
                                     <input id="bathrooms-input" name="bathrooms" type="number" min="0" max="20" value="" placeholder="—"
                                            class="w-12 text-center bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-1 text-sm font-semibold">
-                                    <button type="button" aria-label="Aumentar baños" onclick="stepNum('bathrooms',1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-base md:text-lg leading-none">+</button>
+                                    <button type="button" aria-label="Aumentar baños" onclick="stepNum('bathrooms',1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-base md:text-lg leading-none">+</button>
                                 </div>
                             </div>
                         </div>
@@ -234,7 +234,7 @@ window.__FORM_OPTIONS = {{ {
                             <div class="flex flex-wrap gap-2" id="parking-chips">
                                 {% for opt in form_options.get('parking', []) %}
                                 <button type="button" data-value="{{ opt.value }}" onclick="selectChip('parking','{{ opt.value }}')"
-                                    class="parking-chip {% if loop.first %}active-chip border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all hover:border-gold">{{ opt.label }}</button>
+                                    class="parking-chip {% if loop.first %}active-chip border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-colors hover:border-gold">{{ opt.label }}</button>
                                 {% endfor %}
                             </div>
                             <input type="hidden" id="parking-input" name="parking" value="">
@@ -247,7 +247,7 @@ window.__FORM_OPTIONS = {{ {
                             <div class="flex flex-wrap gap-2" id="orientation-chips">
                                 {% for opt in form_options.get('orientation', []) %}
                                 <button type="button" data-value="{{ opt.value }}" onclick="selectChip('orientation','{{ opt.value }}')"
-                                    class="orientation-chip {% if loop.first %}active-chip border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all hover:border-gold">{{ orient_short.get(opt.value, opt.label) }}</button>
+                                    class="orientation-chip {% if loop.first %}active-chip border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-colors hover:border-gold">{{ orient_short.get(opt.value, opt.label) }}</button>
                                 {% endfor %}
                             </div>
                             <input type="hidden" id="orientation-input" name="orientation" value="">
@@ -259,7 +259,7 @@ window.__FORM_OPTIONS = {{ {
                                 <label for="condition-chips" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.condition') }}</label>
                                 <div class="space-y-2" id="condition-chips">
                                     {% for opt in form_options.get('condition', []) %}
-                                    <button type="button" data-value="{{ opt.value }}" onclick="selectChip('condition','{{ opt.value }}')" class="condition-chip {% if loop.first %}active-chip border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all hover:border-gold">{{ opt.label }}</button>
+                                    <button type="button" data-value="{{ opt.value }}" onclick="selectChip('condition','{{ opt.value }}')" class="condition-chip {% if loop.first %}active-chip border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-colors hover:border-gold">{{ opt.label }}</button>
                                     {% endfor %}
                                 </div>
                                 <input type="hidden" id="condition-input" name="property_condition" value="">
@@ -268,7 +268,7 @@ window.__FORM_OPTIONS = {{ {
                                 <label for="age-chips" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.age') }}</label>
                                 <div class="space-y-2" id="age-chips">
                                     {% for opt in form_options.get('age', []) %}
-                                    <button type="button" data-value="{{ opt.value }}" onclick="selectChip('age','{{ opt.value }}')" class="age-chip {% if loop.first %}active-chip border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all hover:border-gold">{{ opt.label }}</button>
+                                    <button type="button" data-value="{{ opt.value }}" onclick="selectChip('age','{{ opt.value }}')" class="age-chip {% if loop.first %}active-chip border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-colors hover:border-gold">{{ opt.label }}</button>
                                     {% endfor %}
                                 </div>
                                 <input type="hidden" id="age-input" name="property_age" value="">
@@ -282,11 +282,11 @@ window.__FORM_OPTIONS = {{ {
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label for="floor-block-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.floor_block') }}</label>
-                                        <input id="floor-block-input" name="floor_block" type="text" placeholder="5º A" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                        <input id="floor-block-input" name="floor_block" type="text" placeholder="5º A" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm">
                                     </div>
                                     <div>
                                         <label for="usable-m2-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.usable_m2') }}</label>
-                                        <input id="usable-m2-input" name="usable_m2" type="number" min="0" placeholder="85" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                        <input id="usable-m2-input" name="usable_m2" type="number" min="0" placeholder="85" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm">
                                     </div>
                                 </div>
                                 <div class="flex flex-wrap gap-4 mt-4">
@@ -317,11 +317,11 @@ window.__FORM_OPTIONS = {{ {
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label for="house-land-area" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.land_area') }}</label>
-                                        <input id="house-land-area" name="land_area" type="number" min="0" placeholder="600" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                        <input id="house-land-area" name="land_area" type="number" min="0" placeholder="600" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm">
                                     </div>
                                     <div>
                                         <label for="house-built-area" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.built_area') }}</label>
-                                        <input id="house-built-area" name="built_area" type="number" min="0" placeholder="300" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                        <input id="house-built-area" name="built_area" type="number" min="0" placeholder="300" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm">
                                         <p id="house-area-warning" class="hidden text-[10px] text-rose-500 font-medium mt-1">Los metros construidos superan el 80% del terreno.</p>
                                     </div>
                                 </div>
@@ -382,11 +382,11 @@ window.__FORM_OPTIONS = {{ {
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label for="duplex-land-area" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.land_area') }}</label>
-                                        <input id="duplex-land-area" name="land_area" type="number" min="0" placeholder="300" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                        <input id="duplex-land-area" name="land_area" type="number" min="0" placeholder="300" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm">
                                     </div>
                                     <div>
                                         <label for="duplex-built-area" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.built_area') }}</label>
-                                        <input id="duplex-built-area" name="built_area" type="number" min="0" placeholder="180" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                        <input id="duplex-built-area" name="built_area" type="number" min="0" placeholder="180" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm">
                                         <p id="duplex-area-warning" class="hidden text-[10px] text-rose-500 font-medium mt-1">Los metros construidos superan el 80% del terreno.</p>
                                     </div>
                                 </div>
@@ -418,11 +418,11 @@ window.__FORM_OPTIONS = {{ {
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Piso</label>
-                                        <input name="floor_block" type="text" placeholder="Piso 20" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                        <input name="floor_block" type="text" placeholder="Piso 20" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm">
                                     </div>
                                     <div>
                                         <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.usable_m2') }}</label>
-                                        <input name="usable_m2" type="number" min="0" placeholder="150" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                        <input name="usable_m2" type="number" min="0" placeholder="150" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm">
                                     </div>
                                 </div>
                                 <div class="flex flex-wrap gap-4 mt-4">
@@ -453,21 +453,21 @@ window.__FORM_OPTIONS = {{ {
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.total_area') }}</label>
-                                        <input name="usable_m2" type="number" min="0" placeholder="120" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                        <input name="usable_m2" type="number" min="0" placeholder="120" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm">
                                     </div>
                                     <div>
                                         <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.frontage') }}</label>
-                                        <input name="floor_block" type="text" placeholder="8m" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                        <input name="floor_block" type="text" placeholder="8m" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm">
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                                     <div>
                                         <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.local_floor') }}</label>
-                                        <input name="built_area" type="text" placeholder="Planta baja" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                        <input name="built_area" type="text" placeholder="Planta baja" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm">
                                     </div>
                                     <div>
                                         <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.local_height') }}</label>
-                                        <input name="land_area" type="number" min="0" placeholder="3.5" step="0.1" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                        <input name="land_area" type="number" min="0" placeholder="3.5" step="0.1" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm">
                                     </div>
                                 </div>
                                 <div class="flex flex-wrap gap-4 mt-4">
@@ -507,7 +507,7 @@ window.__FORM_OPTIONS = {{ {
                         <!-- Características adicionales -->
                         <div>
                                         <label for="additional_features" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.additional_features') }}</label>
-                                        <textarea id="additional_features" name="additional_features" placeholder="Vistas, materiales preferidos, detalles de diseño, requerimientos especiales..." rows="3" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm resize-none"></textarea>
+                                        <textarea id="additional_features" name="additional_features" placeholder="Vistas, materiales preferidos, detalles de diseño, requerimientos especiales..." rows="3" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm resize-none"></textarea>
                         </div>
 
                     </div>
@@ -589,7 +589,7 @@ window.__FORM_OPTIONS = {{ {
                                     {% if session.get('role') != 'admin' %}required{% endif %}
                                     value="{{ session.get('phone', '') }}"
                                     placeholder="1234 5678"
-                                     class="flex-1 min-w-0 bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm"
+                                     class="flex-1 min-w-0 bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm"
                                 >
                             </div>
                             <p class="text-[9px] text-midnight/60 mt-1">{{ t('user.phone_hint') }}</p>
@@ -653,7 +653,7 @@ window.__FORM_OPTIONS = {{ {
 
                 <!-- Botón Enviar -->
                 <div class="pt-6">
-                    <button type="submit" class="btn-submit w-full bg-gold hover:bg-midnight text-white py-4 rounded font-bold uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-3 group shadow-lg">
+                    <button type="submit" class="btn-submit w-full bg-gold hover:bg-midnight text-white py-4 rounded font-bold uppercase tracking-widest text-xs transition-colors flex items-center justify-center gap-3 group shadow-lg">
                         {{ t('user.submit_lead') }}
                         <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
                     </button>
@@ -673,7 +673,7 @@ window.__FORM_OPTIONS = {{ {
     <div class="modal-panel bg-white rounded-lg shadow-2xl border-t-4 border-gold overflow-hidden w-full max-w-md mx-4">
         <div class="relative p-8">
             <button type="button" id="close-verify-modal" aria-label="Cerrar"
-                class="absolute top-4 right-4 p-2 rounded hover:bg-paper-dark transition-all duration-200 text-midnight/30 hover:text-gold"
+                class="absolute top-4 right-4 p-2 rounded hover:bg-paper-dark transition-colors duration-200 text-midnight/30 hover:text-gold"
                 onclick="closePhoneVerifyModal()">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
@@ -686,22 +686,22 @@ window.__FORM_OPTIONS = {{ {
 
             <div class="flex gap-2 justify-center mb-6" id="verify-code-inputs" role="group" aria-label="Código de verificación de 6 dígitos">
                 <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="one-time-code" aria-label="Dígito 1 de 6"
-                    class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-all"
+                    class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-colors"
                     data-index="0">
                 <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="no" aria-label="Dígito 2 de 6"
-                    class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-all"
+                    class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-colors"
                     data-index="1">
                 <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="no" aria-label="Dígito 3 de 6"
-                    class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-all"
+                    class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-colors"
                     data-index="2">
                 <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="no" aria-label="Dígito 4 de 6"
-                    class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-all"
+                    class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-colors"
                     data-index="3">
                 <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="no" aria-label="Dígito 5 de 6"
-                    class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-all"
+                    class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-colors"
                     data-index="4">
                 <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="no" aria-label="Dígito 6 de 6"
-                    class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-all"
+                    class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-colors"
                     data-index="5">
             </div>
 
@@ -711,7 +711,7 @@ window.__FORM_OPTIONS = {{ {
             </p>
 
             <button id="verify-submit-btn"
-                class="w-full bg-gold text-white py-4 rounded font-bold uppercase tracking-widest text-xs hover:bg-midnight transition-all duration-300"
+                class="w-full bg-gold text-white py-4 rounded font-bold uppercase tracking-widest text-xs hover:bg-midnight transition-colors duration-300"
                 onclick="submitVerificationCode()">
                 Verificar
             </button>

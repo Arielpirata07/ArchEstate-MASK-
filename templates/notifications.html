@@ -18,7 +18,7 @@
                 {{ t('notif.delete_read') }}
             </button>
             <button onclick="notifPage(1)"
-                class="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-gold hover:text-midnight border border-gold/30 hover:border-gold rounded transition-all flex items-center gap-1.5">
+                class="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-gold hover:text-midnight border border-gold/30 hover:border-gold rounded transition-colors flex items-center gap-1.5">
                 <i data-lucide="refresh-cw" class="w-3 h-3"></i>
                 {{ t('nav.mark_all_read') }}
             </button>
@@ -100,7 +100,7 @@ function notifPage(page) {
                     '</div>' +
                     '</div>' +
                     '<div class="flex items-center gap-2 shrink-0">' +
-                    '<button onclick="markReadNotifPage(' + n.id + ')" class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded border transition-all ' +
+                    '<button onclick="markReadNotifPage(' + n.id + ')" class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded border transition-colors ' +
                     (n.is_read
                         ? 'border-transparent text-midnight/20 dark:text-white/20 cursor-default'
                         : 'border-gold/30 text-gold hover:bg-gold hover:text-white') +

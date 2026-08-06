@@ -760,12 +760,12 @@
                     <div class="flex items-center gap-4 pt-6 mt-6 border-t" style="border-color:var(--border)">
                         <span class="text-xs font-bold uppercase tracking-widest" style="color:var(--text-secondary)">Exportar Historial</span>
                         <a href="{{ url_for('profile.profile_export_history_xlsx') }}"
-                           class="flex items-center gap-2 px-4 py-2 bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all rounded text-[10px] font-bold uppercase tracking-widest border border-midnight/5 dark:border-white/10">
+                           class="flex items-center gap-2 px-4 py-2 bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors rounded text-[10px] font-bold uppercase tracking-widest border border-midnight/5 dark:border-white/10">
                             <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5" aria-hidden="true"></i>
                             XLSX
                         </a>
                         <a href="{{ url_for('profile.profile_export_history_pdf') }}"
-                           class="flex items-center gap-2 px-4 py-2 bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all rounded text-[10px] font-bold uppercase tracking-widest border border-midnight/5 dark:border-white/10">
+                           class="flex items-center gap-2 px-4 py-2 bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors rounded text-[10px] font-bold uppercase tracking-widest border border-midnight/5 dark:border-white/10">
                             <i data-lucide="file-text" class="w-3.5 h-3.5" aria-hidden="true"></i>
                             PDF
                         </a>
@@ -805,7 +805,7 @@
         <div class="modal-panel bg-white rounded-lg shadow-2xl border-t-4 border-gold overflow-hidden w-full max-w-md mx-4">
             <div class="relative p-8">
                 <button type="button" id="close-verify-modal" aria-label="Cerrar"
-                    class="absolute top-4 right-4 p-2 rounded hover:bg-paper-dark transition-all duration-200 text-midnight/30 hover:text-gold"
+                    class="absolute top-4 right-4 p-2 rounded hover:bg-paper-dark transition-colors duration-200 text-midnight/30 hover:text-gold"
                     onclick="closePhoneVerifyModal()">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
@@ -823,22 +823,22 @@
 
                 <div class="flex gap-2 justify-center mb-6" id="verify-code-inputs" role="group" aria-label="Código de verificación de 6 dígitos">
                     <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="one-time-code" aria-label="Dígito 1 de 6"
-                        class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-all"
+                        class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-colors"
                         data-index="0">
                     <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="no" aria-label="Dígito 2 de 6"
-                        class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-all"
+                        class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-colors"
                         data-index="1">
                     <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="no" aria-label="Dígito 3 de 6"
-                        class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-all"
+                        class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-colors"
                         data-index="2">
                     <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="no" aria-label="Dígito 4 de 6"
-                        class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-all"
+                        class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-colors"
                         data-index="3">
                     <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="no" aria-label="Dígito 5 de 6"
-                        class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-all"
+                        class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-colors"
                         data-index="4">
                     <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="no" aria-label="Dígito 6 de 6"
-                        class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-all"
+                        class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-colors"
                         data-index="5">
                 </div>
 
@@ -848,7 +848,7 @@
                 </p>
 
                 <button id="verify-submit-btn"
-                    class="w-full bg-gold text-white py-4 rounded font-bold uppercase tracking-widest text-xs hover:bg-midnight transition-all duration-300"
+                    class="w-full bg-gold text-white py-4 rounded font-bold uppercase tracking-widest text-xs hover:bg-midnight transition-colors duration-300"
                     onclick="submitVerificationCode()">
                     {{ t('profile.verify') }}
                 </button>

@@ -37,6 +37,8 @@ function csrfSafeMethod(method) {
     };
 })();
 
+document.documentElement.classList.add('js');
+
 function escapeHtml(str) {
     if (str === null || str === undefined) return '';
     const div = document.createElement('div');
@@ -45,10 +47,21 @@ function escapeHtml(str) {
 }
 
 /**
+ * Detecta la preferencia de movimiento reducido del sistema.
+ */
+function prefersReducedMotion() {
+    return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+/**
  * Contador animado compartido (dashboards admin/profesional).
  */
 function animateCounter(el, target) {
     if (!el) return;
+    if (prefersReducedMotion()) {
+        el.textContent = target;
+        return;
+    }
     const duration = 700;
     const start = performance.now();
     const from = 0;
@@ -65,7 +78,7 @@ function animateCounter(el, target) {
  * Configuración de animación para Chart.js que respeta prefers-reduced-motion.
  */
 function chartAnim(duration, easing) {
-    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+    if (prefersReducedMotion()) return false;
     return { duration: duration || 500, easing: easing || 'easeOutQuart' };
 }
 
@@ -160,7 +173,9 @@ function showToast(message, type = 'success') {
     const bgColor = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-rose-600' : 'bg-midnight';
     const icon = type === 'success' ? 'check-circle' : type === 'error' ? 'alert-circle' : 'info';
 
-    toast.className = `${bgColor} text-white px-6 py-4 rounded shadow-2xl flex items-center gap-4 transform transition-all duration-500 translate-y-10 opacity-0 border border-white/10 relative overflow-hidden`;
+    const reducedMotion = prefersReducedMotion();
+
+    toast.className = `${bgColor} text-white px-6 py-4 rounded shadow-2xl flex items-center gap-4 transform transition-all duration-500 ${reducedMotion ? '' : 'translate-y-10 opacity-0'} border border-white/10 relative overflow-hidden`;
     toast.setAttribute('role', 'alert');
     toast.setAttribute('aria-live', 'assertive');
     toast.style.minWidth = '300px';
@@ -185,14 +200,20 @@ function showToast(message, type = 'success') {
     }
 
     // Animacion de entrada
-    requestAnimationFrame(() => {
-        toast.classList.remove('translate-y-10', 'opacity-0');
-    });
+    if (!reducedMotion) {
+        requestAnimationFrame(() => {
+            toast.classList.remove('translate-y-10', 'opacity-0');
+        });
+    }
 
     // Auto-eliminacion
     setTimeout(() => {
-        toast.classList.add('opacity-0', '-translate-y-2');
-        setTimeout(() => toast.remove(), 500);
+        if (!reducedMotion) {
+            toast.classList.add('opacity-0', '-translate-y-2');
+            setTimeout(() => toast.remove(), 500);
+        } else {
+            toast.remove();
+        }
     }, 4000);
 }
 
@@ -1336,6 +1357,7 @@ function initScrollObserver() {
  * Button Ripple Effect
  */
 function initRippleEffect() {
+    if (prefersReducedMotion()) return;
     document.querySelectorAll('.btn-ripple').forEach(btn => {
         btn.addEventListener('click', function(e) {
             const rect = this.getBoundingClientRect();
@@ -1383,7 +1405,7 @@ function closeModalAnim(el, done) {
 function smoothScrollTo(target) {
     const el = typeof target === 'string' ? document.querySelector(target) : target;
     if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        el.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });
     }
 }
 
@@ -1433,7 +1455,7 @@ function initBackToTop() {
     });
 
     btn.addEventListener('click', () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
     });
 }
 

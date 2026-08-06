@@ -32,7 +32,7 @@
                         required
                         aria-describedby="err-role"
                         data-auth-rules='{"required": true, "messages": {"required": "Elegí un tipo de cuenta."}}'
-                        class="w-full bg-paper-dark dark:bg-midnight border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 transition-all text-sm">
+                        class="w-full bg-paper-dark dark:bg-midnight border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 transition-colors text-sm">
                     <option value="client">{{ t('auth.client_option') }}</option>
                     <option value="professional">{{ t('auth.pro_option') }}</option>
                 </select>
@@ -50,7 +50,7 @@
                            type="text"
                            placeholder="{{ t('auth.license_placeholder') }}"
                            aria-describedby="err-license"
-                           class="input-animated w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all">
+                           class="input-animated w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-colors">
                 </div>
                 <div id="err-license" class="field-error" data-for="license" aria-live="polite"></div>
             </div>
@@ -70,7 +70,7 @@
                            placeholder="{{ t('auth.username_format') }}"
                            aria-describedby="err-username username-hint"
                            data-auth-rules='{"required": true, "usernameFormat": true, "messages": {"required": "Elegí un nombre de usuario.", "usernameFormat": "3-30 caracteres, solo letras, números y guión bajo."}}'
-                           class="input-animated w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all">
+                           class="input-animated w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-colors">
                 </div>
                 <div id="err-username" class="field-error" data-for="username" aria-live="polite"></div>
                 <div id="username-hint" class="username-hint" data-username-hint></div>
@@ -90,7 +90,7 @@
                            placeholder="usuario@ejemplo.com"
                            aria-describedby="err-email"
                            data-auth-rules='{"required": true, "email": true, "messages": {"required": "Ingresá tu email.", "email": "Formato de email inválido."}}'
-                           class="input-animated w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-all">
+                           class="input-animated w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-colors">
                 </div>
                 <div id="err-email" class="field-error" data-for="email" aria-live="polite"></div>
             </div>
@@ -113,7 +113,7 @@
                            aria-describedby="err-phone phone-hint phone-preview"
                            data-auth-rules='{"required": true, "phone": true, "messages": {"required": "Ingresá tu teléfono.", "phone": "Formato inválido. Ejemplo: +54 9 11 1234 5678"}}'
                            maxlength="20"
-                           class="input-animated w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 pr-8 transition-all">
+                           class="input-animated w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 pr-8 transition-colors">
                     <span id="phone-status" data-phone-status class="absolute right-0 bottom-3 hidden" aria-hidden="true">
                         <i data-phone-status-icon data-lucide="circle" class="w-5 h-5 text-midnight/30 dark:text-white/30"></i>
                     </span>
@@ -143,7 +143,7 @@
                            data-strength="true"
                            aria-describedby="err-password password-strength password-rules"
                            data-auth-rules='{"required": true, "minLength": 6, "hasLetter": true, "hasNumber": true, "messages": {"required": "Elegí una contraseña.", "minLength": "Mínimo 6 caracteres.", "hasLetter": "Debe contener al menos una letra.", "hasNumber": "Debe contener al menos un número."}}'
-                           class="input-animated w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 pr-10 transition-all">
+                           class="input-animated w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 pr-10 transition-colors">
                     <button type="button"
                             data-toggle-pass="password"
                             class="toggle-pass"
@@ -181,7 +181,7 @@
             </div>
 
             <button type="submit"
-                    class="btn-submit btn-shimmer w-full bg-midnight dark:bg-gold text-white dark:text-midnight py-4 rounded font-bold uppercase tracking-widest text-xs hover:bg-gold dark:hover:bg-midnight dark:hover:text-gold transition-all mt-8 flex items-center justify-center gap-2 group">
+                    class="btn-submit btn-shimmer w-full bg-midnight dark:bg-gold text-white dark:text-midnight py-4 rounded font-bold uppercase tracking-widest text-xs hover:bg-gold dark:hover:bg-midnight dark:hover:text-gold transition-colors mt-8 flex items-center justify-center gap-2 group">
                 <span data-label class="flex items-center gap-2">
                     {{ t('auth.create_account') }}
                     <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform" aria-hidden="true"></i>

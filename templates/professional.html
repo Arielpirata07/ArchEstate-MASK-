@@ -27,11 +27,11 @@ window.__FORM_OPTIONS = {{ {
         <div class="flex flex-wrap items-center gap-3">
             <div class="flex gap-2">
                 <button onclick="showProTab('leads')" id="tab-leads"
-                    class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-midnight text-white">
+                    class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-midnight text-white">
                     <span class="flex items-center gap-2"><i data-lucide="layout-dashboard" class="w-3 h-3"></i> {{ t('pro.leads_tab') }}</span>
                 </button>
                 <button onclick="showProTab('stats')" id="tab-stats"
-                    class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white">
+                    class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                     <span class="flex items-center gap-2"><i data-lucide="trending-up" class="w-3 h-3"></i> {{ t('pro.stats_tab') }}</span>
                 </button>
             </div>
@@ -39,14 +39,14 @@ window.__FORM_OPTIONS = {{ {
                href="{{ url_for('professional.export_leads_csv') }}"
                data-stats-href="{{ url_for('professional.export_stats_csv') }}"
                data-leads-href="{{ url_for('professional.export_leads_csv') }}"
-               class="flex items-center gap-2 px-4 py-2 bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all rounded text-[10px] font-bold uppercase tracking-widest border border-midnight/5">
+               class="flex items-center gap-2 px-4 py-2 bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors rounded text-[10px] font-bold uppercase tracking-widest border border-midnight/5">
                 <i data-lucide="download" class="w-3 h-3"></i> CSV
             </a>
             <a id="exportXlsxBtn"
                href="{{ url_for('professional.export_leads_xlsx') }}"
                data-stats-href="{{ url_for('professional.export_stats_xlsx') }}"
                data-leads-href="{{ url_for('professional.export_leads_xlsx') }}"
-               class="flex items-center gap-2 px-4 py-2 bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all rounded text-[10px] font-bold uppercase tracking-widest border border-midnight/5">
+               class="flex items-center gap-2 px-4 py-2 bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors rounded text-[10px] font-bold uppercase tracking-widest border border-midnight/5">
                 <i data-lucide="download" class="w-3 h-3"></i> XLSX
             </a>
         </div>
@@ -132,9 +132,9 @@ window.__FORM_OPTIONS = {{ {
             <span class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">{{ t('pro.period') }}</span>
             <div class="flex gap-1" id="timeRangeChips">
                 <button onclick="setTimeRange('')"  data-days=""   class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-midnight text-white">{{ t('pro.period_all') }}</button>
-                <button onclick="setTimeRange('1')" data-days="1"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all">{{ t('pro.period_today') }}</button>
-                <button onclick="setTimeRange('7')" data-days="7"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all">7d</button>
-                <button onclick="setTimeRange('30')" data-days="30" class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all">30d</button>
+                <button onclick="setTimeRange('1')" data-days="1"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">{{ t('pro.period_today') }}</button>
+                <button onclick="setTimeRange('7')" data-days="7"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">7d</button>
+                <button onclick="setTimeRange('30')" data-days="30" class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">30d</button>
             </div>
         </div>
     </div>
@@ -168,10 +168,10 @@ window.__FORM_OPTIONS = {{ {
             </div>
             <div class="flex items-center gap-3">
                 <div class="flex items-center bg-midnight/5 rounded-lg p-0.5">
-                    <button id="btnMyLeads" onclick="setMyLeads(true)" class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all bg-gold text-white">
+                    <button id="btnMyLeads" onclick="setMyLeads(true)" class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors bg-gold text-white">
                         <i data-lucide="user" class="w-3 h-3 inline -mt-0.5 mr-1"></i>{{ t('pro.my_leads') }}
                     </button>
-                    <button id="btnAllLeads" onclick="setMyLeads(false)" class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all text-midnight/50 hover:text-midnight">
+                    <button id="btnAllLeads" onclick="setMyLeads(false)" class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors text-midnight/50 hover:text-midnight">
                         <i data-lucide="globe" class="w-3 h-3 inline -mt-0.5 mr-1"></i>{{ t('pro.all_leads') }}
                     </button>
                 </div>
@@ -218,27 +218,27 @@ window.__FORM_OPTIONS = {{ {
                 <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">{{ t('pro.prop_type') }}</label>
                 <div class="flex flex-wrap gap-2" id="propTypeChips">
                     <button data-value="" onclick="setPropType('')"
-                        class="prop-chip active px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight bg-midnight text-white">
+                        class="prop-chip active px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight bg-midnight text-white">
                         {{ t('pro.all_types') }}
                     </button>
                     <button data-value="departamento" onclick="setPropType('departamento')"
-                        class="prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
+                        class="prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
                         <i data-lucide="building" class="w-3 h-3 inline -mt-0.5 mr-1"></i>Departamento
                     </button>
                     <button data-value="casa" onclick="setPropType('casa')"
-                        class="prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
+                        class="prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
                         <i data-lucide="home" class="w-3 h-3 inline -mt-0.5 mr-1"></i>Casa
                     </button>
                     <button data-value="duplex" onclick="setPropType('duplex')"
-                        class="prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
+                        class="prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
                         <i data-lucide="layers" class="w-3 h-3 inline -mt-0.5 mr-1"></i>Dúplex
                     </button>
                     <button data-value="penthouse" onclick="setPropType('penthouse')"
-                        class="prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
+                        class="prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
                         <i data-lucide="crown" class="w-3 h-3 inline -mt-0.5 mr-1"></i>Penthouse
                     </button>
                     <button data-value="local_comercial" onclick="setPropType('local_comercial')"
-                        class="prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
+                        class="prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
                         <i data-lucide="store" class="w-3 h-3 inline -mt-0.5 mr-1"></i>Local Comercial
                     </button>
                 </div>
@@ -249,27 +249,27 @@ window.__FORM_OPTIONS = {{ {
                 <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">{{ t('pro.budget_range_label') }}</label>
                 <div class="flex flex-wrap gap-2" id="budgetRangeChips">
                     <button data-range="" onclick="setBudgetRange('')"
-                        class="budget-chip active px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight bg-midnight text-white">
+                        class="budget-chip active px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight bg-midnight text-white">
                         {{ t('pro.any_amount') }}
                     </button>
                     <button data-range="hasta_200k" onclick="setBudgetRange('hasta_200k')"
-                        class="budget-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
+                        class="budget-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
                         Hasta $200k
                     </button>
                     <button data-range="200k_500k" onclick="setBudgetRange('200k_500k')"
-                        class="budget-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
+                        class="budget-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
                         $200k – $500k
                     </button>
                     <button data-range="500k_1m" onclick="setBudgetRange('500k_1m')"
-                        class="budget-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
+                        class="budget-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
                         $500k – $1M
                     </button>
                     <button data-range="1m_2m" onclick="setBudgetRange('1m_2m')"
-                        class="budget-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
+                        class="budget-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
                         $1M – $2M
                     </button>
                     <button data-range="mas_2m" onclick="setBudgetRange('mas_2m')"
-                        class="budget-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
+                        class="budget-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
                         Más de $2M
                     </button>
                 </div>
@@ -282,7 +282,7 @@ window.__FORM_OPTIONS = {{ {
                 <div id="activeFilterTags" class="flex flex-wrap gap-2"></div>
                 <div class="flex items-center gap-3 flex-shrink-0 ml-4">
                     <span class="text-sm text-midnight/60"><span id="leadsCount">0</span> leads</span>
-                    <button id="applyFilters" class="px-4 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all flex items-center gap-2">
+                    <button id="applyFilters" class="px-4 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors flex items-center gap-2">
                         <i data-lucide="search" class="w-3 h-3"></i> Buscar
                     </button>
                 </div>
@@ -294,7 +294,7 @@ window.__FORM_OPTIONS = {{ {
 
 
     <!-- Tabla de Leads -->
-    <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+    <div class="bg-white rounded-lg shadow-xl overflow-hidden animate-on-scroll fade-in-up">
         <div class="p-4 bg-paper-dark border-b border-midnight/5 flex justify-between items-center">
             <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('pro.leads_available') }}</h3>
             <div class="flex items-center gap-3">
@@ -341,7 +341,7 @@ window.__FORM_OPTIONS = {{ {
     </div>
 
     <!-- Documentación: panel colapsable para profesional aprobado -->
-    <div class="bg-white rounded-lg shadow-xl overflow-hidden">
+    <div class="bg-white rounded-lg shadow-xl overflow-hidden animate-on-scroll fade-in-up">
         <button id="toggleDocSection"
             class="w-full p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between hover:bg-paper transition-colors"
             onclick="toggleDocPanel()">
@@ -555,7 +555,7 @@ window.__FORM_OPTIONS = {{ {
                     <p class="text-[9px] uppercase tracking-widest font-bold text-gold">Lead <span id="previewLeadId" class="font-mono"></span></p>
                     <h3 id="previewLeadTitle" class="text-lg font-serif text-midnight mt-1">Vista rápida</h3>
                 </div>
-                <button onclick="closeLeadPreview()" class="p-2 text-midnight/60 hover:text-midnight rounded-lg hover:bg-paper-dark transition-all" aria-label="Cerrar vista rápida">
+                <button onclick="closeLeadPreview()" class="p-2 text-midnight/60 hover:text-midnight rounded-lg hover:bg-paper-dark transition-colors" aria-label="Cerrar vista rápida">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -594,11 +594,11 @@ window.__FORM_OPTIONS = {{ {
 
                 <div class="flex gap-3 justify-end">
                     <button data-close-report
-                        class="px-4 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight hover:text-white transition-all">
+                        class="px-4 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight hover:text-white transition-colors">
                         {{ t('pro.report_cancel') }}
                     </button>
 <button id="confirmReportBtn"
-                            class="px-4 py-2 bg-rose-600 dark:bg-rose-700 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-rose-700 dark:hover:bg-rose-800 transition-all">
+                            class="px-4 py-2 bg-rose-600 dark:bg-rose-700 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-rose-700 dark:hover:bg-rose-800 transition-colors">
                         {{ t('pro.report_confirm') }}
                     </button>
                 </div>

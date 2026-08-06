@@ -9,7 +9,7 @@
 }
 
 .title-reveal.animate {
-    animation: titleReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: titleReveal 1.2s var(--ease-out) forwards;
 }
 
 @keyframes titleReveal {
@@ -35,7 +35,7 @@
 }
 
 .subtitle-reveal.animate {
-    animation: subtitleReveal 1s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
+    animation: subtitleReveal 1s var(--ease-out) 0.4s forwards;
 }
 
 @keyframes subtitleReveal {
@@ -234,7 +234,7 @@
 .faq-answer {
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s ease;
+    transition: max-height 0.4s var(--ease-out), padding 0.3s ease;
 }
 
 .faq-answer.open {
@@ -244,7 +244,7 @@
 }
 
 .faq-chevron {
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transition: transform 0.3s var(--ease-pop);
 }
 
 .faq-item.open .faq-chevron {
@@ -321,14 +321,14 @@
 /* --- Magnetic Hover Effect (desktop only) --- */
 @media (hover: hover) {
     .magnetic-hover {
-        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        transition: transform 0.3s var(--ease-out);
         will-change: transform;
     }
 }
 
 /* --- Navbar Shrink on Scroll --- */
 #main-navbar {
-    transition: height 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    transition: height 0.35s var(--ease-out),
                 background-color 0.35s ease,
                 backdrop-filter 0.35s ease,
                 box-shadow 0.35s ease;
@@ -371,7 +371,7 @@
     background: linear-gradient(to right, #735A3A, transparent);
     transform: scaleX(0);
     transform-origin: left center;
-    transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.8s var(--ease-out);
 }
 
 .step-connector.drawn::after {

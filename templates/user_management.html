@@ -137,7 +137,7 @@
                             id="newPasswordInput"
                             type="password"
                             placeholder="{{ t('um.min_6_chars') }}"
-                            class="w-full bg-transparent border-0 border-b border-midnight/20 focus:border-gold focus:ring-0 py-3 pl-8 transition-all outline-none text-sm"
+                            class="w-full bg-transparent border-0 border-b border-midnight/20 focus:border-gold focus:ring-0 py-3 pl-8 transition-colors outline-none text-sm"
                             onkeyup="validatePasswordModal()"
                         >
                     </div>
@@ -151,7 +151,7 @@
                             id="confirmPasswordInput"
                             type="password"
                             placeholder="{{ t('um.repeat_password') }}"
-                            class="w-full bg-transparent border-0 border-b border-midnight/20 focus:border-gold focus:ring-0 py-3 pl-8 transition-all outline-none text-sm"
+                            class="w-full bg-transparent border-0 border-b border-midnight/20 focus:border-gold focus:ring-0 py-3 pl-8 transition-colors outline-none text-sm"
                             onkeyup="validatePasswordModal()"
                         >
                     </div>
@@ -172,11 +172,11 @@
                 <!-- Acciones -->
                 <div class="flex gap-3 pt-2">
                     <button onclick="closeModal()"
-                        class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-all">
+                        class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-colors">
                         {{ t('um.cancel') }}
                     </button>
                     <button id="confirmResetBtn" onclick="confirmReset()"
-                        class="flex-1 py-3 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all flex items-center justify-center gap-2">
+                        class="flex-1 py-3 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-colors flex items-center justify-center gap-2">
                         <i data-lucide="key-round" class="w-3 h-3"></i>
                         {{ t('um.reset') }}
                     </button>
@@ -216,15 +216,15 @@
                 <div>
                     <label for="disableReason" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">{{ t('um.reason_optional') }}</label>
                     <textarea id="disableReason" rows="3" placeholder="{{ t('um.disable_reason_placeholder') }}"
-                        class="w-full bg-paper-dark border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm resize-none"></textarea>
+                        class="w-full bg-paper-dark border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm resize-none"></textarea>
                 </div>
                 <div class="flex gap-3 pt-2">
                     <button onclick="closeDisableModal()"
-                        class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-all">
+                        class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-colors">
                         {{ t('um.cancel') }}
                     </button>
                     <button id="confirmDisableBtn" onclick="confirmDisable()"
-                        class="flex-1 py-3 bg-rose-600 dark:bg-rose-700 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-rose-700 dark:hover:bg-rose-800 transition-all flex items-center justify-center gap-2">
+                        class="flex-1 py-3 bg-rose-600 dark:bg-rose-700 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-rose-700 dark:hover:bg-rose-800 transition-colors flex items-center justify-center gap-2">
                         <i data-lucide="user-x" class="w-3 h-3"></i>
                         {{ t('um.disable') }}
                     </button>
@@ -255,11 +255,11 @@
             </div>
             <div class="px-8 pb-8 pt-2 flex gap-3">
                 <button onclick="closeEnableModal()"
-                    class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-all">
+                    class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-colors">
                     {{ t('um.cancel') }}
                 </button>
                 <button id="confirmEnableBtn" onclick="confirmEnable()"
-                    class="flex-1 py-3 bg-emerald-600 dark:bg-emerald-700 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-emerald-700 dark:hover:bg-emerald-800 transition-all flex items-center justify-center gap-2">
+                    class="flex-1 py-3 bg-emerald-600 dark:bg-emerald-700 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-emerald-700 dark:hover:bg-emerald-800 transition-colors flex items-center justify-center gap-2">
                     <i data-lucide="user-check" class="w-3 h-3"></i>
                     {{ t('um.enable') }}
                 </button>

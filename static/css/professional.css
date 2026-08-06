@@ -4,7 +4,7 @@
 
 /* --- Tab Button --- */
 .tab-btn {
-    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: color 0.25s var(--ease-out), background-color 0.25s var(--ease-out), border-color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out), transform 0.25s var(--ease-out), opacity 0.25s var(--ease-out);
 }
 
 .tab-btn:active {
@@ -84,7 +84,7 @@
     text-transform: uppercase;
     letter-spacing: 0.1em;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: color 0.2s var(--ease-out), background-color 0.2s var(--ease-out), border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), transform 0.2s var(--ease-out), opacity 0.2s var(--ease-out);
     white-space: nowrap;
     font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', Arial, sans-serif;
 }
@@ -194,7 +194,7 @@ button[title="Reportar telefono inexistente"]:hover i[data-lucide] {
     letter-spacing: 0.1em;
     text-decoration: none;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: color 0.2s var(--ease-out), background-color 0.2s var(--ease-out), border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), transform 0.2s var(--ease-out), opacity 0.2s var(--ease-out);
     white-space: nowrap;
     font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', Arial, sans-serif;
     border: 1.5px solid transparent;
@@ -440,8 +440,8 @@ button[title="Reportar telefono inexistente"]:hover i[data-lucide] {
     border: 1px solid var(--border, rgba(0,4,16,0.08));
     border-radius: 1rem;
     padding: 1.25rem;
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-                box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    transition: transform 0.3s var(--ease-out),
+                box-shadow 0.3s var(--ease-out),
                 border-color 0.3s ease;
     position: relative;
     overflow: hidden;
@@ -531,7 +531,7 @@ button[title="Reportar telefono inexistente"]:hover i[data-lucide] {
     height: 100%;
     border-radius: 4px;
     background: linear-gradient(90deg, #735A3A, #A68A64);
-    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: width 0.8s var(--ease-out);
     position: relative;
 }
 
@@ -552,8 +552,8 @@ button[title="Reportar telefono inexistente"]:hover i[data-lucide] {
     padding: 1.25rem;
     position: relative;
     overflow: hidden;
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-                box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.3s var(--ease-out),
+                box-shadow 0.3s var(--ease-out);
 }
 
 .kpi-card:hover {
@@ -599,8 +599,8 @@ button[title="Reportar telefono inexistente"]:hover i[data-lucide] {
     border: 1px solid var(--border, rgba(0,4,16,0.06));
     border-radius: 1rem;
     padding: 1.25rem;
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
-                box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 0.3s var(--ease-out),
+                box-shadow 0.3s var(--ease-out);
 }
 
 .chart-card:hover {
@@ -647,7 +647,7 @@ button[title="Reportar telefono inexistente"]:hover i[data-lucide] {
 }
 
 .stats-entrance-in {
-    animation: statsEntranceIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: statsEntranceIn 0.5s var(--ease-out) forwards;
     animation-delay: calc(var(--stagger-order, 0) * 40ms);
 }
 

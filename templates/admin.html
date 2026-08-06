@@ -18,34 +18,34 @@
         <!-- Tabs -->
         <div class="flex gap-2">
             <button onclick="showTab('dashboard')" id="tab-dashboard"
-                class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-midnight text-white hover:bg-gold hover:text-white">
+                class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-midnight text-white hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2"><i data-lucide="bar-chart-2" class="w-4 h-4"></i> {{ t('admin.dashboard') }}</span>
             </button>
             <button onclick="showTab('management')" id="tab-management"
-                class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white">
+                class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2"><i data-lucide="building-2" class="w-4 h-4"></i> {{ t('admin.professionals') }}</span>
             </button>
             <button onclick="showTab('reports')" id="tab-reports"
-                class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white">
+                class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2">
                     <i data-lucide="flag" class="w-4 h-4"></i> {{ t('admin.reports') }}
                     <span id="reportBadge" class="hidden ml-1 px-1.5 py-0.5 bg-rose-600 dark:bg-rose-700 text-white text-[8px] font-bold rounded-full">0</span>
                 </span>
             </button>
             <button onclick="showTab('form-options')" id="tab-form-options"
-                class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white">
+                class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2"><i data-lucide="list" class="w-4 h-4"></i> {{ t('admin.options') }}</span>
             </button>
             <button onclick="showTab('phone-area-codes')" id="tab-phone-area-codes"
-                class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white">
+                class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2"><i data-lucide="phone" class="w-4 h-4"></i> {{ t('admin.phone_area_codes') }}</span>
             </button>
             <button onclick="showTab('notifications')" id="tab-notifications"
-                class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white">
+                class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4"></i> {{ t('admin.notifications') }}</span>
             </button>
             <a href="{{ url_for('admin.user_management_view') }}"
-                class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white">
+                class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2"><i data-lucide="users" class="w-4 h-4"></i> {{ t('admin.users') }}</span>
             </a>
         </div>
@@ -61,14 +61,14 @@
                 <span class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">{{ t('admin.period') }}</span>
                 <div class="flex gap-1" id="period-btns">
                     <button onclick="setPeriod(7)"   data-period="7"   class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-midnight text-white">7d</button>
-                    <button onclick="setPeriod(30)"  data-period="30"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all">30d</button>
-                    <button onclick="setPeriod(90)"  data-period="90"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all">90d</button>
-                    <button onclick="setPeriod(365)" data-period="365" class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all">1a</button>
-                    <button onclick="setPeriod(0)"   data-period="0"   class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all">Siempre</button>
+                    <button onclick="setPeriod(30)"  data-period="30"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">30d</button>
+                    <button onclick="setPeriod(90)"  data-period="90"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">90d</button>
+                    <button onclick="setPeriod(365)" data-period="365" class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">1a</button>
+                    <button onclick="setPeriod(0)"   data-period="0"   class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">Siempre</button>
                 </div>
             </div>
             <button id="refresh-btn" onclick="refreshDashboard()"
-                class="flex items-center gap-2 px-4 py-2 bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-all rounded text-[10px] font-bold uppercase tracking-widest">
+                class="flex items-center gap-2 px-4 py-2 bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors rounded text-[10px] font-bold uppercase tracking-widest">
                 <i data-lucide="refresh-cw" id="refresh-icon" class="w-4 h-4"></i> {{ t('admin.refresh') }}
             </button>
         </div>
@@ -141,7 +141,7 @@
                     <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('admin.leads_by_type') }}</h3>
                     <div class="flex items-center gap-2">
                         <button onclick="toggleChartType()" id="toggle-type-btn"
-                            class="px-2 py-1 text-[9px] font-bold uppercase tracking-widest rounded bg-midnight/5 text-midnight/50 hover:bg-gold hover:text-white transition-all">
+                            class="px-2 py-1 text-[9px] font-bold uppercase tracking-widest rounded bg-midnight/5 text-midnight/50 hover:bg-gold hover:text-white transition-colors">
                             {{ t('admin.donut_bar') }}
                         </button>
                         <button onclick="exportChart('chart-type', 'leads-tipo')" class="p-1 text-midnight/30 hover:text-gold transition-colors" title="Exportar PNG" aria-label="Exportar gráfico de tipo como PNG">
@@ -174,7 +174,7 @@
         </div>
 
         <!-- Charts Row 2 -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 animate-on-scroll fade-in-up">
 
             <!-- Actividad mensual con toggle línea/área -->
             <div class="md:col-span-2 bg-white rounded-lg shadow-xl overflow-hidden">
@@ -187,7 +187,7 @@
                                 {{ t('admin.line') }}
                             </button>
                             <button onclick="setMonthChartType('bar')" data-mtype="bar"
-                                class="month-type-btn px-2 py-1 text-[9px] font-bold uppercase tracking-widest rounded bg-midnight/5 text-midnight/50 hover:bg-gold hover:text-white transition-all">
+                                class="month-type-btn px-2 py-1 text-[9px] font-bold uppercase tracking-widest rounded bg-midnight/5 text-midnight/50 hover:bg-gold hover:text-white transition-colors">
                                 {{ t('admin.bars') }}
                             </button>
                         </div>
@@ -216,7 +216,7 @@
         </div>
 
         <!-- Telemetría de Contacto -->
-        <div class="bg-white rounded-lg shadow-xl overflow-hidden mt-6">
+        <div class="bg-white rounded-lg shadow-xl overflow-hidden mt-6 animate-on-scroll fade-in-up">
             <button onclick="toggleSection('tm')" class="w-full p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between hover:bg-midnight/5 transition-colors">
                 <h3 class="text-xs font-bold uppercase tracking-widest text-gold flex items-center gap-2">
                     <i data-lucide="smartphone" class="w-3.5 h-3.5"></i> {{ t('admin.phone_telemetry') }}
@@ -301,7 +301,7 @@
         </div>
 
         <!-- Historial de Acceso a Teléfonos -->
-        <div class="bg-white rounded-lg shadow-xl overflow-hidden" id="phone-audit-card">
+        <div class="bg-white rounded-lg shadow-xl overflow-hidden animate-on-scroll fade-in-up" id="phone-audit-card">
             <button onclick="toggleSection('pa')" class="w-full p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between hover:bg-midnight/5 transition-colors">
                 <h3 class="text-xs font-bold uppercase tracking-widest text-gold flex items-center gap-2">
                     <i data-lucide="phone" class="w-3.5 h-3.5"></i> {{ t('admin.phone_history') }}
@@ -338,10 +338,10 @@
                     </div>
                 </div>
                 <div class="flex gap-2 mb-4">
-                    <button onclick="loadPhoneAudit()" class="px-3 py-1.5 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all flex items-center gap-1.5">
+                    <button onclick="loadPhoneAudit()" class="px-3 py-1.5 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors flex items-center gap-1.5">
                         <i data-lucide="search" class="w-4 h-4"></i> {{ t('admin.filter') }}
                     </button>
-                    <button onclick="clearPhoneAuditFilters()" class="px-3 py-1.5 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-all flex items-center gap-1.5">
+                    <button onclick="clearPhoneAuditFilters()" class="px-3 py-1.5 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-colors flex items-center gap-1.5">
                         <i data-lucide="x" class="w-3 h-3"></i> {{ t('admin.clear') }}
                     </button>
                 </div>
@@ -382,11 +382,11 @@
                 <div id="pa-pagination" class="hidden flex items-center justify-between mt-4 pt-4 border-t border-midnight/10">
                     <p id="pa-info" class="text-[10px] text-midnight/60 font-bold tracking-wider"></p>
                     <div class="flex gap-1">
-                        <button id="pa-prev" aria-label="Página anterior" onclick="loadPhoneAuditPage(currentPaPage - 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                        <button id="pa-prev" aria-label="Página anterior" onclick="loadPhoneAuditPage(currentPaPage - 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled>
                             <i data-lucide="chevron-left" class="w-3 h-3"></i>
                         </button>
                         <span id="pa-page-indicator" class="px-2.5 py-1 text-[10px] font-bold text-midnight/50"></span>
-                        <button id="pa-next" aria-label="Página siguiente" onclick="loadPhoneAuditPage(currentPaPage + 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                        <button id="pa-next" aria-label="Página siguiente" onclick="loadPhoneAuditPage(currentPaPage + 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled>
                             <i data-lucide="chevron-right" class="w-3 h-3"></i>
                         </button>
                     </div>
@@ -432,10 +432,10 @@
                     
                     <div class="flex justify-between items-center">
                         <div class="flex gap-2">
-                            <button id="applyProFilters" class="px-4 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
+                            <button id="applyProFilters" class="px-4 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors">
                                 {{ t('admin.apply_filters') }}
                             </button>
-                            <button id="clearProFilters" class="px-4 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-all">
+                            <button id="clearProFilters" class="px-4 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-colors">
                                 {{ t('admin.clear') }}
                             </button>
                         </div>
@@ -610,11 +610,11 @@
                 <div id="reports-pagination" class="hidden flex items-center justify-between px-4 py-3 border-t border-midnight/10">
                     <p id="reports-page-info" class="text-[10px] text-midnight/60 font-bold tracking-wider"></p>
                     <div class="flex gap-1">
-                        <button id="reports-prev" aria-label="Página anterior" onclick="loadReportsPage(currentReportsPage - 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                        <button id="reports-prev" aria-label="Página anterior" onclick="loadReportsPage(currentReportsPage - 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled>
                             <i data-lucide="chevron-left" class="w-3 h-3"></i>
                         </button>
                         <span id="reports-page-indicator" class="px-2.5 py-1 text-[10px] font-bold text-midnight/50"></span>
-                        <button id="reports-next" aria-label="Página siguiente" onclick="loadReportsPage(currentReportsPage + 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                        <button id="reports-next" aria-label="Página siguiente" onclick="loadReportsPage(currentReportsPage + 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled>
                             <i data-lucide="chevron-right" class="w-3 h-3"></i>
                         </button>
                     </div>
@@ -630,7 +630,7 @@
                 <h3 class="text-lg font-bold text-midnight">{{ t('admin.form_options') }}</h3>
                 <p class="text-xs text-midnight/50">{{ t('admin.form_options_desc') }}</p>
             </div>
-            <button onclick="openCreateOptionModal()" class="px-4 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all flex items-center gap-2">
+            <button onclick="openCreateOptionModal()" class="px-4 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-colors flex items-center gap-2">
                 <i data-lucide="plus" class="w-4 h-4"></i> {{ t('admin.new_option') }}
             </button>
         </div>
@@ -643,7 +643,7 @@
                 </div>
                 <input id="fo-search" type="text" placeholder="Buscar opción..."
                     oninput="filterBySearch(this.value)"
-                    class="w-full pl-9 pr-4 py-2 bg-white border border-midnight/10 rounded text-sm focus:border-gold focus:ring-0 transition-all outline-none">
+                    class="w-full pl-9 pr-4 py-2 bg-white border border-midnight/10 rounded text-sm focus:border-gold focus:ring-0 transition-colors outline-none">
             </div>
             <div id="fo-results-count" aria-live="polite" class="sr-only"></div>
             <div class="flex gap-2 flex-wrap" id="category-filters" role="tablist" aria-label="Filtrar por categoría"></div>
@@ -676,7 +676,7 @@
                 <h3 class="text-lg font-bold text-midnight">{{ t('admin.phone_area_codes') }}</h3>
                 <p class="text-xs text-midnight/50">{{ t('admin.phone_area_codes_desc') }}</p>
             </div>
-            <button onclick="openCreateAreaCodeModal()" class="px-4 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all flex items-center gap-2">
+            <button onclick="openCreateAreaCodeModal()" class="px-4 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-colors flex items-center gap-2">
                 <i data-lucide="plus" class="w-4 h-4"></i> {{ t('admin.new_area_code') }}
             </button>
         </div>
@@ -689,7 +689,7 @@
                 </div>
                 <input id="pac-search" type="text" placeholder="{{ t('pac.search_placeholder') }}"
                     oninput="filterPhoneAreaCodes(this.value)"
-                    class="w-full max-w-full min-w-0 pl-9 pr-4 py-2 bg-white border border-midnight/10 rounded text-sm focus:border-gold focus:ring-0 transition-all outline-none box-border">
+                    class="w-full max-w-full min-w-0 pl-9 pr-4 py-2 bg-white border border-midnight/10 rounded text-sm focus:border-gold focus:ring-0 transition-colors outline-none box-border">
             </div>
             <div id="pac-results-count" class="text-[10px] text-midnight/50 font-bold" aria-live="polite"></div>
             <div class="flex gap-2 flex-wrap" id="pac-country-filters" role="tablist" aria-label="{{ t('pac.filter_by_country') }}"></div>
@@ -780,7 +780,7 @@
                     <div class="relative">
                         <i data-lucide="message-square" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5"></i>
                         <input id="deactivateReason" type="text" placeholder="Ej: Datos falsos, spam, conducta inapropiada..."
-                               class="w-full bg-transparent border-0 border-b border-midnight/20 focus:border-gold focus:ring-0 py-3 pl-8 transition-all outline-none text-sm">
+                               class="w-full bg-transparent border-0 border-b border-midnight/20 focus:border-gold focus:ring-0 py-3 pl-8 transition-colors outline-none text-sm">
                     </div>
                 </div>
 
@@ -788,11 +788,11 @@
 
                 <div class="flex gap-3 pt-2">
                     <button onclick="closeDeactivateModal()"
-                        class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-all">
+                        class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-colors">
                         Cancelar
                     </button>
                     <button id="confirmDeactivateBtn" onclick="confirmDeactivate()"
-                        class="flex-1 py-3 bg-rose-600 dark:bg-rose-700 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-rose-700 dark:hover:bg-rose-800 transition-all flex items-center justify-center gap-2">
+                        class="flex-1 py-3 bg-rose-600 dark:bg-rose-700 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-rose-700 dark:hover:bg-rose-800 transition-colors flex items-center justify-center gap-2">
                         <i data-lucide="user-x" class="w-4 h-4"></i>
                         <span id="confirmDeactivateBtnLabel">{{ t('admin.deactivate') }}</span>
                     </button>
@@ -891,10 +891,10 @@
                 </div>
                 <p id="notifyModalError" class="hidden text-[10px] text-rose-500 font-medium"></p>
                 <div class="flex gap-3 pt-2">
-                    <button onclick="closeNotifyModal()" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-all">
+                    <button onclick="closeNotifyModal()" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-colors">
                         {{ t('admin.cancel') }}
                     </button>
-                    <button id="confirmNotifyBtn" onclick="confirmNotify()" class="flex-1 py-3 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all flex items-center justify-center gap-2">
+                    <button id="confirmNotifyBtn" onclick="confirmNotify()" class="flex-1 py-3 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors flex items-center justify-center gap-2">
                         <i data-lucide="send" class="w-4 h-4"></i>
                         {{ t('admin.send') }}
                     </button>
@@ -958,10 +958,10 @@
                     </div>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3 pt-2">
-                    <button onclick="closeAreaCodeModal()" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-all">
+                    <button onclick="closeAreaCodeModal()" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-colors">
                         {{ t('admin.cancel') }}
                     </button>
-                    <button onclick="saveAreaCode()" class="flex-1 py-3 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all flex items-center justify-center gap-2">
+                    <button onclick="saveAreaCode()" class="flex-1 py-3 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors flex items-center justify-center gap-2">
                         <i data-lucide="save" class="w-4 h-4"></i> {{ t('admin.save') }}
                     </button>
                 </div>

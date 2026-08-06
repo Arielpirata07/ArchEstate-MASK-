@@ -89,11 +89,11 @@ window.__FORM_OPTIONS = {{ {
                             <div>
                                 <label for="edit-zone" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Zona</label>
                                 <input id="edit-zone" name="zone" type="text" value="{{ lead.zone if lead.zone else '' }}"
-                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 transition-all text-sm">
+                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 transition-colors text-sm">
                             </div>
                             <div>
                                 <label for="edit-province" id="edit-province-label" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">{{ t('user.province') }}</label>
-                                <select id="edit-province" name="province" class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 transition-all text-sm bg-transparent">
+                                <select id="edit-province" name="province" class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 transition-colors text-sm bg-transparent">
                                     <option value="">{{ t('user.select_province') }}</option>
                                     {% for opt in form_options.get('province', []) %}
                                     <option value="{{ opt.value }}" {% if lead.province == opt.value %}selected{% endif %}>{{ opt.label }}</option>
@@ -110,7 +110,7 @@ window.__FORM_OPTIONS = {{ {
                                         <option value="EUR" {% if lead.currency == 'EUR' %}selected{% endif %}>EUR</option>
                                     </select>
                                     <input id="edit-budget" name="budget" type="text" value="{{ lead.budget if lead.budget else '' }}"
-                                        class="flex-1 px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 transition-all text-sm">
+                                        class="flex-1 px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 transition-colors text-sm">
                                 </div>
                             </div>
                         </div>
@@ -119,7 +119,7 @@ window.__FORM_OPTIONS = {{ {
                             <div>
                                 <label for="edit-architectural-style" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Estilo Arquitectónico</label>
                                 <input id="edit-architectural-style" name="architectural_style" type="text" value="{{ lead.architectural_style if lead.architectural_style else '' }}"
-                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm" placeholder="Ej. Moderno, Clásico">
+                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm" placeholder="Ej. Moderno, Clásico">
                             </div>
                             <div>
                                 <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Teléfono</label>
@@ -146,28 +146,28 @@ window.__FORM_OPTIONS = {{ {
                             <div>
                                 <label for="edit-ambientes" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Ambientes</label>
                                 <div class="flex items-center gap-3">
-                                    <button type="button" onclick="stepEditNum('edit-ambientes',-1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">-</button>
+                                    <button type="button" onclick="stepEditNum('edit-ambientes',-1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-lg leading-none">-</button>
                                     <input id="edit-ambientes" name="ambientes" type="number" min="0" max="20" value="{{ lead.ambientes if lead.ambientes else '' }}"
                                         class="w-12 text-center bg-transparent border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-1 text-sm font-semibold">
-                                    <button type="button" onclick="stepEditNum('edit-ambientes',1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">+</button>
+                                    <button type="button" onclick="stepEditNum('edit-ambientes',1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-lg leading-none">+</button>
                                 </div>
                             </div>
                             <div>
                                 <label for="edit-bedrooms" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Habitaciones</label>
                                 <div class="flex items-center gap-3">
-                                    <button type="button" onclick="stepEditNum('edit-bedrooms',-1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">-</button>
+                                    <button type="button" onclick="stepEditNum('edit-bedrooms',-1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-lg leading-none">-</button>
                                     <input id="edit-bedrooms" name="bedrooms" type="number" min="0" max="20" value="{{ lead.bedrooms if lead.bedrooms else '' }}"
                                         class="w-12 text-center bg-transparent border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-1 text-sm font-semibold">
-                                    <button type="button" onclick="stepEditNum('edit-bedrooms',1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">+</button>
+                                    <button type="button" onclick="stepEditNum('edit-bedrooms',1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-lg leading-none">+</button>
                                 </div>
                             </div>
                             <div>
                                 <label for="edit-bathrooms" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Baños</label>
                                 <div class="flex items-center gap-3">
-                                    <button type="button" onclick="stepEditNum('edit-bathrooms',-1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">-</button>
+                                    <button type="button" onclick="stepEditNum('edit-bathrooms',-1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-lg leading-none">-</button>
                                     <input id="edit-bathrooms" name="bathrooms" type="number" min="0" max="20" value="{{ lead.bathrooms if lead.bathrooms else '' }}"
                                         class="w-12 text-center bg-transparent border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-1 text-sm font-semibold">
-                                    <button type="button" onclick="stepEditNum('edit-bathrooms',1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-all text-lg leading-none">+</button>
+                                    <button type="button" onclick="stepEditNum('edit-bathrooms',1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-lg leading-none">+</button>
                                 </div>
                             </div>
                         </div>
@@ -186,24 +186,24 @@ window.__FORM_OPTIONS = {{ {
                             <div>
                                 <label for="edit-usable-m2" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Metros Útiles (m2)</label>
                                 <input id="edit-usable-m2" name="usable_m2" type="number" min="0" value="{{ lead.usable_m2 if lead.usable_m2 else '' }}"
-                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm">
                             </div>
                             <div>
                                 <label for="edit-total-area" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Superficie Total (m2)</label>
                                 <input id="edit-total-area" name="total_area" type="number" min="0" value="{{ lead.total_area if lead.total_area else '' }}"
-                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm">
                             </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
                                 <label for="edit-land-area" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Terreno (m2)</label>
                                 <input id="edit-land-area" name="land_area" type="number" min="0" value="{{ lead.land_area if lead.land_area else '' }}"
-                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm">
                             </div>
                             <div>
                                 <label for="edit-built-area" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Construida (m2)</label>
                                 <input id="edit-built-area" name="built_area" type="number" min="0" value="{{ lead.built_area if lead.built_area else '' }}"
-                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm">
+                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm">
                                 <p id="edit-area-warning" class="hidden text-[10px] text-rose-500 font-medium mt-1">Los metros construidos superan el 80% del terreno.</p>
                                 <p id="edit-area-hint" class="text-[9px] text-midnight/30 mt-1">Máximo 80% del terreno</p>
                             </div>
@@ -211,7 +211,7 @@ window.__FORM_OPTIONS = {{ {
                         <div>
                             <label for="edit-floor-block" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Piso / Bloque</label>
                             <input id="edit-floor-block" name="floor_block" type="text" value="{{ lead.floor_block if lead.floor_block else '' }}"
-                                class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm" placeholder="Ej. 5 A">
+                                class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm" placeholder="Ej. 5 A">
                         </div>
                     </div>
                 </details>
@@ -228,7 +228,7 @@ window.__FORM_OPTIONS = {{ {
                             <div>
                                 <label for="edit-elevator" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Ascensor</label>
                                 <select id="edit-elevator" name="elevator"
-                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm bg-transparent">
+                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm bg-transparent">
                                     <option value="">Sin preferencia</option>
                                     <option value="si" {% if lead.elevator == 'si' %}selected{% endif %}>Si</option>
                                     <option value="no" {% if lead.elevator == 'no' %}selected{% endif %}>No</option>
@@ -237,7 +237,7 @@ window.__FORM_OPTIONS = {{ {
                             <div>
                                 <label for="edit-pool" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Piscina</label>
                                 <select id="edit-pool" name="pool"
-                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-all text-sm bg-transparent">
+                                    class="w-full px-3 py-2 border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm bg-transparent">
                                     <option value="">Sin preferencia</option>
                                     <option value="si" {% if lead.pool == 'si' %}selected{% endif %}>Si</option>
                                     <option value="no" {% if lead.pool == 'no' %}selected{% endif %}>No</option>
@@ -250,7 +250,7 @@ window.__FORM_OPTIONS = {{ {
                             <div class="flex flex-wrap gap-2" id="edit-parking-chips">
                                 {% for opt in form_options.get('parking', []) %}
                                 <button type="button" data-value="{{ opt.value }}" onclick="selectEditChip('parking','{{ opt.value }}')"
-                                    class="edit-parking-chip {% if (lead.parking or '') == opt.value %}border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all hover:border-gold">{{ opt.label }}</button>
+                                    class="edit-parking-chip {% if (lead.parking or '') == opt.value %}border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-colors hover:border-gold">{{ opt.label }}</button>
                                 {% endfor %}
                             </div>
                             <input type="hidden" id="edit-parking" name="parking" value="{{ lead.parking if lead.parking else '' }}">
@@ -262,7 +262,7 @@ window.__FORM_OPTIONS = {{ {
                             <div class="flex flex-wrap gap-2" id="edit-orientation-chips">
                                 {% for opt in form_options.get('orientation', []) %}
                                 <button type="button" data-value="{{ opt.value }}" onclick="selectEditChip('orientation','{{ opt.value }}')"
-                                    class="edit-orientation-chip {% if (lead.orientation or '') == opt.value %}border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all hover:border-gold">{{ orient_short.get(opt.value, opt.label) }}</button>
+                                    class="edit-orientation-chip {% if (lead.orientation or '') == opt.value %}border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-colors hover:border-gold">{{ orient_short.get(opt.value, opt.label) }}</button>
                                 {% endfor %}
                             </div>
                             <input type="hidden" id="edit-orientation" name="orientation" value="{{ lead.orientation if lead.orientation else '' }}">
@@ -273,7 +273,7 @@ window.__FORM_OPTIONS = {{ {
                                 <label for="edit-condition-chips" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Estado</label>
                                 <div class="space-y-2" id="edit-condition-chips">
                                     {% for opt in form_options.get('condition', []) %}
-                                    <button type="button" data-value="{{ opt.value }}" onclick="selectEditChip('condition','{{ opt.value }}')" class="edit-condition-chip {% if (lead.property_condition or '') == opt.value %}border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all hover:border-gold">{{ opt.label }}</button>
+                                    <button type="button" data-value="{{ opt.value }}" onclick="selectEditChip('condition','{{ opt.value }}')" class="edit-condition-chip {% if (lead.property_condition or '') == opt.value %}border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-colors hover:border-gold">{{ opt.label }}</button>
                                     {% endfor %}
                                 </div>
                                 <input type="hidden" id="edit-property-condition" name="property_condition" value="{{ lead.property_condition if lead.property_condition else '' }}">
@@ -282,7 +282,7 @@ window.__FORM_OPTIONS = {{ {
                                 <label for="edit-age-chips" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">Antiguedad</label>
                                 <div class="space-y-2" id="edit-age-chips">
                                     {% for opt in form_options.get('age', []) %}
-                                    <button type="button" data-value="{{ opt.value }}" onclick="selectEditChip('age','{{ opt.value }}')" class="edit-age-chip {% if (lead.property_age or '') == opt.value %}border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all hover:border-gold">{{ opt.label }}</button>
+                                    <button type="button" data-value="{{ opt.value }}" onclick="selectEditChip('age','{{ opt.value }}')" class="edit-age-chip {% if (lead.property_age or '') == opt.value %}border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-colors hover:border-gold">{{ opt.label }}</button>
                                     {% endfor %}
                                 </div>
                                 <input type="hidden" id="edit-property-age" name="property_age" value="{{ lead.property_age if lead.property_age else '' }}">
@@ -356,7 +356,7 @@ window.__FORM_OPTIONS = {{ {
                 <!-- Botones -->
                 <div class="flex items-center gap-4 pt-4 border-t border-midnight/10">
                     <button type="submit" id="save-lead-btn"
-                        class="bg-gold text-white py-3 px-8 rounded font-bold uppercase tracking-widest text-xs hover:bg-midnight transition-all duration-300 flex items-center gap-2">
+                        class="bg-gold text-white py-3 px-8 rounded font-bold uppercase tracking-widest text-xs hover:bg-midnight transition-colors duration-300 flex items-center gap-2">
                         <i data-lucide="save" class="w-4 h-4"></i>
                         Guardar Cambios
                     </button>
