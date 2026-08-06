@@ -214,15 +214,13 @@ async function savePhoneToProfile() {
         digits = digits.substring(codeDigits.length);
     }
     const fullPhone = formatPhoneWithCountry(digits, countryCode);
+    const national = fullPhone.replace(new RegExp('^\\' + countryCode + '\\s*'), '').replace(/\D/g, '');
 
-    if (countryCode === '+54') {
-        const national = fullPhone.replace(/^\+54\s*/, '').replace(/\D/g, '');
-        if (national.length !== 11) {
-            autocompleteArgPhone();
-            errorMsg.textContent = t('phone.incomplete_autocomplete');
-            errorMsg.classList.remove('hidden');
-            return;
-        }
+    if (typeof PhoneSuggest !== 'undefined' && !PhoneSuggest.isPlausible(countryCode, national)) {
+        onUserPhoneInput();
+        errorMsg.textContent = t('phone.incomplete_autocomplete');
+        errorMsg.classList.remove('hidden');
+        return;
     }
 
     const originalContent = saveBtn.innerHTML;
@@ -270,42 +268,15 @@ async function savePhoneToProfile() {
 // ================================================================
 function formatPhoneWithCountry(phone, countryCode) {
     const digits = phone.replace(/\D/g, '');
-    const countryCodeDigits = countryCode.replace('+', '');
-
-    let formatted = countryCode + ' ';
-    const codeLen = countryCodeDigits.length;
-
-    if (countryCode === '+54' && digits.length >= 2) {
-        var d = digits;
-        if (d.startsWith('9')) d = d.substring(1);
-        else if (d.startsWith('15')) d = d.substring(2);
-        if (!d.startsWith('9')) d = '9' + d;
-        if (typeof __PHONE_DB_PREFIXES !== 'undefined' && __PHONE_DB_PREFIXES.length || typeof AR_PHONE_PREFIXES !== 'undefined') {
-            const localDigits = d.substring(1);
-            let areaLen = 2;
-            const pList = (typeof __PHONE_DB_PREFIXES !== 'undefined' && __PHONE_DB_PREFIXES.length) ? __PHONE_DB_PREFIXES : AR_PHONE_PREFIXES;
-            for (const p of pList) {
-                if (localDigits.startsWith(p) && localDigits.length > p.length) { areaLen = p.length; break; }
-            }
-            const areaCode = d.substring(1, 1 + areaLen);
-            const rest = d.substring(1 + areaLen);
-            formatted += '9 ' + areaCode + ' ' + rest.replace(/(\d{4})/g, '$1 ').trim();
-        } else {
-            const areaCode = d.substring(1, codeLen + 1);
-            const rest = d.substring(codeLen + 1);
-            formatted += '9 ' + areaCode + ' ' + rest.replace(/(\d{4})/g, '$1 ').trim();
-        }
-    } else if (countryCode === '+1' && digits.length >= 10) {
-        formatted = countryCode + ' (' + digits.substring(0, 3) + ') ' + digits.substring(3, 6) + '-' + digits.substring(6);
-    } else if (countryCode === '+34' && digits.length >= 9) {
-        formatted += digits.substring(0, 2) + ' ' + digits.substring(2, 5) + ' ' + digits.substring(5, 7) + ' ' + digits.substring(7);
-    } else if (digits.length > 0) {
-        formatted += digits.replace(/(\d{2,4})/g, '$1 ').trim();
-    } else {
-        formatted += digits;
+    const codeDigits = countryCode.replace('+', '');
+    let national = digits;
+    if (national.startsWith(codeDigits) && national.length > codeDigits.length) {
+        national = national.substring(codeDigits.length);
     }
-
-    return formatted.trim();
+    if (typeof PhoneSuggest !== 'undefined') {
+        return PhoneSuggest.formatNational(countryCode, national);
+    }
+    return (countryCode + ' ' + national.replace(/(\d{2,4})/g, '$1 ').trim()).trim();
 }
 
 function updateCountryCode() {
@@ -313,10 +284,17 @@ function updateCountryCode() {
     const provinceSelect = document.getElementById('phone-province');
     const phoneInput = document.getElementById('phone-input');
 
-    if (countryCode === '+54') {
-        showProvinceSearchToggle(provinceSelect.options.length > 20);
-    } else {
-        showProvinceSearchToggle(false);
+    if (typeof PhoneSuggest !== 'undefined') {
+        PhoneSuggest.populateAreaSelect(provinceSelect, countryCode);
+    }
+    let totalOpts = 0;
+    if (provinceSelect) {
+        for (let i = 0; i < provinceSelect.options.length; i++) {
+            if (provinceSelect.options[i].value !== 'other') totalOpts++;
+        }
+    }
+    if (typeof showProvinceSearchToggle === 'function') {
+        showProvinceSearchToggle(totalOpts > 20);
     }
 
     const currentPhone = phoneInput.value.trim();
@@ -324,6 +302,7 @@ function updateCountryCode() {
         const fullPhone = formatPhoneWithCountry(currentPhone, countryCode);
         phoneInput.value = fullPhone.replace(countryCode + ' ', '');
     }
+    onUserPhoneInput();
 }
 
 function applyPhoneProvincePrefix() {
@@ -334,94 +313,78 @@ function applyPhoneProvincePrefix() {
     let body = phoneInput.value.trim().replace(/\D/g, '');
     if (body.startsWith('54') && body.length > 9) body = body.substring(2);
     if (body.startsWith('0')) body = body.substring(1);
-    if (body.startsWith('15')) body = body.substring(2);
-    else if (body.startsWith('9')) body = body.substring(1);
+    const countryCode = document.getElementById('country-code-select').value;
+    let mobile = '';
+    if (countryCode === '+54') {
+        if (body.startsWith('15')) body = body.substring(2);
+        else if (body.startsWith('9')) body = body.substring(1);
+        mobile = '9 ';
+    }
     if (body.startsWith(prefix)) body = body.substring(prefix.length);
     else if (body.startsWith('0' + prefix)) body = body.substring(prefix.length + 1);
-    phoneInput.value = '9 ' + prefix + ' ' + body.replace(/(\d{4})/g, '$1 ').trim();
+    phoneInput.value = mobile + prefix + ' ' + body.replace(/(\d{4})/g, '$1 ').trim();
+    onUserPhoneInput();
 }
 
-let _lastPhoneAutocomplete = '';
+let _lastUserPhoneSuggestion = '';
 
-function autocompleteArgPhone() {
+function onUserPhoneInput() {
     const phoneInput = document.getElementById('phone-input');
     const countrySelect = document.getElementById('country-code-select');
-    const provinceSelect = document.getElementById('phone-province');
-    const suggestionEl = document.getElementById('phone-autocomplete-suggestion');
-    const valueEl = document.getElementById('phone-autocomplete-value');
-    _lastPhoneAutocomplete = '';
+    const suggestionEl = document.getElementById('user-phone-suggestion');
+    const previewEl = document.getElementById('user-correction-preview');
+    _lastUserPhoneSuggestion = '';
     if (suggestionEl) suggestionEl.classList.add('hidden');
-    if (!phoneInput || !countrySelect) return;
+    if (previewEl) previewEl.classList.add('hidden');
+    if (!phoneInput || !countrySelect || typeof PhoneSuggest === 'undefined') return;
 
-    const countryCode = countrySelect.value;
-    if (countryCode !== '+54') {
-        const full = formatPhoneWithCountry(phoneInput.value.trim(), countryCode);
-        phoneInput.value = full.replace(countryCode + ' ', '');
-        return;
-    }
+    const raw = phoneInput.value.trim();
+    if (!raw) return;
+    const digits = raw.replace(/\D/g, '');
+    const cc = countrySelect.value;
+    const codeDigits = cc.replace('+', '');
+    const national = (digits.startsWith(codeDigits) && digits.length > codeDigits.length)
+        ? digits.substring(codeDigits.length) : digits;
+    if (!national) return;
 
-    let digits = phoneInput.value.replace(/\D/g, '');
-    if (!digits) return;
-
-    if (digits.startsWith('54') && digits.length > 9) digits = digits.substring(2);
-    if (digits.startsWith('0')) digits = digits.substring(1);
-
-    let body = digits;
-    if (body.startsWith('15')) body = body.substring(2);
-    else if (body.startsWith('9')) body = body.substring(1);
-
-    let areaCode = '';
-    let rest = body;
-
-    const selectedPrefix = provinceSelect && provinceSelect.value && provinceSelect.value !== 'other'
-        ? String(provinceSelect.value) : '';
-    if (selectedPrefix) {
-        if (body.startsWith(selectedPrefix) && body.length > selectedPrefix.length) {
-            rest = body.substring(selectedPrefix.length);
-        }
-        areaCode = selectedPrefix;
-    }
-
-    if (!areaCode) {
-        const pList = (typeof __PHONE_DB_PREFIXES !== 'undefined' && __PHONE_DB_PREFIXES.length)
-            ? __PHONE_DB_PREFIXES
-            : (typeof AR_PHONE_PREFIXES !== 'undefined' ? AR_PHONE_PREFIXES : []);
-        for (const p of pList) {
-            if (body.startsWith(p) && body.length > p.length) {
-                areaCode = p;
-                rest = body.substring(p.length);
-                break;
-            }
-        }
-    }
-
-    if (!areaCode && body.length >= 8) {
-        areaCode = body.substring(0, 2);
-        rest = body.substring(2);
-    }
-
-    if (!areaCode || !rest || rest.length < 6 || rest.length > 8) return;
-
-    const localFormatted = rest.replace(/(\d{4})/g, '$1 ').trim();
-    _lastPhoneAutocomplete = '+54 9 ' + areaCode + ' ' + localFormatted;
-    if (valueEl) valueEl.textContent = _lastPhoneAutocomplete;
+    const suggestion = PhoneSuggest.suggestNationalNumber(cc, national);
+    if (!suggestion) return;
+    const sugNational = suggestion.replace(/^(\+\d+)\s*/, '').replace(/\D/g, '');
+    if (sugNational === national) return;
+    _lastUserPhoneSuggestion = suggestion;
     if (suggestionEl) suggestionEl.classList.remove('hidden');
-    if (window.lucide) lucide.createIcons();
 }
 
-function applyPhoneAutocomplete() {
-    if (!_lastPhoneAutocomplete) return;
-    const phoneInput = document.getElementById('phone-input');
-    const suggestionEl = document.getElementById('phone-autocomplete-suggestion');
-    if (phoneInput) phoneInput.value = _lastPhoneAutocomplete.replace(/^\+54\s+/, '');
-    _lastPhoneAutocomplete = '';
-    if (suggestionEl) suggestionEl.classList.add('hidden');
+function showUserPhoneCorrection() {
+    if (!_lastUserPhoneSuggestion) return;
+    const input = document.getElementById('phone-input');
+    const cc = document.getElementById('country-code-select').value;
+    const fromEl = document.getElementById('user-correction-from');
+    const toEl = document.getElementById('user-correction-to');
+    const previewEl = document.getElementById('user-correction-preview');
+    if (fromEl) fromEl.textContent = cc + ' ' + input.value.trim();
+    if (toEl) toEl.textContent = _lastUserPhoneSuggestion;
+    if (previewEl) previewEl.classList.remove('hidden');
 }
 
-function dismissPhoneAutocomplete() {
-    _lastPhoneAutocomplete = '';
-    const suggestionEl = document.getElementById('phone-autocomplete-suggestion');
+function applyUserPhoneCorrection() {
+    if (!_lastUserPhoneSuggestion) return;
+    const input = document.getElementById('phone-input');
+    const cc = document.getElementById('country-code-select').value;
+    if (input) input.value = _lastUserPhoneSuggestion.replace(cc + ' ', '');
+    _lastUserPhoneSuggestion = '';
+    const suggestionEl = document.getElementById('user-phone-suggestion');
+    const previewEl = document.getElementById('user-correction-preview');
     if (suggestionEl) suggestionEl.classList.add('hidden');
+    if (previewEl) previewEl.classList.add('hidden');
+}
+
+function dismissUserPhoneCorrection() {
+    _lastUserPhoneSuggestion = '';
+    const suggestionEl = document.getElementById('user-phone-suggestion');
+    const previewEl = document.getElementById('user-correction-preview');
+    if (suggestionEl) suggestionEl.classList.add('hidden');
+    if (previewEl) previewEl.classList.add('hidden');
 }
 
 // Inicializar selector de provincia según teléfono existente
@@ -443,32 +406,29 @@ function dismissPhoneAutocomplete() {
             var digits = currentPhone.replace(/\D/g, '');
             var codeDigits = code.replace('+', '');
             var withoutCode = digits.substring(codeDigits.length);
-            if (code === '+54' && provinceSelect) {
-                showProvinceSearchToggle(provinceSelect.options.length > 20);
-                var searchDigits = withoutCode;
-                var mobilePrefix = '';
-                if (searchDigits.startsWith('15')) { mobilePrefix = '15'; searchDigits = searchDigits.substring(2); }
-                else if (searchDigits.startsWith('9')) { mobilePrefix = '9'; searchDigits = searchDigits.substring(1); }
-                var provincePrefix = '';
-                for (var i = 0; i < provinceSelect.options.length; i++) {
-                    if (searchDigits.startsWith(provinceSelect.options[i].value)) {
-                        provinceSelect.options[i].selected = true;
-                        provincePrefix = provinceSelect.options[i].value;
-                        break;
+            if (typeof PhoneSuggest !== 'undefined') {
+                PhoneSuggest.populateAreaSelect(provinceSelect, code);
+                var info = PhoneSuggest.getRegionInfo(code, withoutCode);
+                if (info) {
+                    for (var j = 0; j < provinceSelect.options.length; j++) {
+                        if (provinceSelect.options[j].value === info.code) {
+                            provinceSelect.options[j].selected = true;
+                            break;
+                        }
                     }
                 }
-                if (provincePrefix) {
-                    var rest = searchDigits.substring(provincePrefix.length).replace(/^\s+/, '');
-                    phoneInput.value = (mobilePrefix ? mobilePrefix + ' ' : '') + rest;
-                } else {
-                    phoneInput.value = withoutCode;
-                }
+                phoneInput.value = PhoneSuggest.formatNational(code, withoutCode).replace(code + ' ', '');
             } else {
                 phoneInput.value = withoutCode;
             }
         }
-    } else if (countrySelect.value === '+54') {
-        showProvinceSearchToggle(provinceSelect.options.length > 20);
+    }
+    var totalOpts = 0;
+    for (var i = 0; i < provinceSelect.options.length; i++) {
+        if (provinceSelect.options[i].value !== 'other') totalOpts++;
+    }
+    if (typeof showProvinceSearchToggle === 'function') {
+        showProvinceSearchToggle(totalOpts > 20);
     }
 })();
 

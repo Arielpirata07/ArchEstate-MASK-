@@ -585,6 +585,7 @@ window.__FORM_OPTIONS = {{ {
                                     inputmode="tel"
                                     autocapitalize="off"
                                     spellcheck="false"
+                                    oninput="onUserPhoneInput()"
                                     {% if session.get('role') != 'admin' %}required{% endif %}
                                     value="{{ session.get('phone', '') }}"
                                     placeholder="1234 5678"
@@ -594,15 +595,6 @@ window.__FORM_OPTIONS = {{ {
                             <p class="text-[9px] text-midnight/60 mt-1">{{ t('user.phone_hint') }}</p>
                             <div class="mt-2 flex items-center justify-between gap-2">
                                 <div class="flex items-center gap-3">
-                                    <button
-                                        type="button"
-                                        id="autocomplete-phone-btn"
-                                        onclick="autocompleteArgPhone()"
-                                        class="text-[9px] uppercase tracking-widest font-bold text-gold/70 hover:text-gold transition-colors flex items-center gap-1"
-                                    >
-                                        <i data-lucide="zap" class="w-3 h-3"></i>
-                                        {{ t('user.autocomplete') }}
-                                    </button>
                                     <p id="phone-error-msg" class="hidden text-[10px] text-rose-500 font-medium"></p>
                                 </div>
                                 <button
@@ -615,16 +607,21 @@ window.__FORM_OPTIONS = {{ {
                                     {{ t('user.save_default') }}
                                 </button>
                             </div>
-                            <div id="phone-autocomplete-suggestion" class="hidden mt-1.5 p-2 bg-amber-50 border border-amber-200 rounded text-[10px]">
-                                <div class="flex items-center justify-between gap-2">
-                                    <div class="flex items-center gap-1.5 min-w-0">
-                                        <i data-lucide="sparkles" class="w-3 h-3 text-amber-600 flex-shrink-0"></i>
-                                        <span class="text-midnight/60">{{ t('user.maybe_you_meant') }}</span>
-                                        <strong id="phone-autocomplete-value" class="text-amber-700 font-medium whitespace-nowrap overflow-hidden text-ellipsis"></strong>
+                            <div id="user-phone-suggestion" class="hidden mt-1">
+                                <button type="button" onclick="showUserPhoneCorrection()" class="text-[9px] text-amber-600 hover:text-amber-800 transition-colors cursor-pointer">
+                                    {{ t('profile.phone_correct') }}
+                                </button>
+                            </div>
+                            <div id="user-correction-preview" class="hidden mt-1 p-2 bg-amber-50 border border-amber-200 rounded text-[10px]">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <span class="text-midnight/50 line-through" id="user-correction-from"></span>
+                                        <span class="mx-1 text-midnight/60">&rarr;</span>
+                                        <span class="text-amber-700 font-medium" id="user-correction-to"></span>
                                     </div>
-                                    <div class="flex gap-2 ml-2 flex-shrink-0">
-                                        <button type="button" onclick="applyPhoneAutocomplete()" class="text-[9px] font-bold text-emerald-600 hover:text-emerald-800">{{ t('user.apply') }}</button>
-                                        <button type="button" onclick="dismissPhoneAutocomplete()" class="text-[9px] font-bold text-midnight/60 hover:text-midnight/80">{{ t('user.dismiss') }}</button>
+                                    <div class="flex gap-2 ml-2">
+                                        <button type="button" onclick="applyUserPhoneCorrection()" class="text-[9px] font-bold text-emerald-600 hover:text-emerald-800">{{ t('profile.phone_apply') }}</button>
+                                        <button type="button" onclick="dismissUserPhoneCorrection()" class="text-[9px] font-bold text-midnight/60 hover:text-midnight/80">{{ t('profile.phone_dismiss') }}</button>
                                     </div>
                                 </div>
                             </div>
@@ -734,10 +731,11 @@ window.__FORM_OPTIONS = {{ {
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/phone-areas.js') }}"></script>
+<script src="{{ url_for('static', filename='js/phone-suggest.js') }}"></script>
 <script>
 (function() {
-    var dbCodes = {{ phone_area_codes.get('+54', []) | tojson }};
+    window.__PHONE_DB_BY_COUNTRY = {{ phone_area_codes | tojson }};
+    var dbCodes = window.__PHONE_DB_BY_COUNTRY['+54'] || [];
     window.__PHONE_DB_CODES = dbCodes || [];
     window.__PHONE_DB_LOOKUP = {};
     window.__PHONE_DB_PREFIXES = [];
@@ -749,49 +747,18 @@ window.__FORM_OPTIONS = {{ {
             .sort(function(a, b) { return b.length - a.length || a.localeCompare(b); });
     }
     var sel = document.getElementById('phone-province');
-    if (!sel) return;
-    if (dbCodes && dbCodes.length) {
-        var provinces = {};
-        dbCodes.forEach(function(c) {
-            if (!provinces[c.province]) provinces[c.province] = [];
-            provinces[c.province].push({ code: c.code, city: c.city });
-        });
-        Object.keys(provinces).sort().forEach(function(prov) {
-            provinces[prov].forEach(function(item) {
-                var opt = document.createElement('option');
-                opt.value = item.code;
-                opt.textContent = item.city;
-                opt.setAttribute('data-state', prov);
-                sel.appendChild(opt);
-            });
-        });
-    } else if (typeof AR_PHONE_AREAS !== 'undefined') {
-        var provinces = {};
-        var codes = Object.keys(AR_PHONE_AREAS).sort(function(a, b) {
-            var pa = AR_PHONE_AREAS[a].province;
-            var pb = AR_PHONE_AREAS[b].province;
-            if (pa !== pb) return pa.localeCompare(pb);
-            return a.length - b.length;
-        });
-        codes.forEach(function(code) {
-            var area = AR_PHONE_AREAS[code];
-            if (!provinces[area.province]) provinces[area.province] = [];
-            provinces[area.province].push({ code: code, city: area.city });
-        });
-        Object.keys(provinces).sort().forEach(function(prov) {
-            provinces[prov].forEach(function(item) {
-                var opt = document.createElement('option');
-                opt.value = item.code;
-                opt.textContent = item.city;
-                opt.setAttribute('data-state', prov);
-                sel.appendChild(opt);
-            });
-        });
-    }
-    var totalOpts = sel.options.length;
-    var toggle = document.getElementById('province-search-toggle');
     var countrySelect = document.getElementById('country-code-select');
-    if (toggle && totalOpts > 20 && countrySelect && countrySelect.value === '+54') {
+    if (sel && countrySelect && typeof PhoneSuggest !== 'undefined') {
+        PhoneSuggest.populateAreaSelect(sel, countrySelect.value);
+    }
+    var totalOpts = 0;
+    if (sel) {
+        for (var i = 0; i < sel.options.length; i++) {
+            if (sel.options[i].value !== 'other') totalOpts++;
+        }
+    }
+    var toggle = document.getElementById('province-search-toggle');
+    if (toggle && totalOpts > 20) {
         toggle.classList.remove('hidden');
         toggle.classList.add('flex');
     }

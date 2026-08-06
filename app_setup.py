@@ -744,7 +744,6 @@ def init_db(app):
             ('44', 'Colonia del Sacramento', 'Colonia', 'Uruguay', '+598', 3),
             ('55', 'Salto', 'Salto', 'Uruguay', '+598', 4),
             ('473', 'Rivera', 'Rivera', 'Uruguay', '+598', 5),
-            ('99', 'Artigas', 'Artigas', 'Uruguay', '+598', 6),
             ('2', 'Santiago', 'Metropolitana de Santiago', 'Chile', '+56', 1),
             ('32', 'Valparaíso', 'Valparaíso', 'Chile', '+56', 2),
             ('33', 'Viña del Mar', 'Valparaíso', 'Chile', '+56', 3),
@@ -755,7 +754,6 @@ def init_db(app):
             ('63', 'Osorno', 'Los Lagos', 'Chile', '+56', 8),
             ('65', 'Puerto Montt', 'Los Lagos', 'Chile', '+56', 9),
             ('67', 'Punta Arenas', 'Magallanes', 'Chile', '+56', 10),
-            ('9', 'Valdivia', 'Los Ríos', 'Chile', '+56', 11),
             ('11', 'São Paulo', 'São Paulo', 'Brasil', '+55', 1),
             ('21', 'Rio de Janeiro', 'Rio de Janeiro', 'Brasil', '+55', 2),
             ('31', 'Belo Horizonte', 'Minas Gerais', 'Brasil', '+55', 3),
@@ -772,9 +770,9 @@ def init_db(app):
             ('3', 'Santa Cruz', 'Santa Cruz', 'Bolivia', '+591', 2),
             ('4', 'Cochabamba', 'Cochabamba', 'Bolivia', '+591', 3),
             ('1', 'Bogotá', 'Cundinamarca', 'Colombia', '+57', 1),
-            ('2', 'Medellín', 'Antioquia', 'Colombia', '+57', 2),
-            ('3', 'Cali', 'Valle del Cauca', 'Colombia', '+57', 3),
-            ('4', 'Barranquilla', 'Atlántico', 'Colombia', '+57', 4),
+            ('2', 'Cali', 'Valle del Cauca', 'Colombia', '+57', 2),
+            ('4', 'Medellín', 'Antioquia', 'Colombia', '+57', 3),
+            ('5', 'Barranquilla', 'Atlántico', 'Colombia', '+57', 4),
             ('55', 'Ciudad de México', 'CDMX', 'México', '+52', 1),
             ('33', 'Guadalajara', 'Jalisco', 'México', '+52', 2),
             ('81', 'Monterrey', 'Nuevo León', 'México', '+52', 3),
@@ -797,6 +795,22 @@ def init_db(app):
                 'INSERT OR IGNORE INTO phone_area_codes (code, city, province, country, country_code, sort_order) VALUES (?, ?, ?, ?, ?, ?)',
                 (code, city, province, country, cc, order)
             )
+
+        # Backfill/migration: remove rows seeded by mistake (mobile prefixes that
+        # collide with mobile detection) and fix mislabeled Colombia areas, but only
+        # when they still hold the original seed values (never clobber admin edits).
+        cursor.execute(
+            "DELETE FROM phone_area_codes WHERE (country_code = '+56' AND code = '9') "
+            "OR (country_code = '+598' AND code = '99') OR (country_code = '+57' AND code = '3')"
+        )
+        cursor.execute(
+            "UPDATE phone_area_codes SET city = 'Cali', province = 'Valle del Cauca' "
+            "WHERE country_code = '+57' AND code = '2' AND city = 'Medellín'"
+        )
+        cursor.execute(
+            "UPDATE phone_area_codes SET city = 'Medellín', province = 'Antioquia' "
+            "WHERE country_code = '+57' AND code = '4' AND city = 'Barranquilla'"
+        )
 
         if not _is_prod():
             _clean_lead_test_data(cursor)

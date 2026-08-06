@@ -867,10 +867,11 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/phone-areas.js') }}"></script>
+<script src="{{ url_for('static', filename='js/phone-suggest.js') }}"></script>
 <script>
 (function() {
-    var dbCodes = {{ phone_area_codes.get('+54', []) | tojson }};
+    window.__PHONE_DB_BY_COUNTRY = {{ phone_area_codes | tojson }};
+    var dbCodes = window.__PHONE_DB_BY_COUNTRY['+54'] || [];
     window.__PHONE_DB_CODES = dbCodes || [];
     window.__PHONE_DB_LOOKUP = {};
     window.__PHONE_DB_PREFIXES = [];
@@ -882,51 +883,18 @@
             .sort(function(a, b) { return b.length - a.length || a.localeCompare(b); });
     }
     var sel = document.getElementById('profile-province');
-    if (!sel) return;
-    if (dbCodes && dbCodes.length) {
-        var provinces = {};
-        dbCodes.forEach(function(c) {
-            if (!provinces[c.province]) provinces[c.province] = [];
-            provinces[c.province].push({ code: c.code, city: c.city });
-        });
-        var otherOpt = sel.querySelector('option[value="other"]');
-        Object.keys(provinces).sort().forEach(function(prov) {
-            provinces[prov].forEach(function(item) {
-                var opt = document.createElement('option');
-                opt.value = item.code;
-                opt.textContent = item.city;
-                opt.setAttribute('data-state', prov);
-                sel.insertBefore(opt, otherOpt);
-            });
-        });
-    } else if (typeof AR_PHONE_AREAS !== 'undefined') {
-        var provinces = {};
-        var codes = Object.keys(AR_PHONE_AREAS).sort(function(a, b) {
-            var pa = AR_PHONE_AREAS[a].province;
-            var pb = AR_PHONE_AREAS[b].province;
-            if (pa !== pb) return pa.localeCompare(pb);
-            return a.length - b.length;
-        });
-        codes.forEach(function(code) {
-            var area = AR_PHONE_AREAS[code];
-            if (!provinces[area.province]) provinces[area.province] = [];
-            provinces[area.province].push({ code: code, city: area.city });
-        });
-        var otherOpt = sel.querySelector('option[value="other"]');
-        Object.keys(provinces).sort().forEach(function(prov) {
-            provinces[prov].forEach(function(item) {
-                var opt = document.createElement('option');
-                opt.value = item.code;
-                opt.textContent = item.city;
-                opt.setAttribute('data-state', prov);
-                sel.insertBefore(opt, otherOpt);
-            });
-        });
-    }
-    var totalOpts = sel.options.length - 1;
-    var toggle = document.getElementById('province-search-toggle');
     var countrySelect = document.getElementById('profile-country-code');
-    if (toggle && totalOpts > 20 && countrySelect && countrySelect.value === '+54') {
+    if (sel && countrySelect && typeof PhoneSuggest !== 'undefined') {
+        PhoneSuggest.populateAreaSelect(sel, countrySelect.value);
+    }
+    var totalOpts = 0;
+    if (sel) {
+        for (var i = 0; i < sel.options.length; i++) {
+            if (sel.options[i].value !== 'other') totalOpts++;
+        }
+    }
+    var toggle = document.getElementById('province-search-toggle');
+    if (toggle && totalOpts > 20) {
         toggle.classList.remove('hidden');
         toggle.classList.add('flex');
     }
