@@ -542,7 +542,7 @@ window.__FORM_OPTIONS = {{ {
                                 {{ t('user.edit_in_settings') }}
                             </a>
                             {% else %}
-                            <div class="flex gap-2">
+                            <div class="relative flex gap-2">
                                  <select
                                      id="country-code-select"
                                      aria-label="Código de país"
@@ -560,7 +560,7 @@ window.__FORM_OPTIONS = {{ {
                                      <option value="+34">+34</option>
                                      <option value="+1">+1</option>
                                  </select>
-                                 <div class="relative flex-shrink-0" id="province-search-wrap">
+                                 <div class="flex-shrink-0" id="province-search-wrap">
                                      <button type="button" id="province-search-toggle" onclick="toggleProvinceSearch('phone-province', this)"
                                          class="hidden items-center justify-between gap-2 px-1 py-2 border-0 border-b-2 border-midnight/20 hover:border-gold focus:border-gold transition-colors text-sm text-midnight bg-transparent w-28"
                                          aria-label="Buscar ciudad" aria-expanded="false" title="Buscar ciudad">
@@ -569,7 +569,7 @@ window.__FORM_OPTIONS = {{ {
                                      </button>
                                      <select id="phone-province" aria-label="Código de área" onchange="applyPhoneProvincePrefix()" class="hidden">
                                      </select>
-                                     <div id="province-search-wrapper" class="hidden absolute left-0 top-9 z-20 w-96">
+                                     <div id="province-search-wrapper" class="hidden absolute right-0 top-9 z-20 w-96">
                                          <input id="province-search" type="text" placeholder="Buscar ciudad..."
                                              oninput="onProvinceSearchInput('phone-province', this)"
                                              onkeydown="onProvinceSearchKeydown('phone-province', event)"

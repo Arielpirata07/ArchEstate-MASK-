@@ -1090,3 +1090,11 @@ textarea {
 #province-search-list {
     max-height: 15rem;
 }
+
+/* --- Province search dropdown responsive width --- */
+@media (max-width: 480px) {
+    #province-search-wrapper {
+        width: calc(100vw - 2.5rem);
+        max-width: 24rem;
+    }
+}
