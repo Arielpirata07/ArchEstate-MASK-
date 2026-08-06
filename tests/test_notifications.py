@@ -276,3 +276,15 @@ class TestGetAdminUsers:
         db.commit()
         admins = _get_admin_users()
         assert not any(a['id'] == admin_user for a in admins)
+
+
+class TestNotificationsPage:
+    def test_page_renders_with_fixed_subtitle_selector(self, auth_client):
+        """Regresión: el script de la página referenciaba '.font-serif p' (null)
+        en la rama pages<=1, lanzaba TypeError y el catch mostraba 'Error al cargar'."""
+        resp = auth_client.get('/notificaciones')
+        assert resp.status_code == 200
+        html = resp.get_data(as_text=True)
+        assert 'id="notif-page-subtitle"' in html
+        assert "querySelector('.font-serif p')" not in html
+        assert "getElementById('notif-page-subtitle')" in html

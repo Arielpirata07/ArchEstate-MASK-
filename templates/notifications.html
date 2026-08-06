@@ -9,7 +9,7 @@
     <div class="flex items-center justify-between border-b border-midnight/10 dark:border-white/10 pb-6">
         <div>
             <h2 class="text-3xl font-serif italic text-midnight dark:text-white">{{ t('notif.history_title') }}</h2>
-            <p class="text-sm text-midnight/50 dark:text-white/50 mt-1">{{ t('notif.page_of', page=1, pages=1) }}</p>
+            <p id="notif-page-subtitle" class="text-sm text-midnight/50 dark:text-white/50 mt-1">{{ t('notif.page_of', page=1, pages=1) }}</p>
         </div>
         <div class="flex items-center gap-2">
             <button onclick="deleteReadNotifications()"
@@ -125,10 +125,10 @@ function notifPage(page) {
                     next.disabled = page >= data.pages;
                     next.className = 'text-[10px] uppercase tracking-wider font-bold transition-colors ' + (page >= data.pages ? 'text-midnight/20 dark:text-white/20 cursor-not-allowed' : 'text-midnight/40 hover:text-gold dark:text-white/40 dark:hover:text-gold-light');
                     info.textContent = window.t('notif.page_of', {page: page, pages: data.pages});
-                    document.querySelector('.font-serif p').textContent = window.t('notif.page_of', {page: page, pages: data.pages});
+                    document.getElementById('notif-page-subtitle').textContent = window.t('notif.page_of', {page: page, pages: data.pages});
                 } else {
                     pagination.classList.add('hidden');
-                    document.querySelector('.font-serif p').textContent = window.t('notif.page_of', {page: 1, pages: 1});
+                    document.getElementById('notif-page-subtitle').textContent = window.t('notif.page_of', {page: 1, pages: 1});
                 }
             }
 
