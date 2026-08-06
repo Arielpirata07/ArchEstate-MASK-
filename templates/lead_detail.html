@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="max-w-4xl mx-auto w-full space-y-6">
-    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-white rounded-lg shadow-xl p-6 border border-midnight/10 header-entrance">
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-white rounded-lg shadow-xl p-6 border border-midnight/10 header-entrance hover-lift">
         <div>
             <p class="text-[10px] uppercase tracking-[0.3em] text-gold font-bold">Lead #{{ lead.id }}</p>
             <h1 class="text-3xl font-serif text-midnight mt-2">Detalles de la Solicitud</h1>
@@ -17,7 +17,7 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- COLUMNA IZQUIERDA: INFORMACIÓN PRINCIPAL -->
-        <div class="bg-white rounded-lg border border-midnight/10 shadow-xl p-6 space-y-5">
+        <div class="bg-white rounded-lg border border-midnight/10 shadow-xl p-6 space-y-5 animate-on-scroll fade-in-up">
             <div>
                 <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Tipo de Operación</p>
                 <p class="text-base font-semibold text-midnight">{{ lead.type | e }}</p>
@@ -89,7 +89,7 @@
         </div>
 
         <!-- COLUMNA DERECHA: ESPECIFICACIONES TÉCNICAS -->
-        <div class="bg-white rounded-lg border border-midnight/10 shadow-xl p-6 space-y-5">
+        <div class="bg-white rounded-lg border border-midnight/10 shadow-xl p-6 space-y-5 animate-on-scroll fade-in-up">
             <h2 class="text-lg font-serif text-midnight">Especificaciones Técnicas</h2>
 
             <div class="grid grid-cols-3 gap-4">

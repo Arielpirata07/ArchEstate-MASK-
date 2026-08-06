@@ -7,6 +7,10 @@ function showTab(tab) {
     document.getElementById('panel-phone-area-codes').classList.add('hidden');
     document.getElementById('panel-notifications').classList.add('hidden');
     document.getElementById('panel-' + tab).classList.remove('hidden');
+    const activePanel = document.getElementById('panel-' + tab);
+    activePanel.classList.remove('panel-enter');
+    void activePanel.offsetWidth;
+    activePanel.classList.add('panel-enter');
 
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.classList.remove('bg-midnight', 'text-white');

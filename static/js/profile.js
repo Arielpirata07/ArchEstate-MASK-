@@ -23,7 +23,12 @@ function showSettingsTab(tabName) {
     });
 
     const panel = document.getElementById('panel-' + tabName);
-    if (panel) panel.hidden = false;
+    if (panel) {
+        panel.hidden = false;
+        panel.classList.remove('panel-enter');
+        void panel.offsetWidth;
+        panel.classList.add('panel-enter');
+    }
 
     const tab = document.getElementById('tab-' + tabName);
     if (tab) {

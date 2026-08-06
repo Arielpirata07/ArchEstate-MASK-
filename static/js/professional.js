@@ -1129,6 +1129,9 @@ function showProTab(tab) {
     if (tab === 'stats') {
         panelLeads.classList.add('hidden');
         panelStats.classList.remove('hidden');
+        panelStats.classList.remove('panel-enter');
+        void panelStats.offsetWidth;
+        panelStats.classList.add('panel-enter');
         tabLeads.className = inactiveClass;
         tabStats.className = activeClass;
         if (exportCsv) exportCsv.href = exportCsv.dataset.statsHref;
@@ -1138,6 +1141,9 @@ function showProTab(tab) {
     } else {
         panelStats.classList.add('hidden');
         panelLeads.classList.remove('hidden');
+        panelLeads.classList.remove('panel-enter');
+        void panelLeads.offsetWidth;
+        panelLeads.classList.add('panel-enter');
         tabStats.className = inactiveClass;
         tabLeads.className = activeClass;
         if (exportCsv) exportCsv.href = exportCsv.dataset.leadsHref;

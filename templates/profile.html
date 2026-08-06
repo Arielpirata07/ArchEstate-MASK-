@@ -68,7 +68,7 @@
 
             <!-- ==================== PANEL: CUENTA ==================== -->
             <div role="tabpanel" id="panel-cuenta" aria-labelledby="tab-cuenta">
-                <div class="settings-card">
+                <div class="settings-card hover-lift">
                     <div class="flex items-start gap-8 mb-8">
                         <!-- Avatar -->
                         <div class="flex-shrink-0 text-center">
@@ -227,7 +227,7 @@
 
             <!-- ==================== PANEL: APARIENCIA ==================== -->
             <div role="tabpanel" id="panel-apariencia" aria-labelledby="tab-apariencia" hidden>
-                <div class="settings-card">
+                <div class="settings-card hover-lift">
                     <h2 class="text-xl font-serif italic mb-6" style="color:var(--text-primary)">{{ t('profile.appearance_title') }}</h2>
 
                     <div class="space-y-6">
@@ -267,7 +267,7 @@
 
             <!-- ==================== PANEL: NOTIFICACIONES ==================== -->
             <div role="tabpanel" id="panel-notificaciones" aria-labelledby="tab-notificaciones" hidden>
-                <div class="settings-card">
+                <div class="settings-card hover-lift">
                     <h2 class="text-xl font-serif italic mb-6" style="color:var(--text-primary)">{{ t('profile.notif_title') }}</h2>
 
                     <div class="space-y-5">
@@ -481,7 +481,7 @@
 
             <!-- ==================== PANEL: SEGURIDAD ==================== -->
             <div role="tabpanel" id="panel-seguridad" aria-labelledby="tab-seguridad" hidden>
-                <div class="settings-card">
+                <div class="settings-card hover-lift">
                     <h2 class="text-xl font-serif italic mb-6" style="color:var(--text-primary)">{{ t('profile.security_title') }}</h2>
 
                     <!-- Cambiar contraseña -->
@@ -524,7 +524,7 @@
 
             <!-- ==================== PANEL: ACTIVIDAD ==================== -->
             <div role="tabpanel" id="panel-actividad" aria-labelledby="tab-actividad" hidden>
-                <div class="settings-card">
+                <div class="settings-card hover-lift">
                     <h2 class="text-xl font-serif italic mb-6" style="color:var(--text-primary)">{{ t('profile.activity_title') }}</h2>
                     <div id="activity-container">
                         <div class="text-sm hint-text">{{ t('profile.loading_activity') }}</div>
@@ -534,7 +534,7 @@
 
             <!-- ==================== PANEL: SOLICITUDES ==================== -->
             <div role="tabpanel" id="panel-solicitudes" aria-labelledby="tab-solicitudes" hidden>
-                <div class="settings-card">
+                <div class="settings-card hover-lift">
                     <h2 class="text-xl font-serif italic mb-6" style="color:var(--text-primary)">{{ t('profile.my_leads') }}</h2>
 
                     <div class="overflow-x-auto">
@@ -575,7 +575,7 @@
             <!-- ==================== PANEL: PROFESIONAL ==================== -->
             {% if user and user.role == 'professional' %}
             <div role="tabpanel" id="panel-profesional" aria-labelledby="tab-profesional" hidden>
-                <div class="settings-card">
+                <div class="settings-card hover-lift">
                     <h2 class="text-xl font-serif italic mb-6" style="color:var(--text-primary)">{{ t('profile.pro_profile') }}</h2>
 
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">

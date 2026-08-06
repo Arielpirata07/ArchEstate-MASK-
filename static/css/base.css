@@ -690,6 +690,11 @@ html:not(.js) .animate-on-scroll.animate-in {
     transform: translateX(0);
 }
 
+/* --- Panel entrance (tabs/paneles que se muestran dinámicamente) --- */
+.panel-enter {
+    animation: fadeInUp 0.25s var(--ease-out);
+}
+
 /* --- Page Entrance Fade --- */
 @keyframes pageEntrance {
     from {
@@ -1074,6 +1079,10 @@ textarea {
     .animate-on-scroll.animate-in {
         opacity: 1 !important;
         transform: none !important;
+    }
+
+    .panel-enter {
+        animation: none !important;
     }
 
     .cursor-spotlight {
