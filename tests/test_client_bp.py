@@ -100,3 +100,34 @@ class TestSubmitLead:
 
         row = db.execute('SELECT email FROM leads ORDER BY id DESC LIMIT 1').fetchone()
         assert row['email'] == 'session@test.com'
+
+    @patch('services.notifications.notify_lead_created')
+    def test_submits_lead_mexico_phone(self, mock_notify, auth_client, db):
+        payload = dict(VALID_LEAD)
+        payload['phone'] = '+52 55 1234 5678'
+        resp = auth_client.post('/api/submit', json=payload)
+        assert resp.status_code == 200
+        assert resp.get_json()['status'] == 'success'
+
+        row = db.execute('SELECT phone, phone_format_valid FROM leads ORDER BY id DESC LIMIT 1').fetchone()
+        assert row['phone'] == '+52 55 1234 5678'
+        assert row['phone_format_valid'] == 1
+
+    @patch('services.notifications.notify_lead_created')
+    def test_submits_lead_uruguay_phone(self, mock_notify, auth_client, db):
+        payload = dict(VALID_LEAD)
+        payload['phone'] = '+598 99 123 456'
+        resp = auth_client.post('/api/submit', json=payload)
+        assert resp.status_code == 200
+
+        row = db.execute('SELECT phone, phone_format_valid FROM leads ORDER BY id DESC LIMIT 1').fetchone()
+        assert row['phone'] == '+598 99 123 456'
+        assert row['phone_format_valid'] == 1
+
+    @patch('services.notifications.notify_lead_created')
+    def test_rejects_national_only_phone_without_country_code(self, mock_notify, auth_client):
+        payload = dict(VALID_LEAD)
+        payload['phone'] = '55 1234 5678'
+        resp = auth_client.post('/api/submit', json=payload)
+        assert resp.status_code == 400
+        assert resp.get_json()['status'] == 'error'

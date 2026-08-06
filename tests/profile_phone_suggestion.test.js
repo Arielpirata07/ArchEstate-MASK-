@@ -22,6 +22,7 @@ function createElement(id) {
     style: {},
     dataset: {},
     options: [],
+    appendChild(child) { this.options.push(child); },
     querySelectorAll() { return []; },
     setAttribute() {},
     getAttribute() { return null; },
@@ -60,6 +61,18 @@ test('suggest and apply phone correction for Villa Carlos Paz', () => {
     querySelectorAll() { return []; },
     querySelector() { return null; },
     addEventListener() {},
+    createElement(tag) {
+      return {
+        tagName: tag,
+        value: '',
+        textContent: '',
+        innerHTML: '',
+        selected: false,
+        setAttribute() {},
+        getAttribute() { return null; },
+        appendChild() {},
+      };
+    },
   };
 
   const context = {
@@ -75,19 +88,25 @@ test('suggest and apply phone correction for Villa Carlos Paz', () => {
   };
   context.window.document = documentStub;
   context.window.window = context.window;
+  context.window.__PHONE_DB_BY_COUNTRY = {
+    '+54': [
+      { code: '11', city: 'Buenos Aires / CABA', province: 'CABA' },
+      { code: '3541', city: 'Villa Carlos Paz', province: 'Córdoba' },
+    ],
+  };
   vm.createContext(context);
-  vm.runInContext(fs.readFileSync('static/js/phone-areas.js', 'utf8'), context);
+  vm.runInContext(fs.readFileSync('static/js/phone-suggest.js', 'utf8'), context);
   vm.runInContext(fs.readFileSync('static/js/profile.js', 'utf8'), context);
 
   phoneInput.value = '3541388368';
   context.validateProfilePhone();
 
   const suggestion = vm.runInContext('_lastPhoneSuggestion', context);
-  assert.equal(suggestion, '+54 3541 9 388368');
+  assert.equal(suggestion, '+54 9 3541 388 368');
   context.showPhoneCorrection();
-  assert.equal(correctionTo.textContent, '+54 3541 9 388368');
+  assert.equal(correctionTo.textContent, '+54 9 3541 388 368');
 
   context.applyPhoneCorrection();
-  assert.equal(phoneInput.value, '3541 9 388368');
+  assert.equal(phoneInput.value, '9 3541 388 368');
   assert.equal(customAreaInput.value, '3541');
 });
