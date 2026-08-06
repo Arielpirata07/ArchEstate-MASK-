@@ -10,7 +10,7 @@
 ![Lucide](https://img.shields.io/badge/Lucide_Icons-0.468-735A3A?style=for-the-badge&logo=lucide&logoColor=white)
 ![License](https://img.shields.io/badge/License-Private-blue?style=for-the-badge)
 
-![Tests](https://img.shields.io/badge/Tests-525%20Passed-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)
+![Tests](https://img.shields.io/badge/Tests-528%20Passed%20%2B%2012%20JS-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)
 ![Status](https://img.shields.io/badge/Status-MVP%20Avanzado-0078D4?style=for-the-badge)
 ![Updated](https://img.shields.io/badge/Updated-Agosto%202026-orange?style=for-the-badge)
 ![i18n](https://img.shields.io/badge/i18n-ES%2FEN-8B5CF6?style=for-the-badge)
@@ -82,6 +82,9 @@ Conecta clientes de alto nivel adquisitivo con profesionales verificados del sec
 | Funcionalidad | Descripción |
 |---------------|-------------|
 | Formato internacional | Validación con libphonenumber, normalización a E.164 |
+| Multi-país (10 países) | Selectores de país en solicitud y perfil con 10 códigos de área (+54, +52, +56, +55, +34, +598, +595, +591, +57, +1) |
+| Sugerencia por país | Módulo `PhoneSuggest`: formato nacional sugerido, corrección de área y preview E.164 en vivo |
+| Validación backend | `validate_phone()` rechaza números sin código de país en `POST /api/submit` |
 | OTP por SMS/WhatsApp | Twilio real o simulado según `TWILIO_SIMULATE` |
 | Auto-envío OTP | Se envía automáticamente al abrir el modal de verificación |
 | Selector de canal | Preferencia SMS/WhatsApp guardada en `user_preferences` |
@@ -290,7 +293,7 @@ archestate/
 │                             #   status_change, professional_status
 ├── scripts/
 │   └── backup_db.py          # SQLite backup with gzip + optional S3 upload
-├── tests/                    # 525 tests (pytest + freezegun + monkeypatch)
+├── tests/                    # 528 tests (pytest + freezegun + monkeypatch) + 12 tests JS (node:test)
 ├── .github/
 │   ├── workflows/tests.yml   # CI/CD: pytest + coherence on push/PR
 │   └── dependabot.yml        # Weekly pip updates
@@ -593,7 +596,7 @@ Acceder en `http://127.0.0.1:5000`
 ### Ejecutar Tests
 
 ```bash
-python -m pytest tests/ -q            # Todos (525)
+python -m pytest tests/ -q            # Todos (528)
 python -m pytest tests/ -x -v         # Parar en primera falla, verbose
 python -m pytest tests/test_file.py   # Archivo individual
 python verify_coherence.py            # Cross-check schema/routes/templates (89 checks)
@@ -685,7 +688,7 @@ Ver `.plans/deploy-checklist.md` para el checklist completo.
 
 ## Roadmap
 
-- [x] Tests automatizados (525 tests)
+- [x] Tests automatizados (528 pytest + 12 JS)
 - [x] Verificación telefónica con OTP
 - [x] Edición de leads con versionado
 - [x] Tracking Visto/Contactado
@@ -726,6 +729,7 @@ Ver `.plans/deploy-checklist.md` para el checklist completo.
 - [x] Backup script (SQLite backup + gzip + S3 upload)
 - [x] CRUD de códigos de área telefónicos (10 países, 121+ códigos)
 - [x] Autocompletado de teléfono usa DB en vez de archivo estático
+- [x] Sistema telefónico multi-país (10 países) con módulo `PhoneSuggest`
 - [x] Admin password guardado en archivo (no solo log)
 - [x] Validación de duplicados mejorada en códigos de área
 - [ ] Notificaciones internas entre admin y profesional
