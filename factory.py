@@ -92,7 +92,7 @@ def create_app():
     from routes.form_options_bp import form_options_bp
     from routes.phone_area_codes_bp import phone_area_codes_bp
     from routes.whatsapp_bp import whatsapp_bp
-    from routes_profile import profile_bp
+    from routes.profile_bp import profile_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(public_bp)

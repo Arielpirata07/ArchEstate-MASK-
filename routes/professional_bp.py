@@ -25,6 +25,7 @@ from decorators import login_required, professional_required
 from i18n import t, get_language
 from services.database import date_format_sql, now_sql
 from services.export_helpers import pdf_safe, pdf_val, _style_header_row, _apply_data_border
+from services.matching import lead_matches_coverage
 from utils import allowed_file, convert_to_argentina_time
 
 professional_bp = Blueprint('professional', __name__, url_prefix='')
@@ -190,10 +191,27 @@ def get_leads_api():
         count_query = f'SELECT COUNT(*) as total FROM ({query})'
         total = conn.execute(count_query, params).fetchone()['total']
 
+        kpi_row = conn.execute(f'''
+            SELECT
+                SUM(CASE WHEN lt.seen IS NULL OR lt.seen = 0 THEN 1 ELSE 0 END) as unseen,
+                SUM(CASE WHEN lt.contacted = 1 THEN 1 ELSE 0 END) as contacted
+            FROM ({query}) l
+            LEFT JOIN lead_tracking lt ON lt.lead_id = l.id AND lt.professional_id = ?
+        ''', params + [session['user_id']]).fetchone()
+        kpi_total = total
+        kpi_unseen = kpi_row['unseen'] or 0
+        kpi_contacted = kpi_row['contacted'] or 0
+
         query += f' ORDER BY {sort_by} {order}, id DESC LIMIT ? OFFSET ?'
         params.extend([per_page, offset])
 
         leads = conn.execute(query, params).fetchall()
+
+        pro_row = conn.execute(
+            'SELECT province FROM professionals WHERE user_id = ?', (session['user_id'],)
+        ).fetchone()
+        pro_province = pro_row['province'] if pro_row else ''
+        coverage = models.get_professional_coverage(session['user_id'])
 
         leads_list = []
         for lead in leads:
@@ -203,6 +221,7 @@ def get_leads_api():
             phone_e164 = utils.normalize_phone_to_e164(phone_raw)
             lead_dict['phone_e164'] = phone_e164
             lead_dict['phone_is_mobile'] = bool(phone_e164 and utils.is_whatsapp_capable(phone_e164))
+            lead_dict['matches_coverage'] = lead_matches_coverage(lead_dict, coverage, pro_province)
             leads_list.append(lead_dict)
 
         professional_id = session['user_id']
@@ -233,11 +252,14 @@ def get_leads_api():
             "total": total,
             "page": page,
             "per_page": per_page,
-            "total_pages": total_pages
+            "total_pages": total_pages,
+            "kpi_total": kpi_total,
+            "kpi_unseen": kpi_unseen,
+            "kpi_contacted": kpi_contacted
         })
     except Exception as e:
         logger.exception('Error en get_leads_api')
-        return jsonify({"status": "error", "message": t('prof.internal_error', lang)}), 500
+        return jsonify({"success": False, "error": t('prof.internal_error', lang)}), 500
     finally:
         if conn:
             conn.close()
@@ -286,25 +308,39 @@ def get_leads_filter_options():
 
 
 def _get_pro_geo_filter(conn, user_id):
+    """Condiciones SQL que acotan los leads a los que 'coinciden' con la zona
+    del profesional (provincia/pais de su perfil + zonas configuradas).
+    Usado para el filtro 'my_leads=1'. La especialidad NO entra en este
+    filtro duro — es solo un plus para el badge matches_coverage, para no
+    ocultarle al profesional leads de su zona con otro tipo de propiedad."""
     pro_data = conn.execute(
-        'SELECT province, zone, country FROM professionals WHERE user_id = ?',
+        'SELECT province, country FROM professionals WHERE user_id = ?',
         (user_id,)
     ).fetchone()
+    coverage = models.get_professional_coverage(user_id)
+
     conditions = []
     params = []
     if pro_data:
         pro_country = (pro_data['country'] or '').strip()
         pro_province = (pro_data['province'] or '').strip()
-        pro_zone = (pro_data['zone'] or '').strip()
         if pro_country:
             conditions.append('country = ?')
             params.append(pro_country)
         if pro_province:
             conditions.append('province = ?')
             params.append(pro_province)
-        if pro_zone:
-            conditions.append('zone LIKE ?')
-            params.append(f'%{pro_zone}%')
+
+    zones = [z for z in coverage.get('zones', []) if z]
+    if zones:
+        or_parts = []
+        or_params = []
+        for z in zones:
+            or_parts.append('zone LIKE ?')
+            or_params.append(f'%{z}%')
+        conditions.append('(' + ' OR '.join(or_parts) + ')')
+        params.extend(or_params)
+
     return conditions, params
 
 

@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+import time
 from datetime import datetime
 from io import BytesIO
 
@@ -111,7 +112,7 @@ def api_update_lead(lead_id):
 
     utils.log_action('Edicion de Lead', f'Lead ID: {lead_id} editado por {session["username"]}', session)
 
-    return jsonify({'status': 'success', 'message': t('profile.lead_updated', lang)})
+    return jsonify({'success': True, 'message': t('profile.lead_updated', lang)})
 
 
 @profile_bp.route('/api/profile/lead/<int:lead_id>/versions', methods=['GET'])
@@ -175,7 +176,7 @@ def api_update_user():
 
     utils.log_action('Actualizacion de Perfil', f'Usuario: {session["username"]}', session)
 
-    return jsonify({'status': 'success', 'message': t('profile.updated', lang)})
+    return jsonify({'success': True, 'message': t('profile.updated', lang)})
 
 
 @profile_bp.route('/api/profile/user/password', methods=['PUT'])
@@ -210,7 +211,7 @@ def api_change_password():
 
     utils.log_action('Cambio de Contrasena', f'Usuario: {session["username"]}', session)
 
-    return jsonify({'status': 'success', 'message': t('profile.password_updated', lang)})
+    return jsonify({'success': True, 'message': t('profile.password_updated', lang)})
 
 
 @profile_bp.route('/api/profile/professional', methods=['GET'])
@@ -245,7 +246,43 @@ def api_update_professional():
 
     utils.log_action('Actualizacion Profesional', f'Usuario: {session["username"]}', session)
 
-    return jsonify({'status': 'success', 'message': t('profile.pro_updated', lang)})
+    return jsonify({'success': True, 'message': t('profile.pro_updated', lang)})
+
+
+@profile_bp.route('/api/profile/professional/coverage', methods=['GET'])
+@decorators.professional_required
+def api_get_professional_coverage():
+    user_id = session['user_id']
+    coverage = models.get_professional_coverage(user_id)
+    return jsonify({'success': True, 'coverage': coverage})
+
+
+@profile_bp.route('/api/profile/professional/coverage', methods=['PUT'])
+@decorators.professional_required
+@rate_limit.check_rate_limit(limit=30, window=60)
+def api_update_professional_coverage():
+    lang = get_language()
+    user_id = session['user_id']
+    data = request.json or {}
+
+    raw_zones = data.get('zones', [])
+    raw_specialties = data.get('specialties', [])
+    if not isinstance(raw_zones, list) or not isinstance(raw_specialties, list):
+        return jsonify({'error': t('profile.no_valid_data', lang)}), 400
+
+    zones = [utils.safe_text(z).strip() for z in raw_zones if isinstance(z, str)]
+    specialties = [utils.safe_text(s).strip() for s in raw_specialties if isinstance(s, str)]
+
+    if len(zones) > models.MAX_COVERAGE_VALUES or len(specialties) > models.MAX_COVERAGE_VALUES:
+        return jsonify({'error': t('profile.coverage_too_many', lang)}), 400
+
+    result = models.set_professional_coverage(user_id, zones, specialties)
+    if result is None:
+        return jsonify({'error': t('profile.no_valid_data', lang)}), 500
+
+    utils.log_action('Actualizacion cobertura profesional', f'Usuario: {session["username"]}', session)
+
+    return jsonify({'success': True, 'coverage': result})
 
 
 # ============================================================
@@ -290,7 +327,7 @@ def api_update_settings():
     models.update_user_preferences(user_id, update_data)
     utils.log_action('Actualizacion de Preferencias', f'Usuario: {session["username"]}', session)
 
-    return jsonify({'status': 'success', 'message': t('profile.prefs_updated', lang)})
+    return jsonify({'success': True, 'message': t('profile.prefs_updated', lang)})
 
 
 @profile_bp.route('/api/profile/sessions', methods=['GET'])
@@ -309,7 +346,7 @@ def api_delete_session(entry_id):
     if not deleted:
         return jsonify({'error': t('profile.session_not_found', lang)}), 404
     utils.log_action('Sesion cerrada', f'Sesion ID: {entry_id}', session)
-    return jsonify({'status': 'success', 'message': t('profile.session_closed', lang)})
+    return jsonify({'success': True, 'message': t('profile.session_closed', lang)})
 
 
 @profile_bp.route('/api/profile/activity', methods=['GET'])
@@ -368,7 +405,7 @@ def api_upload_avatar():
     models.update_user_avatar(user_id, avatar_rel)
     utils.log_action('Avatar actualizado', f'Usuario: {session["username"]}', session)
 
-    return jsonify({'status': 'success', 'avatar_url': url_for('static', filename=avatar_rel)})
+    return jsonify({'success': True, 'avatar_url': url_for('static', filename=avatar_rel) + f'?v={int(time.time())}'})
 
 
 @profile_bp.route('/api/profile/user/avatar', methods=['DELETE'])
@@ -384,7 +421,7 @@ def api_delete_avatar():
             os.remove(old_file)
     models.delete_user_avatar(user_id)
     utils.log_action('Avatar eliminado', f'Usuario: {session["username"]}', session)
-    return jsonify({'status': 'success', 'message': t('profile.avatar_deleted', lang)})
+    return jsonify({'success': True, 'message': t('profile.avatar_deleted', lang)})
 
 
 # ============================================================
@@ -437,7 +474,7 @@ def api_update_professional_full():
 
     utils.log_action('Perfil profesional actualizado', f'Usuario: {session["username"]}', session)
 
-    return jsonify({'status': 'success', 'message': t('profile.pro_updated', lang)})
+    return jsonify({'success': True, 'message': t('profile.pro_updated', lang)})
 
 
 @profile_bp.route('/api/profile/professional/photo', methods=['POST'])
@@ -483,7 +520,7 @@ def api_upload_professional_photo():
     models.create_or_update_professional_profile(user_id, {'photo_path': photo_rel})
     utils.log_action('Foto profesional actualizada', f'Usuario: {session["username"]}', session)
 
-    return jsonify({'status': 'success', 'photo_url': url_for('static', filename=photo_rel)})
+    return jsonify({'success': True, 'photo_url': url_for('static', filename=photo_rel) + f'?v={int(time.time())}'})
 
 
 @profile_bp.route('/api/profile/professional/photo', methods=['DELETE'])
@@ -499,7 +536,7 @@ def api_delete_professional_photo():
             os.remove(old_file)
     models.create_or_update_professional_profile(user_id, {'photo_path': ''})
     utils.log_action('Foto profesional eliminada', f'Usuario: {session["username"]}', session)
-    return jsonify({'status': 'success', 'message': t('profile.photo_deleted', lang)})
+    return jsonify({'success': True, 'message': t('profile.photo_deleted', lang)})
 
 
 # ============================================================
@@ -679,7 +716,7 @@ def contact_admin():
     message = (data.get('message') or '').strip()
 
     if not subject or not message:
-        return jsonify({"error": t('profile.contact_admin_required', lang)}), 400
+        return jsonify({"success": False, "error": t('profile.contact_admin_required', lang)}), 400
 
     user = models.get_user_by_id(session['user_id'])
     username = user['username'] if user else 'Desconocido'
@@ -689,7 +726,7 @@ def contact_admin():
 
     notified = notify_admins(title=title, body=body)
     utils.log_action('Contacto admin desde perfil', f'{username}: {subject}', session)
-    return jsonify({"status": "success", "message": t('profile.contact_admin_sent', lang)})
+    return jsonify({"success": True, "message": t('profile.contact_admin_sent', lang)})
 
 
 # ============================================================

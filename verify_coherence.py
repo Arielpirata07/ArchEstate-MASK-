@@ -11,11 +11,11 @@ import sys
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 TEMPLATES_DIR = os.path.join(PROJECT_ROOT, 'templates')
 ROUTES_DIR = os.path.join(PROJECT_ROOT, 'routes')
-ROUTES_PROFILE = os.path.join(PROJECT_ROOT, 'routes_profile.py')
+ROUTES_PROFILE = os.path.join(ROUTES_DIR, 'profile_bp.py')
 FACTORY_FILE = os.path.join(PROJECT_ROOT, 'factory.py')
 APP_SETUP_FILE = os.path.join(PROJECT_ROOT, 'app_setup.py')
 BLUEPRINT_FILES = [os.path.join(ROUTES_DIR, f) for f in os.listdir(ROUTES_DIR) if f.endswith('.py') and f != '__init__.py']
-ALL_ROUTE_FILES = BLUEPRINT_FILES + [ROUTES_PROFILE]
+ALL_ROUTE_FILES = BLUEPRINT_FILES
 
 passed = 0
 failed = 0

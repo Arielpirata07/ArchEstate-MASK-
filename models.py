@@ -115,34 +115,6 @@ def get_lead_by_id(lead_id):
         conn.close()
 
 
-def create_lead(data):
-    conn = get_db_connection()
-    try:
-        cursor = conn.cursor()
-        cursor.execute('''
-            INSERT INTO leads (type, property_type, zone, budget, currency, phone, email, floor_block, usable_m2, elevator, land_area, built_area, pool)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', (
-            data.get('type'),
-            data.get('property_type', 'departamento'),
-            data.get('zone'),
-            data.get('budget'),
-            data.get('currency', 'ARG'),
-            data.get('phone'),
-            data.get('email'),
-            data.get('floor_block', ''),
-            data.get('usable_m2', 0),
-            data.get('elevator', ''),
-            data.get('land_area', 0),
-            data.get('built_area', 0),
-            data.get('pool', '')
-        ))
-        conn.commit()
-        return cursor.lastrowid
-    finally:
-        conn.close()
-
-
 def get_audit_logs(limit=100):
     conn = get_db_connection()
     try:
@@ -412,6 +384,66 @@ def update_professional_profile(user_id, data):
     except Exception:
         logger.exception('update_professional_profile failed for user_id=%s', user_id)
         return False
+    finally:
+        conn.close()
+
+
+MAX_COVERAGE_VALUES = 20
+
+
+def get_professional_coverage(user_id):
+    """Devuelve la cobertura de zonas/especialidades configurada por el profesional.
+
+    Si todavia no configuro nada en professional_coverage, cae de vuelta a los
+    valores unicos legacy de la tabla professionals (compatibilidad hacia atras).
+    'configured' indica si la cobertura viene de la config nueva (True) o del
+    fallback legacy (False), para que la UI pueda distinguir "sin configurar".
+    """
+    conn = get_db_connection()
+    try:
+        rows = conn.execute(
+            'SELECT coverage_type, value FROM professional_coverage WHERE user_id = ? ORDER BY value',
+            (user_id,)
+        ).fetchall()
+        zones = [r['value'] for r in rows if r['coverage_type'] == 'zone']
+        specialties = [r['value'] for r in rows if r['coverage_type'] == 'specialty']
+        if zones or specialties:
+            return {'zones': zones, 'specialties': specialties, 'configured': True}
+
+        pro = conn.execute(
+            'SELECT zone, specialty, province FROM professionals WHERE user_id = ?', (user_id,)
+        ).fetchone()
+        legacy_zones = [pro['zone']] if pro and pro['zone'] else []
+        legacy_specialties = [pro['specialty']] if pro and pro['specialty'] else []
+        return {'zones': legacy_zones, 'specialties': legacy_specialties, 'configured': False}
+    finally:
+        conn.close()
+
+
+def set_professional_coverage(user_id, zones, specialties):
+    """Reemplaza por completo la cobertura de zonas/especialidades del profesional."""
+    clean_zones = list(dict.fromkeys(z.strip() for z in zones if z and z.strip()))[:MAX_COVERAGE_VALUES]
+    clean_specialties = list(dict.fromkeys(s.strip() for s in specialties if s and s.strip()))[:MAX_COVERAGE_VALUES]
+
+    conn = get_db_connection()
+    try:
+        conn.execute('DELETE FROM professional_coverage WHERE user_id = ?', (user_id,))
+        for z in clean_zones:
+            conn.execute(
+                "INSERT INTO professional_coverage (user_id, coverage_type, value) VALUES (?, 'zone', ?)",
+                (user_id, z)
+            )
+        for s in clean_specialties:
+            conn.execute(
+                "INSERT INTO professional_coverage (user_id, coverage_type, value) VALUES (?, 'specialty', ?)",
+                (user_id, s)
+            )
+        conn.commit()
+        return {'zones': clean_zones, 'specialties': clean_specialties, 'configured': True}
+    except Exception:
+        logger.exception('set_professional_coverage failed for user_id=%s', user_id)
+        conn.rollback()
+        return None
     finally:
         conn.close()
 

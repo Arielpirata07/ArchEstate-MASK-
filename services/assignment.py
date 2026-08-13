@@ -2,19 +2,22 @@ import logging
 
 import models
 import utils
+from services.matching import MIN_MATCH_SCORE, score_lead_for_coverage
 
 logger = logging.getLogger(__name__)
 
 
 def auto_assign_lead(lead_id: int) -> int | None:
     """
-    Assigns a lead to the best-matching professional based on:
-    - Specialty match (property_type == specialty) → weight 100
-    - Zone match → weight 30
-    - Province match → weight 20
-    - Workload balance → -1 per tracked lead
+    Asigna un lead al profesional con mejor afinidad, segun su cobertura
+    configurada de zonas/especialidades (services.matching.score_lead_for_coverage)
+    mas un balanceo por carga de trabajo (-1 por lead en seguimiento).
 
-    Returns the assigned user_id or None.
+    Si ningun profesional aprobado tiene una relacion real con las caracteristicas
+    del lead (score < MIN_MATCH_SCORE), el lead queda sin asignar a proposito —
+    no se fuerza una asignacion arbitraria solo para no dejarlo suelto.
+
+    Devuelve el user_id asignado, o None si quedo sin asignar.
     """
     conn = None
     try:
@@ -26,12 +29,8 @@ def auto_assign_lead(lead_id: int) -> int | None:
         if lead.get('assigned_to'):
             return lead['assigned_to']
 
-        lead_property_type = (lead['property_type'] or '').strip().lower()
-        lead_zone = (lead['zone'] or '').strip().lower()
-        lead_province = (lead['province'] or '').strip().lower()
-
         professionals = conn.execute('''
-            SELECT p.user_id, p.name, p.specialty, p.province, p.zone
+            SELECT p.user_id, p.name, p.province
             FROM professionals p
             JOIN users u ON p.user_id = u.id
             WHERE p.status = 'approved' AND u.is_active = 1
@@ -48,33 +47,21 @@ def auto_assign_lead(lead_id: int) -> int | None:
         ).fetchall()
         tracking_counts = {r['professional_id']: r['cnt'] for r in tracking_rows}
 
-        best_score = -999
+        lead_dict = dict(lead)
+        best_score = -1
         best_pro = None
 
         for pro in professionals:
-            score = 0
-            pro_specialty = (pro['specialty'] or '').strip().lower()
-            pro_zone = (pro['zone'] or '').strip().lower()
-            pro_province = (pro['province'] or '').strip().lower()
-
-            if pro_specialty and lead_property_type:
-                if pro_specialty == lead_property_type:
-                    score += 100
-                elif pro_specialty in lead_property_type or lead_property_type in pro_specialty:
-                    score += 50
-
-            if pro_zone and lead_zone:
-                if pro_zone == lead_zone or pro_zone in lead_zone or lead_zone in pro_zone:
-                    score += 30
-
-            if pro_province and lead_province and pro_province == lead_province:
-                score += 20
+            coverage = models.get_professional_coverage(pro['user_id'])
+            score = score_lead_for_coverage(lead_dict, coverage, pro['province'])
+            if score < MIN_MATCH_SCORE:
+                continue
 
             tracked = tracking_counts.get(pro['user_id'], 0)
-            score -= tracked
+            adjusted_score = score - tracked
 
-            if score > best_score:
-                best_score = score
+            if best_pro is None or adjusted_score > best_score:
+                best_score = adjusted_score
                 best_pro = pro
 
         if best_pro:
@@ -90,6 +77,11 @@ def auto_assign_lead(lead_id: int) -> int | None:
             )
             return best_pro['user_id']
 
+        utils.log_action(
+            'Asignacion automatica lead',
+            f'Lead #{lead_id} sin asignar: ningun profesional matchea sus caracteristicas',
+            None
+        )
         return None
     except Exception:
         logger.exception('Error en auto_assign_lead')

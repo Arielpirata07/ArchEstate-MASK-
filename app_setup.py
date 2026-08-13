@@ -275,6 +275,18 @@ def init_db(app):
             ''')
 
         cursor.execute('''
+            CREATE TABLE IF NOT EXISTS professional_coverage (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL REFERENCES users(id),
+                coverage_type TEXT NOT NULL CHECK (coverage_type IN ('zone', 'specialty')),
+                value TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(user_id, coverage_type, value)
+            )
+        ''')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_pro_coverage_user ON professional_coverage(user_id)')
+
+        cursor.execute('''
             CREATE TABLE IF NOT EXISTS audit_log (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
