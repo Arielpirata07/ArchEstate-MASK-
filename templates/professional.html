@@ -379,13 +379,23 @@ window.__FORM_OPTIONS = {{ {
                     <div class="flex items-center gap-3 stats-entrance">
                         <label for="statsMonthSelect" class="text-[10px] uppercase tracking-widest font-bold text-midnight/50">{{ t('pro.month') }}</label>
                         <div class="relative">
-                            <select id="statsMonthSelect" onchange="loadMarketStats()"
+                            <select id="statsMonthSelect" onchange="loadMarketStats(false)"
                                 class="appearance-none px-4 py-2 pr-10 border border-midnight/10 rounded-xl text-sm focus:border-gold focus:ring-2 focus:ring-gold/10 focus:outline-none text-midnight/70 bg-paper-dark transition-all cursor-pointer">
                             </select>
                             <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-midnight/30 pointer-events-none"></i>
                         </div>
                     </div>
                 </div>
+
+                <!-- Empty state: sin leads en el periodo seleccionado -->
+                <div id="statsEmptyState" class="hidden flex flex-col items-center justify-center gap-2 py-12 text-center stats-entrance">
+                    <div class="w-12 h-12 rounded-full bg-midnight/5 flex items-center justify-center">
+                        <i data-lucide="inbox" class="w-5 h-5 text-midnight/30"></i>
+                    </div>
+                    <p class="text-sm font-medium text-midnight/50">{{ t('pro.stats_no_sales') }}</p>
+                </div>
+
+                <div id="statsContent">
 
                 <!-- Lo más buscado: premium highlight cards -->
                 <div>
@@ -541,6 +551,7 @@ window.__FORM_OPTIONS = {{ {
                             </div>
                         </div>
                     </div>
+                </div>
                 </div>
             </div>
         </div>

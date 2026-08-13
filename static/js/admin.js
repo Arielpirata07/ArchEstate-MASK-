@@ -711,7 +711,7 @@ function renderProfessionals(pros) {
                 <td class="px-4 py-3 text-right">
                     <div class="flex justify-end items-center gap-2 flex-wrap">
                         ${approvalActions}
-                        <button onclick="openNotifyModal('${pro.id}', '${escapeHtml(pro.name)}')"
+                        <button onclick="openNotifyModal('${pro.user_id}', '${escapeHtml(pro.name)}')"
                             class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-blue-100 transition-colors">
                             <i data-lucide="bell" class="w-3 h-3"></i> ${t('admin.send_notification_to')}
                         </button>

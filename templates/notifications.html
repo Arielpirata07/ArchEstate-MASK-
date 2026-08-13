@@ -6,7 +6,7 @@
 <div class="max-w-3xl mx-auto space-y-6">
 
     <!-- Header -->
-    <div class="flex items-center justify-between border-b border-midnight/10 dark:border-white/10 pb-6">
+    <div class="flex items-center justify-between border-b border-midnight/10 dark:border-white/10 pb-6 header-entrance">
         <div>
             <h2 class="text-3xl font-serif italic text-midnight dark:text-white">{{ t('notif.history_title') }}</h2>
             <p id="notif-page-subtitle" class="text-sm text-midnight/50 dark:text-white/50 mt-1">{{ t('notif.page_of', page=1, pages=1) }}</p>
@@ -17,9 +17,9 @@
                 <i data-lucide="trash-2" class="w-3 h-3"></i>
                 {{ t('notif.delete_read') }}
             </button>
-            <button onclick="notifPage(1)"
+            <button onclick="markAllReadNotifPage()"
                 class="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-gold hover:text-midnight border border-gold/30 hover:border-gold rounded transition-colors flex items-center gap-1.5">
-                <i data-lucide="refresh-cw" class="w-3 h-3"></i>
+                <i data-lucide="check-check" class="w-3 h-3"></i>
                 {{ t('nav.mark_all_read') }}
             </button>
         </div>
@@ -152,7 +152,7 @@ function markReadNotifPage(nid) {
 }
 
 function deleteNotification(nid) {
-    fetch('/api/profile/notifications/' + nid, { method: 'DELETE' })
+    fetch('{{ url_for("profile.delete_notification", notification_id=0) }}'.replace('/0', '/' + nid), { method: 'DELETE' })
         .then(function(r) { return r.json(); })
         .then(function(data) {
             if (data.success) {
@@ -168,15 +168,19 @@ function deleteNotification(nid) {
         }).catch(function() {});
 }
 
+function markAllReadNotifPage() {
+    fetch('{{ url_for("profile.mark_all_notifications_read") }}', {method: 'POST'})
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) notifPage(1);
+        }).catch(function() {});
+}
+
 function deleteReadNotifications() {
     fetch('{{ url_for("profile.delete_read_notifications") }}', {method: 'POST'})
         .then(function(r) { return r.json(); })
         .then(function(data) {
-            if (data.success) {
-                notifPage(1);
-                var badge = document.getElementById('notif-badge');
-                if (badge) badge.remove();
-            }
+            if (data.success) notifPage(1);
         }).catch(function() {});
 }
 

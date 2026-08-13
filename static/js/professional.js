@@ -493,7 +493,7 @@ async function loadLeads() {
         if (data.success) {
             window.__leadsData = data.leads;
             renderLeads(data.leads);
-            renderLeadKpis(data.leads);
+            renderLeadKpis(data.leads, { total: data.kpi_total, unseen: data.kpi_unseen, contacted: data.kpi_contacted });
             document.getElementById('leadsCount').textContent = data.total;
             renderPagination(data);
             renderActiveTags();
@@ -822,19 +822,26 @@ async function toggleLeadStatus(leadId, statusType, btn) {
 // ================================================================
 // LEAD KPI BAR (leads tab header)
 // ================================================================
-function renderLeadKpis(leads) {
-    var total = leads.length;
-    var unseen = 0, contacted = 0, seen = 0;
-    for (var i = 0; i < leads.length; i++) {
-        var trk = leads[i].tracking;
-        if (trk) {
-            if (!trk.seen) unseen++;
-            if (trk.contacted) contacted++;
-        } else {
-            unseen++;
+function renderLeadKpis(leads, aggregates) {
+    var total, unseen, contacted;
+    if (aggregates) {
+        total = aggregates.total;
+        unseen = aggregates.unseen;
+        contacted = aggregates.contacted;
+    } else {
+        total = leads.length;
+        unseen = 0; contacted = 0;
+        for (var i = 0; i < leads.length; i++) {
+            var trk = leads[i].tracking;
+            if (trk) {
+                if (!trk.seen) unseen++;
+                if (trk.contacted) contacted++;
+            } else {
+                unseen++;
+            }
         }
     }
-    seen = total - unseen;
+    var seen = total - unseen;
     var contactRate = seen > 0 ? Math.round((contacted / seen) * 100) : 0;
 
     var el = document.getElementById('kpiLeadsTotal');
@@ -1167,7 +1174,7 @@ async function loadMarketStats(tryAutoSelect) {
     try {
         const res = await fetch('/api/leads/stats?' + params.toString());
         const data = await res.json();
-        if (data.status === 'success') {
+        if (data.success) {
             if (data.stats.total === 0 && tryAutoSelect !== false) {
                 const options = Array.from(sel.options);
                 for (let i = 0; i < options.length; i++) {
@@ -1178,20 +1185,15 @@ async function loadMarketStats(tryAutoSelect) {
                     p.set('my_leads', currentFilters.my_leads ? '1' : '0');
                     const r = await fetch('/api/leads/stats?' + p.toString());
                     const d = await r.json();
-                    if (d.status === 'success' && d.stats.total > 0) {
+                    if (d.success && d.stats.total > 0) {
                         sel.value = opt.value;
                         if (monthLabel) monthLabel.textContent = formatMonthLabel(opt.value);
-                        renderStatsKpis(d.stats);
-                        renderStatsCharts(d.stats);
-                        renderTopSearched(d.stats);
+                        renderStatsSection(d.stats);
                         return;
                     }
                 }
             }
-            renderStatsKpis(data.stats);
-            renderStatsCharts(data.stats);
-            renderTopSearched(data.stats);
-            triggerStatsEntrance();
+            renderStatsSection(data.stats);
         } else {
             showToast(data.message || t('error.stats_load'), 'error');
         }
@@ -1199,6 +1201,25 @@ async function loadMarketStats(tryAutoSelect) {
         console.error('Error loading market stats:', err);
         showToast(t('error.stats_network'), 'error');
     }
+}
+
+function renderStatsSection(stats) {
+    const emptyState = document.getElementById('statsEmptyState');
+    const content = document.getElementById('statsContent');
+    const isEmpty = !stats.total;
+
+    if (emptyState) emptyState.classList.toggle('hidden', !isEmpty);
+    if (content) content.classList.toggle('hidden', isEmpty);
+
+    if (isEmpty) {
+        if (window.lucide) lucide.createIcons();
+        return;
+    }
+
+    renderStatsKpis(stats);
+    renderStatsCharts(stats);
+    renderTopSearched(stats);
+    triggerStatsEntrance();
 }
 
 function triggerStatsEntrance() {
