@@ -311,17 +311,30 @@ function applyPhoneProvincePrefix() {
     const prefix = provinceSelect.value;
     if (!prefix) return;
     let body = phoneInput.value.trim().replace(/\D/g, '');
-    if (body.startsWith('54') && body.length > 9) body = body.substring(2);
-    if (body.startsWith('0')) body = body.substring(1);
     const countryCode = document.getElementById('country-code-select').value;
+    const cd = countryCode.replace('+', '');
+    if (body.startsWith(cd) && body.length > 9) body = body.substring(cd.length);
+    if (body.startsWith('0')) body = body.substring(1);
+
+    // El campo puede traer pegado un codigo de area (y su marcador movil) de
+    // una seleccion de provincia anterior -- probamos contra TODOS los
+    // codigos conocidos para este pais, no solo el que se esta por aplicar
+    // ahora, en un loop que pela capas hasta que no quede nada mas para sacar.
+    const knownCodes = (typeof PhoneSuggest !== 'undefined') ? PhoneSuggest.phoneAreaCodes(countryCode) : [];
     let mobile = '';
-    if (countryCode === '+54') {
-        if (body.startsWith('15')) body = body.substring(2);
-        else if (body.startsWith('9')) body = body.substring(1);
-        mobile = '9 ';
+    for (let pass = 0; pass < 4; pass++) {
+        let changed = false;
+        if (countryCode === '+54') {
+            if (body.startsWith('15')) { body = body.substring(2); mobile = '9 '; changed = true; }
+            else if (body.startsWith('9')) { body = body.substring(1); mobile = '9 '; changed = true; }
+        }
+        for (const code of knownCodes) {
+            if (body.startsWith(code)) { body = body.substring(code.length); changed = true; break; }
+        }
+        if (!changed) break;
     }
-    if (body.startsWith(prefix)) body = body.substring(prefix.length);
-    else if (body.startsWith('0' + prefix)) body = body.substring(prefix.length + 1);
+    if (countryCode === '+54') mobile = '9 ';
+
     phoneInput.value = mobile + prefix + ' ' + body.replace(/(\d{4})/g, '$1 ').trim();
     onUserPhoneInput();
 }

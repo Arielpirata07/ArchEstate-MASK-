@@ -173,3 +173,33 @@ test('user.js savePhoneToProfile sends formatted MX phone', async () => {
   await context.savePhoneToProfile();
   assert.deepEqual(body, { phone: '+52 55 1234 5678' });
 });
+
+test('user.js applyPhoneProvincePrefix no acumula codigos de area al cambiar de provincia varias veces', () => {
+  const { context, elements, run } = buildContext(() => {});
+  context.window.__PHONE_DB_BY_COUNTRY = {
+    '+54': [
+      { code: '11', city: 'Buenos Aires / CABA', province: 'CABA' },
+      { code: '351', city: 'Córdoba', province: 'Córdoba' },
+      { code: '221', city: 'La Plata', province: 'Buenos Aires' },
+    ],
+  };
+  run('static/js/phone-suggest.js');
+  run('static/js/user.js');
+
+  const countrySelect = elements['country-code-select'];
+  const provinceSelect = elements['phone-province'];
+  const phoneInput = elements['phone-input'];
+  countrySelect.value = '+54';
+  provinceSelect.options = [{ value: '11' }, { value: '351' }, { value: '221' }];
+
+  phoneInput.value = '4123456';
+  provinceSelect.value = '351';
+  context.applyPhoneProvincePrefix();
+  provinceSelect.value = '11';
+  context.applyPhoneProvincePrefix();
+  provinceSelect.value = '221';
+  context.applyPhoneProvincePrefix();
+
+  const finalDigits = phoneInput.value.replace(/\D/g, '');
+  assert.equal(finalDigits.length, 11);
+});

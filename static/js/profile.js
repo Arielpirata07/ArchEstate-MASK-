@@ -327,12 +327,26 @@ function applyProvincePrefix() {
     if (customAreaInput) {
         customAreaInput.classList.toggle('hidden', prefix !== 'other');
     }
-    const raw = phoneInput.value.trim().replace(/\D/g, '');
-    let searchRaw = raw;
+    let searchRaw = phoneInput.value.trim().replace(/\D/g, '');
+
+    // El campo puede traer pegado un codigo de area (y su marcador movil) de
+    // una seleccion de provincia anterior -- el usuario cambio de opcion mas
+    // de una vez. Pelamos capas -- marcador movil o codigo de area conocido
+    // para este pais, en cualquier orden -- hasta que no quede nada mas para
+    // sacar, en vez de intentar sacar solo el codigo que se esta por aplicar
+    // ahora (eso dejaba codigos viejos acumulados dentro del numero local).
+    const knownCodes = (typeof PhoneSuggest !== 'undefined') ? PhoneSuggest.phoneAreaCodes(countryCode) : [];
     let mobilePrefix = '';
-    if (countryCode === '+54') {
-        if (raw.startsWith('15')) { searchRaw = raw.substring(2); mobilePrefix = '15'; }
-        else if (raw.startsWith('9')) { searchRaw = raw.substring(1); mobilePrefix = '9'; }
+    for (let pass = 0; pass < 4; pass++) {
+        let changed = false;
+        if (countryCode === '+54') {
+            if (searchRaw.startsWith('15')) { searchRaw = searchRaw.substring(2); mobilePrefix = '15'; changed = true; }
+            else if (searchRaw.startsWith('9')) { searchRaw = searchRaw.substring(1); mobilePrefix = '9'; changed = true; }
+        }
+        for (const code of knownCodes) {
+            if (searchRaw.startsWith(code)) { searchRaw = searchRaw.substring(code.length); changed = true; break; }
+        }
+        if (!changed) break;
     }
 
     const selectedPrefix = prefix === 'other'
@@ -340,14 +354,9 @@ function applyProvincePrefix() {
         : normalizeArgentineAreaCode(prefix);
 
     if (!selectedPrefix) {
-        phoneInput.value = raw.length > 0 ? (mobilePrefix ? mobilePrefix + ' ' : '') + searchRaw : '';
+        phoneInput.value = searchRaw.length > 0 ? (mobilePrefix ? mobilePrefix + ' ' : '') + searchRaw : '';
         validateProfilePhone();
         return;
-    }
-
-    const matchedPrefix = [selectedPrefix, `0${selectedPrefix}`].find(candidate => searchRaw.startsWith(candidate));
-    if (matchedPrefix) {
-        searchRaw = searchRaw.substring(matchedPrefix.length);
     }
 
     phoneInput.value = (countryCode === '+54' ? selectedPrefix + ' 9 ' : selectedPrefix + ' ') + searchRaw;
@@ -942,7 +951,7 @@ function terminateSession(entryId) {
         fetch('/api/profile/sessions/' + entryId, { method: 'DELETE' })
         .then(function (r) { return r.json(); })
         .then(function (result) {
-            if (result.status === 'success') loadUserSessions();
+            if (result.success) loadUserSessions();
         })
         .catch(function () {});
     });
