@@ -172,7 +172,7 @@ class TestProfessionalZoneUpdate:
             'zone': 'Recoleta'
         })
         data = resp.get_json()
-        assert data['status'] == 'success'
+        assert data['success'] is True
 
         conn = models.get_db_connection()
         pro = conn.execute('SELECT province, zone FROM professionals WHERE user_id = ?', (user_id,)).fetchone()
@@ -193,10 +193,99 @@ class TestProfessionalZoneUpdate:
             'license': 'HACKED-123'
         })
         data = resp.get_json()
-        assert data['status'] == 'success'
+        assert data['success'] is True
 
         conn = models.get_db_connection()
         pro = conn.execute('SELECT license, province FROM professionals WHERE user_id = ?', (user_id,)).fetchone()
         conn.close()
         assert pro['province'] == 'CABA'
         assert pro['license'] != 'HACKED-123'
+
+
+class TestMatchesCoverageBadge:
+    def test_marks_matching_and_non_matching_leads(self, client, pro_user_with_zone, lead_buenos_aires, lead_caba):
+        """Viendo todos los leads (my_leads=0), cada uno trae matches_coverage
+        indicando si coincide con la cobertura del profesional."""
+        user_id, pro_name = pro_user_with_zone
+        with client.session_transaction() as sess:
+            sess['user_id'] = user_id
+            sess['username'] = pro_name
+            sess['role'] = 'professional'
+
+        resp = client.get('/api/leads?my_leads=0')
+        data = resp.get_json()
+        by_id = {l['id']: l for l in data['leads']}
+        assert by_id[lead_buenos_aires]['matches_coverage'] is True
+        assert by_id[lead_caba]['matches_coverage'] is False
+
+    def test_multi_zone_coverage_widens_my_leads_filter(self, client, db, pro_user_with_zone, lead_buenos_aires):
+        """Agregar una segunda zona en professional_coverage debe traer tambien
+        leads de esa zona (dentro de la misma provincia) en my_leads=1."""
+        user_id, pro_name = pro_user_with_zone
+        unique = uuid.uuid4().hex[:8]
+        cursor = db.execute(
+            '''INSERT INTO leads (type, property_type, zone, province, budget, currency, phone, email, user_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+            ('comprar', 'casa', 'Recoleta', 'Buenos Aires', '300000', 'USD',
+             f'+54911555{unique[:4]}', f'lead3_{unique}@test.com', 1)
+        )
+        db.commit()
+        other_zone_lead = cursor.lastrowid
+
+        db.execute(
+            "INSERT INTO professional_coverage (user_id, coverage_type, value) VALUES (?, 'zone', ?)",
+            (user_id, 'Palermo')
+        )
+        db.execute(
+            "INSERT INTO professional_coverage (user_id, coverage_type, value) VALUES (?, 'zone', ?)",
+            (user_id, 'Recoleta')
+        )
+        db.commit()
+        with client.session_transaction() as sess:
+            sess['user_id'] = user_id
+            sess['username'] = pro_name
+            sess['role'] = 'professional'
+
+        resp = client.get('/api/leads?my_leads=1')
+        data = resp.get_json()
+        lead_ids = [l['id'] for l in data['leads']]
+        assert other_zone_lead in lead_ids
+        assert lead_buenos_aires in lead_ids
+
+
+class TestLeadKpiAggregates:
+    def test_kpi_totals_reflect_full_set_not_just_current_page(self, client, db, pro_user_with_zone):
+        """Los KPI (total/nuevos/contactados) tienen que reflejar TODOS los leads
+        que matchean el filtro, no solo los 25 de la pagina actual."""
+        user_id, pro_name = pro_user_with_zone
+        lead_ids = []
+        for i in range(30):
+            unique = uuid.uuid4().hex[:8]
+            cursor = db.execute(
+                '''INSERT INTO leads (type, property_type, zone, province, budget, currency, phone, email, user_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                ('comprar', 'departamento', 'Palermo', 'Buenos Aires', '200000', 'USD',
+                 f'+54911{i:03d}{unique[:4]}', f'kpi_{i}_{unique}@test.com', 1)
+            )
+            lead_ids.append(cursor.lastrowid)
+        db.commit()
+
+        for lid in lead_ids[:5]:
+            db.execute(
+                'INSERT INTO lead_tracking (lead_id, professional_id, seen, contacted) VALUES (?, ?, 1, 1)',
+                (lid, user_id)
+            )
+        db.commit()
+
+        with client.session_transaction() as sess:
+            sess['user_id'] = user_id
+            sess['username'] = pro_name
+            sess['role'] = 'professional'
+
+        resp = client.get('/api/leads?my_leads=1&per_page=25')
+        data = resp.get_json()
+
+        assert len(data['leads']) == 25
+        assert data['kpi_total'] >= 30
+        assert data['kpi_contacted'] >= 5
+        assert data['kpi_unseen'] >= 25

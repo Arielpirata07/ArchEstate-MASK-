@@ -207,7 +207,7 @@ class TestUserLeadsTracking:
 
     def test_build_export_stats_empty(self, auth_client):
         """_build_export_stats returns zeros for empty list."""
-        from routes_profile import _build_export_stats
+        from routes.profile_bp import _build_export_stats
         stats = _build_export_stats([])
         assert stats['total'] == 0
         assert stats['avg_budget'] == 0
@@ -217,7 +217,7 @@ class TestUserLeadsTracking:
 
     def test_build_export_stats_with_data(self):
         """_build_export_stats computes per-currency budgets correctly."""
-        from routes_profile import _build_export_stats
+        from routes.profile_bp import _build_export_stats
         leads = [
             {'budget': '1000', 'zone': 'Palermo', 'currency': 'USD', 'type': 'Venta'},
             {'budget': '2000', 'zone': 'Recoleta', 'currency': 'USD', 'type': 'Venta'},
@@ -289,6 +289,71 @@ class TestNotificationFiltersAPI:
         data = resp.get_json()
         assert data['filters'] == {'types': ['Comprar Propiedad'], 'property_types': ['departamento']}
         assert data['budget_min'] == 200000
+
+
+class TestProfessionalCoverageAPI:
+
+    def _create_professional_auth_client(self, auth_client, db):
+        """Convierte el auth_client en profesional."""
+        with auth_client.session_transaction() as sess:
+            user_id = sess['user_id']
+            sess['role'] = 'professional'
+        uid = uuid.uuid4().hex[:8]
+        db.execute('UPDATE users SET role = ? WHERE id = ?', ('professional', user_id))
+        db.execute(
+            'INSERT INTO professionals (user_id, name, license, specialty, province, zone, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            (user_id, f'Test Pro {uid}', f'LIC-{uid}', 'departamento', 'Córdoba', 'Nueva Córdoba', 'approved')
+        )
+        db.commit()
+        return auth_client, user_id
+
+    def test_get_coverage_falls_back_to_legacy_fields(self, auth_client, db):
+        """Sin configurar cobertura nueva, cae a los campos unicos de professionals."""
+        client, _ = self._create_professional_auth_client(auth_client, db)
+        resp = client.get('/api/profile/professional/coverage')
+        data = resp.get_json()
+        assert data['success'] is True
+        assert data['coverage']['zones'] == ['Nueva Córdoba']
+        assert data['coverage']['specialties'] == ['departamento']
+        assert data['coverage']['configured'] is False
+
+    def test_update_coverage_multi_value(self, auth_client, db):
+        client, _ = self._create_professional_auth_client(auth_client, db)
+        resp = client.put('/api/profile/professional/coverage', json={
+            'zones': ['Nueva Córdoba', 'Villa Carlos Paz'],
+            'specialties': ['departamento', 'casa'],
+        })
+        data = resp.get_json()
+        assert data['success'] is True
+        assert sorted(data['coverage']['zones']) == ['Nueva Córdoba', 'Villa Carlos Paz']
+        assert sorted(data['coverage']['specialties']) == ['casa', 'departamento']
+        assert data['coverage']['configured'] is True
+
+    def test_get_coverage_after_update_uses_new_values_not_legacy(self, auth_client, db):
+        client, _ = self._create_professional_auth_client(auth_client, db)
+        client.put('/api/profile/professional/coverage', json={
+            'zones': ['Villa Carlos Paz'], 'specialties': ['terreno'],
+        })
+        resp = client.get('/api/profile/professional/coverage')
+        data = resp.get_json()
+        assert data['coverage']['zones'] == ['Villa Carlos Paz']
+        assert data['coverage']['specialties'] == ['terreno']
+
+    def test_update_coverage_rejects_non_list(self, auth_client, db):
+        client, _ = self._create_professional_auth_client(auth_client, db)
+        resp = client.put('/api/profile/professional/coverage', json={'zones': 'not-a-list'})
+        assert resp.status_code == 400
+
+    def test_update_coverage_rejects_too_many_values(self, auth_client, db):
+        client, _ = self._create_professional_auth_client(auth_client, db)
+        resp = client.put('/api/profile/professional/coverage', json={
+            'zones': [f'zona{i}' for i in range(25)], 'specialties': [],
+        })
+        assert resp.status_code == 400
+
+    def test_coverage_requires_professional_role(self, client):
+        resp = client.get('/api/profile/professional/coverage')
+        assert resp.status_code in (302, 403)
 
 
 class TestNotificationChannelAPI:

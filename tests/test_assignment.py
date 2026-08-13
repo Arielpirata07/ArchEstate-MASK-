@@ -78,6 +78,41 @@ class TestAutoAssignLead:
         db.commit()
         assert auto_assign_lead(lead) is None
 
+    def test_returns_none_when_nobody_matches(self, db, professional):
+        """Un lead que no coincide con ninguna cobertura configurada debe
+        quedar sin asignar, en vez de forzarse a quien tenga menos carga."""
+        self._only_approved(db, professional)
+        cursor = db.execute(
+            '''INSERT INTO leads (type, property_type, zone, province, budget, currency, phone, email, user_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+            ('comprar', 'campo', 'Villa Carlos Paz', 'Mendoza', '50000', 'USD',
+             '+5491111111199', 'nomatch@test.com', professional)
+        )
+        db.commit()
+        unmatched_lead = cursor.lastrowid
+
+        assigned = auto_assign_lead(unmatched_lead)
+        assert assigned is None
+        row = db.execute('SELECT assigned_to FROM leads WHERE id = ?', (unmatched_lead,)).fetchone()
+        assert row['assigned_to'] is None
+
+    def test_multi_zone_coverage_matches(self, db, professional, lead):
+        """Un profesional que configuro varias zonas en professional_coverage
+        debe matchear un lead en cualquiera de ellas, no solo en la legacy."""
+        db.execute(
+            "INSERT INTO professional_coverage (user_id, coverage_type, value) VALUES (?, 'zone', ?)",
+            (professional, 'Villa Carlos Paz')
+        )
+        db.execute(
+            "INSERT INTO professional_coverage (user_id, coverage_type, value) VALUES (?, 'zone', ?)",
+            (professional, 'Nueva Córdoba')
+        )
+        db.commit()
+        self._only_approved(db, professional)
+
+        assigned = auto_assign_lead(lead)
+        assert assigned == professional
+
     def test_specialty_match_outweighs_zone(self, db, professional, lead):
         unique = uuid.uuid4().hex[:8]
         cursor = db.execute(
