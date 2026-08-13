@@ -131,17 +131,17 @@ window.__FORM_OPTIONS = {{ {
 
                                     <label class="flex items-center gap-3 mb-8 cursor-pointer">
                                         <input type="checkbox" id="budget-unlimited" class="rounded border-midnight/20 text-gold focus:ring-gold">
-                                        <span class="text-sm text-midnight/70">Sin límite máximo</span>
+                                        <span class="text-sm text-midnight/70">{{ t('user.no_max_limit') }}</span>
                                     </label>
 
                                     <div class="flex gap-3">
                                         <button type="button" id="budget-reset"
                                                 class="flex-1 py-3 rounded border-2 border-midnight/20 text-midnight font-semibold transition-colors hover:bg-midnight/5">
-                                            Restablecer
+                                            {{ t('user.reset') }}
                                         </button>
                                         <button type="button" id="budget-accept"
                                                 class="flex-1 py-3 rounded bg-midnight text-white font-semibold transition-colors hover:bg-midnight-light dark:hover:bg-midnight/80">
-                                            Aceptar
+                                            {{ t('user.accept') }}
                                         </button>
                                     </div>
                                 </div>
@@ -340,7 +340,7 @@ window.__FORM_OPTIONS = {{ {
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" name="amenities" value="Pileta cubierta" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
-                                        <span class="text-sm text-midnight">Pileta cubierta</span>
+                                        <span class="text-sm text-midnight">{{ t('user.indoor_pool') }}</span>
                                     </label>
                                 </div>
                                 <!-- Barrio Privado -->
@@ -417,8 +417,8 @@ window.__FORM_OPTIONS = {{ {
                                 <h4 class="text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-4">{{ t('user.penthouse_details') }}</h4>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">Piso</label>
-                                        <input name="floor_block" type="text" placeholder="Piso 20" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm">
+                                        <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.floor') }}</label>
+                                        <input name="floor_block" type="text" placeholder="{{ t('user.floor') }} 20" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm">
                                     </div>
                                     <div>
                                         <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.usable_m2') }}</label>
@@ -440,7 +440,7 @@ window.__FORM_OPTIONS = {{ {
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
                                         <input type="checkbox" name="amenities" value="Vista 360" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
-                                        <span class="text-sm text-midnight">Vista 360°</span>
+                                        <span class="text-sm text-midnight">{{ t('user.view_360') }}</span>
                                     </label>
                                 </div>
                             </div>
@@ -563,14 +563,14 @@ window.__FORM_OPTIONS = {{ {
                                  <div class="flex-shrink-0" id="province-search-wrap">
                                      <button type="button" id="province-search-toggle" onclick="toggleProvinceSearch('phone-province', this)"
                                          class="hidden items-center justify-between gap-2 px-1 py-2 border-0 border-b-2 border-midnight/20 hover:border-gold focus:border-gold transition-colors text-sm text-midnight bg-transparent w-28"
-                                         aria-label="Buscar ciudad" aria-expanded="false" title="Buscar ciudad">
-                                         <span id="province-search-label" class="truncate text-midnight/70">Buscar ciudad</span>
+                                         aria-label="{{ t('user.search_city') }}" aria-expanded="false" title="{{ t('user.search_city') }}">
+                                         <span id="province-search-label" class="truncate text-midnight/70">{{ t('user.search_city') }}</span>
                                          <i data-lucide="search" class="w-3.5 h-3.5 flex-shrink-0 text-midnight/40"></i>
                                      </button>
                                      <select id="phone-province" aria-label="Código de área" onchange="applyPhoneProvincePrefix()" class="hidden">
                                      </select>
                                      <div id="province-search-wrapper" class="hidden absolute right-0 top-9 z-20 w-96">
-                                         <input id="province-search" type="text" placeholder="Buscar ciudad..."
+                                         <input id="province-search" type="text" placeholder="{{ t('user.search_city') }}..."
                                              oninput="onProvinceSearchInput('phone-province', this)"
                                              onkeydown="onProvinceSearchKeydown('phone-province', event)"
                                              class="px-3 py-2 text-sm bg-white text-midnight border border-midnight/20 rounded shadow focus:border-gold focus:outline-none w-full">

@@ -139,7 +139,7 @@ window.__FORM_OPTIONS = {{ {
         </div>
     </div>
     <!-- KPI Bar: resumen rápido de leads (encima de filtros, como admin) -->
-    <div class="grid grid-cols-4 gap-3">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div class="kpi-lead-card bg-paper-dark rounded-lg p-3 border-l-4 border-gold">
             <p class="text-[9px] uppercase tracking-widest font-bold text-midnight/60">{{ t('pro.kpi_new') }}</p>
             <p id="kpiLeadsUnseen" class="text-2xl font-serif text-midnight mt-1">—</p>
@@ -187,7 +187,7 @@ window.__FORM_OPTIONS = {{ {
             <!-- Fila 1: Búsqueda + Tipo Operación + Zona -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                    <label for="searchInput" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">Búsqueda rápida</label>
+                    <label for="searchInput" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">{{ t('pro.quick_search') }}</label>
                     <div class="relative">
                         <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-midnight/30"></i>
                         <input type="text" id="searchInput" placeholder="{{ t('pro.search_placeholder') }}"
@@ -195,12 +195,12 @@ window.__FORM_OPTIONS = {{ {
                     </div>
                 </div>
                 <div>
-                    <label for="typeFilter" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">Tipo de Operación</label>
+                    <label for="typeFilter" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">{{ t('pro.operation_type') }}</label>
                     <select id="typeFilter" class="w-full px-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
                         <option value="">{{ t('pro.all_operations') }}</option>
-                        <option value="Comprar Propiedad">Comprar Propiedad</option>
-                        <option value="Remodelación Integral">Remodelación Integral</option>
-                        <option value="Construir desde Cero">Construir desde Cero</option>
+                        <option value="Comprar Propiedad">{{ t('pro.buy_property') }}</option>
+                        <option value="Remodelación Integral">{{ t('pro.remodelation') }}</option>
+                        <option value="Construir desde Cero">{{ t('pro.build_from_scratch') }}</option>
                     </select>
                 </div>
                 <div>
@@ -254,7 +254,7 @@ window.__FORM_OPTIONS = {{ {
                     </button>
                     <button data-range="hasta_200k" onclick="setBudgetRange('hasta_200k')"
                         class="budget-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
-                        Hasta $200k
+                        {{ t('pro.budget_up_to') }} $200k
                     </button>
                     <button data-range="200k_500k" onclick="setBudgetRange('200k_500k')"
                         class="budget-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
@@ -270,7 +270,7 @@ window.__FORM_OPTIONS = {{ {
                     </button>
                     <button data-range="mas_2m" onclick="setBudgetRange('mas_2m')"
                         class="budget-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
-                        Más de $2M
+                        {{ t('pro.budget_over') }} $2M
                     </button>
                 </div>
             </div>
@@ -283,7 +283,7 @@ window.__FORM_OPTIONS = {{ {
                 <div class="flex items-center gap-3 flex-shrink-0 ml-4">
                     <span class="text-sm text-midnight/60"><span id="leadsCount">0</span> leads</span>
                     <button id="applyFilters" class="px-4 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors flex items-center gap-2">
-                        <i data-lucide="search" class="w-3 h-3"></i> Buscar
+                        <i data-lucide="search" class="w-3 h-3"></i> {{ t('pro.search') }}
                     </button>
                 </div>
             </div>
@@ -298,7 +298,7 @@ window.__FORM_OPTIONS = {{ {
         <div class="p-4 bg-paper-dark border-b border-midnight/5 flex justify-between items-center">
             <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('pro.leads_available') }}</h3>
             <div class="flex items-center gap-3">
-                <span class="inline-flex items-center gap-1 text-[8px] text-midnight/30 font-bold uppercase tracking-widest"><i data-lucide="check-circle" class="w-2.5 h-2.5"></i> OK = Tel. válido</span>
+                <span class="inline-flex items-center gap-1 text-[8px] text-midnight/30 font-bold uppercase tracking-widest"><i data-lucide="check-circle" class="w-2.5 h-2.5"></i> {{ t('pro.phone_valid') }}</span>
                 <span class="text-[10px] text-midnight/60 uppercase tracking-widest">{{ t('pro.sort_by') }}</span>
                 <select id="sortSelect" aria-label="{{ t('pro.sort_by') }}" class="text-[10px] px-2 py-1 border border-midnight/20 rounded focus:border-gold focus:outline-none">
                     <option value="timestamp">{{ t('pro.sort_date') }}</option>
@@ -306,7 +306,7 @@ window.__FORM_OPTIONS = {{ {
                     <option value="zone">{{ t('pro.sort_zone') }}</option>
                     <option value="type">{{ t('pro.sort_type') }}</option>
                 </select>
-                <button id="sortOrder" class="p-1 text-midnight/60 hover:text-gold" aria-label="Cambiar orden">
+                <button id="sortOrder" class="p-1 text-midnight/60 hover:text-gold" aria-label="{{ t('pro.toggle_order') }}">
                     <i data-lucide="arrow-down" class="w-3 h-3"></i>
                 </button>
             </div>
@@ -525,7 +525,7 @@ window.__FORM_OPTIONS = {{ {
                         </div>
                         <div class="chart-card stats-entrance">
                             <div class="flex items-center justify-between mb-4">
-                                <h4 class="text-[10px] font-bold uppercase tracking-widest text-midnight/50">Zonas</h4>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest text-midnight/50">{{ t('pro.zones') }}</h4>
                                 <span id="chartZonesCount" class="chart-count-badge"></span>
                             </div>
                             <div class="chart-container" style="position:relative;height:220px">
@@ -543,7 +543,7 @@ window.__FORM_OPTIONS = {{ {
                         </div>
                         <div class="chart-card stats-entrance">
                             <div class="flex items-center justify-between mb-4">
-                                <h4 class="text-[10px] font-bold uppercase tracking-widest text-midnight/50">Tipo de Operación</h4>
+                                <h4 class="text-[10px] font-bold uppercase tracking-widest text-midnight/50">{{ t('pro.operation_type') }}</h4>
                                 <span id="chartOpTypeCount" class="chart-count-badge"></span>
                             </div>
                             <div class="chart-container" style="position:relative;height:220px">
@@ -564,9 +564,9 @@ window.__FORM_OPTIONS = {{ {
             <div class="flex items-center justify-between mb-6">
                 <div>
                     <p class="text-[9px] uppercase tracking-widest font-bold text-gold">Lead <span id="previewLeadId" class="font-mono"></span></p>
-                    <h3 id="previewLeadTitle" class="text-lg font-serif text-midnight mt-1">Vista rápida</h3>
+                    <h3 id="previewLeadTitle" class="text-lg font-serif text-midnight mt-1">{{ t('pro.quick_view') }}</h3>
                 </div>
-                <button onclick="closeLeadPreview()" class="p-2 text-midnight/60 hover:text-midnight rounded-lg hover:bg-paper-dark transition-colors" aria-label="Cerrar vista rápida">
+                <button onclick="closeLeadPreview()" class="p-2 text-midnight/60 hover:text-midnight rounded-lg hover:bg-paper-dark transition-colors" aria-label="{{ t('pro.close_quick_view') }}">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>

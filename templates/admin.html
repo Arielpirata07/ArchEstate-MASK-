@@ -315,25 +315,25 @@
                 <!-- Filters -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4 pa-filters">
                     <div>
-                        <label for="pa-profesional" class="block text-[9px] uppercase tracking-widest font-bold text-midnight/50 mb-1.5">Profesional</label>
+                        <label for="pa-profesional" class="block text-[9px] uppercase tracking-widest font-bold text-midnight/50 mb-1.5">{{ t('admin.professional') }}</label>
                         <select id="pa-profesional" class="w-full px-2.5 py-2 border border-midnight/20 rounded text-[11px] focus:border-gold focus:outline-none bg-white">
                             <option value="">{{ t('admin.filter_all') }}</option>
                         </select>
                     </div>
                     <div>
-                        <label for="pa-evento" class="block text-[9px] uppercase tracking-widest font-bold text-midnight/50 mb-1.5">Evento</label>
+                        <label for="pa-evento" class="block text-[9px] uppercase tracking-widest font-bold text-midnight/50 mb-1.5">{{ t('admin.event') }}</label>
                         <select id="pa-evento" class="w-full px-2.5 py-2 border border-midnight/20 rounded text-[11px] focus:border-gold focus:outline-none bg-white">
                             <option value="">{{ t('admin.filter_all') }}</option>
-                            <option value="phone_revealed">Revelado</option>
+                            <option value="phone_revealed">{{ t('admin.revealed') }}</option>
                             <option value="wa_link_generated">WhatsApp</option>
                         </select>
                     </div>
                     <div>
-                        <label for="pa-desde" class="block text-[9px] uppercase tracking-widest font-bold text-midnight/50 mb-1.5">Desde</label>
+                        <label for="pa-desde" class="block text-[9px] uppercase tracking-widest font-bold text-midnight/50 mb-1.5">{{ t('admin.from') }}</label>
                         <input type="date" id="pa-desde" class="w-full px-2.5 py-2 border border-midnight/20 rounded text-[11px] focus:border-gold focus:outline-none">
                     </div>
                     <div>
-                        <label for="pa-hasta" class="block text-[9px] uppercase tracking-widest font-bold text-midnight/50 mb-1.5">Hasta</label>
+                        <label for="pa-hasta" class="block text-[9px] uppercase tracking-widest font-bold text-midnight/50 mb-1.5">{{ t('admin.to') }}</label>
                         <input type="date" id="pa-hasta" class="w-full px-2.5 py-2 border border-midnight/20 rounded text-[11px] focus:border-gold focus:outline-none">
                     </div>
                 </div>
@@ -351,10 +351,10 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-paper-dark table-header-border">
-                                <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Profesional</th>
+                                <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.professional') }}</th>
                                 <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Lead</th>
                                 <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Teléfono</th>
-                                <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Evento</th>
+                                <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.event') }}</th>
                                 <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Fecha</th>
                             </tr>
                         </thead>
@@ -371,7 +371,7 @@
                                 <td colspan="5" class="p-8 text-center">
                                     <i data-lucide="phone-off" class="w-8 h-8 text-midnight/20 mx-auto mb-2"></i>
                                     <p class="text-xs text-midnight/30 font-bold tracking-wider">{{ t('admin.no_access') }}</p>
-                                    <p class="text-[10px] text-midnight/20 mt-1">Los eventos aparecerán cuando los profesionales interactúen con los teléfonos.</p>
+                                    <p class="text-[10px] text-midnight/20 mt-1">{{ t('admin.events_will_appear') }}</p>
                                 </td>
                             </tr>
                         </tbody>
@@ -382,11 +382,11 @@
                 <div id="pa-pagination" class="hidden flex items-center justify-between mt-4 pt-4 border-t border-midnight/10">
                     <p id="pa-info" class="text-[10px] text-midnight/60 font-bold tracking-wider"></p>
                     <div class="flex gap-1">
-                        <button id="pa-prev" aria-label="Página anterior" onclick="loadPhoneAuditPage(currentPaPage - 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                        <button id="pa-prev" aria-label="{{ t('admin.prev_page') }}" onclick="loadPhoneAuditPage(currentPaPage - 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled>
                             <i data-lucide="chevron-left" class="w-3 h-3"></i>
                         </button>
                         <span id="pa-page-indicator" class="px-2.5 py-1 text-[10px] font-bold text-midnight/50"></span>
-                        <button id="pa-next" aria-label="Página siguiente" onclick="loadPhoneAuditPage(currentPaPage + 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                        <button id="pa-next" aria-label="{{ t('admin.next_page') }}" onclick="loadPhoneAuditPage(currentPaPage + 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled>
                             <i data-lucide="chevron-right" class="w-3 h-3"></i>
                         </button>
                     </div>
@@ -440,7 +440,7 @@
                             </button>
                         </div>
                         <div class="text-sm text-midnight/60">
-                            <span id="prosCount">0</span> profesionales encontrados
+                            <span id="prosCount">0</span> {{ t('admin.pros_found') }}
                         </div>
                     </div>
                 </div>
@@ -450,12 +450,11 @@
                     <div class="p-4 bg-paper-dark border-b border-midnight/5 flex justify-between items-center">
                         <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('admin.pro_directory') }}</h3>
                         <div class="flex items-center gap-2">
-                            <span class="text-[10px] text-midnight/60 uppercase tracking-widest">Ordenar por:</span>
-                            <select id="proSortSelect" aria-label="Ordenar por" class="text-[10px] px-2 py-1 border border-midnight/20 rounded focus:border-gold focus:outline-none">
-                                <option value="id">ID</option>
-                                <option value="name">Nombre</option>
-                                <option value="license">Matrícula</option>
-                                <option value="specialty">Especialidad</option>
+                            <span class="text-[10px] text-midnight/60 uppercase tracking-widest">{{ t('admin.sort_by') }}</span>
+                            <select id="proSortSelect" aria-label="{{ t('admin.sort_by') }}" class="text-[10px] px-2 py-1 border border-midnight/20 rounded focus:border-gold focus:outline-none">
+                                <option value="name">{{ t('admin.name') }}</option>
+                                <option value="license">{{ t('admin.license') }}</option>
+                                <option value="specialty">{{ t('admin.specialty') }}</option>
                                 <option value="status">{{ t('admin.status') }}</option>
                             </select>
                             <button id="proSortOrder" class="p-1 text-midnight/60 hover:text-gold" title="Cambiar orden" aria-label="Cambiar orden">
@@ -535,7 +534,7 @@
                     {% endif %}
                 </div>
                 <div class="px-6 py-3 bg-paper-dark border-t border-midnight/5 flex-shrink-0">
-                    <p class="text-[8px] text-midnight/30 dark:text-paper/30 uppercase tracking-widest font-bold text-center">Fin del registro reciente</p>
+                    <p class="text-[8px] text-midnight/30 dark:text-paper/30 uppercase tracking-widest font-bold text-center">{{ t('admin.end_of_recent_log') }}</p>
                 </div>
             </div>
 
@@ -610,11 +609,11 @@
                 <div id="reports-pagination" class="hidden flex items-center justify-between px-4 py-3 border-t border-midnight/10">
                     <p id="reports-page-info" class="text-[10px] text-midnight/60 font-bold tracking-wider"></p>
                     <div class="flex gap-1">
-                        <button id="reports-prev" aria-label="Página anterior" onclick="loadReportsPage(currentReportsPage - 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                        <button id="reports-prev" aria-label="{{ t('admin.prev_page') }}" onclick="loadReportsPage(currentReportsPage - 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled>
                             <i data-lucide="chevron-left" class="w-3 h-3"></i>
                         </button>
                         <span id="reports-page-indicator" class="px-2.5 py-1 text-[10px] font-bold text-midnight/50"></span>
-                        <button id="reports-next" aria-label="Página siguiente" onclick="loadReportsPage(currentReportsPage + 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                        <button id="reports-next" aria-label="{{ t('admin.next_page') }}" onclick="loadReportsPage(currentReportsPage + 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled>
                             <i data-lucide="chevron-right" class="w-3 h-3"></i>
                         </button>
                     </div>
@@ -641,7 +640,7 @@
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <i data-lucide="search" class="w-3 h-3 text-midnight/30"></i>
                 </div>
-                <input id="fo-search" type="text" placeholder="Buscar opción..."
+                <input id="fo-search" type="text" placeholder="{{ t('admin.search_option_placeholder') }}"
                     oninput="filterBySearch(this.value)"
                     class="w-full pl-9 pr-4 py-2 bg-white border border-midnight/10 rounded text-sm focus:border-gold focus:ring-0 transition-colors outline-none">
             </div>
@@ -663,7 +662,7 @@
                     </tr>
                 </thead>
                 <tbody id="form-options-tbody" class="divide-y divide-midnight/5">
-                    <tr><td colspan="7" class="text-center py-8 text-midnight/60">Cargando...</td></tr>
+                    <tr><td colspan="7" class="text-center py-8 text-midnight/60">{{ t('admin.loading') }}</td></tr>
                 </tbody>
             </table>
         </div>
@@ -728,7 +727,7 @@
                     <p class="text-[10px] uppercase tracking-widest font-bold text-gold mb-1">{{ t('admin.detail_lead') }}</p>
                     <h3 class="text-2xl font-serif">Lead <span id="leadDetailId" class="serif-italic text-gold"></span></h3>
                 </div>
-                <button onclick="closeLeadDetailModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="Cerrar">
+                <button onclick="closeLeadDetailModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('admin.close') }}">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -753,13 +752,13 @@
             <div id="deactivateModalHeader" class="border-t-4 border-rose-500 px-8 pt-8 pb-4">
                 <div class="flex items-start justify-between">
                     <div>
-                        <p id="deactivateModalTag" class="text-[10px] uppercase tracking-widest font-bold text-rose-500 mb-1">Acción administrativa</p>
+                        <p id="deactivateModalTag" class="text-[10px] uppercase tracking-widest font-bold text-rose-500 mb-1">{{ t('admin.admin_action') }}</p>
                         <h3 id="deactivateModalTitle" class="text-2xl font-serif">Dar de <span class="serif-italic">Baja</span></h3>
                         <p class="text-sm text-midnight/50 mt-1">
-                            Usuario: <strong id="deactivateModalUsername" class="text-midnight font-bold"></strong>
+                            {{ t('admin.user_label') }} <strong id="deactivateModalUsername" class="text-midnight font-bold"></strong>
                         </p>
                     </div>
-                    <button onclick="closeDeactivateModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="Cerrar">
+                    <button onclick="closeDeactivateModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('admin.close') }}">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>
@@ -769,17 +768,17 @@
             <div id="deactivateModalWarning" class="mx-8 mb-6 p-3 bg-rose-50 border border-rose-100 rounded flex items-start gap-3">
                 <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5"></i>
                 <p id="deactivateModalWarningText" class="text-[10px] text-rose-700 font-bold uppercase tracking-wider leading-relaxed">
-                    El usuario perderá acceso inmediatamente. Esta acción quedará registrada en el log de auditoría y puede revertirse.
+                    {{ t('admin.disable_warning') }}
                 </p>
             </div>
 
             <!-- Campo de motivo -->
             <div class="px-8 pb-8 space-y-5">
                 <div id="deactivateReasonWrapper">
-                    <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">Motivo (opcional)</label>
+                    <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">{{ t('admin.reason_optional') }}</label>
                     <div class="relative">
                         <i data-lucide="message-square" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5"></i>
-                        <input id="deactivateReason" type="text" placeholder="Ej: Datos falsos, spam, conducta inapropiada..."
+                        <input id="deactivateReason" type="text" placeholder="{{ t('admin.disable_reason_placeholder') }}"
                                class="w-full bg-transparent border-0 border-b border-midnight/20 focus:border-gold focus:ring-0 py-3 pl-8 transition-colors outline-none text-sm">
                     </div>
                 </div>
@@ -789,7 +788,7 @@
                 <div class="flex gap-3 pt-2">
                     <button onclick="closeDeactivateModal()"
                         class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-colors">
-                        Cancelar
+                        {{ t('admin.cancel') }}
                     </button>
                     <button id="confirmDeactivateBtn" onclick="confirmDeactivate()"
                         class="flex-1 py-3 bg-rose-600 dark:bg-rose-700 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-rose-700 dark:hover:bg-rose-800 transition-colors flex items-center justify-center gap-2">
@@ -875,7 +874,7 @@
                         <p class="text-[10px] uppercase tracking-widest font-bold text-gold mb-1">{{ t('admin.send_notification') }}</p>
                         <h3 id="notifyModalTitle" class="text-2xl font-serif">{{ t('admin.send_notification_to') }} <span id="notifyModalProName" class="font-bold"></span></h3>
                     </div>
-                    <button onclick="closeNotifyModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="Cerrar">
+                    <button onclick="closeNotifyModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('admin.close') }}">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>
@@ -914,7 +913,7 @@
                     <p class="text-[10px] uppercase tracking-widest font-bold text-gold mb-1">{{ t('pac.area_code') }}</p>
                     <h3 id="pac-modal-title" class="text-xl font-serif"></h3>
                 </div>
-                <button onclick="closeAreaCodeModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="Cerrar">
+                <button onclick="closeAreaCodeModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('admin.close') }}">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>

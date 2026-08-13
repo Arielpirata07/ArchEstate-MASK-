@@ -1,17 +1,17 @@
 {% extends "email/base.html" %}
 
-{% block title %}Nuevo lead disponible — ArchEstate{% endblock %}
+{% block title %}{{ t('email.new_lead') }} — ArchEstate{% endblock %}
 
 {% block content %}
-<h2 style="margin: 0 0 8px; color: #000410; font-size: 20px;">Nuevo lead disponible</h2>
-<p style="margin: 0 0 20px; color: #735A3A; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: bold;">Para tu especialidad</p>
+<h2 style="margin: 0 0 8px; color: #000410; font-size: 20px;">{{ t('email.new_lead') }}</h2>
+<p style="margin: 0 0 20px; color: #735A3A; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: bold;">{{ t('email.for_your_specialty') }}</p>
 
 <p style="margin: 0 0 16px; color: #333; font-size: 14px; line-height: 1.6;">
-    Hola <strong>{{ professional_name }}</strong>,
+    {{ t('email.greeting') }} <strong>{{ professional_name }}</strong>,
 </p>
 
 <p style="margin: 0 0 24px; color: #333; font-size: 14px; line-height: 1.6;">
-    Se ha registrado un nuevo lead que puede ser de tu interés. Acá tenés los detalles:
+    {{ t('email.new_lead_desc') }}
 </p>
 
 <!-- Resumen principal -->
@@ -21,11 +21,11 @@
             <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                     <td>
-                        <p style="margin: 0; color: #A68A64; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;">Operación</p>
+                        <p style="margin: 0; color: #A68A64; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;">{{ t('email.operation') }}</p>
                         <p style="margin: 4px 0 0; color: #ffffff; font-size: 18px; font-weight: bold;">{{ lead_type }}</p>
                     </td>
                     <td style="text-align: right;">
-                        <p style="margin: 0; color: #A68A64; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;">Presupuesto</p>
+                        <p style="margin: 0; color: #A68A64; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;">{{ t('email.budget') }}</p>
                         <p style="margin: 4px 0 0; color: #735A3A; font-size: 18px; font-weight: bold;">{{ currency }} {{ budget }}</p>
                     </td>
                 </tr>
@@ -38,15 +38,15 @@
 <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #FAF9F7; border-radius: 8px; border-left: 4px solid #735A3A; margin-bottom: 20px;">
     <tr>
         <td style="padding: 16px 20px;">
-            <p style="margin: 0 0 8px; color: #735A3A; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: bold;">Ubicación</p>
+            <p style="margin: 0 0 8px; color: #735A3A; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: bold;">{{ t('email.location') }}</p>
             <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
-                    <td style="padding: 4px 0; font-size: 13px; color: #666;">Zona</td>
+                    <td style="padding: 4px 0; font-size: 13px; color: #666;">{{ t('email.zone') }}</td>
                     <td style="padding: 4px 0; font-size: 13px; color: #000410; font-weight: bold; text-align: right;">{{ zone }}</td>
                 </tr>
                 {% if province %}
                 <tr>
-                    <td style="padding: 4px 0; font-size: 13px; color: #666;">Provincia</td>
+                    <td style="padding: 4px 0; font-size: 13px; color: #666;">{{ t('email.province') }}</td>
                     <td style="padding: 4px 0; font-size: 13px; color: #000410; font-weight: bold; text-align: right;">{{ province }}</td>
                 </tr>
                 {% endif %}
@@ -59,51 +59,51 @@
 <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #FAF9F7; border-radius: 8px; border-left: 4px solid #735A3A; margin-bottom: 20px;">
     <tr>
         <td style="padding: 16px 20px;">
-            <p style="margin: 0 0 8px; color: #735A3A; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: bold;">Propiedad</p>
+            <p style="margin: 0 0 8px; color: #735A3A; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: bold;">{{ t('email.property') }}</p>
             <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
-                    <td style="padding: 4px 0; font-size: 13px; color: #666;">Tipo</td>
+                    <td style="padding: 4px 0; font-size: 13px; color: #666;">{{ t('email.type') }}</td>
                     <td style="padding: 4px 0; font-size: 13px; color: #000410; font-weight: bold; text-align: right;">{{ property_type }}</td>
                 </tr>
                 {% if bedrooms %}
                 <tr>
-                    <td style="padding: 4px 0; font-size: 13px; color: #666;">Dormitorios</td>
+                    <td style="padding: 4px 0; font-size: 13px; color: #666;">{{ t('email.bedrooms') }}</td>
                     <td style="padding: 4px 0; font-size: 13px; color: #000410; font-weight: bold; text-align: right;">{{ bedrooms }}</td>
                 </tr>
                 {% endif %}
                 {% if bathrooms %}
                 <tr>
-                    <td style="padding: 4px 0; font-size: 13px; color: #666;">Baños</td>
+                    <td style="padding: 4px 0; font-size: 13px; color: #666;">{{ t('email.bathrooms') }}</td>
                     <td style="padding: 4px 0; font-size: 13px; color: #000410; font-weight: bold; text-align: right;">{{ bathrooms }}</td>
                 </tr>
                 {% endif %}
                 {% if ambientes %}
                 <tr>
-                    <td style="padding: 4px 0; font-size: 13px; color: #666;">Ambientes</td>
+                    <td style="padding: 4px 0; font-size: 13px; color: #666;">{{ t('email.rooms') }}</td>
                     <td style="padding: 4px 0; font-size: 13px; color: #000410; font-weight: bold; text-align: right;">{{ ambientes }}</td>
                 </tr>
                 {% endif %}
                 {% if total_area %}
                 <tr>
-                    <td style="padding: 4px 0; font-size: 13px; color: #666;">Superficie total</td>
+                    <td style="padding: 4px 0; font-size: 13px; color: #666;">{{ t('email.total_area') }}</td>
                     <td style="padding: 4px 0; font-size: 13px; color: #000410; font-weight: bold; text-align: right;">{{ total_area }} m²</td>
                 </tr>
                 {% endif %}
                 {% if usable_m2 %}
                 <tr>
-                    <td style="padding: 4px 0; font-size: 13px; color: #666;">Superficie utilizable</td>
+                    <td style="padding: 4px 0; font-size: 13px; color: #666;">{{ t('email.usable_area') }}</td>
                     <td style="padding: 4px 0; font-size: 13px; color: #000410; font-weight: bold; text-align: right;">{{ usable_m2 }} m²</td>
                 </tr>
                 {% endif %}
                 {% if land_area %}
                 <tr>
-                    <td style="padding: 4px 0; font-size: 13px; color: #666;">Terreno</td>
+                    <td style="padding: 4px 0; font-size: 13px; color: #666;">{{ t('email.land') }}</td>
                     <td style="padding: 4px 0; font-size: 13px; color: #000410; font-weight: bold; text-align: right;">{{ land_area }} m²</td>
                 </tr>
                 {% endif %}
                 {% if built_area %}
                 <tr>
-                    <td style="padding: 4px 0; font-size: 13px; color: #666;">Construido</td>
+                    <td style="padding: 4px 0; font-size: 13px; color: #666;">{{ t('email.built') }}</td>
                     <td style="padding: 4px 0; font-size: 13px; color: #000410; font-weight: bold; text-align: right;">{{ built_area }} m²</td>
                 </tr>
                 {% endif %}
@@ -116,59 +116,59 @@
 <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #FAF9F7; border-radius: 8px; border-left: 4px solid #735A3A; margin-bottom: 20px;">
     <tr>
         <td style="padding: 16px 20px;">
-            <p style="margin: 0 0 8px; color: #735A3A; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: bold;">Características</p>
+            <p style="margin: 0 0 8px; color: #735A3A; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: bold;">{{ t('email.features') }}</p>
             <table width="100%" cellpadding="0" cellspacing="0">
                 {% if parking %}
                 <tr>
-                    <td style="padding: 4px 0; font-size: 13px; color: #666;">Cochera</td>
+                    <td style="padding: 4px 0; font-size: 13px; color: #666;">{{ t('email.parking') }}</td>
                     <td style="padding: 4px 0; font-size: 13px; color: #000410; font-weight: bold; text-align: right;">{{ parking }}</td>
                 </tr>
                 {% endif %}
                 {% if orientation %}
                 <tr>
-                    <td style="padding: 4px 0; font-size: 13px; color: #666;">Orientación</td>
+                    <td style="padding: 4px 0; font-size: 13px; color: #666;">{{ t('email.orientation') }}</td>
                     <td style="padding: 4px 0; font-size: 13px; color: #000410; font-weight: bold; text-align: right;">{{ orientation }}</td>
                 </tr>
                 {% endif %}
                 {% if property_condition %}
                 <tr>
-                    <td style="padding: 4px 0; font-size: 13px; color: #666;">Estado</td>
+                    <td style="padding: 4px 0; font-size: 13px; color: #666;">{{ t('email.condition') }}</td>
                     <td style="padding: 4px 0; font-size: 13px; color: #000410; font-weight: bold; text-align: right;">{{ property_condition }}</td>
                 </tr>
                 {% endif %}
                 {% if property_age %}
                 <tr>
-                    <td style="padding: 4px 0; font-size: 13px; color: #666;">Antigüedad</td>
+                    <td style="padding: 4px 0; font-size: 13px; color: #666;">{{ t('email.age') }}</td>
                     <td style="padding: 4px 0; font-size: 13px; color: #000410; font-weight: bold; text-align: right;">{{ property_age }}</td>
                 </tr>
                 {% endif %}
                 {% if architectural_style %}
                 <tr>
-                    <td style="padding: 4px 0; font-size: 13px; color: #666;">Estilo</td>
+                    <td style="padding: 4px 0; font-size: 13px; color: #666;">{{ t('email.style') }}</td>
                     <td style="padding: 4px 0; font-size: 13px; color: #000410; font-weight: bold; text-align: right;">{{ architectural_style }}</td>
                 </tr>
                 {% endif %}
                 {% if elevator %}
                 <tr>
-                    <td style="padding: 4px 0; font-size: 13px; color: #666;">Ascensor</td>
+                    <td style="padding: 4px 0; font-size: 13px; color: #666;">{{ t('email.elevator') }}</td>
                     <td style="padding: 4px 0; font-size: 13px; color: #000410; font-weight: bold; text-align: right;">{{ elevator }}</td>
                 </tr>
                 {% endif %}
                 {% if pool %}
                 <tr>
-                    <td style="padding: 4px 0; font-size: 13px; color: #666;">Piscina</td>
+                    <td style="padding: 4px 0; font-size: 13px; color: #666;">{{ t('email.pool') }}</td>
                     <td style="padding: 4px 0; font-size: 13px; color: #000410; font-weight: bold; text-align: right;">{{ pool }}</td>
                 </tr>
                 {% endif %}
                 {% if community_pool %}
                 <tr>
-                    <td style="padding: 4px 0; font-size: 13px; color: #666;">Piscina comunitaria</td>
+                    <td style="padding: 4px 0; font-size: 13px; color: #666;">{{ t('email.community_pool') }}</td>
                     <td style="padding: 4px 0; font-size: 13px; color: #000410; font-weight: bold; text-align: right;">{{ community_pool }}</td>
                 </tr>
                 {% endif %}
                 {% if floor_block %}
                 <tr>
-                    <td style="padding: 4px 0; font-size: 13px; color: #666;">Piso/Bloque</td>
+                    <td style="padding: 4px 0; font-size: 13px; color: #666;">{{ t('email.floor_block') }}</td>
                     <td style="padding: 4px 0; font-size: 13px; color: #000410; font-weight: bold; text-align: right;">{{ floor_block }}</td>
                 </tr>
                 {% endif %}
@@ -182,7 +182,7 @@
 <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #FAF9F7; border-radius: 8px; border-left: 4px solid #735A3A; margin-bottom: 20px;">
     <tr>
         <td style="padding: 16px 20px;">
-            <p style="margin: 0 0 8px; color: #735A3A; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: bold;">Amenities</p>
+            <p style="margin: 0 0 8px; color: #735A3A; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: bold;">{{ t('email.amenities') }}</p>
             <p style="margin: 0; font-size: 13px; color: #000410; line-height: 1.6;">{{ amenities }}</p>
         </td>
     </tr>
@@ -194,7 +194,7 @@
 <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #FAF9F7; border-radius: 8px; border-left: 4px solid #735A3A; margin-bottom: 20px;">
     <tr>
         <td style="padding: 16px 20px;">
-            <p style="margin: 0 0 8px; color: #735A3A; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: bold;">Notas del cliente</p>
+            <p style="margin: 0 0 8px; color: #735A3A; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; font-weight: bold;">{{ t('email.client_notes') }}</p>
             <p style="margin: 0; font-size: 13px; color: #333; line-height: 1.6; font-style: italic;">{{ additional_features }}</p>
         </td>
     </tr>
@@ -205,7 +205,7 @@
 <table width="100%" cellpadding="0" cellspacing="0" style="margin-top: 24px;">
     <tr>
         <td align="center">
-            <a href="{{ site_url }}/profesional" style="display: inline-block; background-color: #735A3A; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-size: 13px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">Ver lead en el panel</a>
+            <a href="{{ site_url }}/profesional" style="display: inline-block; background-color: #735A3A; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-size: 13px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">{{ t('email.view_lead') }}</a>
         </td>
     </tr>
 </table>

@@ -717,7 +717,7 @@ def export_leads_csv():
     def generate():
         data = StringIO()
         writer = csv.writer(data)
-        writer.writerow(t('prof.export_csv_headers', lang))
+        writer.writerow(t('prof.export_csv_headers', lang).split(','))
         yield data.getvalue()
         data.seek(0)
         data.truncate(0)
@@ -771,7 +771,7 @@ def export_leads_xlsx():
     ws = wb.active
     ws.title = t('prof.export_leads_sheet', lang)
 
-    headers = t('prof.export_leads_headers', lang)
+    headers = t('prof.export_leads_headers', lang).split(',')
     for col_num, header in enumerate(headers, 1):
         ws.cell(row=1, column=col_num, value=header)
     _style_header_row(ws, len(headers))

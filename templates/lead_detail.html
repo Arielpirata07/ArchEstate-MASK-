@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 
-{% block title %}Detalle de Lead | ArchEstate{% endblock %}
+{% block title %}{{ t('prof.pdf_title') }} | ArchEstate{% endblock %}
 
 {% block content %}
 <div class="max-w-4xl mx-auto w-full space-y-6">
     <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-white rounded-lg shadow-xl p-6 border border-midnight/10 header-entrance hover-lift">
         <div>
             <p class="text-[10px] uppercase tracking-[0.3em] text-gold font-bold">Lead #{{ lead.id }}</p>
-            <h1 class="text-3xl font-serif text-midnight mt-2">Detalles de la Solicitud</h1>
-            <p class="text-sm text-midnight/60 mt-2">Información completa enviada por el cliente para su análisis.</p>
+            <h1 class="text-3xl font-serif text-midnight mt-2">{{ t('prof.pdf_title') }}</h1>
+            <p class="text-sm text-midnight/60 mt-2">{{ t('user.form_desc') }}</p>
         </div>
         <a href="{{ url_for('professional.professional_view') }}" class="inline-flex items-center gap-2 rounded bg-midnight dark:bg-gold px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-white hover:bg-gold dark:hover:bg-midnight transition-colors">
-            <i data-lucide="arrow-left" class="w-4 h-4"></i> Volver al panel
+            <i data-lucide="arrow-left" class="w-4 h-4"></i> {{ t('lead_detail.back_to_panel') }}
         </a>
     </div>
 
@@ -19,24 +19,24 @@
         <!-- COLUMNA IZQUIERDA: INFORMACIÓN PRINCIPAL -->
         <div class="bg-white rounded-lg border border-midnight/10 shadow-xl p-6 space-y-5 animate-on-scroll fade-in-up">
             <div>
-                <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Tipo de Operación</p>
+                <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">{{ t('prof.pdf_operation_type') }}</p>
                 <p class="text-base font-semibold text-midnight">{{ lead.type | e }}</p>
             </div>
 
             <div>
-                <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Zona Geográfica</p>
+                <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">{{ t('prof.pdf_geographic_zone') }}</p>
                 <p class="text-base text-midnight">{{ lead.zone | e }}</p>
             </div>
 
             {% if lead.province %}
             <div>
-                <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Provincia</p>
+                <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">{{ t('prof.pdf_province_label') }}</p>
                 <p class="text-base text-midnight">{{ lead.province | e }}</p>
             </div>
             {% endif %}
 
             <div>
-                <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Presupuesto</p>
+                <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">{{ t('prof.pdf_budget') }}</p>
                 {% set budget_symbol = 'US$' if lead.currency == 'USD' else '€' if lead.currency == 'EUR' else '$' %}
                 {% set budget_parts = lead.budget.split(' - ') %}
                 {% if budget_parts | length == 2 and budget_parts[0] != budget_parts[1] %}
@@ -55,12 +55,12 @@
             </div>
 
             <div>
-                <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Estilo Arquitectónico</p>
-                <p class="text-base text-midnight">{{ lead.architectural_style | e or 'No especificado' }}</p>
+                <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">{{ t('prof.pdf_architectural_style') }}</p>
+                <p class="text-base text-midnight">{{ lead.architectural_style | e or t('prof.not_specified') }}</p>
             </div>
 
             <div class="border-t border-midnight/10 pt-5">
-                <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Contacto Directo</p>
+                <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">{{ t('prof.pdf_direct_contact') }}</p>
                 <div class="flex items-center gap-2 text-sm text-midnight">
                     <i data-lucide="mail" class="w-4 h-4 text-gold flex-shrink-0"></i>
                     <span>{{ lead.email | e }}</span>
@@ -70,7 +70,7 @@
                     <span>{{ lead.phone | e }}</span>
                     {% if lead.phone_format_valid == 1 %}
                     <span class="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-700 inline-flex items-center gap-1">
-                        <i data-lucide="check" class="w-3 h-3"></i> Formato Válido
+                        <i data-lucide="check" class="w-3 h-3"></i> {{ t('lead_detail.valid_format') }}
                     </span>
                     {% endif %}
                 </div>
@@ -80,7 +80,7 @@
             </div>
 
             <div class="border-t border-midnight/10 pt-5">
-                <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Registrado</p>
+                <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">{{ t('prof.pdf_registered') }}</p>
                 <div class="flex items-center gap-2 text-sm text-midnight">
                     <i data-lucide="calendar" class="w-4 h-4 text-gold flex-shrink-0"></i>
                     <span>{{ lead.timestamp }}</span>
@@ -90,52 +90,52 @@
 
         <!-- COLUMNA DERECHA: ESPECIFICACIONES TÉCNICAS -->
         <div class="bg-white rounded-lg border border-midnight/10 shadow-xl p-6 space-y-5 animate-on-scroll fade-in-up">
-            <h2 class="text-lg font-serif text-midnight">Especificaciones Técnicas</h2>
+            <h2 class="text-lg font-serif text-midnight">{{ t('prof.pdf_tech_specs') }}</h2>
 
             <div class="grid grid-cols-3 gap-4">
                 <div class="text-center">
-                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Ambientes</p>
+                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">{{ t('prof.pdf_rooms') }}</p>
                     <p class="text-2xl font-serif text-midnight">{{ lead.ambientes if lead.ambientes else '-' }}</p>
                 </div>
                 <div class="text-center">
-                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Habitaciones</p>
+                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">{{ t('prof.pdf_bedrooms') }}</p>
                     <p class="text-2xl font-serif text-midnight">{{ lead.bedrooms if lead.bedrooms else '-' }}</p>
                 </div>
                 <div class="text-center">
-                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Baños</p>
+                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">{{ t('prof.pdf_bathrooms') }}</p>
                     <p class="text-2xl font-serif text-midnight">{{ lead.bathrooms if lead.bathrooms else '-' }}</p>
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-4 border-t border-midnight/10 pt-5">
                 <div>
-                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Superficie Total</p>
+                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">{{ t('prof.pdf_total_area') }}</p>
                     <p class="text-sm text-midnight">{{ lead.total_area if lead.total_area else '-' }}{% if lead.total_area %} m²{% endif %}</p>
                 </div>
                 <div>
-                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Estacionamiento</p>
-                    <p class="text-sm text-midnight">{{ lead.parking | e or 'Sin preferencia' }}</p>
+                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">{{ t('prof.pdf_parking') }}</p>
+                    <p class="text-sm text-midnight">{{ lead.parking | e or t('lead_detail.no_preference') }}</p>
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Orientación</p>
-                    <p class="text-sm text-midnight">{{ lead.orientation | e or 'Indiferente' }}</p>
+                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">{{ t('prof.pdf_orientation') }}</p>
+                    <p class="text-sm text-midnight">{{ lead.orientation | e or t('lead_detail.indifferent') }}</p>
                 </div>
                 <div>
-                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Estado</p>
-                    <p class="text-sm text-midnight">{{ lead.property_condition | e or 'Sin preferencia' }}</p>
+                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">{{ t('prof.pdf_condition') }}</p>
+                    <p class="text-sm text-midnight">{{ lead.property_condition | e or t('lead_detail.no_preference') }}</p>
                 </div>
             </div>
 
             <div>
-                <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">Antigüedad</p>
-                <p class="text-sm text-midnight">{{ lead.property_age | e or 'Indiferente' }}</p>
+                <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">{{ t('prof.pdf_age') }}</p>
+                <p class="text-sm text-midnight">{{ lead.property_age | e or t('lead_detail.indifferent') }}</p>
             </div>
 
             <div class="border-t border-midnight/10 pt-5">
-                <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-4">Extras y Comodidades</p>
+                <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-4">{{ t('prof.pdf_amenities') }}</p>
                 {% if lead.amenities %}
                     <div class="space-y-2">
                         {% for amenity in lead.amenities.split(',') %}
@@ -146,106 +146,106 @@
                         {% endfor %}
                     </div>
                 {% else %}
-                    <p class="text-sm text-midnight/50">No especificadas</p>
+                    <p class="text-sm text-midnight/50">{{ t('prof.not_specified_fem_pl') }}</p>
                 {% endif %}
             </div>
 
             <!-- Detalles específicos por tipo de propiedad -->
             {% if lead.property_type == 'departamento' %}
             <div class="border-t border-midnight/10 pt-5">
-                <p class="text-lg font-serif text-midnight mb-4">Detalles del Departamento</p>
+                <p class="text-lg font-serif text-midnight mb-4">{{ t('user.dept_details') }}</p>
                 <div class="space-y-3">
                     <div>
-                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Piso / Bloque</p>
-                        <p class="text-sm text-midnight">{{ lead.floor_block | e or 'No especificado' }}</p>
+                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">{{ t('prof.pdf_floor_block') }}</p>
+                        <p class="text-sm text-midnight">{{ lead.floor_block | e or t('prof.not_specified') }}</p>
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Metros Útiles</p>
-                        <p class="text-sm text-midnight">{{ lead.usable_m2 if lead.usable_m2 else 'No especificado' }} m²</p>
+                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">{{ t('prof.pdf_usable_m2') }}</p>
+                        <p class="text-sm text-midnight">{{ lead.usable_m2 if lead.usable_m2 else t('prof.not_specified') }} m²</p>
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Ascensor</p>
-                        <p class="text-sm text-midnight">{{ lead.elevator | e or 'No especificado' }}</p>
+                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">{{ t('prof.pdf_elevator') }}</p>
+                        <p class="text-sm text-midnight">{{ lead.elevator | e or t('prof.not_specified') }}</p>
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Piscina Comunitaria</p>
-                        <p class="text-sm text-midnight">{{ lead.community_pool | e or 'No especificado' }}</p>
+                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">{{ t('lead_detail.community_pool') }}</p>
+                        <p class="text-sm text-midnight">{{ lead.community_pool | e or t('prof.not_specified') }}</p>
                     </div>
                 </div>
             </div>
             {% elif lead.property_type == 'casa' %}
             <div class="border-t border-midnight/10 pt-5">
-                <p class="text-lg font-serif text-midnight mb-4">Detalles de la Propiedad</p>
+                <p class="text-lg font-serif text-midnight mb-4">{{ t('prof.pdf_property_details') }}</p>
                 <div class="space-y-3">
                     <div>
-                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Superficie de Terreno</p>
-                        <p class="text-sm text-midnight">{{ lead.land_area if lead.land_area else 'No especificado' }} m²</p>
+                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">{{ t('prof.pdf_land_area') }}</p>
+                        <p class="text-sm text-midnight">{{ lead.land_area if lead.land_area else t('prof.not_specified') }} m²</p>
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Superficie Construida</p>
-                        <p class="text-sm text-midnight">{{ lead.built_area if lead.built_area else 'No especificado' }} m²</p>
+                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">{{ t('prof.pdf_built_area') }}</p>
+                        <p class="text-sm text-midnight">{{ lead.built_area if lead.built_area else t('prof.not_specified') }} m²</p>
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Piscina</p>
-                        <p class="text-sm text-midnight">{{ lead.pool | e or 'No especificado' }}</p>
+                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">{{ t('prof.pdf_pool') }}</p>
+                        <p class="text-sm text-midnight">{{ lead.pool | e or t('prof.not_specified') }}</p>
                     </div>
                 </div>
             </div>
             {% elif lead.property_type == 'duplex' %}
             <div class="border-t border-midnight/10 pt-5">
-                <p class="text-lg font-serif text-midnight mb-4">Detalles del Dúplex</p>
+                <p class="text-lg font-serif text-midnight mb-4">{{ t('user.duplex_details') }}</p>
                 <div class="space-y-3">
                     <div>
-                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Superficie de Terreno</p>
-                        <p class="text-sm text-midnight">{{ lead.land_area if lead.land_area else 'No especificado' }} m²</p>
+                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">{{ t('prof.pdf_land_area') }}</p>
+                        <p class="text-sm text-midnight">{{ lead.land_area if lead.land_area else t('prof.not_specified') }} m²</p>
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Superficie Construida</p>
-                        <p class="text-sm text-midnight">{{ lead.built_area if lead.built_area else 'No especificado' }} m²</p>
+                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">{{ t('prof.pdf_built_area') }}</p>
+                        <p class="text-sm text-midnight">{{ lead.built_area if lead.built_area else t('prof.not_specified') }} m²</p>
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Ascensor</p>
-                        <p class="text-sm text-midnight">{{ lead.elevator | e or 'No especificado' }}</p>
+                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">{{ t('prof.pdf_elevator') }}</p>
+                        <p class="text-sm text-midnight">{{ lead.elevator | e or t('prof.not_specified') }}</p>
                     </div>
                 </div>
             </div>
             {% elif lead.property_type == 'penthouse' %}
             <div class="border-t border-midnight/10 pt-5">
-                <p class="text-lg font-serif text-midnight mb-4">Detalles del Penthouse</p>
+                <p class="text-lg font-serif text-midnight mb-4">{{ t('user.penthouse_details') }}</p>
                 <div class="space-y-3">
                     <div>
-                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Piso</p>
-                        <p class="text-sm text-midnight">{{ lead.floor_block | e or 'No especificado' }}</p>
+                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">{{ t('user.penthouse_floor') }}</p>
+                        <p class="text-sm text-midnight">{{ lead.floor_block | e or t('prof.not_specified') }}</p>
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Metros Útiles</p>
-                        <p class="text-sm text-midnight">{{ lead.usable_m2 if lead.usable_m2 else 'No especificado' }} m²</p>
+                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">{{ t('prof.pdf_usable_m2') }}</p>
+                        <p class="text-sm text-midnight">{{ lead.usable_m2 if lead.usable_m2 else t('prof.not_specified') }} m²</p>
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Ascensor Privado</p>
-                        <p class="text-sm text-midnight">{{ lead.elevator | e or 'No especificado' }}</p>
+                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">{{ t('user.private_elevator') }}</p>
+                        <p class="text-sm text-midnight">{{ lead.elevator | e or t('prof.not_specified') }}</p>
                     </div>
                 </div>
             </div>
             {% elif lead.property_type == 'local_comercial' %}
             <div class="border-t border-midnight/10 pt-5">
-                <p class="text-lg font-serif text-midnight mb-4">Detalles del Local Comercial</p>
+                <p class="text-lg font-serif text-midnight mb-4">{{ t('user.local_details') }}</p>
                 <div class="space-y-3">
                     <div>
-                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Superficie Total</p>
-                        <p class="text-sm text-midnight">{{ lead.usable_m2 if lead.usable_m2 else 'No especificado' }} m²</p>
+                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">{{ t('prof.pdf_total_area') }}</p>
+                        <p class="text-sm text-midnight">{{ lead.usable_m2 if lead.usable_m2 else t('prof.not_specified') }} m²</p>
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Frente</p>
-                        <p class="text-sm text-midnight">{{ lead.floor_block | e or 'No especificado' }}</p>
+                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">{{ t('user.frontage') }}</p>
+                        <p class="text-sm text-midnight">{{ lead.floor_block | e or t('prof.not_specified') }}</p>
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Piso / Planta</p>
-                        <p class="text-sm text-midnight">{{ lead.built_area | e or 'No especificado' }}</p>
+                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">{{ t('user.local_floor') }}</p>
+                        <p class="text-sm text-midnight">{{ lead.built_area | e or t('prof.not_specified') }}</p>
                     </div>
                     <div>
-                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">Altura del Local</p>
-                        <p class="text-sm text-midnight">{{ lead.land_area if lead.land_area else 'No especificado' }} m</p>
+                        <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-1">{{ t('user.local_height') }}</p>
+                        <p class="text-sm text-midnight">{{ lead.land_area if lead.land_area else t('prof.not_specified') }} m</p>
                     </div>
                 </div>
             </div>
