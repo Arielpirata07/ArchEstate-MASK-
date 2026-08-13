@@ -29,11 +29,14 @@ SESSION_TIMEOUT = 3600
 
 PAGINATION_DEFAULT = 50
 
-PERMANENT_SESSION_LIFETIME = 3600
-
 REMEMBER_TOKEN_DAYS = 30
 REMEMBER_COOKIE_NAME = 'remember_token'
 REMEMBER_COOKIE_SECURE = os.environ.get('PREFER_SECURE_COOKIES', 'false').lower() == 'true'
+
+# Solo se usa cuando session.permanent = True (login con "recordarme").
+# Debe coincidir con REMEMBER_TOKEN_DAYS o la cookie de sesion expira antes
+# que el remember_token, forzando restauraciones innecesarias.
+PERMANENT_SESSION_LIFETIME = REMEMBER_TOKEN_DAYS * 24 * 3600
 
 OTP_TTL_MINUTES = 10
 OTP_MAX_ATTEMPTS = 5

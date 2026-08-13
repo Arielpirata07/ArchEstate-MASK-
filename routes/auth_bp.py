@@ -131,7 +131,6 @@ def login():
 
                 session.clear()
                 session.modified = True
-                session.permanent = True
                 session['user_id'] = user['id']
                 session['username'] = user['username']
                 session['email'] = user['email']
@@ -150,6 +149,7 @@ def login():
                 remember_response = None
                 if request.form.get('remember') == 'on':
                     try:
+                        session.permanent = True
                         selector, validator, validator_hash = utils.generate_remember_token()
                         conn.execute(
                             'INSERT INTO remember_tokens (user_id, selector, validator_hash, expires_at, ip_address, user_agent) '
