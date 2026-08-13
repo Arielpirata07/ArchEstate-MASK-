@@ -25,8 +25,8 @@ module.exports = {
                 'paper-dark': '#F4F3F1',
             },
             fontFamily: {
-                serif: ['Newsreader', 'serif'],
-                sans: ['Manrope', 'sans-serif'],
+                serif: ['Newsreader', 'Iowan Old Style', 'Palatino Linotype', 'Palatino', 'Georgia', 'Times New Roman', 'serif'],
+                sans: ['Manrope', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Helvetica Neue', 'Arial', 'sans-serif'],
             }
         }
     },

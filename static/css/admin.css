@@ -3,6 +3,11 @@
    ============================================ */
 
 /* --- Audit Log Scrollbar --- */
+.overflow-y-auto {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(115, 90, 58, 0.2) transparent;
+}
+
 .overflow-y-auto::-webkit-scrollbar {
     width: 4px;
 }
@@ -213,6 +218,9 @@
 }
 
 /* --- Scrollbar --- */
+.dark .overflow-y-auto {
+    scrollbar-color: rgba(166, 138, 100, 0.3) transparent;
+}
 .dark .overflow-y-auto::-webkit-scrollbar-thumb {
     background: rgba(166, 138, 100, 0.3);
 }

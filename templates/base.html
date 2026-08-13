@@ -162,7 +162,7 @@
                     <span id="notif-badge" class="badge-pop absolute -top-0.5 -right-0.5 flex items-center justify-center w-4 h-4 text-[9px] font-bold text-white bg-rose-500 rounded-full">{{ unread_notifications }}</span>
                     {% endif %}
                 </button>
-                <span class="text-[10px] text-white/40 uppercase font-bold tracking-tighter">{{ active_role }}: {{ session.get('username') }}</span>
+                <span class="hidden sm:inline text-[10px] text-white/40 uppercase font-bold tracking-tighter">{{ active_role }}: {{ session.get('username') }}</span>
                 <a href="{{ url_for('auth.logout') }}" class="hidden sm:flex items-center gap-2 text-rose-400 dark:text-rose-500 hover:text-rose-300 dark:hover:text-rose-200 transition-colors text-[10px] font-bold uppercase tracking-widest">
                     <i data-lucide="log-out" class="w-4 h-4" aria-hidden="true"></i>
                     <span class="hidden lg:inline">{{ t('nav.logout') }}</span>

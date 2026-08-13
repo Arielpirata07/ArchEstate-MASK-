@@ -721,13 +721,46 @@ html:not(.js) .animate-on-scroll.animate-in {
     animation: none !important;
 }
 
-/* --- Header Entrance (staggered per view) --- */
+/* --- Header Entrance (misma animación que el título del hero del landing) --- */
 .page-entrance.page-loaded .header-entrance {
-    animation: pageEntrance 0.5s var(--ease-expo) 0.15s forwards;
+    animation: titleReveal 1.2s var(--ease-out) 0.15s forwards;
 }
 
 .header-entrance {
     opacity: 0;
+}
+
+/* --- Title Reveal Animation (hero landing) --- */
+@keyframes titleReveal {
+    0% {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+        filter: blur(8px);
+    }
+    60% {
+        filter: blur(0);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+}
+
+/* --- Navbar Shrink on Scroll (todas las vistas) --- */
+#main-navbar {
+    transition: height 0.35s var(--ease-out),
+                background-color 0.35s ease,
+                backdrop-filter 0.35s ease,
+                box-shadow 0.35s ease;
+    height: 4rem;
+}
+
+#main-navbar.navbar-shrunk {
+    height: 2.75rem;
+    background-color: rgba(16, 30, 51, 0.92);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 /* --- Table Row Stagger --- */
@@ -800,6 +833,27 @@ html:not(.js) .animate-on-scroll.animate-in {
     transform: translateY(0);
 }
 
+/* --- Notification dropdown (campanita): despliegue lento tipo "drop" --- */
+#notif-dropdown {
+    transform-origin: top right;
+    opacity: 0;
+    transform: translateY(-16px) scale(0.96);
+    transition: opacity 0.4s ease, transform 0.6s var(--ease-pop);
+}
+#notif-dropdown.modal-open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* --- Notification items: cascada lenta de arriba hacia abajo --- */
+.notif-item-anim {
+    animation: notifItemDrop 0.55s var(--ease-out) both;
+}
+@keyframes notifItemDrop {
+    from { opacity: 0; transform: translateY(-12px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
 /* --- Table Row Stagger --- */
 .table-row-animate {
     opacity: 0;
@@ -868,7 +922,7 @@ html {
 .dark .text-midlight { color: var(--text-primary) !important; }
 .dark .text-midnight\/60 { color: var(--text-secondary) !important; }
 .dark .text-midnight\/40 { color: rgba(250, 249, 247, 0.4) !important; }
-.dark .text-midnight\/30 { color: rgba(250, 249, 247, 0.3) !important; }
+.dark .text-midnight\/30 { color: rgba(250, 249, 247, 0.5) !important; }
 .dark .text-midnight\/20 { color: rgba(250, 249, 247, 0.2) !important; }
 .dark .text-midnight\/10 { color: rgba(250, 249, 247, 0.1) !important; }
 .dark .border-midnight\/20 { border-color: var(--border) !important; }
@@ -894,6 +948,18 @@ html {
 .dark .bg-slate-200 { background: var(--bg-secondary) !important; }
 .dark .shadow-sm { box-shadow: 0 1px 3px rgba(0,0,0,0.4) !important; }
 .dark .shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.5), 0 1px 2px rgba(0,0,0,0.4) !important; }
+
+/* Auth primary CTA: keep gold background + white text in dark mode.
+   The .dark .bg-midnight override above would otherwise paint these
+   buttons with var(--bg-card) and kill the dark:bg-gold utility. */
+.dark .bg-midnight.dark\:bg-gold {
+    background-color: rgb(115 90 58 / 1) !important;
+    color: #fff !important;
+}
+.dark .bg-midnight.dark\:bg-gold:hover {
+    background-color: var(--bg-secondary) !important;
+    color: var(--accent) !important;
+}
 .dark .shadow-md { box-shadow: 0 4px 6px rgba(0,0,0,0.5) !important; }
 .dark .shadow-lg { box-shadow: 0 10px 15px rgba(0,0,0,0.5) !important; }
 .dark .shadow-xl { box-shadow: 0 20px 25px rgba(0,0,0,0.6) !important; }
@@ -1032,6 +1098,7 @@ textarea {
     *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
+        animation-delay: 0ms !important;
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
     }

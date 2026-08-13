@@ -10,7 +10,7 @@
 <div class="space-y-8 admin-page-shell">
 
     <!-- Header -->
-    <div class="flex justify-between items-end border-b border-midnight/10 pb-6 header-entrance">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b border-midnight/10 pb-6 header-entrance gap-4">
         <div>
             <h2 class="text-4xl font-serif">{{ t('admin.title') }}</h2>
             <p class="text-midnight/50 mt-2">{{ t('admin.subtitle') }}</p>
@@ -294,8 +294,8 @@
                 </div>
                 <div id="tm-empty" class="hidden flex flex-col items-center justify-center py-10 text-center">
                     <i data-lucide="inbox" class="w-8 h-8 text-midnight/20 mb-2"></i>
-                    <p class="text-xs text-midnight/30 font-bold tracking-wider">Sin datos de telemetría en este período</p>
-                    <p class="text-[10px] text-midnight/20 mt-1">Los eventos se registrarán a medida que los profesionales interactúen.</p>
+                    <p class="text-xs text-midnight/30 font-bold tracking-wider">{{ t('admin.no_telemetry_data') }}</p>
+                    <p class="text-[10px] text-midnight/20 mt-1">{{ t('admin.telemetry_events_note') }}</p>
                 </div>
             </div>
         </div>
@@ -431,7 +431,7 @@
                     </div>
                     
                     <div class="flex justify-between items-center">
-                        <div class="flex gap-2">
+        <div class="overflow-x-auto flex gap-2 pb-2">
                             <button id="applyProFilters" class="px-4 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors">
                                 {{ t('admin.apply_filters') }}
                             </button>

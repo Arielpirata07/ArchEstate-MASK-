@@ -1420,10 +1420,10 @@ function initNavbarScroll() {
     window.addEventListener('scroll', () => {
         if (!ticking) {
             window.requestAnimationFrame(() => {
-                if (window.pageYOffset > 50) {
-                    navbar.classList.add('navbar-scrolled');
+                if (window.pageYOffset > 80) {
+                    navbar.classList.add('navbar-shrunk');
                 } else {
-                    navbar.classList.remove('navbar-scrolled');
+                    navbar.classList.remove('navbar-shrunk');
                 }
                 ticking = false;
             });

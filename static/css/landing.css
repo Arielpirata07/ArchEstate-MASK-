@@ -326,34 +326,11 @@
     }
 }
 
-/* --- Navbar Shrink on Scroll --- */
-#main-navbar {
-    transition: height 0.35s var(--ease-out),
-                background-color 0.35s ease,
-                backdrop-filter 0.35s ease,
-                box-shadow 0.35s ease;
-    height: 4rem;
-}
-
-#main-navbar.navbar-shrunk {
-    height: 2.75rem;
-    background-color: rgba(16, 30, 51, 0.92);
-    backdrop-filter: blur(12px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-
 /* --- Hero Image Reveal --- */
 .hero-img {
     opacity: 1;
     transform: scale(1);
     transition: none;
-}
-
-/* --- Navbar Scroll Effect --- */
-.navbar-scrolled {
-    background-color: rgba(16, 30, 51, 0.95) !important;
-    backdrop-filter: blur(12px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 /* --- How It Works Section --- */

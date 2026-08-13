@@ -22,7 +22,7 @@ window.__FORM_OPTIONS = {{ {
 </script>
 <div class="grid grid-cols-1 lg:grid-cols-2 min-h-[85vh] gap-0">
     <!-- LADO IZQUIERDO - Oscuro/Midnight con animación ambiental -->
-    <div class="aside-ambient bg-gradient-to-br from-midnight via-midnight-light to-midnight text-white p-12 lg:p-16 flex flex-col justify-between">
+    <div class="aside-ambient bg-gradient-to-br from-midnight via-midnight-light to-midnight text-white p-6 sm:p-12 lg:p-16 flex flex-col justify-between">
         <div class="space-y-6 text-center header-entrance">
             <div>
                 <h1 class="aside-title text-5xl lg:text-6xl font-serif italic mb-4">{{ t('user.define_legacy') }}<br/><span class="font-serif italic">{{ t('user.define_legacy2') }}</span></h1>
@@ -39,7 +39,7 @@ window.__FORM_OPTIONS = {{ {
     </div>
 
     <!-- LADO DERECHO - Blanco/Formulario -->
-    <div class="bg-white p-12 lg:p-16 overflow-y-auto max-h-[85vh]">
+    <div class="bg-white p-6 sm:p-12 lg:p-16 overflow-y-auto max-h-[85vh]">
         <div class="max-w-2xl">
             <!-- Encabezado del formulario -->
             <div class="mb-8 border-b border-midnight/10 pb-6" style="opacity: 1 !important; animation: none !important;">
@@ -352,22 +352,22 @@ window.__FORM_OPTIONS = {{ {
                                         </label>
                                     </div>
                                     <div id="gated-community-details" class="hidden space-y-3 pt-2 border-t border-midnight/10">
-                                        <div class="grid grid-cols-2 gap-4">
+                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <label class="flex items-center gap-2 cursor-pointer text-sm text-midnight/70">
                                                 <input type="checkbox" name="amenities" value="Seguridad 24h barrio" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
                                                 {{ t('user.security_24h') }}
                                             </label>
                                             <label class="flex items-center gap-2 cursor-pointer text-sm text-midnight/70">
                                                 <input type="checkbox" name="amenities" value="Club house" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
-                                                Club House
+                                                {{ t('user.club_house') }}
                                             </label>
                                             <label class="flex items-center gap-2 cursor-pointer text-sm text-midnight/70">
                                                 <input type="checkbox" name="amenities" value="Canchas deportivas" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
-                                                Canchas deportivas
+                                                {{ t('user.sports_courts') }}
                                             </label>
                                             <label class="flex items-center gap-2 cursor-pointer text-sm text-midnight/70">
                                                 <input type="checkbox" name="amenities" value="Lagunas artificiales" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0">
-                                                Lagunas artificiales
+                                                {{ t('user.artificial_lagoons') }}
                                             </label>
                                         </div>
                                     </div>
