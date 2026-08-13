@@ -118,7 +118,7 @@ class TestRevealPhone:
         resp = client.get(f'/api/lead/{lead_id}/phone')
         assert resp.status_code == 200
         data = resp.get_json()
-        assert data['status'] == 'success'
+        assert data['success'] is True
         assert data['phone'] == '+5491144445555'
 
     def test_audit_log_uses_hash(self, auth_professional, db):

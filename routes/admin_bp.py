@@ -7,8 +7,9 @@ import pytz
 
 from flask import Blueprint, jsonify, redirect, render_template, request, send_from_directory, session, url_for
 
-logger = logging.getLogger(__name__)
 from werkzeug.security import generate_password_hash
+
+logger = logging.getLogger(__name__)
 
 import models
 import rate_limit
@@ -108,7 +109,7 @@ def get_professionals_api():
         })
     except Exception as e:
         logger.exception('Error en get_professionals_api')
-        return jsonify({"status": "error", "message": t('admin.internal_error', lang)}), 500
+        return jsonify({"success": False, "error": t('admin.internal_error', lang)}), 500
     finally:
         if conn:
             conn.close()
@@ -123,7 +124,7 @@ def update_pro_status(pro_id):
     new_status = data.get('status')
 
     if new_status not in ['approved', 'rejected']:
-        return jsonify({"status": "error", "message": t('admin.invalid_status', lang)}), 400
+        return jsonify({"success": False, "error": t('admin.invalid_status', lang)}), 400
 
     conn = None
     try:
@@ -142,9 +143,9 @@ def update_pro_status(pro_id):
 
             action = "Aprobación" if new_status == 'approved' else "Rechazo"
             utils.log_action(action, pro['name'], session)
-            return jsonify({"status": "success", "message": t('admin.pro_status_updated', lang, action=action.lower())})
+            return jsonify({"success": True, "message": t('admin.pro_status_updated', lang, action=action.lower())})
 
-        return jsonify({"error": t('admin.pro_not_found', lang)}), 404
+        return jsonify({"success": False, "error": t('admin.pro_not_found', lang)}), 404
     finally:
         if conn:
             conn.close()
@@ -227,7 +228,7 @@ def admin_stats():
         })
     except Exception as e:
         logger.exception('Error en admin_stats')
-        return jsonify({"error": t('admin.internal_error_short', lang)}), 500
+        return jsonify({"success": False, "error": t('admin.internal_error_short', lang)}), 500
     finally:
         if conn:
             conn.close()
@@ -691,7 +692,7 @@ def download_professional_doc(user_id):
 
     except Exception as e:
         logger.exception('Error en download_professional_doc')
-        return jsonify({"error": t('admin.internal_error', lang)}), 500
+        return jsonify({"success": False, "error": t('admin.internal_error', lang)}), 500
     finally:
         if conn:
             conn.close()
@@ -744,7 +745,7 @@ def get_all_users():
         })
     except Exception:
         logger.exception('Error en get_all_users')
-        return jsonify({"error": t('admin.internal_error_short', lang)}), 500
+        return jsonify({"success": False, "error": t('admin.internal_error_short', lang)}), 500
     finally:
         if conn:
             conn.close()
@@ -760,7 +761,7 @@ def admin_reset_password(user_id):
 
     is_valid, error = validators.validate_password(new_password)
     if not is_valid:
-        return jsonify({"error": error}), 400
+        return jsonify({"success": False, "error": error}), 400
 
     conn = None
     try:
@@ -768,10 +769,10 @@ def admin_reset_password(user_id):
         user = conn.execute('SELECT username, role FROM users WHERE id = ?', (user_id,)).fetchone()
 
         if not user:
-            return jsonify({"error": t('admin.user_not_found', lang)}), 404
+            return jsonify({"success": False, "error": t('admin.user_not_found', lang)}), 404
 
         if user['role'] == 'admin' and user_id != session.get('user_id'):
-            return jsonify({"error": t('admin.cannot_reset_admin', lang)}), 403
+            return jsonify({"success": False, "error": t('admin.cannot_reset_admin', lang)}), 403
 
         conn.execute('UPDATE users SET hash = ? WHERE id = ?',
                      (generate_password_hash(new_password), user_id))
@@ -783,7 +784,7 @@ def admin_reset_password(user_id):
     utils.log_action("Reset de Contraseña", f"Usuario: {user['username']} (ID: {user_id})", session)
 
     return jsonify({
-        "status": "success",
+        "success": True,
         "message": t('admin.password_updated', lang, username=user['username'])
     })
 
@@ -797,7 +798,7 @@ def admin_set_user_active(user_id):
     new_state = data.get('is_active')
 
     if new_state not in (True, False):
-        return jsonify({"error": t('admin.invalid_state', lang)}), 400
+        return jsonify({"success": False, "error": t('admin.invalid_state', lang)}), 400
 
     conn = None
     try:
@@ -805,13 +806,13 @@ def admin_set_user_active(user_id):
         user = conn.execute('SELECT username, role FROM users WHERE id = ?', (user_id,)).fetchone()
 
         if not user:
-            return jsonify({"error": t('admin.user_not_found', lang)}), 404
+            return jsonify({"success": False, "error": t('admin.user_not_found', lang)}), 404
 
         if user['role'] == 'admin':
-            return jsonify({"error": t('admin.cannot_deactivate_admin', lang)}), 403
+            return jsonify({"success": False, "error": t('admin.cannot_deactivate_admin', lang)}), 403
 
         if user_id == session.get('user_id'):
-            return jsonify({"error": t('admin.cannot_deactivate_self', lang)}), 403
+            return jsonify({"success": False, "error": t('admin.cannot_deactivate_self', lang)}), 403
 
         conn.execute('UPDATE users SET is_active = ? WHERE id = ?', (1 if new_state else 0, user_id))
         conn.commit()
@@ -827,7 +828,7 @@ def admin_set_user_active(user_id):
         log_detail += f" — Motivo: {reason}"
     utils.log_action(action, log_detail, session)
 
-    return jsonify({"status": "success", "message": message, "is_active": new_state})
+    return jsonify({"success": True, "message": message, "is_active": new_state})
 
 
 @admin_bp.route('/api/admin/send-notification', methods=['POST'])
@@ -842,7 +843,7 @@ def admin_send_notification():
     broadcast = data.get('broadcast', False)
 
     if not title:
-        return jsonify({"error": t('admin.notification_title_required', lang)}), 400
+        return jsonify({"success": False, "error": t('admin.notification_title_required', lang)}), 400
 
     if broadcast:
         conn = None
@@ -853,18 +854,18 @@ def admin_send_notification():
                 ('approved',)
             ).fetchall()
             for pro in professionals:
-                send_internal_notification(pro['id'], title, body)
+                send_internal_notification(pro['id'], title, body, actor_id=session['user_id'])
             utils.log_action('Notificacion masiva', f'Titulo: {title}', session)
-            return jsonify({"status": "success", "message": t('admin.notification_sent_all', lang, count=len(professionals))})
+            return jsonify({"success": True, "message": t('admin.notification_sent_all', lang, count=len(professionals))})
         finally:
             if conn:
                 conn.close()
     elif target_user_id:
-        send_internal_notification(target_user_id, title, body)
+        send_internal_notification(target_user_id, title, body, actor_id=session['user_id'])
         utils.log_action('Notificacion individual', f'Usuario #{target_user_id} - Titulo: {title}', session)
-        return jsonify({"status": "success", "message": t('admin.notification_sent', lang)})
+        return jsonify({"success": True, "message": t('admin.notification_sent', lang)})
     else:
-        return jsonify({"error": t('admin.notification_target_required', lang)}), 400
+        return jsonify({"success": False, "error": t('admin.notification_target_required', lang)}), 400
 
 
 @admin_bp.route('/api/admin/notification-log')

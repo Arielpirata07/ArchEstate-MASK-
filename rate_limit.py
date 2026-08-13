@@ -77,8 +77,8 @@ def check_rate_limit(limit=10, window=60):
                     accept = request.headers.get('Accept', '')
                     if 'application/json' in accept or request.is_json:
                         return jsonify({
-                            "status": "error",
-                            "message": "Demasiadas solicitudes. Espera unos minutos antes de intentar nuevamente.",
+                            "success": False,
+                            "error": "Demasiadas solicitudes. Espera unos minutos antes de intentar nuevamente.",
                             "retry_after": int(window - (current_time - (requests[0] if requests else current_time)))
                         }), 429
                     else:

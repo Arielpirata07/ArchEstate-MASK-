@@ -63,8 +63,8 @@ def submit_lead():
 
     if not user_id:
         return jsonify({
-            "status": "error",
-            "message": t('client.auth_required', lang)
+            "success": False,
+            "error": t('client.auth_required', lang)
         }), 401
 
     conn = None
@@ -73,61 +73,61 @@ def submit_lead():
         user = conn.execute('SELECT id, username FROM users WHERE id = ?', (user_id,)).fetchone()
 
         if not user:
-            return jsonify({"status": "error", "message": t('client.invalid_session', lang)}), 401
+            return jsonify({"success": False, "error": t('client.invalid_session', lang)}), 401
 
         email = session.get('email') or data.get('email', '')
         is_valid, error = validators.validate_email(email)
         if not is_valid:
-            return jsonify({"status": "error", "message": error}), 400
+            return jsonify({"success": False, "error": error}), 400
 
         phone = data.get('phone', '').strip()
 
         phone_format_valid = 0
         if session.get('role') != 'admin':
             if not phone:
-                return jsonify({"status": "error", "message": t('client.phone_required', lang)}), 400
+                return jsonify({"success": False, "error": t('client.phone_required', lang)}), 400
             is_valid, error = validators.validate_phone(phone)
             if not is_valid:
-                return jsonify({"status": "error", "message": error}), 400
+                return jsonify({"success": False, "error": error}), 400
             phone_format_valid = 1
 
         budget = data.get('budget')
         if budget:
             is_valid, error = validators.validate_budget(budget)
             if not is_valid:
-                return jsonify({"status": "error", "message": error}), 400
+                return jsonify({"success": False, "error": error}), 400
 
         zone = data.get('zone')
         if zone:
             is_valid, error = validators.validate_zone(zone)
             if not is_valid:
-                return jsonify({"status": "error", "message": error}), 400
+                return jsonify({"success": False, "error": error}), 400
 
         lead_type = data.get('type')
         if not lead_type:
-            return jsonify({"status": "error", "message": t('client.operation_type_required', lang)}), 400
+            return jsonify({"success": False, "error": t('client.operation_type_required', lang)}), 400
 
         zone = data.get('zone')
         if not zone:
-            return jsonify({"status": "error", "message": t('client.zone_required', lang)}), 400
+            return jsonify({"success": False, "error": t('client.zone_required', lang)}), 400
 
         budget = data.get('budget')
         if not budget:
-            return jsonify({"status": "error", "message": t('client.budget_required', lang)}), 400
+            return jsonify({"success": False, "error": t('client.budget_required', lang)}), 400
 
         property_type = data.get('property_type', 'departamento')
         valid_property_types = models.get_form_options_by_category('property_type')
         if property_type not in valid_property_types:
-            return jsonify({"status": "error", "message": t('client.invalid_property_type', lang)}), 400
+            return jsonify({"success": False, "error": t('client.invalid_property_type', lang)}), 400
 
         valid_currencies = models.get_form_options_by_category('currency')
         currency = data.get('currency', 'ARG')
         if currency not in valid_currencies:
-            return jsonify({"status": "error", "message": t('client.invalid_currency', lang)}), 400
+            return jsonify({"success": False, "error": t('client.invalid_currency', lang)}), 400
 
         valid_lead_types = models.get_form_options_by_category('operation_type')
         if lead_type not in valid_lead_types:
-            return jsonify({"status": "error", "message": t('client.invalid_operation_type', lang)}), 400
+            return jsonify({"success": False, "error": t('client.invalid_operation_type', lang)}), 400
 
         try:
             land_area = int(data.get('land_area') or 0)
@@ -137,14 +137,14 @@ def submit_lead():
             built_area = 0
 
         if property_type == 'casa' and built_area > land_area:
-            return jsonify({"status": "error", "message": t('client.built_area_exceeds_land', lang)}), 400
+            return jsonify({"success": False, "error": t('client.built_area_exceeds_land', lang)}), 400
 
         province = data.get('province', '')
         country = data.get('country', '')
 
         valid_countries = models.get_form_options_by_category('country')
         if country and country not in valid_countries:
-            return jsonify({"status": "error", "message": t('client.invalid_country', lang)}), 400
+            return jsonify({"success": False, "error": t('client.invalid_country', lang)}), 400
 
         cursor = conn.execute('''
             INSERT INTO leads (
@@ -198,13 +198,13 @@ def submit_lead():
             pass
 
         return jsonify({
-            "status": "success",
+            "success": True,
             "message": t('client.lead_submitted', lang)
         })
 
     except Exception as e:
         logger.exception('Error en BD')
-        return jsonify({"status": "error", "message": t('client.lead_error', lang)}), 500
+        return jsonify({"success": False, "error": t('client.lead_error', lang)}), 500
     finally:
         if conn:
             conn.close()

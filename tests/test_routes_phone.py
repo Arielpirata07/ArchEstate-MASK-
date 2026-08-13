@@ -44,7 +44,7 @@ class TestSendCode:
         resp = auth_client.post('/api/phone/send-code', content_type='application/json')
         assert resp.status_code == 200
         data = resp.get_json()
-        assert data['status'] == 'success'
+        assert data['success'] is True
         assert 'channel' in data
 
     def test_stores_code_in_database(self, auth_client, db):
@@ -147,7 +147,7 @@ class TestSendCode:
         resp = auth_client.post('/api/phone/send-code', content_type='application/json')
         assert resp.status_code == 200
         data = resp.get_json()
-        assert data['status'] == 'success'
+        assert data['success'] is True
         # No debe haber crasheado; el canal debe caer al default (sms o whatsapp)
         assert data['channel'] in ('sms', 'whatsapp')
 

@@ -91,11 +91,11 @@ def get_leads_api():
 
         user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
         if not user:
-            return jsonify({"status": "error", "message": t('prof.access_denied', lang)}), 403
+            return jsonify({"success": False, "error": t('prof.access_denied', lang)}), 403
 
         professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
         if not professional or professional['status'] != 'approved':
-            return jsonify({"status": "error", "message": t('prof.account_pending', lang)}), 403
+            return jsonify({"success": False, "error": t('prof.account_pending', lang)}), 403
 
         my_leads = request.args.get('my_leads', '1').strip() == '1'
         search = request.args.get('search', '').strip()
@@ -276,7 +276,7 @@ def get_leads_filter_options():
         if user:
             professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
             if not professional or professional['status'] != 'approved':
-                return jsonify({"error": t('prof.approval_required', lang)}), 403
+                return jsonify({"success": False, "error": t('prof.approval_required', lang)}), 403
     finally:
         if conn:
             conn.close()
@@ -429,11 +429,11 @@ def get_leads_stats():
         lang = get_language()
         user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
         if not user:
-            return jsonify({'status': 'error', 'message': t('prof.access_denied', lang)}), 403
+            return jsonify({"success": False, "error": t('prof.access_denied', lang)}), 403
 
         professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
         if not professional or professional['status'] != 'approved':
-            return jsonify({'status': 'error', 'message': t('prof.account_pending', lang)}), 403
+            return jsonify({"success": False, "error": t('prof.account_pending', lang)}), 403
 
         my_leads = request.args.get('my_leads', '1').strip() == '1'
         month = request.args.get('month', '').strip()
@@ -441,10 +441,10 @@ def get_leads_stats():
             month = datetime.now().strftime('%Y-%m')
 
         stats = _query_leads_stats(conn, session['user_id'], my_leads, month)
-        return jsonify({'status': 'success', 'stats': stats, 'month': month})
+        return jsonify({"success": True, "stats": stats, "month": month})
     except Exception as e:
         logger.exception('Error en get_leads_stats')
-        return jsonify({'status': 'error', 'message': t('prof.internal_error', lang)}), 500
+        return jsonify({"success": False, "error": t('prof.internal_error', lang)}), 500
     finally:
         if conn:
             conn.close()
@@ -683,7 +683,7 @@ def invalidate_filter_cache():
     from app_setup import filter_cache
     lang = get_language()
     filter_cache.invalidate()
-    return jsonify({"status": "success", "message": t('prof.cache_invalidated', lang)})
+    return jsonify({"success": True, "message": t('prof.cache_invalidated', lang)})
 
 
 @professional_bp.route('/api/leads/export')
@@ -831,7 +831,7 @@ def download_lead_pdf(lead_id):
             conn.close()
 
     if not lead:
-        return jsonify({"status": "error", "message": t('prof.lead_not_found', lang)}), 404
+        return jsonify({"success": False, "error": t('prof.lead_not_found', lang)}), 404
 
     lead = dict(lead)
 
@@ -1116,7 +1116,7 @@ def get_doc_status():
         user = conn.execute('SELECT doc_path FROM users WHERE id = ?', (session['user_id'],)).fetchone()
 
         if not user:
-            return jsonify({"error": t('prof.user_not_found', lang)}), 404
+            return jsonify({"success": False, "error": t('prof.user_not_found', lang)}), 404
 
         doc_path = user['doc_path']
         has_doc = bool(doc_path)
@@ -1133,7 +1133,7 @@ def get_doc_status():
         })
     except Exception as e:
         logger.exception('Error en get_doc_status')
-        return jsonify({"error": t('prof.internal_error_short', lang)}), 500
+        return jsonify({"success": False, "error": t('prof.internal_error_short', lang)}), 500
     finally:
         if conn:
             conn.close()
@@ -1150,11 +1150,11 @@ def upload_professional_doc():
     lang = get_language()
 
     if 'document' not in request.files:
-        return jsonify({"error": t('prof.no_file_included', lang)}), 400
+        return jsonify({"success": False, "error": t('prof.no_file_included', lang)}), 400
 
     file = request.files['document']
     if not file or file.filename == '':
-        return jsonify({"error": t('prof.no_file_selected', lang)}), 400
+        return jsonify({"success": False, "error": t('prof.no_file_selected', lang)}), 400
 
     if not allowed_file(file.filename):
         return jsonify({
@@ -1163,13 +1163,13 @@ def upload_professional_doc():
 
     mime_valid, detected_ext, mime_error = utils.validate_mime_type(file, file.filename)
     if not mime_valid:
-        return jsonify({"error": mime_error}), 415
+        return jsonify({"success": False, "error": mime_error}), 415
 
     file.seek(0, 2)
     size = file.tell()
     file.seek(0)
     if size > config.MAX_UPLOAD_SIZE:
-        return jsonify({"error": t('prof.file_too_large', lang)}), 413
+        return jsonify({"success": False, "error": t('prof.file_too_large', lang)}), 413
 
     original_name = secure_filename(file.filename)
     filename = f"user_{session['user_id']}_{original_name}"

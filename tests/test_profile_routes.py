@@ -7,7 +7,7 @@ class TestProfileUpdate:
             'phone': '+5491123456789',
         })
         assert resp.status_code == 200
-        assert resp.get_json()['status'] == 'success'
+        assert resp.get_json()['success'] is True
 
         user_id = None
         with auth_client.session_transaction() as sess:
@@ -38,7 +38,7 @@ class TestPasswordChange:
             'new_password': 'newpass123',
         })
         assert resp.status_code == 200
-        assert resp.get_json()['status'] == 'success'
+        assert resp.get_json()['success'] is True
 
         row = db.execute('SELECT hash FROM users WHERE id = ?', (user_id,)).fetchone()
         from werkzeug.security import check_password_hash

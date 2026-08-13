@@ -58,7 +58,7 @@ class TestSubmitLead:
         resp = auth_client.post('/api/submit', json=VALID_LEAD)
         assert resp.status_code == 200
         data = resp.get_json()
-        assert data['status'] == 'success'
+        assert data['success'] is True
 
         row = db.execute('SELECT * FROM leads ORDER BY id DESC LIMIT 1').fetchone()
         assert row['phone'] == '+5491123456789'
@@ -71,7 +71,7 @@ class TestSubmitLead:
         payload.pop('phone')
         resp = auth_client.post('/api/submit', json=payload)
         assert resp.status_code == 400
-        assert resp.get_json()['status'] == 'error'
+        assert resp.get_json()['success'] is False
 
     @patch('services.notifications.notify_lead_created')
     def test_invalid_operation_type_rejected(self, mock_notify, auth_client):
@@ -79,7 +79,7 @@ class TestSubmitLead:
         payload['type'] = 'no_existe'
         resp = auth_client.post('/api/submit', json=payload)
         assert resp.status_code == 400
-        assert resp.get_json()['status'] == 'error'
+        assert resp.get_json()['success'] is False
 
     @patch('services.notifications.notify_lead_created')
     def test_missing_email_rejected(self, mock_notify, auth_client):
@@ -107,7 +107,7 @@ class TestSubmitLead:
         payload['phone'] = '+52 55 1234 5678'
         resp = auth_client.post('/api/submit', json=payload)
         assert resp.status_code == 200
-        assert resp.get_json()['status'] == 'success'
+        assert resp.get_json()['success'] is True
 
         row = db.execute('SELECT phone, phone_format_valid FROM leads ORDER BY id DESC LIMIT 1').fetchone()
         assert row['phone'] == '+52 55 1234 5678'
@@ -130,4 +130,4 @@ class TestSubmitLead:
         payload['phone'] = '55 1234 5678'
         resp = auth_client.post('/api/submit', json=payload)
         assert resp.status_code == 400
-        assert resp.get_json()['status'] == 'error'
+        assert resp.get_json()['success'] is False
