@@ -8,7 +8,7 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto pt-8">
-    <div class="flex items-center justify-between mb-8 header-entrance">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 header-entrance gap-4">
         <div>
             <h1 class="text-3xl font-serif italic" style="color:var(--text-primary)">{{ t('profile.title') }}</h1>
             <p class="text-sm mt-1" style="color:var(--text-secondary)">{{ t('profile.subtitle') }}</p>
@@ -48,11 +48,13 @@
                     <i data-lucide="activity" class="w-4 h-4" aria-hidden="true"></i>
                     <span>{{ t('profile.activity') }}</span>
                 </button>
+                {% if not user or user.role != 'professional' %}
                 <button role="tab" aria-selected="false" aria-controls="panel-solicitudes" id="tab-solicitudes" tabindex="-1"
                     class="settings-tab" onclick="showSettingsTab('solicitudes')">
                     <i data-lucide="file-text" class="w-4 h-4" aria-hidden="true"></i>
                     <span>{{ t('profile.leads') }}</span>
                 </button>
+                {% endif %}
                 {% if user and user.role == 'professional' %}
                 <button role="tab" aria-selected="false" aria-controls="panel-profesional" id="tab-profesional" tabindex="-1"
                     class="settings-tab" onclick="showSettingsTab('profesional')">
@@ -64,12 +66,12 @@
         </aside>
 
         <!-- Content -->
-        <div class="lg:col-span-4 p-8 lg:p-10 settings-content">
+        <div class="lg:col-span-4 p-4 sm:p-8 lg:p-10 settings-content">
 
             <!-- ==================== PANEL: CUENTA ==================== -->
             <div role="tabpanel" id="panel-cuenta" aria-labelledby="tab-cuenta">
                 <div class="settings-card hover-lift">
-                    <div class="flex items-start gap-8 mb-8">
+                    <div class="flex flex-col sm:flex-row items-start gap-4 sm:gap-8 mb-8">
                         <!-- Avatar -->
                         <div class="flex-shrink-0 text-center">
                             <div class="avatar-upload relative mx-auto" id="avatar-container" onclick="document.getElementById('avatar-input').click()" role="button" tabindex="0" aria-label="{{ t('profile.avatar_change') }}" onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
@@ -533,6 +535,7 @@
             </div>
 
             <!-- ==================== PANEL: SOLICITUDES ==================== -->
+            {% if not user or user.role != 'professional' %}
             <div role="tabpanel" id="panel-solicitudes" aria-labelledby="tab-solicitudes" hidden>
                 <div class="settings-card hover-lift">
                     <h2 class="text-xl font-serif italic mb-6" style="color:var(--text-primary)">{{ t('profile.my_leads') }}</h2>
@@ -571,6 +574,7 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
 
             <!-- ==================== PANEL: PROFESIONAL ==================== -->
             {% if user and user.role == 'professional' %}

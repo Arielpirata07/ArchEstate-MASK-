@@ -7,11 +7,11 @@ import re
 from datetime import datetime
 from io import StringIO
 
-logger = logging.getLogger(__name__)
-
 import openpyxl
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side, numbers
 import pytz
+
+logger = logging.getLogger(__name__)
 
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, Response, send_file, session, url_for
 from fpdf import FPDF
