@@ -360,6 +360,50 @@
     outline-offset: 2px;
 }
 
+/* --- Coverage zone tags (removable) --- */
+.coverage-zone-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.5rem 0.35rem 0.8rem;
+    border: 1.5px solid var(--border);
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #735A3A;
+    background: rgba(115, 90, 58, 0.1);
+    border-color: #735A3A;
+}
+
+.dark .coverage-zone-tag {
+    color: #A68A64;
+    background: rgba(166, 138, 100, 0.1);
+    border-color: #A68A64;
+}
+
+.coverage-zone-tag button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 999px;
+    color: inherit;
+    opacity: 0.7;
+    transition: opacity 0.15s var(--ease-out), background-color 0.15s var(--ease-out);
+}
+
+.coverage-zone-tag button:hover {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.08);
+}
+
+.dark .coverage-zone-tag button:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
 /* --- Timeline Activity --- */
 .activity-timeline {
     position: relative;

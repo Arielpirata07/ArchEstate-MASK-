@@ -653,6 +653,54 @@
                                 </div>
                             </div>
 
+                            <div class="settings-card" style="padding:1rem;margin-top:0.5rem">
+                                <label class="input-label">{{ t('profile.coverage_title') }}</label>
+                                <p class="text-[9px] mt-1 mb-3" style="color:var(--text-secondary)">{{ t('profile.coverage_desc') }}</p>
+
+                                <div id="coverage-fallback-hint" class="hidden flex items-start gap-2 mb-4 p-3 rounded text-[10px]" style="background:rgba(115,90,58,0.08);color:#735A3A">
+                                    <i data-lucide="info" class="w-3.5 h-3.5 mt-0.5 flex-shrink-0" aria-hidden="true"></i>
+                                    <span>{{ t('profile.coverage_fallback_hint') }}</span>
+                                </div>
+
+                                <div class="mb-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <label class="text-xs font-semibold" style="color:var(--text-primary)">{{ t('profile.coverage_zones') }}</label>
+                                        <span id="coverage-zones-count" class="text-[9px]" style="color:var(--text-secondary)">0/20</span>
+                                    </div>
+                                    <div class="flex gap-2 mb-1">
+                                        <input id="coverage-zone-input" type="text" maxlength="60" class="input-field flex-1"
+                                            placeholder="{{ t('profile.coverage_zone_placeholder') }}"
+                                            onkeydown="if(event.key==='Enter'){event.preventDefault();addCoverageZone();}">
+                                        <button type="button" id="coverage-zone-add-btn" onclick="addCoverageZone()" class="btn-secondary px-4" aria-label="{{ t('profile.coverage_add') }}">
+                                            <i data-lucide="plus" class="w-4 h-4" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                    <p id="coverage-zone-error" class="hidden text-[9px] text-rose-500 mb-2"></p>
+                                    <div id="coverage-zones-list" class="flex flex-wrap gap-2"></div>
+                                </div>
+
+                                <div>
+                                    <label class="text-xs font-semibold mb-2 block" style="color:var(--text-primary)">{{ t('profile.coverage_specialties') }}</label>
+                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2" id="coverage-specialties-list">
+                                        {% for opt in form_options.get('property_type', []) %}
+                                        <label class="chip-checkbox">
+                                            <input type="checkbox" class="coverage-specialty-checkbox" value="{{ opt.value }}">
+                                            <span class="chip-label">{{ opt.label }}</span>
+                                        </label>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center gap-4 pt-4 mt-4 border-t" style="border-color:var(--border)">
+                                    <button type="button" id="coverage-save-btn" onclick="saveCoverage()" class="btn-secondary">
+                                        <i data-lucide="save" class="w-4 h-4" aria-hidden="true"></i>
+                                        <span id="coverage-save-btn-label">{{ t('profile.coverage_save') }}</span>
+                                    </button>
+                                    <span id="coverage-save-msg" class="hidden text-sm font-medium text-emerald-600" aria-live="polite">{{ t('profile.saved') }}</span>
+                                    <span id="coverage-save-error" class="hidden text-sm font-medium text-rose-500" aria-live="polite"></span>
+                                </div>
+                            </div>
+
                             <div>
                                 <label class="input-label">{{ t('profile.pro_services') }}</label>
                                 <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2" id="services-container">

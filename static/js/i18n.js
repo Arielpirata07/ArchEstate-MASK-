@@ -509,6 +509,11 @@ window.I18N = {
         'pac.confirm_delete': '¿Eliminar este código de área?',
         'pac.deleted': 'Código eliminado',
         'pac.delete_error': 'Error al eliminar',
+        'profile.coverage_remove': 'Quitar zona',
+        'profile.coverage_zone_limit': 'Llegaste al máximo de 20 zonas',
+        'profile.coverage_zone_duplicate': 'Esa zona ya está en la lista',
+        'profile.saving': 'Guardando...',
+        'profile.coverage_save': 'Guardar cobertura',
     },
     en: {
         // === TOAST ===
@@ -1020,6 +1025,11 @@ window.I18N = {
         'pac.confirm_delete': 'Delete this area code?',
         'pac.deleted': 'Area code deleted',
         'pac.delete_error': 'Error deleting',
+        'profile.coverage_remove': 'Remove zone',
+        'profile.coverage_zone_limit': 'You reached the maximum of 20 zones',
+        'profile.coverage_zone_duplicate': 'That zone is already in the list',
+        'profile.saving': 'Saving...',
+        'profile.coverage_save': 'Save coverage',
     }
 };
 

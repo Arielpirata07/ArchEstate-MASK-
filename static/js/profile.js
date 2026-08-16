@@ -41,7 +41,7 @@ function showSettingsTab(tabName) {
     if (tabName === 'solicitudes') loadUserLeads();
     if (tabName === 'seguridad') loadUserSessions();
     if (tabName === 'actividad') loadUserActivity();
-    if (tabName === 'profesional') loadProfessionalFullProfile();
+    if (tabName === 'profesional') { loadProfessionalFullProfile(); loadCoverage(); }
 
     if (window.lucide) lucide.createIcons();
 }
@@ -1153,6 +1153,123 @@ function loadProfessionalFullProfile() {
 function setVal(id, val) {
     const el = document.getElementById(id);
     if (el && val !== undefined && val !== null) el.value = val;
+}
+
+var _coverageZones = [];
+// Debe coincidir con models.MAX_COVERAGE_VALUES en el backend.
+var COVERAGE_MAX_ZONES = 20;
+
+function loadCoverage() {
+    return fetch('/api/profile/professional/coverage')
+    .then(r => r.json())
+    .then(data => {
+        if (!data.success || !data.coverage) return;
+        _coverageZones = Array.isArray(data.coverage.zones) ? data.coverage.zones.slice() : [];
+        renderCoverageZones();
+
+        const specialties = Array.isArray(data.coverage.specialties) ? data.coverage.specialties : [];
+        document.querySelectorAll('.coverage-specialty-checkbox').forEach(cb => {
+            cb.checked = specialties.includes(cb.value);
+        });
+
+        const hint = document.getElementById('coverage-fallback-hint');
+        if (hint) hint.classList.toggle('hidden', data.coverage.configured !== false);
+    })
+    .catch(() => {});
+}
+
+function renderCoverageZones() {
+    const list = document.getElementById('coverage-zones-list');
+    if (list) {
+        list.innerHTML = _coverageZones.map((zone, i) =>
+            '<span class="coverage-zone-tag">' + escapeHtml(zone) +
+            '<button type="button" onclick="removeCoverageZone(' + i + ')" aria-label="' + t('profile.coverage_remove') + '">' +
+            '<i data-lucide="x" class="w-3 h-3" aria-hidden="true"></i></button></span>'
+        ).join('');
+        if (window.lucide) lucide.createIcons();
+    }
+
+    const count = document.getElementById('coverage-zones-count');
+    if (count) count.textContent = _coverageZones.length + '/' + COVERAGE_MAX_ZONES;
+
+    const addBtn = document.getElementById('coverage-zone-add-btn');
+    const zoneInput = document.getElementById('coverage-zone-input');
+    const atLimit = _coverageZones.length >= COVERAGE_MAX_ZONES;
+    if (addBtn) addBtn.disabled = atLimit;
+    if (zoneInput) zoneInput.disabled = atLimit;
+}
+
+function showCoverageZoneError(message) {
+    const errEl = document.getElementById('coverage-zone-error');
+    if (!errEl) return;
+    if (!message) { errEl.classList.add('hidden'); return; }
+    errEl.textContent = message;
+    errEl.classList.remove('hidden');
+}
+
+function addCoverageZone() {
+    const input = document.getElementById('coverage-zone-input');
+    if (!input) return;
+    showCoverageZoneError('');
+
+    const value = input.value.trim();
+    if (!value) return;
+
+    if (_coverageZones.length >= COVERAGE_MAX_ZONES) {
+        showCoverageZoneError(t('profile.coverage_zone_limit'));
+        return;
+    }
+    if (_coverageZones.some(z => z.toLowerCase() === value.toLowerCase())) {
+        showCoverageZoneError(t('profile.coverage_zone_duplicate'));
+        input.value = '';
+        return;
+    }
+    _coverageZones.push(value);
+    input.value = '';
+    renderCoverageZones();
+}
+
+function removeCoverageZone(index) {
+    _coverageZones.splice(index, 1);
+    showCoverageZoneError('');
+    renderCoverageZones();
+}
+
+function saveCoverage() {
+    const msg = document.getElementById('coverage-save-msg');
+    const errEl = document.getElementById('coverage-save-error');
+    const saveBtn = document.getElementById('coverage-save-btn');
+    const saveBtnLabel = document.getElementById('coverage-save-btn-label');
+    if (msg) msg.classList.add('hidden');
+    if (errEl) errEl.classList.add('hidden');
+    if (saveBtn) saveBtn.disabled = true;
+    if (saveBtnLabel) saveBtnLabel.textContent = t('profile.saving');
+
+    const specialties = Array.from(document.querySelectorAll('.coverage-specialty-checkbox:checked')).map(cb => cb.value);
+
+    return fetch('/api/profile/professional/coverage', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ zones: _coverageZones, specialties: specialties })
+    })
+    .then(r => r.json().then(data => ({ ok: r.ok, data })))
+    .then(({ ok, data }) => {
+        if (ok && data.success) {
+            if (msg) { msg.classList.remove('hidden'); setTimeout(() => msg.classList.add('hidden'), 3000); }
+            const hint = document.getElementById('coverage-fallback-hint');
+            if (hint) hint.classList.add('hidden');
+        } else if (errEl) {
+            errEl.textContent = data.error || t('error.process_request');
+            errEl.classList.remove('hidden');
+        }
+    })
+    .catch(() => {
+        if (errEl) { errEl.textContent = t('error.process_request'); errEl.classList.remove('hidden'); }
+    })
+    .finally(() => {
+        if (saveBtn) saveBtn.disabled = false;
+        if (saveBtnLabel) saveBtnLabel.textContent = t('profile.coverage_save');
+    });
 }
 
 function saveProfessionalFullProfile() {

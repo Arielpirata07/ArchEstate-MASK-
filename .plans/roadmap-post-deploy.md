@@ -1,9 +1,9 @@
 # Roadmap Post-Deploy — ArchEstate
 
 > **Estado:** Plan de referencia — ejecutar después de deploy a Render + fixes de `fixes-pendientes.md`.
-> **Versión actual:** v0.31.3 (126 tags, 525+ tests)
+> **Versión actual:** v0.32.0 (128 tags, 543 tests)
 > **Convención de commits:** `feat(scope):`, `fix(scope):`, `test(scope):`, `docs:`
-> **Convención de tags:** Semver `v0.XX.Y` — cada fase = minor bump (`v0.32.0`, `v0.33.0`, `v0.34.0`, `v0.35.0`)
+> **Convención de tags:** Semver `v0.XX.Y` — cada fase = minor bump (`v0.33.0`, `v0.34.0`, `v0.35.0`, `v0.36.0`)
 
 ---
 
@@ -11,10 +11,10 @@
 
 | Componente | Estado | Notas |
 |---|---|---|
-| Flask app | ✅ | Application Factory, 10 blueprints, `factory.py:create_app()` |
+| Flask app | ✅ | Application Factory, 11 blueprints, `factory.py:create_app()` |
 | DB | ✅ | SQLite default, PostgreSQL vía `DATABASE_URL` |
-| i18n | ✅ | 833 keys Python + 356 keys JS (ES/EN) |
-| Tests | ✅ | 525+ pytest, `conftest.py` con temp DB |
+| i18n | ✅ | 1,102 keys Python + 412 keys JS (ES/EN) |
+| Tests | ✅ | 543 pytest, `conftest.py` con temp DB |
 | Professional dashboard | ✅ | 2 tabs: Leads (grid/filtros/tabla) + Stats (charts/KPIs) |
 | Lead tracking | ✅ | `lead_tracking` con `seen`/`contacted` booleanos |
 | Phone verification | ✅ | OTP simulated + Twilio, WhatsApp webhook |
@@ -51,7 +51,7 @@ Ejecutar primero. No cambia funcionalidad, solo corrige bugs conocidos.
 
 ## FASE 1 — Pipeline Kanban (Jira-style)
 
-**Tag:** `v0.32.0`
+**Tag:** `v0.33.0`
 **Archivos modificados:** `app_setup.py`, `routes/professional_bp.py`, `templates/professional.html`, `static/js/professional.js`, `static/css/professional.css`, `i18n/translations.py`, `static/js/i18n.js`
 **Dependencia externa:** SortableJS (CDN o `static/js/sortable.min.js`)
 
@@ -262,16 +262,16 @@ feat(pipeline): pipeline API — GET /api/pipeline/stages, POST move, stats
 feat(pipeline): kanban board UI — 8 columns, drag-drop (SortableJS), swimlanes, WIP limits
 feat(pipeline): pipeline toggle in Leads tab — Lista | Pipeline switch
 test(pipeline): pytest + manual — 12 tests
-docs(pipeline): add v0.32.0 to tags table
+docs(pipeline): add v0.33.0 to tags table
 ```
 
-**Tag:** `v0.32.0`
+**Tag:** `v0.33.0`
 
 ---
 
 ## FASE 2 — Dashboard Ejecutivo
 
-**Tag:** `v0.33.0`
+**Tag:** `v0.34.0`
 **Archivos modificados:** `routes/professional_bp.py`, `templates/professional.html`, `static/js/professional.js`, `static/css/professional.css`, `i18n/translations.py`, `static/js/i18n.js`
 
 ### 2.1 Schema — `app_setup.py`
@@ -448,16 +448,16 @@ feat(dashboard): dashboard API — /api/dashboard/summary, trends, pipeline, act
 feat(dashboard): executive dashboard UI — KPI cards, trend chart, pipeline funnel, activity feed
 feat(dashboard): dashboard tab — 3rd tab alongside Leads and Stats
 test(dashboard): pytest + manual — 10 tests
-docs(dashboard): add v0.33.0 to tags table
+docs(dashboard): add v0.34.0 to tags table
 ```
 
-**Tag:** `v0.33.0`
+**Tag:** `v0.34.0`
 
 ---
 
 ## FASE 3 — Calendario (Google Calendar-style)
 
-**Tag:** `v0.34.0`
+**Tag:** `v0.35.0`
 **Archivos modificados:** `app_setup.py`, `routes/professional_bp.py`, `templates/professional.html`, `static/js/professional.js`, `static/css/professional.css`, `i18n/translations.py`, `static/js/i18n.js`
 
 ### 3.1 Schema — `app_setup.py`
@@ -758,16 +758,16 @@ feat(calendar): calendar UI — Google Calendar-style month grid, mini sidebar, 
 feat(calendar): calendar tab — 4th tab, event color-coding by type
 feat(calendar): integration — calendar events linked to leads (click → lead preview)
 test(calendar): pytest + manual — 12 tests
-docs(calendar): add v0.34.0 to tags table
+docs(calendar): add v0.35.0 to tags table
 ```
 
-**Tag:** `v0.34.0`
+**Tag:** `v0.35.0`
 
 ---
 
 ## FASE 4 — Multi-Tenant (Organizaciones)
 
-**Tag:** `v0.35.0`
+**Tag:** `v0.36.0`
 **Archivos modificados:** `app_setup.py`, `routes/admin_bp.py`, `routes/professional_bp.py`, `templates/admin.html`, `static/js/admin.js`, `static/css/admin.css`, `i18n/translations.py`, `static/js/i18n.js`
 
 ### 4.1 Schema — `app_setup.py`
@@ -912,17 +912,17 @@ feat(multitenant): org admin UI — org list, member management, settings
 feat(multitenant): org-scoped lead visibility — org_id in leads, org leads endpoint
 feat(multitenant): migration — add org_id to leads table
 test(multitenant): pytest + manual — 15 tests
-docs(multitenant): add v0.35.0 to tags table
+docs(multitenant): add v0.36.0 to tags table
 ```
 
-**Tag:** `v0.35.0`
+**Tag:** `v0.36.0`
 
 ---
 
 ## Verificación Final (sin tag)
 
 ```bash
-python -m pytest tests/ -q                  # 600+ tests verdes
+python -m pytest tests/ -q                  # 590+ tests verdes
 python verify_coherence.py                  # Schema/routes/templates coherentes
 node --check static/js/*.js                 # Syntax check
 node --test tests/*.test.js                 # JS tests
@@ -936,14 +936,14 @@ git tag -l --sort=-v:refname | head -10     # Ver tags nuevos
 
 | Tag | Fase | Descripción | Tests |
 |-----|------|-------------|-------|
-| `v0.31.3` | Actual | Última versión antes del roadmap | 525 |
-| (sin tag) | Prerequisito | Deploy + fixes de bugs conocidos | 525 |
-| `v0.32.0` | Fase 1 | Pipeline Kanban (Jira-style) | +12 |
-| `v0.33.0` | Fase 2 | Dashboard Ejecutivo | +10 |
-| `v0.34.0` | Fase 3 | Calendario (Google Calendar-style) | +12 |
-| `v0.35.0` | Fase 4 | Multi-Tenant (Organizaciones) | +15 |
+| `v0.32.0` | Actual | Última versión antes del roadmap | 543 |
+| (sin tag) | Prerequisito | Deploy + fixes de bugs conocidos | 543 |
+| `v0.33.0` | Fase 1 | Pipeline Kanban (Jira-style) | +12 |
+| `v0.34.0` | Fase 2 | Dashboard Ejecutivo | +10 |
+| `v0.35.0` | Fase 3 | Calendario (Google Calendar-style) | +12 |
+| `v0.36.0` | Fase 4 | Multi-Tenant (Organizaciones) | +15 |
 
-**Total estimado:** 574+ tests, 4 tags nuevos, ~25 commits.
+**Total estimado:** 592 tests, 4 tags nuevos, ~25 commits.
 
 ---
 
