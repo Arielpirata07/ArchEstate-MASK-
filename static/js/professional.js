@@ -494,7 +494,8 @@ async function loadLeads() {
         if (data.success) {
             window.__leadsData = data.leads;
             renderLeads(data.leads);
-            renderLeadKpis(data.leads, { total: data.kpi_total, unseen: data.kpi_unseen, contacted: data.kpi_contacted });
+            window.__kpiAggregates = { total: data.kpi_total, unseen: data.kpi_unseen, contacted: data.kpi_contacted };
+            renderLeadKpis(data.leads, window.__kpiAggregates);
             document.getElementById('leadsCount').textContent = data.total;
             renderPagination(data);
             renderActiveTags();
@@ -788,16 +789,31 @@ async function toggleLeadStatus(leadId, statusType, btn) {
                 row.dataset[statusType] = serverValue === 1 ? 'true' : 'false';
             }
 
-            // Actualizar tracking local y refrescar KPIs
+            // Actualizar tracking local y refrescar KPIs con agregados
+            // globales (no solo la página): ajuste aritmético del toggle.
             const leads = window.__leadsData || [];
+            var prev = false;
             for (var i = 0; i < leads.length; i++) {
                 if (leads[i].id === leadId) {
                     if (!leads[i].tracking) leads[i].tracking = {};
+                    prev = !!leads[i].tracking[statusType];
                     leads[i].tracking[statusType] = serverValue === 1;
                     break;
                 }
             }
-            renderLeadKpis(leads);
+            if (window.__kpiAggregates) {
+                var agg = window.__kpiAggregates;
+                if (serverValue === 1 && !prev) {
+                    if (statusType === 'seen') agg.unseen = Math.max(0, agg.unseen - 1);
+                    if (statusType === 'contacted') agg.contacted = agg.contacted + 1;
+                } else if (serverValue !== 1 && prev) {
+                    if (statusType === 'seen') agg.unseen = agg.unseen + 1;
+                    if (statusType === 'contacted') agg.contacted = Math.max(0, agg.contacted - 1);
+                }
+                renderLeadKpis(leads, agg);
+            } else {
+                renderLeadKpis(leads);
+            }
         } else {
             // Revertir en caso de error
             btn.classList.remove('status-active');

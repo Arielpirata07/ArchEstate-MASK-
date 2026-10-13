@@ -290,6 +290,35 @@ class TestLeadKpiAggregates:
         assert data['kpi_contacted'] >= 5
         assert data['kpi_unseen'] >= 25
 
+    def test_kpi_aggregates_stable_across_pages(self, client, db, pro_user_with_zone):
+        """Los agregados kpi_* no dependen de la página pedida (el frontend los
+        cachea y los ajusta aritméticamente en cada toggle)."""
+        user_id, pro_name = pro_user_with_zone
+        for i in range(12):
+            unique = uuid.uuid4().hex[:8]
+            db.execute(
+                '''INSERT INTO leads (type, property_type, zone, province, budget, currency, phone, email, user_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                ('comprar', 'departamento', 'Palermo', 'Buenos Aires', '200000', 'USD',
+                 f'+54922{i:03d}{unique[:4]}', f'kpistable_{i}_{unique}@test.com', 1)
+            )
+        db.commit()
+
+        with client.session_transaction() as sess:
+            sess['user_id'] = user_id
+            sess['username'] = pro_name
+            sess['role'] = 'professional'
+
+        first = client.get('/api/leads?my_leads=1&per_page=5&page=1').get_json()
+        second = client.get('/api/leads?my_leads=1&per_page=5&page=2').get_json()
+
+        assert len(first['leads']) == 5
+        assert len(second['leads']) == 5
+        assert first['kpi_total'] == second['kpi_total']
+        assert first['kpi_unseen'] == second['kpi_unseen']
+        assert first['kpi_contacted'] == second['kpi_contacted']
+        assert first['kpi_total'] >= 12
+
 
 class TestOrgScopedLeads:
     def test_pro_with_org_sees_org_leads(self, client, db):
