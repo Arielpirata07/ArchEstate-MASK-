@@ -1,7 +1,7 @@
 # Roadmap Post-Deploy — ArchEstate
 
 > **Estado:** Plan de referencia — ejecutar después de deploy a Render + fixes de `fixes-pendientes.md`.
-> **Versión actual:** v0.33.0 (129 tags, 560 tests)
+> **Versión actual:** v0.35.0 (131 tags, 585 tests)
 > **Convención de commits:** `feat(scope):`, `fix(scope):`, `test(scope):`, `docs:`
 > **Convención de tags:** Semver `v0.XX.Y` — cada fase = minor bump (`v0.34.0`, `v0.35.0`, `v0.36.0`, `v0.37.0`)
 
@@ -938,8 +938,8 @@ git tag -l --sort=-v:refname | head -10     # Ver tags nuevos
 |-----|------|-------------|-------|
 | `v0.32.0` | Base | Última versión antes del roadmap | 543 |
 | `v0.33.0` | Actual | Organizaciones (Fase 4, asignación manual) | 560 |
-| (unreleased) | Fase 1 | Pipeline Kanban (Jira-style) | 578 |
-| (unreleased) | Fase 2 | Dashboard Ejecutivo | 585 |
+| `v0.34.0` | Fase 1 | Pipeline Kanban (Jira-style) | 578 |
+| `v0.35.0` | Fase 2 | Dashboard Ejecutivo | 585 |
 | (sin tag) | Prerequisito | Deploy + fixes de bugs conocidos | 543 |
 | `v0.34.0` | Fase 1 | Pipeline Kanban (Jira-style) | +12 |
 | `v0.35.0` | Fase 2 | Dashboard Ejecutivo | +10 |
