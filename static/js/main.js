@@ -351,6 +351,43 @@ function validateZone(val) {
 }
 
 /**
+ * Combina código de país + prefijo de área + teléfono en formato E.164
+ * legible (`+54 9 <área> <abonado>` para AR). Orden: área → móvil → área,
+ * para no duplicar el área ni perder el prefijo (Fase 0 ítem 1).
+ * Función pura para poder testearla en Node sin DOM.
+ */
+function combineCountryAreaPhone(countryCode, provincePrefix, phone) {
+    const codeDigits = String(countryCode || '').replace('+', '');
+    const digits = String(phone || '').replace(/\D/g, '');
+    let localDigits = digits;
+    if (localDigits.startsWith(codeDigits)) {
+        localDigits = localDigits.substring(codeDigits.length);
+    }
+    if (provincePrefix && localDigits) {
+        let local = localDigits;
+        const stripArea = () => {
+            for (const c of [provincePrefix, `0${provincePrefix}`]) {
+                if (local.startsWith(c)) { local = local.substring(c.length); break; }
+            }
+        };
+        stripArea();
+        if (local.startsWith('9')) local = local.substring(1);
+        else if (local.startsWith('15')) local = local.substring(2);
+        stripArea();
+        return `${countryCode} 9 ${provincePrefix} ${local}`;
+    }
+    if (countryCode === '+54') {
+        let d = localDigits;
+        d = d.replace(/^0(?=\d)/, '');
+        if (d.startsWith('9')) d = d.substring(1);
+        else if (d.startsWith('15')) d = d.substring(2);
+        if (!d.startsWith('9')) d = '9' + d;
+        return `${countryCode} ${d}`;
+    }
+    return `${countryCode} ${phone}`;
+}
+
+/**
  * Inicializacion del formulario de usuario
  * Nota: user.html tiene su propio setPropertyType() que maneja 5 tipos.
  * Esta funcion solo inicializa validaciones y autocomplete.
@@ -386,33 +423,9 @@ function initUserForm() {
             const phoneInput = document.getElementById('phone-input');
             if (countryCodeSelect && phoneInput && phoneInput.value) {
                 const countryCode = countryCodeSelect.value;
-                const codeDigits = countryCode.replace('+', '');
                 const phone = phoneInput.value.trim();
-                const digits = phone.replace(/\D/g, '');
                 const provincePrefix = (countryCode === '+54' && provinceSelect && !provinceSelect.classList.contains('hidden')) ? provinceSelect.value : '';
-                let localDigits = digits;
-                if (localDigits.startsWith(codeDigits)) {
-                    localDigits = localDigits.substring(codeDigits.length);
-                }
-                if (provincePrefix && localDigits) {
-                    if (localDigits.startsWith('15')) localDigits = localDigits.substring(1);
-                    else if (localDigits.startsWith('9')) localDigits = localDigits.substring(1);
-                    if (!localDigits.startsWith('9')) localDigits = '9' + localDigits;
-                    if (localDigits.substring(1).startsWith(provincePrefix)) {
-                        localDigits = localDigits.substring(0, 1) + localDigits.substring(1 + provincePrefix.length);
-                    }
-                    data.phone = `${countryCode} ${localDigits.substring(0, 1)} ${provincePrefix} ${localDigits.substring(1)}`;
-                } else {
-                    if (countryCode === '+54') {
-                        let d = phone.replace(/\D/g, '');
-                        if (d.startsWith('9')) d = d.substring(1);
-                        else if (d.startsWith('15')) d = d.substring(1);
-                        if (!d.startsWith('9')) d = '9' + d;
-                        data.phone = `${countryCode} ${d}`;
-                    } else {
-                        data.phone = `${countryCode} ${phone}`;
-                    }
-                }
+                data.phone = combineCountryAreaPhone(countryCode, provincePrefix, phone);
             }
 
             // Validacion de area para casas

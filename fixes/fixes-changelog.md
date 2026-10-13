@@ -160,3 +160,32 @@ No llegué a estos por límite de tiempo en la sesión — no están en el patch
   algo que agregaste en tu local más nuevo).
 - Los 4 "modales" con datos de leads en la vista de profesional no reflejan datos
   reales.
+
+---
+
+## Fase 0 — Fixes aplicados (2026-10-13)
+
+- **Ítem 2 (dark mode CTA):** clase dedicada `.btn-cta-gold` en `static/css/base.css`
+  (no pelea con los `!important` de `.dark`); aplicada en `register.html`,
+  `login.html` y `lead_detail.html`. Contraste verificado: 6.28:1 en dark (AA).
+- **Ítem 3 (avatar):** cache-busting `?v=Date.now()` en `profile.js` (avatar y foto
+  profesional). Los handlers de delete ya usaban placeholder (sin cambio).
+- **Ítem 4 (KPIs):** el backend ya devolvía agregados globales (`kpi_total`,
+  `kpi_unseen`, `kpi_contacted`); el bug vivo estaba en `toggleLeadStatus`
+  (`professional.js`), que recalculaba desde la página. Ahora cachea
+  `window.__kpiAggregates` y lo ajusta aritméticamente.
+- **Ítem 5 (CTA crear solicitud):** sin cambio de código — el guard
+  `{% if not user or user.role != 'professional' %}` ya ocultaba panel y CTA
+  (verificado con test de render por rol). Solo tests de regresión.
+- **Ítem 1 (teléfono AR):** reorden área → móvil → área en `formatProfilePhone`
+  (`profile.js`) y nueva `combineCountryAreaPhone` en `main.js` (extraída del
+  handler para testearla; además corrige `substring(1)` para `15` que cortaba
+  un solo dígito). Outputs verificados con `phonenumbers` (todos OK).
+
+### Limitación conocida (Ítem 1c, Chile — no es bug)
+
+`static/js/phone-suggest.js` (`suggestCL`, `formatNational` +56) ya genera la
+estructura correcta `+56 9 XXXX XXXX`. El rechazo de números como
+`+56 9 1234 5678` viene de rangos de abonado no asignados en los datos de la
+librería `phonenumbers`, no del formato. No se reescribe el formato; si un
+número chileno válido es rechazado, reportarlo con el número exacto.

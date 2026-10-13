@@ -179,3 +179,60 @@ test('applyProvincePrefix no acumula codigos de area al cambiar de provincia var
   assert.equal(finalDigits.length, 11);
   assert.equal(phoneInput.value, '221 9 4123456');
 });
+
+test('formatProfilePhone no duplica el area con prefijo movil (Fase 0 item 1)', () => {
+  const elements = {};
+  const create = (id) => {
+    const el = createElement(id);
+    elements[id] = el;
+    return el;
+  };
+
+  create('profile-phone');
+  create('profile-country-code');
+  const provinceSelect = create('profile-province');
+  create('profile-custom-area');
+  provinceSelect.value = '11';
+
+  const documentStub = {
+    getElementById(id) { return elements[id] || null; },
+    querySelectorAll() { return []; },
+    querySelector() { return null; },
+    addEventListener() {},
+    createElement(tag) {
+      return {
+        tagName: tag, value: '', textContent: '', innerHTML: '', selected: false,
+        setAttribute() {}, getAttribute() { return null; }, appendChild() {},
+      };
+    },
+  };
+
+  const context = {
+    window: {},
+    document: documentStub,
+    console,
+    setTimeout,
+    clearTimeout,
+    MutationObserver: class {},
+    lucide: { createIcons() {} },
+    t: () => '',
+    escapeHtml: (value) => value,
+  };
+  context.window.document = documentStub;
+  context.window.window = context.window;
+  context.window.__PHONE_DB_BY_COUNTRY = {};
+  vm.createContext(context);
+  vm.runInContext(fs.readFileSync('static/js/phone-suggest.js', 'utf8'), context);
+  vm.runInContext(fs.readFileSync('static/js/profile.js', 'utf8'), context);
+
+  const cases = [
+    ['9 11 2345 6789', '+54 9 11 23456789'],
+    ['15 11 2345 6789', '+54 9 11 23456789'],
+    ['11 2345 6789', '+54 9 11 23456789'],
+    ['011 15 2345 6789', '+54 9 11 23456789'],
+    ['+54 9 11 2345 6789', '+54 9 11 23456789'],
+  ];
+  for (const [input, expected] of cases) {
+    assert.equal(context.formatProfilePhone(input, '+54'), expected, `input: ${input}`);
+  }
+});

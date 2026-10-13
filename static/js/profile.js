@@ -229,18 +229,21 @@ function formatProfilePhone(phone, countryCode) {
     const prefix = getSelectedArgentineAreaCode();
     if (prefix) {
         let local = localDigits;
-        const prefixCandidates = [prefix, `0${prefix}`];
-        const matchedPrefix = prefixCandidates.find(candidate => local.startsWith(candidate));
-        if (matchedPrefix) {
-            local = local.substring(matchedPrefix.length);
-        }
+        const stripArea = () => {
+            const matched = [prefix, `0${prefix}`].find(candidate => local.startsWith(candidate));
+            if (matched) local = local.substring(matched.length);
+        };
         if (countryCode === '+54') {
-            let mobilePrefix = '';
-            if (local.startsWith('9')) { mobilePrefix = '9'; local = local.substring(1); }
-            else if (local.startsWith('15')) { mobilePrefix = '15'; local = local.substring(2); }
-            if (mobilePrefix !== '9') mobilePrefix = '9';
+            // Orden: área (con o sin trunk 0) → prefijo móvil 9/15 → área
+            // de nuevo. Así '9 11 ...' no oculta el área y '011 15 ...'
+            // tampoco pierde el prefijo móvil (Fase 0 ítem 1).
+            stripArea();
+            if (local.startsWith('9')) local = local.substring(1);
+            else if (local.startsWith('15')) local = local.substring(2);
+            stripArea();
             return (countryCode + ' 9 ' + prefix + ' ' + local).trim();
         }
+        stripArea();
         return (countryCode + ' ' + prefix + ' ' + local).trim();
     }
     if (typeof PhoneSuggest !== 'undefined') {

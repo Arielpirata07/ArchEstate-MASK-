@@ -194,6 +194,9 @@
     return '+598 ' + area + ' ' + groupSmart(d.substring(area.length));
   }
 
+  // Chile: el formato +56 9 XXXX XXXX es correcto. Si phonenumbers rechaza un
+  // número con esa forma, es por rangos no asignados en sus datos, no por el
+  // formato (ver fixes-changelog.md, Fase 0 ítem 1c). No reescribir.
   function suggestCL(d) {
     if (d.length !== 9) return null;
     if (d[0] === '9') return '+56 9 ' + group(d.substring(1), [4, 4]);
