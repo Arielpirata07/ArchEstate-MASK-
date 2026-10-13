@@ -31,6 +31,12 @@ class TestLoginFlow:
         assert b'name="phone"' not in resp.data, \
             "/login no debe tener campo phone"
 
+    def test_login_submit_uses_cta_gold_class(self, client):
+        """El botón submit usa .btn-cta-gold (visible en dark mode)."""
+        resp = client.get('/login')
+        assert resp.status_code == 200
+        assert b'btn-cta-gold' in resp.data
+
     def test_login_with_correct_credentials_redirects_to_admin(self, client):
         """admin/admin123 debe redirigir a /admin."""
         resp = client.post('/login', data={

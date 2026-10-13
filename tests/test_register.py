@@ -7,6 +7,12 @@ class TestRegister:
         assert resp.status_code == 200
         assert b'ArchEstate' in resp.data
 
+    def test_register_submit_uses_cta_gold_class(self, client):
+        """El botón submit usa .btn-cta-gold (visible en dark mode)."""
+        resp = client.get('/register')
+        assert resp.status_code == 200
+        assert b'btn-cta-gold' in resp.data
+
     def test_successful_registration_with_phone(self, client, db):
         resp = client.post('/register', data={
             'username': 'newuser',

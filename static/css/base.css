@@ -403,6 +403,29 @@ button, [role="button"], a {
     to { transform: rotate(360deg); }
 }
 
+/* --- CTA gold button (dark-mode safe) ---
+   Dedicated class so it never fights the `.dark` utility overrides above:
+   those rules only match Tailwind utilities (bg-midnight, dark:bg-gold...),
+   which are removed from buttons using this class.
+   Light: midnight bg, white text, gold hover.
+   Dark: gold bg, midnight text, lighter-gold hover. */
+.btn-cta-gold {
+    background: #000410;
+    color: #fff;
+}
+.btn-cta-gold:hover {
+    background: #735A3A;
+    color: #fff;
+}
+.dark .btn-cta-gold {
+    background: #A68A64;
+    color: #000410;
+}
+.dark .btn-cta-gold:hover {
+    background: #735A3A;
+    color: #fff;
+}
+
 /* ============================================
    HOVER UTILITY CLASSES
    ============================================ */
