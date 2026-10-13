@@ -1,3 +1,7 @@
+# noodle --uses-> services (export,pdf,xlsx)
+# noodle --uses-> services (notifications,email)
+# noodle --queries-> database (sql,users,leads,professionals,coverage)
+# noodle --renders-> templates (html,profile,edit_lead,notifications)
 import os
 import json
 import logging

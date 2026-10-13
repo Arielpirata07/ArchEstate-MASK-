@@ -1,3 +1,5 @@
+# noodle --queries-> database (sql,all_entities)
+# noodle --provides-> routes (orm,queries)
 import logging
 import threading
 import time

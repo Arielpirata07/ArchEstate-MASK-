@@ -1,3 +1,6 @@
+# noodle --uses-> services (notifications,email)
+# noodle --queries-> database (sql,users,leads,audit)
+# noodle --renders-> templates (html,admin,user_management)
 import logging
 import os
 

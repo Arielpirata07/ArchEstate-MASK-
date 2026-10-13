@@ -1,3 +1,6 @@
+# noodle --uses-> services (smtp,email)
+# noodle --queries-> database (sql,users)
+# noodle --renders-> templates (html,auth)
 import logging
 import re
 

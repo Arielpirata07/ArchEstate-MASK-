@@ -1,3 +1,7 @@
+# noodle --uses-> services (export,pdf,xlsx)
+# noodle --uses-> services (matching,coverage)
+# noodle --queries-> database (sql,leads,professionals)
+# noodle --renders-> templates (html,professional,lead_detail)
 import csv
 import io
 import logging

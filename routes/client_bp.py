@@ -1,3 +1,6 @@
+# noodle --queries-> database (sql,leads)
+# noodle --notifies-> services (async,notifications)
+# noodle --renders-> templates (html,user)
 import logging
 
 from flask import Blueprint, flash, jsonify, redirect, render_template, request, session, url_for

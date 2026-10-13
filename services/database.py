@@ -1,3 +1,4 @@
+# noodle --connects to-> database (sqlite,postgresql)
 import logging
 
 import config

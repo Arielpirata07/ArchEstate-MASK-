@@ -1,3 +1,5 @@
+# noodle --uses-> services (verifier,twilio)
+# noodle --queries-> database (sql,users)
 import logging
 import secrets
 

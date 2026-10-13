@@ -1,3 +1,4 @@
+# noodle --sends via-> smtp (email,notifications)
 """
 Capa de envío de emails vía SMTP.
 

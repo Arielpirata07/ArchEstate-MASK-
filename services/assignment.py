@@ -1,3 +1,5 @@
+# noodle --uses-> services (matching,coverage)
+# noodle --queries-> database (sql,professionals,coverage)
 import logging
 
 import models

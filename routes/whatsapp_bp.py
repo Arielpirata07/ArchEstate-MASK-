@@ -1,3 +1,5 @@
+# noodle --receives from-> twilio (webhook,whatsapp)
+# noodle --queries-> database (sql,users)
 import logging
 
 from flask import Blueprint, request

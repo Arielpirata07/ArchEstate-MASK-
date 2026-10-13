@@ -1,3 +1,5 @@
+# noodle --uses-> services (whatsapp,sms)
+# noodle --queries-> database (sql,leads)
 """
 Blueprint para endpoints relacionados con leads: revelación server-side de
 contacto WhatsApp/SMS, telemetría de eventos, y reporte de teléfonos inválidos.

@@ -1,3 +1,5 @@
+# noodle --injects-> templates (context,session,user)
+# noodle --queries-> database (sql,users,preferences)
 import logging
 import os
 import uuid

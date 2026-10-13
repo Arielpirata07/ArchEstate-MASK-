@@ -1,3 +1,5 @@
+# noodle --initializes-> database (schema,migrations,seeds)
+# noodle --creates-> database (tables,indexes)
 import logging
 import os
 

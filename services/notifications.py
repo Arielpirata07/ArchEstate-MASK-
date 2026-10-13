@@ -1,3 +1,5 @@
+# noodle --uses-> services (email,verifier,whatsapp,assignment)
+# noodle --queries-> database (sql,users,preferences)
 """
 Servicio de notificaciones por email, SMS y WhatsApp.
 

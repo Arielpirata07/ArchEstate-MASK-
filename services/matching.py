@@ -1,3 +1,4 @@
+# noodle --provides-> services (matching,score)
 """
 Logica de matching entre leads y profesionales, compartida entre:
 - services/assignment.py (asignacion automatica de un lead a un profesional)

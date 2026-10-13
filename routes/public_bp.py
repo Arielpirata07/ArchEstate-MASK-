@@ -1,3 +1,5 @@
+# noodle --queries-> database (sql,stats)
+# noodle --renders-> templates (html,landing)
 import logging
 from datetime import datetime, timezone
 

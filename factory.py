@@ -1,3 +1,5 @@
+# noodle --wires-> routes (blueprints,all)
+# noodle --initializes-> services (app_setup,middleware,errors)
 import logging
 import os
 
