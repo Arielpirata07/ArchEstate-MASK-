@@ -911,6 +911,17 @@ tr.lead-row-unseen td:first-child {
     border-color: rgba(255, 255, 255, 0.06) !important;
 }
 
+/* Utilidades que el build de Tailwind no incluye (el binario no corre en
+   Windows): se definen aquí para no romper el diseño del dashboard. */
+.border-violet-600 {
+    border-color: #7c3aed;
+}
+@media (min-width: 1280px) {
+    .xl\:grid-cols-6 {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+}
+
 /* ============================================
    EXECUTIVE DASHBOARD (Fase 2)
    ============================================ */
