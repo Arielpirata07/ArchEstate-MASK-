@@ -430,6 +430,82 @@ See the [screen reader commands reference](references/A11Y-PATTERNS.md#screen-re
 4. Timing without controls
 5. Missing landmark regions
 
+## Audit protocol
+
+> Fused from `accessibility-compliance-audit` (JPeetz/agent-skills@`4b2f1b0`).
+> Framework-specific (React/Vue/Angular) sections were dropped: this project is
+> server-rendered Flask + vanilla JS. The workflow, severity scale, report
+> format and red lines below are the adopted parts.
+
+Run audits in three phases. Scope: `templates/**/*.html`, `static/js/*.js`,
+`static/css/*.css` (Tailwind utilities + custom classes).
+
+### Phase 1 — Automated scan (identify)
+
+1. **Landmarks:** `<main>`, `<nav>`, `<header>`, `<footer>` present; no heading-level gaps.
+2. **Interactive elements:** no `onclick` on non-interactive elements without keyboard support; every control reachable by `Tab`.
+3. **ARIA:** misused roles, missing required `aria-*`, `aria-hidden` on focusable elements.
+4. **Forms:** unlabeled inputs, error messages by color only, missing `aria-invalid` / `aria-describedby`.
+5. **Images/icons:** missing `alt`, decorative images not marked, Lucide `<i data-lucide>` icons inside buttons without `aria-label`.
+6. **Contrast:** normal text ≥ 4.5:1, large text and UI components ≥ 3:1. Verify numbers with `scripts/check-contrast.py` (vendored, stdlib-only):
+   ```bash
+   python3 .agents/skills/accessibility/scripts/check-contrast.py '#FFFFFF' '#735A3A'
+   ```
+7. **Focus:** visible `:focus-visible` indicator, logical tab order, `Esc` closes modals (project uses `showToast()` + custom modals, never `alert()`/`confirm()`).
+8. **Motion:** `prefers-reduced-motion` respected (project convention, see Motion section).
+
+### Phase 2 — Manual review (analyze)
+
+Flag what automation cannot judge: ambiguous link text ("click here"), page `<title>` uniqueness, `lang` attribute (`es`/`en` per user preference), errors described in text, instructions associated with inputs, dynamic content (`aria-live` regions, toast announcements).
+
+### Phase 3 — Fix generation (remediate)
+
+Per violation report:
+
+```markdown
+### [WCAG SC] — Severity: [level]
+
+**File:** `path/to/file.html:42`
+**Impact:** [who is affected]
+
+#### ❌ Current
+```[lang]
+[problematic code]
+```
+
+#### ✅ Fix
+```[lang]
+[fixed code]
+```
+
+**Explanation:** [why the fix works, in plain language]
+```
+
+End every audit with: **Summary** (count by severity), **Quick wins** (top 3, biggest impact / lowest effort), **Pattern issues** (systemic repeats, e.g. "9 icon-buttons without `aria-label`").
+
+### Severity scale
+
+| Severity | Meaning | Examples |
+|----------|---------|----------|
+| 🔴 Critical | Blocks access entirely | Missing form labels, non-keyboard-operable controls, functional image without `alt` |
+| 🟠 High | Significantly impairs UX | Contrast < 3:1, missing landmarks, unannounced dynamic content |
+| 🟡 Medium | Degrades experience | Missing focus indicator, ambiguous link text, no skip link |
+| 🟢 Low | Best practice | Suboptimal heading structure, minor ARIA refinements |
+
+### Red lines — never suggest
+
+- Removing features to avoid accessibility work.
+- `aria-hidden="true"` as a quick fix; `tabindex="-1"` on focusable content.
+- Color-only fixes — always pair with text/icon indicators.
+- Auto-playing media without controls; text-as-image without `alt`.
+
+### Tooling notes
+
+- `scripts/check-contrast.py` is vendored and safe (stdlib only, no network).
+- `axe-core` is **not** vendored (needs npm + browser). Optional manual step:
+  `npx @axe-core/cli <rendered-page-url>`. Results labeled `measured`; anything
+  else labeled `inferred`.
+
 ## References
 
 - [WCAG 2.2 Quick Reference](https://www.w3.org/WAI/WCAG22/quickref/)
