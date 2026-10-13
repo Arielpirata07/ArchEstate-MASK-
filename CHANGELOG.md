@@ -27,6 +27,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ---
 
+## [Unreleased] — Dashboard Ejecutivo (Fase 2, v0.35.0)
+
+### Añadido
+- **Dashboard Ejecutivo** — 3er tab en `/profesional` (Leads | Dashboard | Stats), cálculo en tiempo real (sin tabla de snapshots):
+  - API en `routes/professional_bp.py` (todo `@professional_required` + cuenta aprobada, respeta `?my_leads=`): `GET /api/dashboard/summary` (total, nuevos hoy/semana, contact_rate, pipeline_active, avg_budget, vs_last_week, top_zone/type), `GET /api/dashboard/trends?days=30` (serie diaria con ceros), `GET /api/dashboard/pipeline` (funnel por etapa), `GET /api/dashboard/activity?limit=20` (moves + contacted/seen, click abre preview), `GET /api/dashboard/top-metrics` (zonas, tipos propiedad/operación).
+  - UI: 6 KPI cards, tendencia Chart.js línea 30d, funnel con barras por color de etapa, barras top zonas, dona tipos propiedad, feed de actividad con tiempo relativo; respeta filtros/Mis leads (`professional.html`, `professional.js`, `professional.css`); 15 keys i18n ES/EN (`dash.*`).
+  - Tests nuevos: `tests/test_dashboard.py` (7 tests summary/trends/pipeline/activity/vacío/top-metrics/permisos). Total suite: 585 passed.
+
 ## [Unreleased] — Pipeline Kanban (Fase 1, v0.34.0)
 
 ### Añadido

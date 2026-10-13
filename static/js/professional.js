@@ -502,6 +502,8 @@ async function loadLeads() {
             renderPagination(data);
             renderActiveTags();
             if (typeof leadsViewMode !== 'undefined' && leadsViewMode === 'pipeline') loadPipeline();
+            var dashPanel = document.getElementById('panel-dashboard');
+            if (dashPanel && !dashPanel.classList.contains('hidden') && typeof loadDashboard === 'function') loadDashboard();
         } else {
             showLeadError(data.error || t('error.leads_load'));
         }
@@ -1680,7 +1682,8 @@ function renderPipeline(leads) {
     var total = (leads || []).length;
     if (!total) {
         board.innerHTML = '<div class="w-full bg-paper-dark rounded-lg p-8 text-center border border-midnight/5">' +
-            '<p class="text-lg font-serif text-midnight">' + t('pipeline.no_leads') + '</p></div>';
+            '<p class="text-lg font-serif text-midnight">' + t('dash.empty_title') + '</p>' +
+            '<p class="text-sm text-midnight/60 mt-1">' + t('pipeline.empty_hint') + '</p></div>';
         return;
     }
     var html = '';
@@ -1766,3 +1769,201 @@ async function moveLeadToStage(leadId, newStage) {
         if (typeof showToast === 'function') showToast(t('error.connection'), 'error');
     }
 }
+
+/* ============================================
+   EXECUTIVE DASHBOARD (Fase 2)
+   ============================================ */
+var dashCharts = {};
+
+function destroyDashChart(key) {
+    if (dashCharts[key]) { dashCharts[key].destroy(); delete dashCharts[key]; }
+}
+
+function dashMyLeadsParam() {
+    return (typeof currentFilters !== 'undefined' && currentFilters.my_leads) ? '1' : '0';
+}
+
+function dashFormatBudget(v) {
+    v = Number(v || 0);
+    if (v >= 1000000) return '$' + (v / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+    if (v >= 1000) return '$' + Math.round(v / 1000) + 'k';
+    return '$' + Math.round(v);
+}
+
+function dashTimeAgo(at) {
+    if (!at) return '';
+    var d = new Date(String(at).replace(' ', 'T'));
+    var diff = Date.now() - d.getTime();
+    if (isNaN(diff) || diff < 0) return String(at).slice(0, 16);
+    var min = Math.floor(diff / 60000);
+    if (min < 1) return 'ahora';
+    if (min < 60) return 'hace ' + min + 'min';
+    var h = Math.floor(min / 60);
+    if (h < 24) return 'hace ' + h + 'h';
+    var days = Math.floor(h / 24);
+    if (days === 1) return 'ayer';
+    return 'hace ' + days + 'd';
+}
+
+async function loadDashboard() {
+    var panel = document.getElementById('panel-dashboard');
+    if (!panel) return;
+    var ml = dashMyLeadsParam();
+    try {
+        var results = await Promise.all([
+            fetch('/api/dashboard/summary?my_leads=' + ml).then(function(r) { return r.json(); }),
+            fetch('/api/dashboard/trends?days=30&my_leads=' + ml).then(function(r) { return r.json(); }),
+            fetch('/api/dashboard/pipeline').then(function(r) { return r.json(); }),
+            fetch('/api/dashboard/top-metrics?my_leads=' + ml).then(function(r) { return r.json(); }),
+            fetch('/api/dashboard/activity?limit=20').then(function(r) { return r.json(); })
+        ]);
+        if (results[0].success) renderDashSummary(results[0].summary);
+        if (results[1].success) renderDashTrend(results[1].trends);
+        if (results[2].success) renderDashFunnel(results[2].funnel);
+        if (results[3].success) renderDashTops(results[3]);
+        if (results[4].success) renderDashActivity(results[4].activity);
+    } catch (err) {
+        if (typeof showToast === 'function') showToast(t('error.connection'), 'error');
+    }
+}
+
+function renderDashSummary(s) {
+    function set(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
+    set('dashTotalLeads', s.total_leads);
+    set('dashNewWeek', s.new_this_week);
+    set('dashContactRate', Math.round((s.contact_rate || 0) * 100) + '%');
+    set('dashPipelineActive', s.pipeline_active);
+    set('dashAvgBudget', dashFormatBudget(s.avg_budget));
+    var emptyBox = document.getElementById('dashEmptyState');
+    if (emptyBox) {
+        emptyBox.classList.toggle('hidden', (s.total_leads || 0) > 0);
+        if ((s.total_leads || 0) === 0 && window.lucide) lucide.createIcons();
+    }
+    var delta = (s.vs_last_week && s.vs_last_week.leads) || 0;
+    var el = document.getElementById('dashVsWeek');
+    if (el) {
+        el.textContent = (delta >= 0 ? '↑ +' : '↓ ') + delta;
+        el.classList.remove('dash-trend-up', 'dash-trend-down');
+        el.classList.add(delta >= 0 ? 'dash-trend-up' : 'dash-trend-down');
+    }
+}
+
+function renderDashTrend(trends) {
+    destroyDashChart('trend');
+    var canvas = document.getElementById('dashTrendChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+    var palette = getPalette();
+    dashCharts['trend'] = new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels: trends.map(function(p) { return String(p.day).slice(5); }),
+            datasets: [{
+                label: 'Leads',
+                data: trends.map(function(p) { return p.count; }),
+                borderColor: palette.gold[0],
+                backgroundColor: palette.gold[0] + '30',
+                fill: true,
+                tension: 0.35,
+                pointRadius: 3,
+                pointBackgroundColor: palette.gold[0],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { ticks: { font: baseFont, maxTicksLimit: 8 }, grid: { display: false } },
+                y: { ticks: { font: baseFont, stepSize: 1 }, grid: { color: chartGridColor() }, beginAtZero: true }
+            }
+        }
+    });
+}
+
+function renderDashFunnel(funnel) {
+    var box = document.getElementById('dashFunnel');
+    if (!box) return;
+    var max = Math.max.apply(null, funnel.map(function(f) { return f.count; }).concat([1]));
+    box.innerHTML = funnel.map(function(f) {
+        var color = (typeof PIPELINE_STAGE_COLORS !== 'undefined' && PIPELINE_STAGE_COLORS[f.stage]) || '#735A3A';
+        var label = (typeof pipelineStageLabel === 'function') ? pipelineStageLabel(f.stage) : f.stage;
+        var pct = Math.max(2, Math.round((f.count / max) * 100));
+        return '<div class="min-w-0">' +
+            '<div class="flex items-center justify-between mb-1">' +
+            '<span class="text-[10px] font-bold uppercase tracking-widest text-midnight/60">' + escapePipelineHtml(label) + '</span>' +
+            '<span class="text-[10px] font-bold text-midnight/60">' + f.count + '</span>' +
+            '</div>' +
+            '<div class="h-6 bg-midnight/5 rounded overflow-hidden">' +
+            '<div class="h-6 rounded" style="width:' + pct + '%;background:' + color + '"></div>' +
+            '</div></div>';
+    }).join('');
+}
+
+function renderDashTops(data) {
+    var palette = getPalette();
+    destroyDashChart('zones');
+    var zc = document.getElementById('dashZonesChart');
+    if (zc && typeof Chart !== 'undefined' && (data.top_zones || []).length) {
+        dashCharts['zones'] = new Chart(zc, {
+            type: 'bar',
+            data: {
+                labels: data.top_zones.map(function(z) { return z.label; }),
+                datasets: [{ data: data.top_zones.map(function(z) { return z.value; }), backgroundColor: palette.gold }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { font: baseFont }, grid: { display: false } },
+                    y: { ticks: { font: baseFont, stepSize: 1 }, grid: { color: chartGridColor() }, beginAtZero: true }
+                }
+            }
+        });
+    }
+    destroyDashChart('props');
+    var pc = document.getElementById('dashPropChart');
+    if (pc && typeof Chart !== 'undefined' && (data.top_property_types || []).length) {
+        dashCharts['props'] = new Chart(pc, {
+            type: 'doughnut',
+            data: {
+                labels: data.top_property_types.map(function(p) { return p.label; }),
+                datasets: [{ data: data.top_property_types.map(function(p) { return p.value; }), backgroundColor: palette.mixed }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: baseFont } } } }
+        });
+    }
+}
+
+function renderDashActivity(events) {
+    var box = document.getElementById('dashActivity');
+    if (!box) return;
+    if (!events || !events.length) {
+        box.innerHTML = '<p class="text-sm text-midnight/50 py-4">' + t('dash.no_activity') + '</p>';
+        return;
+    }
+    var meta = {
+        stage_move: { color: '#735A3A', icon: 'arrow-right' },
+        contacted: { color: '#059669', icon: 'phone' },
+        seen: { color: '#2563EB', icon: 'eye' }
+    };
+    box.innerHTML = events.map(function(e) {
+        var m = meta[e.kind] || meta.seen;
+        var desc = e.kind === 'stage_move'
+            ? 'Lead #' + e.lead_id + ' → ' + ((typeof pipelineStageLabel === 'function') ? pipelineStageLabel(e.to_stage) : e.to_stage)
+            : (e.kind === 'contacted' ? 'Lead #' + e.lead_id + ' contactado' : 'Lead #' + e.lead_id + ' visto');
+        return '<div class="dash-activity-item" data-lead-id="' + e.lead_id + '" style="cursor:pointer">' +
+            '<span class="dash-activity-dot" style="background:' + m.color + '"></span>' +
+            '<div class="flex-1">' +
+            '<p class="text-[13px] text-midnight font-bold">' + escapePipelineHtml(desc) + '</p>' +
+            '<p class="text-[11px] text-midnight/50">' + escapePipelineHtml(e.lead_type || '') + ' · ' + escapePipelineHtml(e.zone || '') + ' · ' + dashTimeAgo(e.at) + '</p>' +
+            '</div></div>';
+    }).join('');
+    box.querySelectorAll('.dash-activity-item').forEach(function(item) {
+        item.addEventListener('click', function() {
+            if (typeof openLeadPreview === 'function') openLeadPreview(parseInt(item.dataset.leadId, 10));
+        });
+    });
+}
+
+

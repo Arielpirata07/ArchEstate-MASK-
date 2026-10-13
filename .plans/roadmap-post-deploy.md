@@ -939,6 +939,7 @@ git tag -l --sort=-v:refname | head -10     # Ver tags nuevos
 | `v0.32.0` | Base | Última versión antes del roadmap | 543 |
 | `v0.33.0` | Actual | Organizaciones (Fase 4, asignación manual) | 560 |
 | (unreleased) | Fase 1 | Pipeline Kanban (Jira-style) | 578 |
+| (unreleased) | Fase 2 | Dashboard Ejecutivo | 585 |
 | (sin tag) | Prerequisito | Deploy + fixes de bugs conocidos | 543 |
 | `v0.34.0` | Fase 1 | Pipeline Kanban (Jira-style) | +12 |
 | `v0.35.0` | Fase 2 | Dashboard Ejecutivo | +10 |

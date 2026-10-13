@@ -906,3 +906,56 @@ tr.lead-row-unseen td:first-child {
     background: var(--bg-card, #1a2332) !important;
     border-color: rgba(255, 255, 255, 0.06) !important;
 }
+
+/* ============================================
+   EXECUTIVE DASHBOARD (Fase 2)
+   ============================================ */
+.dash-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+}
+.dash-chart-card {
+    background: #fff;
+    border: 1px solid rgba(26, 35, 50, 0.06);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    animation: dashChartFade 0.4s ease;
+}
+.dash-activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    animation: dashActivitySlide 0.3s ease;
+}
+.dash-activity-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 4px;
+}
+.dash-trend-up {
+    color: #059669;
+}
+.dash-trend-down {
+    color: #dc2626;
+}
+@keyframes dashCountUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes dashActivitySlide {
+    from { opacity: 0; transform: translateX(-12px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+@keyframes dashChartFade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.dark .dash-chart-card {
+    background: var(--bg-card, #1a2332) !important;
+    border-color: rgba(255, 255, 255, 0.06) !important;
+}

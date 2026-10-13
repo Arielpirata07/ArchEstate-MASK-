@@ -555,6 +555,23 @@ window.I18N = {
         'pipeline.loading': 'Cargando pipeline...',
         'pipeline.move_success': 'Lead movido correctamente.',
         'pipeline.move_error': 'Error al mover el lead.',
+        // === DASHBOARD ===
+        'dash.title': 'Dashboard Ejecutivo',
+        'dash.total_leads': 'Total Leads',
+        'dash.new_this_week': 'Nuevos esta semana',
+        'dash.contact_rate': 'Tasa de contacto',
+        'dash.pipeline_active': 'En pipeline',
+        'dash.avg_budget': 'Presupuesto promedio',
+        'dash.vs_last_week': 'vs semana pasada',
+        'dash.trend_title': 'Tendencia de Leads',
+        'dash.pipeline_funnel': 'Funnel Pipeline',
+        'dash.top_zones': 'Top Zonas',
+        'dash.top_property_types': 'Tipos de Propiedad',
+        'dash.activity_recent': 'Actividad Reciente',
+        'dash.no_activity': 'Sin actividad',
+        'dash.empty_title': 'Sin solicitudes todavía',
+        'dash.empty_hint': 'Las estadísticas se mostrarán cuando tengas solicitudes.',
+        'pipeline.empty_hint': 'Cuando tengas solicitudes asignadas aparecerán aquí.',
     },
     en: {
         // === TOAST ===
@@ -1112,6 +1129,23 @@ window.I18N = {
         'pipeline.loading': 'Loading pipeline...',
         'pipeline.move_success': 'Lead moved successfully.',
         'pipeline.move_error': 'Error moving lead.',
+        // === DASHBOARD ===
+        'dash.title': 'Executive Dashboard',
+        'dash.total_leads': 'Total Leads',
+        'dash.new_this_week': 'New this week',
+        'dash.contact_rate': 'Contact rate',
+        'dash.pipeline_active': 'In pipeline',
+        'dash.avg_budget': 'Average budget',
+        'dash.vs_last_week': 'vs last week',
+        'dash.trend_title': 'Leads Trend',
+        'dash.pipeline_funnel': 'Pipeline Funnel',
+        'dash.top_zones': 'Top Zones',
+        'dash.top_property_types': 'Property Types',
+        'dash.activity_recent': 'Recent Activity',
+        'dash.no_activity': 'No activity',
+        'dash.empty_title': 'No requests yet',
+        'dash.empty_hint': 'Statistics will appear once you have requests.',
+        'pipeline.empty_hint': 'When you have assigned requests they will appear here.',
     }
 };
 
