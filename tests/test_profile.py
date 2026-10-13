@@ -404,3 +404,44 @@ class TestNotificationChannelAPI:
         resp = client.get('/api/profile/notification-channel')
         data = resp.get_json()
         assert data['channel'] == 'ambos'
+
+
+class TestCreateLeadCtaVisibility:
+    """Regresión Ítem 5 Fase 0: el CTA 'Crear solicitud' (/usuario) solo existe
+    para no-profesionales. El panel completo está tras
+    `{% if not user or user.role != 'professional' %}`."""
+
+    def _login_as_professional(self, client, db):
+        uname = f'procta_{uuid.uuid4().hex[:8]}'
+        cur = db.execute(
+            'INSERT INTO users (username, email, hash, role, phone, phone_e164, is_active) '
+            'VALUES (?, ?, ?, ?, ?, ?, 1)',
+            (uname, f'{uname}@example.com', generate_password_hash('pro123'),
+             'professional', '+5491111111111', '+5491111111111')
+        )
+        uid = cur.lastrowid
+        db.execute(
+            'INSERT INTO professionals (user_id, name, license, specialty, status) VALUES (?, ?, ?, ?, ?)',
+            (uid, uname, f'LIC-{uname}', 'General', 'approved')
+        )
+        db.commit()
+        with client.session_transaction() as sess:
+            sess['user_id'] = uid
+            sess['username'] = uname
+            sess['role'] = 'professional'
+        return client
+
+    def test_professional_has_no_create_lead_cta(self, client, db):
+        client = self._login_as_professional(client, db)
+        resp = client.get('/mi-perfil')
+        assert resp.status_code == 200
+        html = resp.get_data(as_text=True)
+        assert '/usuario' not in html
+        assert 'panel-solicitudes' not in html
+
+    def test_client_has_create_lead_cta(self, auth_client):
+        resp = auth_client.get('/mi-perfil')
+        assert resp.status_code == 200
+        html = resp.get_data(as_text=True)
+        assert '/usuario' in html
+        assert 'panel-solicitudes' in html
