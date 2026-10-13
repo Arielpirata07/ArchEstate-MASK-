@@ -1152,7 +1152,9 @@ function showProTab(tab) {
     var tabStats = document.getElementById('tab-stats');
     var exportCsv = document.getElementById('exportCsvBtn');
     var exportXlsx = document.getElementById('exportXlsxBtn');
-    if (!panelLeads || !panelStats || !tabLeads || !tabStats) return;
+    var panelDash = document.getElementById('panel-dashboard');
+    var tabDash = document.getElementById('tab-dashboard');
+    if (!panelLeads || !panelStats || !tabLeads || !tabStats || !panelDash || !tabDash) return;
     if (!panels[tab]) tab = 'leads';
 
     const activeClass = 'tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-midnight text-white';
@@ -1732,20 +1734,20 @@ function setupPipelineDnD() {
             if (typeof openLeadPreview === 'function') openLeadPreview(parseInt(card.dataset.leadId, 10));
         });
     });
-    var columns = document.querySelectorAll('#pipelineBoard .pipeline-cards');
+    var columns = document.querySelectorAll('#pipelineBoard .pipeline-column');
     columns.forEach(function(col) {
+        var stage = col.dataset.stage;
         col.addEventListener('dragover', function(e) {
             e.preventDefault();
-            col.closest('.pipeline-column').classList.add('pipeline-column-dragover');
+            col.classList.add('pipeline-column-dragover');
         });
         col.addEventListener('dragleave', function() {
-            col.closest('.pipeline-column').classList.remove('pipeline-column-dragover');
+            col.classList.remove('pipeline-column-dragover');
         });
         col.addEventListener('drop', function(e) {
             e.preventDefault();
             var leadId = e.dataTransfer.getData('text/plain');
-            var newStage = col.dataset.stage;
-            if (leadId && newStage) moveLeadToStage(leadId, newStage);
+            if (leadId && stage) moveLeadToStage(leadId, stage);
         });
     });
 }
@@ -1760,7 +1762,6 @@ async function moveLeadToStage(leadId, newStage) {
         var data = await res.json();
         if (data.success) {
             if (typeof showToast === 'function') showToast(t('pipeline.move_success'), 'success');
-            loadPipeline();
             loadLeads();
         } else if (typeof showToast === 'function') {
             showToast(data.error || t('pipeline.move_error'), 'error');
@@ -1813,7 +1814,7 @@ async function loadDashboard() {
         var results = await Promise.all([
             fetch('/api/dashboard/summary?my_leads=' + ml).then(function(r) { return r.json(); }),
             fetch('/api/dashboard/trends?days=30&my_leads=' + ml).then(function(r) { return r.json(); }),
-            fetch('/api/dashboard/pipeline').then(function(r) { return r.json(); }),
+            fetch('/api/dashboard/pipeline?my_leads=' + ml).then(function(r) { return r.json(); }),
             fetch('/api/dashboard/top-metrics?my_leads=' + ml).then(function(r) { return r.json(); }),
             fetch('/api/dashboard/activity?limit=20').then(function(r) { return r.json(); })
         ]);
@@ -1828,6 +1829,7 @@ async function loadDashboard() {
 }
 
 function renderDashSummary(s) {
+    if (!s) return;
     function set(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
     set('dashTotalLeads', s.total_leads);
     set('dashNewWeek', s.new_this_week);
@@ -1851,7 +1853,7 @@ function renderDashSummary(s) {
 function renderDashTrend(trends) {
     destroyDashChart('trend');
     var canvas = document.getElementById('dashTrendChart');
-    if (!canvas || typeof Chart === 'undefined') return;
+    if (!canvas || typeof Chart === 'undefined' || !Array.isArray(trends) || !trends.length) return;
     var palette = getPalette();
     dashCharts['trend'] = new Chart(canvas, {
         type: 'line',
@@ -1884,6 +1886,10 @@ function renderDashTrend(trends) {
 function renderDashFunnel(funnel) {
     var box = document.getElementById('dashFunnel');
     if (!box) return;
+    if (!Array.isArray(funnel) || !funnel.length) {
+        box.innerHTML = '<p class="pipeline-empty">' + t('dash.no_activity') + '</p>';
+        return;
+    }
     var max = Math.max.apply(null, funnel.map(function(f) { return f.count; }).concat([1]));
     box.innerHTML = funnel.map(function(f) {
         var color = (typeof PIPELINE_STAGE_COLORS !== 'undefined' && PIPELINE_STAGE_COLORS[f.stage]) || '#735A3A';
@@ -1901,6 +1907,7 @@ function renderDashFunnel(funnel) {
 }
 
 function renderDashTops(data) {
+    if (!data) return;
     var palette = getPalette();
     destroyDashChart('zones');
     var zc = document.getElementById('dashZonesChart');

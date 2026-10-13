@@ -163,6 +163,31 @@ class TestPipelineRead:
         assert data['moved'] == 1
         assert models.get_lead_stage(user_id, pipeline_lead) == 'closed_won'
 
+    def test_bulk_move_rejects_non_list_ids(self, client, pipeline_pro):
+        _login_as_pro(client, pipeline_pro)
+        resp = client.post('/api/pipeline/leads/bulk-move', json={'ids': '123', 'stage': 'contacted'})
+        assert resp.status_code == 400
+        assert resp.get_json()['success'] is False
+
+    def test_bulk_move_rejects_empty_ids(self, client, pipeline_pro):
+        _login_as_pro(client, pipeline_pro)
+        resp = client.post('/api/pipeline/leads/bulk-move', json={'ids': [], 'stage': 'contacted'})
+        assert resp.status_code == 400
+
+    def test_bulk_move_rejects_bad_id_values(self, client, pipeline_pro):
+        _login_as_pro(client, pipeline_pro)
+        resp = client.post('/api/pipeline/leads/bulk-move', json={'ids': [1, 'abc'], 'stage': 'contacted'})
+        assert resp.status_code == 400
+
+    def test_leads_invalid_page_defaults(self, client, pipeline_pro, pipeline_lead):
+        _login_as_pro(client, pipeline_pro)
+        resp = client.get('/api/pipeline/leads?page=abc&per_page=abc&my_leads=0')
+        data = resp.get_json()
+        assert resp.status_code == 200
+        assert data['success'] is True
+        assert data['page'] == 1
+        assert data['per_page'] == 25
+
     def test_non_professional_cannot_move(self, client, auth_client, pipeline_lead):
         resp = client.post(f'/api/pipeline/lead/{pipeline_lead}/move', json={'stage': 'contacted'})
         assert resp.status_code in (302, 403)

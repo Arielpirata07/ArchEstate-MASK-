@@ -126,6 +126,16 @@ class TestDashboard:
         assert data['top_zones'][0]['value'] >= 2
         assert any(p['label'] == 'departamento' for p in data['top_property_types'])
 
+    def test_funnel_respects_my_leads(self, client, db, dash_pro, dash_leads):
+        user_id = _login_as_pro(client, dash_pro)
+        models.move_lead_stage(user_id, dash_leads[0], 'contacted')
+        resp_all = client.get('/api/dashboard/pipeline?my_leads=0')
+        assert resp_all.get_json()['success'] is True
+        funnel_all = {f['stage']: f['count'] for f in resp_all.get_json()['funnel']}
+        assert funnel_all['contacted'] >= 1
+        resp = client.get('/api/dashboard/pipeline?my_leads=1')
+        assert resp.get_json()['success'] is True
+
     def test_non_professional_blocked(self, client, auth_client):
         resp = client.get('/api/dashboard/summary')
         assert resp.status_code in (302, 403)

@@ -866,6 +866,10 @@ tr.lead-row-unseen td:first-child {
     text-align: center;
     padding: 1rem 0;
 }
+/* display:flex/grid de arriba pisa a .hidden de Tailwind: forzar oculto */
+.pipeline-board.hidden {
+    display: none;
+}
 /* En pantallas lg+: 8 columnas al ancho, sin scroll horizontal.
    En pantallas chicas: scroll horizontal con snap. */
 @media (min-width: 1024px) {

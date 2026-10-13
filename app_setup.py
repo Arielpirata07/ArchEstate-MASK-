@@ -562,6 +562,7 @@ def init_db(app):
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_lead_stages_lead ON lead_stages(lead_id)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_lead_stages_stage ON lead_stages(professional_id, stage)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_stage_history_pro ON lead_stage_history(professional_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_stage_history_lead ON lead_stage_history(lead_id)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_lead_reports_status ON lead_reports(status)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_audit_log_user ON audit_log(user_id)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_login_history_user ON user_login_history(user_id)')

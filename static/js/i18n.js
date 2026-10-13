@@ -555,6 +555,7 @@ window.I18N = {
         'pipeline.loading': 'Cargando pipeline...',
         'pipeline.move_success': 'Lead movido correctamente.',
         'pipeline.move_error': 'Error al mover el lead.',
+        'pipeline.invalid_ids': 'Lista de leads inválida.',
         // === DASHBOARD ===
         'dash.title': 'Dashboard Ejecutivo',
         'dash.total_leads': 'Total Leads',
@@ -1129,6 +1130,7 @@ window.I18N = {
         'pipeline.loading': 'Loading pipeline...',
         'pipeline.move_success': 'Lead moved successfully.',
         'pipeline.move_error': 'Error moving lead.',
+        'pipeline.invalid_ids': 'Invalid lead list.',
         // === DASHBOARD ===
         'dash.title': 'Executive Dashboard',
         'dash.total_leads': 'Total Leads',

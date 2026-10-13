@@ -88,10 +88,10 @@ def lead_detail(lead_id):
 @professional_bp.route('/api/leads')
 @professional_required
 def get_leads_api():
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
-        lang = get_language()
 
         user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
         if not user:
@@ -113,8 +113,14 @@ def get_leads_api():
         sort_by = request.args.get('sort', 'timestamp')
         sort_order = request.args.get('order', 'desc')
         time_range = request.args.get('time_range', '').strip()
-        page = max(1, int(request.args.get('page', '1')))
-        per_page = max(5, min(100, int(request.args.get('per_page', '25'))))
+        try:
+            page = max(1, int(request.args.get('page', '1')))
+        except ValueError:
+            page = 1
+        try:
+            per_page = max(5, min(100, int(request.args.get('per_page', '25'))))
+        except ValueError:
+            per_page = 25
         offset = (page - 1) * per_page
 
         BUDGET_RANGES = {
@@ -192,7 +198,7 @@ def get_leads_api():
             except ValueError:
                 pass
 
-        count_query = f'SELECT COUNT(*) as total FROM ({query})'
+        count_query = f'SELECT COUNT(*) as total FROM ({query}) AS sub'
         total = conn.execute(count_query, params).fetchone()['total']
 
         kpi_row = conn.execute(f'''
@@ -437,10 +443,10 @@ def _query_leads_stats(conn, user_id, my_leads, month):
 @professional_bp.route('/api/leads/stats')
 @professional_required
 def get_leads_stats():
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
-        lang = get_language()
         user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
         if not user:
             return jsonify({"success": False, "error": t('prof.access_denied', lang)}), 403
@@ -467,10 +473,10 @@ def get_leads_stats():
 @professional_bp.route('/api/leads/stats/export')
 @professional_required
 def export_stats_csv():
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
-        lang = get_language()
         user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
         if not user:
             return t('prof.access_denied', lang), 403
@@ -547,10 +553,10 @@ def export_stats_csv():
 @professional_bp.route('/api/leads/stats/export/xlsx')
 @professional_required
 def export_stats_xlsx():
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
-        lang = get_language()
         user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
         if not user:
             return t('prof.access_denied', lang), 403
@@ -827,10 +833,10 @@ def export_leads_xlsx():
 @professional_bp.route('/api/lead/<int:lead_id>/download')
 @professional_required
 def download_lead_pdf(lead_id):
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
-        lang = get_language()
         user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
         if not user:
             return t('prof.access_denied', lang), 403
@@ -983,10 +989,10 @@ def download_lead_pdf(lead_id):
 @professional_bp.route('/api/lead/<int:lead_id>/toggle-status', methods=['POST'])
 @professional_required
 def toggle_lead_status(lead_id):
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
-        lang = get_language()
 
         user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
         if not user:
@@ -1003,7 +1009,7 @@ def toggle_lead_status(lead_id):
         if not lead:
             return jsonify({'error': t('prof.lead_not_found', lang)}), 404
 
-        data = request.get_json() or {}
+        data = request.get_json(silent=True) or {}
         status_type = data.get('status')
 
         if status_type not in ('seen', 'contacted'):
@@ -1079,10 +1085,10 @@ def _get_approved_professional(conn, user_id, lang):
 @professional_bp.route('/api/pipeline/stages')
 @professional_required
 def pipeline_stages():
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
-        lang = get_language()
         _, error = _get_approved_professional(conn, session['user_id'], lang)
         if error:
             return error
@@ -1109,10 +1115,10 @@ def pipeline_stages():
 @professional_bp.route('/api/pipeline/leads')
 @professional_required
 def pipeline_leads():
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
-        lang = get_language()
         _, error = _get_approved_professional(conn, session['user_id'], lang)
         if error:
             return error
@@ -1125,8 +1131,14 @@ def pipeline_leads():
         type_filter = request.args.get('type', '').strip()
         prop_type = request.args.get('property_type', '').strip()
         zone_filter = request.args.get('zone', '').strip()
-        page = max(1, int(request.args.get('page', '1')))
-        per_page = max(5, min(100, int(request.args.get('per_page', '25'))))
+        try:
+            page = max(1, int(request.args.get('page', '1')))
+        except ValueError:
+            page = 1
+        try:
+            per_page = max(5, min(100, int(request.args.get('per_page', '25'))))
+        except ValueError:
+            per_page = 25
         offset = (page - 1) * per_page
 
         query = '''SELECT leads.*, COALESCE(lead_stages.stage, 'new') AS pipeline_stage,
@@ -1162,7 +1174,7 @@ def pipeline_leads():
             query += ' AND leads.zone LIKE ?'
             params.append(f'%{zone_filter}%')
 
-        total = conn.execute(f'SELECT COUNT(*) AS total FROM ({query})', params).fetchone()['total']
+        total = conn.execute(f'SELECT COUNT(*) AS total FROM ({query}) AS sub', params).fetchone()['total']
         query += ' ORDER BY leads.timestamp DESC, leads.id DESC LIMIT ? OFFSET ?'
         params.extend([per_page, offset])
         rows = conn.execute(query, params).fetchall()
@@ -1196,10 +1208,10 @@ def pipeline_leads():
 @professional_bp.route('/api/pipeline/lead/<int:lead_id>/move', methods=['POST'])
 @professional_required
 def pipeline_move_lead(lead_id):
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
-        lang = get_language()
         _, error = _get_approved_professional(conn, session['user_id'], lang)
         if error:
             return error
@@ -1208,7 +1220,7 @@ def pipeline_move_lead(lead_id):
         if not lead:
             return jsonify({'success': False, 'error': t('prof.lead_not_found', lang)}), 404
 
-        data = request.get_json() or {}
+        data = request.get_json(silent=True) or {}
         to_stage = (data.get('stage') or '').strip()
         if to_stage not in models.PIPELINE_STAGES:
             return jsonify({'success': False, 'error': t('pipeline.invalid_stage', lang)}), 400
@@ -1235,25 +1247,25 @@ def pipeline_move_lead(lead_id):
 @professional_bp.route('/api/pipeline/leads/bulk-move', methods=['POST'])
 @professional_required
 def pipeline_bulk_move():
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
-        lang = get_language()
         _, error = _get_approved_professional(conn, session['user_id'], lang)
         if error:
             return error
 
-        data = request.get_json() or {}
+        data = request.get_json(silent=True) or {}
         to_stage = (data.get('stage') or '').strip()
         lead_ids = data.get('ids') or data.get('lead_ids') or []
         if to_stage not in models.PIPELINE_STAGES:
             return jsonify({'success': False, 'error': t('pipeline.invalid_stage', lang)}), 400
+        if not isinstance(lead_ids, list) or not lead_ids:
+            return jsonify({'success': False, 'error': t('pipeline.invalid_ids', lang)}), 400
         try:
             lead_ids = [int(i) for i in lead_ids][:100]
         except (ValueError, TypeError):
-            return jsonify({'success': False, 'error': t('pipeline.invalid_stage', lang)}), 400
-        if not lead_ids:
-            return jsonify({'success': False, 'error': t('prof.lead_not_found', lang)}), 404
+            return jsonify({'success': False, 'error': t('pipeline.invalid_ids', lang)}), 400
 
         argentina_tz = pytz.timezone('America/Argentina/Buenos_Aires')
         now = datetime.now(argentina_tz).strftime('%Y-%m-%d %H:%M:%S')
@@ -1274,10 +1286,10 @@ def pipeline_bulk_move():
 @professional_bp.route('/api/pipeline/stats')
 @professional_required
 def pipeline_stats():
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
-        lang = get_language()
         _, error = _get_approved_professional(conn, session['user_id'], lang)
         if error:
             return error
@@ -1303,13 +1315,23 @@ def _dashboard_leads_where(conn, user_id, my_leads):
     return where, params
 
 
+def geo_counts_filter(conn, user_id, my_leads):
+    '''Devuelve (extra_where, extra_params) para models.get_pipeline_counts().'''
+    if not my_leads:
+        return '', ()
+    conds, geo_params = _get_pro_geo_filter(conn, user_id)
+    if not conds:
+        return '', ()
+    return ' AND '.join(conds), tuple(geo_params)
+
+
 @professional_bp.route('/api/dashboard/summary')
 @professional_required
 def dashboard_summary():
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
-        lang = get_language()
         _, error = _get_approved_professional(conn, session['user_id'], lang)
         if error:
             return error
@@ -1356,7 +1378,7 @@ def dashboard_summary():
               AND lt.contacted_at >= datetime('now', '-14 days') AND lt.contacted_at < datetime('now', '-7 days')
         ''', [user_id] + params).fetchone()['n']
 
-        counts = models.get_pipeline_counts(user_id)
+        counts = models.get_pipeline_counts(user_id, *geo_counts_filter(conn, user_id, my_leads))
         closed = counts.get('closed_won', 0) + counts.get('closed_lost', 0) + counts.get('archived', 0)
         pipeline_active = max(0, total - closed)
 
@@ -1401,10 +1423,10 @@ def dashboard_summary():
 @professional_bp.route('/api/dashboard/trends')
 @professional_required
 def dashboard_trends():
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
-        lang = get_language()
         _, error = _get_approved_professional(conn, session['user_id'], lang)
         if error:
             return error
@@ -1441,14 +1463,16 @@ def dashboard_trends():
 @professional_bp.route('/api/dashboard/pipeline')
 @professional_required
 def dashboard_pipeline():
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
-        lang = get_language()
         _, error = _get_approved_professional(conn, session['user_id'], lang)
         if error:
             return error
-        counts = models.get_pipeline_counts(session['user_id'])
+        my_leads = request.args.get('my_leads', '1').strip() == '1'
+        counts = models.get_pipeline_counts(
+            session['user_id'], *geo_counts_filter(conn, session['user_id'], my_leads))
         return jsonify({
             'success': True,
             'funnel': [{'stage': stage, 'count': counts.get(stage, 0)} for stage in models.PIPELINE_STAGES]
@@ -1464,10 +1488,10 @@ def dashboard_pipeline():
 @professional_bp.route('/api/dashboard/activity')
 @professional_required
 def dashboard_activity():
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
-        lang = get_language()
         _, error = _get_approved_professional(conn, session['user_id'], lang)
         if error:
             return error
@@ -1519,10 +1543,10 @@ def dashboard_activity():
 @professional_bp.route('/api/dashboard/top-metrics')
 @professional_required
 def dashboard_top_metrics():
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
-        lang = get_language()
         _, error = _get_approved_professional(conn, session['user_id'], lang)
         if error:
             return error
@@ -1559,10 +1583,10 @@ def dashboard_top_metrics():
 @professional_bp.route('/api/lead/<int:lead_id>/report', methods=['POST'])
 @professional_required
 def report_lead(lead_id):
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
-        lang = get_language()
 
         user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
         if not user:
@@ -1579,7 +1603,7 @@ def report_lead(lead_id):
         if not lead:
             return jsonify({'error': t('prof.lead_not_found', lang)}), 404
 
-        data = request.get_json() or {}
+        data = request.get_json(silent=True) or {}
         notes = utils.safe_text(data.get('notes', ''))[:500]
 
         existing = conn.execute(
@@ -1616,10 +1640,10 @@ def report_lead(lead_id):
 @professional_bp.route('/api/professional/doc-status', methods=['GET'])
 @professional_required
 def get_doc_status():
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
-        lang = get_language()
         user = conn.execute('SELECT doc_path FROM users WHERE id = ?', (session['user_id'],)).fetchone()
 
         if not user:
@@ -1719,10 +1743,10 @@ def upload_professional_doc():
 def download_own_doc():
     from flask import current_app
 
+    lang = get_language()
     conn = None
     try:
         conn = models.get_db_connection()
-        lang = get_language()
         user = conn.execute('SELECT doc_path FROM users WHERE id = ?', (session['user_id'],)).fetchone()
 
         if not user or not user['doc_path']:
