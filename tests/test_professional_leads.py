@@ -289,3 +289,147 @@ class TestLeadKpiAggregates:
         assert data['kpi_total'] >= 30
         assert data['kpi_contacted'] >= 5
         assert data['kpi_unseen'] >= 25
+
+
+class TestOrgScopedLeads:
+    def test_pro_with_org_sees_org_leads(self, client, db):
+        """Professional with org_id sees leads of that org regardless of zone."""
+        import models
+        unique = uuid.uuid4().hex[:8]
+        org_id = models.create_organization(f'Org {unique}')
+
+        pro_name = f'Pro {unique}'
+        cursor = db.execute(
+            'INSERT INTO users (username, email, hash, role, phone, phone_e164, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            (pro_name, f'pro_{unique}@test.com', generate_password_hash('pass'), 'professional', '+5491198765432', '+5491198765432', 1)
+        )
+        user_id = cursor.lastrowid
+        db.execute(
+            'INSERT INTO professionals (user_id, name, license, specialty, status, province, zone, org_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            (user_id, pro_name, f'LIC-{unique}', 'arquitectura', 'approved', 'Buenos Aires', 'Palermo', org_id)
+        )
+
+        lead_in_org = db.execute(
+            '''INSERT INTO leads (type, property_type, zone, province, budget, currency, phone, email, user_id, org_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+            ('comprar', 'departamento', 'Otra Zona', 'Otra Provincia', '300000', 'USD',
+             f'+549111111111{unique[:2]}', f'org_lead_{unique}@test.com', 1, org_id)
+        ).lastrowid
+        lead_outside = db.execute(
+            '''INSERT INTO leads (type, property_type, zone, province, budget, currency, phone, email, user_id, org_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+            ('comprar', 'casa', 'Mendoza', 'Mendoza', '500000', 'USD',
+             f'+549112222222{unique[:2]}', f'other_lead_{unique}@test.com', 1, None)
+        ).lastrowid
+        db.commit()
+
+        with client.session_transaction() as sess:
+            sess['user_id'] = user_id
+            sess['username'] = pro_name
+            sess['role'] = 'professional'
+
+        resp = client.get('/api/leads?my_leads=1')
+        data = resp.get_json()
+        assert data['success'] is True
+        lead_ids = [l['id'] for l in data['leads']]
+        assert lead_in_org in lead_ids
+        assert lead_outside not in lead_ids
+
+    def test_pro_without_org_uses_geo_filter(self, client, db, pro_user_with_zone, lead_buenos_aires, lead_caba):
+        """Professional without org uses normal geo/country/province filter."""
+        user_id, pro_name = pro_user_with_zone
+        with client.session_transaction() as sess:
+            sess['user_id'] = user_id
+            sess['username'] = pro_name
+            sess['role'] = 'professional'
+
+        resp = client.get('/api/leads?my_leads=1')
+        data = resp.get_json()
+        lead_ids = [l['id'] for l in data['leads']]
+        assert lead_buenos_aires in lead_ids
+        assert lead_caba not in lead_ids
+
+    def test_pro_not_in_other_org_leads(self, client, db):
+        """Professional in org A should NOT see org B's leads."""
+        import models
+        unique = uuid.uuid4().hex[:8]
+        org_a = models.create_organization(f'Org A {unique}')
+        org_b = models.create_organization(f'Org B {unique}')
+
+        pro_name = f'Pro {unique}'
+        cursor = db.execute(
+            'INSERT INTO users (username, email, hash, role, phone, phone_e164, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            (pro_name, f'pro_{unique}@test.com', generate_password_hash('pass'), 'professional', '+5491198765432', '+5491198765432', 1)
+        )
+        user_id = cursor.lastrowid
+        db.execute(
+            'INSERT INTO professionals (user_id, name, license, specialty, status, org_id) VALUES (?, ?, ?, ?, ?, ?)',
+            (user_id, pro_name, f'LIC-{unique}', 'arquitectura', 'approved', org_a)
+        )
+
+        lead_org_a = db.execute(
+            '''INSERT INTO leads (type, property_type, zone, province, budget, currency, phone, email, user_id, org_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+            ('comprar', 'departamento', 'Palermo', 'Buenos Aires', '200000', 'USD',
+             f'+549113333333{unique[:2]}', f'orga_lead_{unique}@test.com', 1, org_a)
+        ).lastrowid
+        lead_org_b = db.execute(
+            '''INSERT INTO leads (type, property_type, zone, province, budget, currency, phone, email, user_id, org_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+            ('comprar', 'casa', 'Recoleta', 'CABA', '400000', 'USD',
+             f'+549114444444{unique[:2]}', f'orgb_lead_{unique}@test.com', 1, org_b)
+        ).lastrowid
+        db.commit()
+
+        with client.session_transaction() as sess:
+            sess['user_id'] = user_id
+            sess['username'] = pro_name
+            sess['role'] = 'professional'
+
+        resp = client.get('/api/leads?my_leads=1')
+        data = resp.get_json()
+        lead_ids = [l['id'] for l in data['leads']]
+        assert lead_org_a in lead_ids
+        assert lead_org_b not in lead_ids
+
+    def test_matches_coverage_still_calculated_for_org_pro(self, client, db):
+        """matches_coverage is still calculated for professionals with org."""
+        import models
+        unique = uuid.uuid4().hex[:8]
+        org_id = models.create_organization(f'Org {unique}')
+
+        pro_name = f'Pro {unique}'
+        cursor = db.execute(
+            'INSERT INTO users (username, email, hash, role, phone, phone_e164, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            (pro_name, f'pro_{unique}@test.com', generate_password_hash('pass'), 'professional', '+5491198765432', '+5491198765432', 1)
+        )
+        user_id = cursor.lastrowid
+        db.execute(
+            'INSERT INTO professionals (user_id, name, license, specialty, status, province, zone, org_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            (user_id, pro_name, f'LIC-{unique}', 'arquitectura', 'approved', 'Buenos Aires', 'Palermo', org_id)
+        )
+
+        lead_match = db.execute(
+            '''INSERT INTO leads (type, property_type, zone, province, budget, currency, phone, email, user_id, org_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+            ('comprar', 'departamento', 'Palermo', 'Buenos Aires', '200000', 'USD',
+             f'+549115555555{unique[:2]}', f'match_{unique}@test.com', 1, org_id)
+        ).lastrowid
+        lead_no_match = db.execute(
+            '''INSERT INTO leads (type, property_type, zone, province, budget, currency, phone, email, user_id, org_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+            ('comprar', 'casa', 'Otra Zona', 'Otra Provincia', '400000', 'USD',
+             f'+549116666666{unique[:2]}', f'nomatch_{unique}@test.com', 1, org_id)
+        ).lastrowid
+        db.commit()
+
+        with client.session_transaction() as sess:
+            sess['user_id'] = user_id
+            sess['username'] = pro_name
+            sess['role'] = 'professional'
+
+        resp = client.get('/api/leads?my_leads=1')
+        data = resp.get_json()
+        by_id = {l['id']: l for l in data['leads']}
+        assert by_id[lead_match]['matches_coverage'] is True
+        assert by_id[lead_no_match]['matches_coverage'] is False

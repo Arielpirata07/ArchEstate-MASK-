@@ -6,6 +6,7 @@ function showTab(tab) {
     document.getElementById('panel-reports').classList.add('hidden');
     document.getElementById('panel-form-options').classList.add('hidden');
     document.getElementById('panel-phone-area-codes').classList.add('hidden');
+    document.getElementById('panel-organizations').classList.add('hidden');
     document.getElementById('panel-notifications').classList.add('hidden');
     document.getElementById('panel-' + tab).classList.remove('hidden');
     const activePanel = document.getElementById('panel-' + tab);
@@ -29,6 +30,9 @@ function showTab(tab) {
     }
     if (tab === 'phone-area-codes') {
         loadPhoneAreaCodes();
+    }
+    if (tab === 'organizations') {
+        loadOrganizations();
     }
     if (tab === 'notifications') {
         loadAdminNotifPrefs();
@@ -592,6 +596,13 @@ document.addEventListener('DOMContentLoaded', function() {
 // Cargar profesionales desde la API
 async function loadProfessionals() {
     try {
+        if (!allOrganizations.length) {
+            try {
+                var orgRes = await fetch('/api/admin/organizations');
+                var orgData = await orgRes.json();
+                if (orgData.success) allOrganizations = orgData.organizations || [];
+            } catch(e) {}
+        }
         const params = new URLSearchParams(currentProFilters);
         const response = await fetch(`/api/professionals?${params}`);
         const data = await response.json();
@@ -615,7 +626,7 @@ function renderProfessionals(pros) {
     if (pros.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="5" class="p-8 text-center text-midnight/60">
+                <td colspan="6" class="p-8 text-center text-midnight/60">
                     <i data-lucide="search" class="w-8 h-8 mx-auto mb-2 text-midnight/30"></i>
                     <p>${t('pros.not_found')}</p>
                 </td>
@@ -708,6 +719,7 @@ function renderProfessionals(pros) {
                 </td>
                 <td class="px-4 py-3 font-mono text-[11px] text-midnight/60">${escapeHtml(pro.license)}</td>
                 <td class="px-4 py-3">${statusBadge}</td>
+                <td class="px-4 py-3">${renderOrgSelect(pro.org_id).replace('onchange=', 'data-user-id="' + (pro.user_id || '') + '" onchange=')}</td>
                 <td class="px-4 py-3">${docCell}</td>
                 <td class="px-4 py-3 text-right">
                     <div class="flex justify-end items-center gap-2 flex-wrap">
@@ -799,7 +811,7 @@ function showProError(message) {
     if (tbody) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="5" class="p-8 text-center text-rose-600">
+                <td colspan="6" class="p-8 text-center text-rose-600">
                     <i data-lucide="alert-circle" class="w-8 h-8 mx-auto mb-2"></i>
                 <p>${escapeHtml(message)}</p>
             </td>
@@ -1142,20 +1154,26 @@ function viewLeadDetail(leadId) {
     openModalAnim(document.getElementById('leadDetailModal'));
     if (window.lucide) lucide.createIcons();
 
-    fetch(`/api/admin/lead/${leadId}`)
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                renderLeadDetail(data.lead);
-            } else {
-                document.getElementById('leadDetailContent').innerHTML = `
-                    <p class="text-center text-rose-600 py-8">${escapeHtml(data.error || t('error.load'))}</p>`;
-            }
-        })
-        .catch(() => {
+    var orgPromise = allOrganizations.length
+        ? Promise.resolve()
+        : fetch('/api/admin/organizations').then(function(r) { return r.json(); }).then(function(d) { if (d.success) allOrganizations = d.organizations || []; }).catch(function() {});
+
+    orgPromise.then(function() {
+        return fetch(`/api/admin/lead/${leadId}`);
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            renderLeadDetail(data.lead);
+        } else {
             document.getElementById('leadDetailContent').innerHTML = `
-                <p class="text-center text-rose-600 py-8">${t('error.connection')}</p>`;
-        });
+                <p class="text-center text-rose-600 py-8">${escapeHtml(data.error || t('error.load'))}</p>`;
+        }
+    })
+    .catch(() => {
+        document.getElementById('leadDetailContent').innerHTML = `
+            <p class="text-center text-rose-600 py-8">${t('error.connection')}</p>`;
+    });
 }
 
 function renderLeadDetail(lead) {
@@ -1213,6 +1231,10 @@ function renderLeadDetail(lead) {
                     <div class="flex items-center gap-2 text-sm text-midnight mt-1"><i data-lucide="phone" class="w-4 h-4 text-gold flex-shrink-0"></i><span>${escapeHtml(lead.phone)}</span></div>
                 </div>
                 <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">${t('detail.registered')}</p><p class="text-sm text-midnight">${lead.timestamp}</p></div>
+                <div class="border-t border-midnight/10 pt-4">
+                    <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">${t('admin.org_name')}</p>
+                    ${renderLeadOrgSelect(lead.org_id, lead.id)}
+                </div>
             </div>
             <div class="space-y-4">
                 <p class="text-lg font-serif text-midnight">${t('detail.technical_specs')}</p>
@@ -2145,5 +2167,232 @@ function deletePhoneAreaCode(id) {
     })
     .catch(function() {
         if (typeof showToast !== 'undefined') showToast(window.t('pac.delete_error'), 'error');
+    });
+}
+
+// ================================================================
+// ORGANIZATIONS CRUD
+// ================================================================
+var allOrganizations = [];
+
+function loadOrganizations() {
+    fetch('/api/admin/organizations')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (data.success) {
+            allOrganizations = data.organizations || [];
+            renderOrganizations();
+        }
+    })
+    .catch(function() {
+        if (typeof showToast !== 'undefined') showToast(t('error.connection'), 'error');
+    });
+}
+
+function renderOrganizations() {
+    var tbody = document.getElementById('organizations-tbody');
+    if (!tbody) return;
+    if (!allOrganizations.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-midnight/60"><i data-lucide="building" class="w-8 h-8 mx-auto mb-2 text-midnight/30"></i><p>' + t('admin.org_no_org') + '</p></td></tr>';
+        if (window.lucide) lucide.createIcons();
+        return;
+    }
+    tbody.innerHTML = allOrganizations.map(function(org) {
+        var statusLabel = org.is_active
+            ? '<span class="px-2 py-1 bg-emerald-50 text-emerald-700 text-[9px] font-bold uppercase tracking-widest rounded">' + t('status.active') + '</span>'
+            : '<span class="px-2 py-1 bg-rose-50 text-rose-700 text-[9px] font-bold uppercase tracking-widest rounded">' + t('status.inactive') + '</span>';
+        var actions = '<div class="flex justify-end gap-1">';
+        actions += '<button onclick="openEditOrgModal(' + org.id + ')" class="p-1.5 rounded hover:bg-paper-dark" title="' + t('action.edit') + '"><i data-lucide="pencil" class="w-3 h-3"></i></button>';
+        if (org.is_active) {
+            actions += '<button onclick="deactivateOrg(' + org.id + ')" class="p-1.5 rounded hover:bg-amber-50 text-amber-600" title="' + t('admin.org_deactivate') + '"><i data-lucide="eye-off" class="w-3 h-3"></i></button>';
+        }
+        actions += '<button onclick="deleteOrg(' + org.id + ')" class="p-1.5 rounded hover:bg-rose-50 text-rose-600" title="' + t('admin.org_delete') + '"><i data-lucide="trash-2" class="w-3 h-3"></i></button>';
+        actions += '</div>';
+        return '<tr class="hover:bg-paper-dark/30">' +
+            '<td class="px-4 py-3 text-[13px] font-medium text-midnight">' + escapeHtml(org.name) + '</td>' +
+            '<td class="px-4 py-3 font-mono text-[11px] text-midnight/60">' + escapeHtml(org.slug) + '</td>' +
+            '<td class="px-4 py-3 text-[13px] text-midnight/50">' + (org.member_count || 0) + '</td>' +
+            '<td class="px-4 py-3 text-[13px] text-midnight/50">' + (org.lead_count || 0) + '</td>' +
+            '<td class="px-4 py-3">' + statusLabel + '</td>' +
+            '<td class="px-4 py-3 text-right">' + actions + '</td>' +
+            '</tr>';
+    }).join('');
+    if (window.lucide) lucide.createIcons();
+}
+
+function openCreateOrgModal() {
+    document.getElementById('org-id').value = '';
+    document.getElementById('org-name').value = '';
+    document.getElementById('org-description').value = '';
+    document.getElementById('orgModalError').classList.add('hidden');
+    document.getElementById('orgModalTag').textContent = t('admin.org_new');
+    openModalAnim(document.getElementById('orgModal'));
+    document.body.style.overflow = 'hidden';
+    setTimeout(function() { document.getElementById('org-name').focus(); }, 100);
+}
+
+function openEditOrgModal(orgId) {
+    var org = allOrganizations.find(function(o) { return o.id === orgId; });
+    if (!org) return;
+    document.getElementById('org-id').value = org.id;
+    document.getElementById('org-name').value = org.name;
+    document.getElementById('org-description').value = org.description || '';
+    document.getElementById('orgModalError').classList.add('hidden');
+    document.getElementById('orgModalTag').textContent = t('admin.org_edit');
+    openModalAnim(document.getElementById('orgModal'));
+    document.body.style.overflow = 'hidden';
+    setTimeout(function() { document.getElementById('org-name').focus(); }, 100);
+}
+
+function closeOrgModal() {
+    closeModalAnim(document.getElementById('orgModal'));
+    document.body.style.overflow = '';
+}
+
+function saveOrg() {
+    var id = document.getElementById('org-id').value;
+    var name = document.getElementById('org-name').value.trim();
+    var description = document.getElementById('org-description').value.trim();
+    var errEl = document.getElementById('orgModalError');
+
+    if (!name) {
+        errEl.textContent = t('org.name_required');
+        errEl.classList.remove('hidden');
+        return;
+    }
+
+    var data = { name: name, description: description };
+    var url = id ? '/api/admin/organizations/' + id : '/api/admin/organizations';
+    var method = id ? 'PUT' : 'POST';
+
+    fetch(url, {
+        method: method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+        if (res.success) {
+            closeOrgModal();
+            loadOrganizations();
+            if (typeof showToast !== 'undefined') showToast(res.message || t('success.saved'), 'success');
+        } else {
+            errEl.textContent = res.error || t('error.process_request');
+            errEl.classList.remove('hidden');
+        }
+    })
+    .catch(function() {
+        errEl.textContent = t('error.connection');
+        errEl.classList.remove('hidden');
+    });
+}
+
+function deactivateOrg(orgId) {
+    var org = allOrganizations.find(function(o) { return o.id === orgId; });
+    if (!org) return;
+    var promise = typeof showConfirm === 'function' ? showConfirm(t('admin.org_deactivate_confirm')) : Promise.resolve(true);
+    promise.then(function(ok) {
+        if (!ok) return;
+        fetch('/api/admin/organizations/' + orgId + '/deactivate', { method: 'POST' })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                loadOrganizations();
+                if (typeof showToast !== 'undefined') showToast(data.message, 'success');
+            } else {
+                if (typeof showToast !== 'undefined') showToast(data.error || t('error.generic'), 'error');
+            }
+        })
+        .catch(function() {
+            if (typeof showToast !== 'undefined') showToast(t('error.connection'), 'error');
+        });
+    });
+}
+
+function deleteOrg(orgId) {
+    var org = allOrganizations.find(function(o) { return o.id === orgId; });
+    if (!org) return;
+    var promise = typeof showConfirm === 'function' ? showConfirm(t('admin.org_delete_confirm')) : Promise.resolve(true);
+    promise.then(function(ok) {
+        if (!ok) return;
+        fetch('/api/admin/organizations/' + orgId, { method: 'DELETE' })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                loadOrganizations();
+                if (typeof showToast !== 'undefined') showToast(data.message, 'success');
+            } else {
+                if (typeof showToast !== 'undefined') showToast(data.error || t('error.generic'), 'error');
+            }
+        })
+        .catch(function() {
+            if (typeof showToast !== 'undefined') showToast(t('error.connection'), 'error');
+        });
+    });
+}
+
+function renderOrgSelect(selectedOrgId) {
+    var html = '<select class="w-full px-2 py-1 border border-midnight/20 rounded text-[11px] focus:border-gold focus:outline-none bg-white" onchange="setProOrg(this.value, this.dataset.userId)">';
+    html += '<option value="">' + t('admin.org_no_org') + '</option>';
+    allOrganizations.forEach(function(org) {
+        if (org.is_active) {
+            html += '<option value="' + org.id + '"' + (String(org.id) === String(selectedOrgId) ? ' selected' : '') + '>' + escapeHtml(org.name) + '</option>';
+        }
+    });
+    html += '</select>';
+    return html;
+}
+
+function renderLeadOrgSelect(selectedOrgId, leadId) {
+    var html = '<select class="w-full px-2 py-1 border border-midnight/20 rounded text-[11px] focus:border-gold focus:outline-none bg-white" onchange="setLeadOrg(this.value, ' + leadId + ')">';
+    html += '<option value="">' + t('admin.org_no_org') + '</option>';
+    allOrganizations.forEach(function(org) {
+        if (org.is_active) {
+            html += '<option value="' + org.id + '"' + (String(org.id) === String(selectedOrgId) ? ' selected' : '') + '>' + escapeHtml(org.name) + '</option>';
+        }
+    });
+    html += '</select>';
+    return html;
+}
+
+function setProOrg(orgId, userId) {
+    if (!userId) return;
+    var data = { org_id: orgId ? parseInt(orgId) : null };
+    fetch('/api/admin/professionals/' + userId + '/organization', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+        if (res.success) {
+            if (typeof showToast !== 'undefined') showToast(res.message, 'success');
+            loadProfessionals();
+        } else {
+            if (typeof showToast !== 'undefined') showToast(res.error || t('error.generic'), 'error');
+        }
+    })
+    .catch(function() {
+        if (typeof showToast !== 'undefined') showToast(t('error.connection'), 'error');
+    });
+}
+
+function setLeadOrg(orgId, leadId) {
+    var data = { org_id: orgId ? parseInt(orgId) : null };
+    fetch('/api/admin/leads/' + leadId + '/organization', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+        if (res.success) {
+            if (typeof showToast !== 'undefined') showToast(res.message, 'success');
+        } else {
+            if (typeof showToast !== 'undefined') showToast(res.error || t('error.generic'), 'error');
+        }
+    })
+    .catch(function() {
+        if (typeof showToast !== 'undefined') showToast(t('error.connection'), 'error');
     });
 }

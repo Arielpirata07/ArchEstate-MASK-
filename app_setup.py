@@ -99,6 +99,17 @@ def init_db(app):
         cursor = conn.cursor()
 
         cursor.execute('''
+            CREATE TABLE IF NOT EXISTS organizations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                slug TEXT NOT NULL UNIQUE,
+                description TEXT DEFAULT '',
+                is_active INTEGER NOT NULL DEFAULT 1,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT NOT NULL UNIQUE,
@@ -215,6 +226,10 @@ def init_db(app):
 
         if 'assigned_to' not in existing_columns:
             cursor.execute("ALTER TABLE leads ADD COLUMN assigned_to INTEGER DEFAULT NULL REFERENCES users(id)")
+
+        if 'org_id' not in existing_columns:
+            cursor.execute("ALTER TABLE leads ADD COLUMN org_id INTEGER DEFAULT NULL REFERENCES organizations(id)")
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_leads_org ON leads(org_id)')
 
         cursor.execute('PRAGMA table_info(leads)')
         lead_columns = [row[1] for row in cursor.fetchall()]
@@ -495,6 +510,9 @@ def init_db(app):
             cursor.execute("ALTER TABLE professionals ADD COLUMN zone TEXT DEFAULT ''")
         if 'country' not in pro_cols:
             cursor.execute("ALTER TABLE professionals ADD COLUMN country TEXT DEFAULT ''")
+        if 'org_id' not in pro_cols:
+            cursor.execute("ALTER TABLE professionals ADD COLUMN org_id INTEGER DEFAULT NULL REFERENCES organizations(id)")
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_professionals_org ON professionals(org_id)')
 
         cursor.execute('PRAGMA table_info(audit_log)')
         al_cols = [r[1] for r in cursor.fetchall()]

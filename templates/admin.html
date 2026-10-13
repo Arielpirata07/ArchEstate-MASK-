@@ -40,6 +40,10 @@
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2"><i data-lucide="phone" class="w-4 h-4"></i> {{ t('admin.phone_area_codes') }}</span>
             </button>
+            <button onclick="showTab('organizations')" id="tab-organizations"
+                class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-paper-dark text-midnight hover:bg-gold hover:text-white">
+                <span class="flex items-center gap-2"><i data-lucide="building" class="w-4 h-4"></i> {{ t('admin.organizations') }}</span>
+            </button>
             <button onclick="showTab('notifications')" id="tab-notifications"
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4"></i> {{ t('admin.notifications') }}</span>
@@ -470,6 +474,7 @@
                                     <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.pro_name') }}</th>
                                     <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.license') }}</th>
                                     <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.status') }}</th>
+                                    <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.org_name') }}</th>
                                     <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.document') }}</th>
                                     <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold text-right">{{ t('admin.actions') }}</th>
                                 </tr>
@@ -802,7 +807,38 @@
     </div>
 </div>
 
-<!-- ===== TAB: NOTIFICACIONES ===== -->
+    <!-- ===== TAB: ORGANIZACIONES ===== -->
+    <div id="panel-organizations" class="hidden space-y-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <h3 class="text-lg font-bold text-midnight">{{ t('admin.organizations') }}</h3>
+                <p class="text-xs text-midnight/50">{{ t('admin.org_description') }}</p>
+            </div>
+            <button onclick="openCreateOrgModal()" class="px-4 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-colors flex items-center gap-2">
+                <i data-lucide="plus" class="w-4 h-4"></i> {{ t('admin.org_new') }}
+            </button>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl border border-midnight/5">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="bg-paper-dark table-header-border">
+                        <th class="text-left px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.org_name') }}</th>
+                        <th class="text-left px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.org_slug') }}</th>
+                        <th class="text-left px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.org_members') }}</th>
+                        <th class="text-left px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.org_leads') }}</th>
+                        <th class="text-left px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.state') }}</th>
+                        <th class="text-right px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.actions') }}</th>
+                    </tr>
+                </thead>
+                <tbody id="organizations-tbody" class="divide-y divide-midnight/5">
+                    <tr><td colspan="6" class="text-center py-8 text-midnight/60">{{ t('admin.loading') }}</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ===== TAB: NOTIFICACIONES ===== -->
 <div id="panel-notifications" class="space-y-6 hidden">
 
     <!-- Configuración -->
@@ -961,6 +997,44 @@
                         {{ t('admin.cancel') }}
                     </button>
                     <button onclick="saveAreaCode()" class="flex-1 py-3 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors flex items-center justify-center gap-2">
+                        <i data-lucide="save" class="w-4 h-4"></i> {{ t('admin.save') }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODAL: ORGANIZACION ===== -->
+<div id="orgModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="org-modal-title">
+    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeOrgModal()"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
+        <div class="modal-panel bg-white rounded-lg shadow-2xl overflow-hidden">
+            <div class="border-t-4 border-gold px-8 pt-8 pb-4 flex items-start justify-between">
+                <div>
+                    <p class="text-[10px] uppercase tracking-widest font-bold text-gold mb-1" id="orgModalTag">{{ t('admin.org_new') }}</p>
+                    <h3 id="org-modal-title" class="text-2xl font-serif" id="orgModalTitle">{{ t('admin.org_new') }}</h3>
+                </div>
+                <button onclick="closeOrgModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('admin.close') }}">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="px-8 pb-8 space-y-5">
+                <input type="hidden" id="org-id">
+                <div>
+                    <label for="org-name" class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">{{ t('admin.org_name') }}</label>
+                    <input id="org-name" type="text" maxlength="200" class="w-full border border-midnight/20 rounded px-4 py-2 text-sm focus:border-gold focus:outline-none" placeholder="Inmobiliaria Sur">
+                </div>
+                <div>
+                    <label for="org-description" class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">{{ t('admin.org_description') }}</label>
+                    <textarea id="org-description" rows="3" class="w-full border border-midnight/20 rounded px-4 py-2 text-sm focus:border-gold focus:outline-none resize-none"></textarea>
+                </div>
+                <p id="orgModalError" class="hidden text-[10px] text-rose-500 font-medium"></p>
+                <div class="flex gap-3 pt-2">
+                    <button onclick="closeOrgModal()" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-colors">
+                        {{ t('admin.cancel') }}
+                    </button>
+                    <button id="orgSaveBtn" onclick="saveOrg()" class="flex-1 py-3 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors flex items-center justify-center gap-2">
                         <i data-lucide="save" class="w-4 h-4"></i> {{ t('admin.save') }}
                     </button>
                 </div>

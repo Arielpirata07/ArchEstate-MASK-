@@ -95,6 +95,7 @@ def create_app():
     from routes.phone_area_codes_bp import phone_area_codes_bp
     from routes.whatsapp_bp import whatsapp_bp
     from routes.profile_bp import profile_bp
+    from routes.organizations_bp import organizations_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(public_bp)
@@ -107,5 +108,6 @@ def create_app():
     app.register_blueprint(phone_area_codes_bp)
     app.register_blueprint(whatsapp_bp)
     app.register_blueprint(profile_bp)
+    app.register_blueprint(organizations_bp)
 
     return app

@@ -314,17 +314,27 @@ def get_leads_filter_options():
 def _get_pro_geo_filter(conn, user_id):
     """Condiciones SQL que acotan los leads a los que 'coinciden' con la zona
     del profesional (provincia/pais de su perfil + zonas configuradas).
-    Usado para el filtro 'my_leads=1'. La especialidad NO entra en este
-    filtro duro — es solo un plus para el badge matches_coverage, para no
-    ocultarle al profesional leads de su zona con otro tipo de propiedad."""
+    Usado para el filtro 'my_leads=1'. Si el profesional pertenece a una
+    organización, ve los leads de esa organización (pool compartido) — el
+    matching por zona/especialidad se ignora como filtro duro para esos leads,
+    pero matches_coverage se sigue calculando igual como señal informativa.
+    La especialidad NO entra en este filtro duro — es solo un plus para el badge
+    matches_coverage, para no ocultarle al profesional leads de su zona con otro
+    tipo de propiedad."""
     pro_data = conn.execute(
-        'SELECT province, country FROM professionals WHERE user_id = ?',
+        'SELECT province, country, org_id FROM professionals WHERE user_id = ?',
         (user_id,)
     ).fetchone()
     coverage = models.get_professional_coverage(user_id)
 
     conditions = []
     params = []
+
+    if pro_data and pro_data['org_id']:
+        conditions.append('leads.org_id = ?')
+        params.append(pro_data['org_id'])
+        return conditions, params
+
     if pro_data:
         pro_country = (pro_data['country'] or '').strip()
         pro_province = (pro_data['province'] or '').strip()
