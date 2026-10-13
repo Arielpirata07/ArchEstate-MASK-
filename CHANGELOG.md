@@ -27,6 +27,22 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ---
 
+## [v0.33.0] — 2026-10
+
+### Añadido
+- **Organizaciones (Fase 4)** — gestión de organizaciones con pool de leads compartido:
+  - Tabla `organizations` (name, slug único, description, is_active) + `org_id` nullable en `professionals` y `leads` con índices (`app_setup.py`).
+  - CRUD en `models.py`: `create/get/update/deactivate/delete_organization`, `set_professional_organization`, `set_lead_organization` (validan org activa; deactivate/delete desasignan en cascada).
+  - Blueprint nuevo `routes/organizations_bp.py`: `GET/POST /api/admin/organizations`, `PUT/DELETE /api/admin/organizations/<id>`, `POST .../deactivate`, `PUT /api/admin/professionals/<id>/organization`, `PUT /api/admin/leads/<id>/organization` (todo `@admin_required`, i18n ES/EN).
+  - Profesionales con `org_id` ven los leads de su org en `my_leads=1` (pool compartido); `matches_coverage` se sigue calculando como señal informativa (`professional_bp.py`).
+  - UI admin: tab Organizaciones + modal crear/editar + selects de org en profesionales y detalle de lead (`admin.html`, `admin.js`); 24 keys i18n ES/EN (`org.*`, `admin.org_*`).
+  - Tests nuevos: `tests/test_organizations.py` (13 tests CRUD/permisos/slug) + `TestOrgScopedLeads` en `test_professional_leads.py` (4 tests). Total suite: 560 passed.
+
+### Corregido
+- **Paridad i18n JS**: 10 claves usadas por el CRUD de organizaciones (`admin.org_*`, `org.name_required`, `success.saved`) agregadas a `static/js/i18n.js` (ES/EN); sin esto la UI mostraba las keys crudas.
+
+---
+
 ## [v0.31.3] — 2026-08
 
 ### Corregido
