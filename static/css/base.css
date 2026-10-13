@@ -362,7 +362,7 @@ button, [role="button"], a {
     position: absolute;
     right: 0;
     bottom: 0.65rem;
-    color: rgba(0, 0, 0, 0.35);
+    color: rgba(0, 0, 0, 0.5);
     background: transparent;
     border: 0;
     padding: 0.25rem;
@@ -376,7 +376,12 @@ button, [role="button"], a {
 }
 
 .dark .toggle-pass {
-    color: rgba(255, 255, 255, 0.35);
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.dark .toggle-pass:hover,
+.dark .toggle-pass:focus-visible {
+    color: #A68A64;
 }
 
 /* --- Submit button spinner --- */
@@ -526,6 +531,11 @@ button, [role="button"], a {
 }
 .dark .input-animated::after {
     background: #A68A64;
+}
+/* Los inputs estilo underline (login/register) deben seguir transparentes en
+   dark: la regla global .dark input les pondría caja sólida y rompería el diseño. */
+.dark input.input-animated {
+    background: transparent !important;
 }
 
 /* --- Skeleton Loaders --- */

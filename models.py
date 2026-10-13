@@ -1182,7 +1182,10 @@ def update_user_password(user_id, new_hash):
 
 def slugify(text):
     import re as _re
-    slug = _re.sub(r'[^\w\s-]', '', text.lower().strip())
+    import unicodedata as _ud
+    normalized = _ud.normalize('NFKD', (text or '').lower().strip())
+    ascii_text = normalized.encode('ascii', 'ignore').decode('ascii')
+    slug = _re.sub(r'[^\w\s-]', '', ascii_text)
     slug = _re.sub(r'[-\s]+', '-', slug)
     slug = slug.strip('-')
     if not slug:

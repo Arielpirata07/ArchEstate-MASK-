@@ -26,7 +26,7 @@ filter_cache = FilterOptionsCache(ttl_seconds=300)
 
 def _is_prod():
     """True when running outside dev and tests (production-like)."""
-    return os.environ.get('FLASK_DEBUG', '0') != '1' and not os.environ.get('PYTEST_CURRENT_TEST')
+    return os.environ.get('FLASK_DEBUG', '0').lower() not in ('1', 'true') and not os.environ.get('PYTEST_CURRENT_TEST')
 
 
 def _clean_lead_test_data(cursor):

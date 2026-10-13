@@ -26,7 +26,7 @@
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
                 <div class="field space-y-2">
-                    <label for="username" class="block text-[10px] uppercase tracking-widest font-bold text-gold">
+                    <label for="username" class="block text-[10px] uppercase tracking-widest font-bold text-gold dark:text-gold-light">
                         {{ t('auth.username') }}
                     </label>
                     <div class="relative">
@@ -46,7 +46,7 @@
 
                 <div class="field space-y-2">
                     <div class="flex justify-between items-end">
-                            <label for="password" class="block text-[10px] uppercase tracking-widest font-bold text-gold">
+                            <label for="password" class="block text-[10px] uppercase tracking-widest font-bold text-gold dark:text-gold-light">
                             {{ t('auth.password') }}
                         </label>
                         <a href="{{ url_for('auth.forgot_password') }}" class="text-[10px] font-bold text-midnight/60 dark:text-white/40 hover:text-gold transition-colors" aria-label="{{ t('auth.forgot_password') }}">
@@ -108,5 +108,5 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/auth.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/auth.js') }}?v=20261013" defer></script>
 {% endblock %}

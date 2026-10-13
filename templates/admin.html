@@ -724,8 +724,8 @@
 <!-- ===== MODAL: DETALLE DE LEAD REPORTADO ===== -->
 <div id="leadDetailModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
     <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeLeadDetailModal()"></div>
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl max-h-[90vh] overflow-y-auto p-4">
-        <div class="modal-panel bg-white rounded-lg shadow-2xl overflow-hidden">
+    <div class="absolute inset-0 flex overflow-y-auto p-4">
+        <div class="modal-panel bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto" style="margin:auto">
             <!-- Header -->
             <div class="border-t-4 border-gold px-8 pt-6 pb-4 flex items-start justify-between">
                 <div>
@@ -738,7 +738,7 @@
             </div>
 
             <!-- Content -->
-            <div id="leadDetailContent" class="px-8 pb-8">
+            <div id="leadDetailContent" class="px-8 pb-8" style="min-height:200px">
                 <div class="flex justify-center py-8">
                     <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-gold"></div>
                 </div>
@@ -750,8 +750,8 @@
 <!-- ===== MODAL: DAR DE BAJA / REACTIVAR ===== -->
 <div id="deactivateModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="deactivateModalTitle">
     <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeDeactivateModal()"></div>
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
-        <div class="modal-panel bg-white rounded-lg shadow-2xl overflow-hidden" id="deactivateModalBox">
+    <div class="absolute inset-0 flex overflow-y-auto p-4">
+        <div class="modal-panel bg-white rounded-lg shadow-2xl overflow-hidden w-full max-w-md" id="deactivateModalBox" style="margin:auto">
 
             <!-- Header dinámico (baja = border-rose, reactivar = border-emerald) -->
             <div id="deactivateModalHeader" class="border-t-4 border-rose-500 px-8 pt-8 pb-4">
@@ -902,8 +902,8 @@
 <!-- ===== MODAL: NOTIFICAR PROFESIONAL ===== -->
 <div id="notifyModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="notifyModalTitle">
     <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeNotifyModal()"></div>
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
-        <div class="modal-panel bg-white rounded-lg shadow-2xl overflow-hidden">
+    <div class="absolute inset-0 flex overflow-y-auto p-4">
+        <div class="modal-panel bg-white rounded-lg shadow-2xl overflow-hidden w-full max-w-md" style="margin:auto">
             <div class="border-t-4 border-gold px-8 pt-8 pb-4">
                 <div class="flex items-start justify-between">
                     <div>
@@ -942,8 +942,8 @@
 <!-- ===== MODAL: PHONE AREA CODE ===== -->
 <div id="areaCodeModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="pac-modal-title">
     <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeAreaCodeModal()"></div>
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95vw] max-w-[calc(100vw-1rem)] max-h-[90vh] overflow-y-auto overflow-x-hidden p-2 box-border">
-        <div class="modal-panel bg-white rounded-lg shadow-2xl overflow-hidden w-full max-w-full box-border">
+    <div class="absolute inset-0 flex overflow-y-auto p-2">
+        <div class="modal-panel bg-white rounded-lg shadow-2xl w-full max-w-full box-border w-[95vw] max-w-[calc(100vw-1rem)] max-h-[90vh] overflow-y-auto overflow-x-hidden" style="margin:auto">
             <div class="border-t-4 border-gold px-4 sm:px-8 pt-6 pb-4 flex items-start justify-between gap-3">
                 <div>
                     <p class="text-[10px] uppercase tracking-widest font-bold text-gold mb-1">{{ t('pac.area_code') }}</p>
@@ -1008,12 +1008,12 @@
 <!-- ===== MODAL: ORGANIZACION ===== -->
 <div id="orgModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="org-modal-title">
     <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeOrgModal()"></div>
-    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md">
-        <div class="modal-panel bg-white rounded-lg shadow-2xl overflow-hidden">
+    <div class="absolute inset-0 flex overflow-y-auto p-4">
+        <div class="modal-panel bg-white rounded-lg shadow-2xl overflow-hidden w-full max-w-md" style="margin:auto">
             <div class="border-t-4 border-gold px-8 pt-8 pb-4 flex items-start justify-between">
                 <div>
                     <p class="text-[10px] uppercase tracking-widest font-bold text-gold mb-1" id="orgModalTag">{{ t('admin.org_new') }}</p>
-                    <h3 id="org-modal-title" class="text-2xl font-serif" id="orgModalTitle">{{ t('admin.org_new') }}</h3>
+                    <h3 id="org-modal-title" class="text-2xl font-serif">{{ t('admin.org_new') }}</h3>
                 </div>
                 <button onclick="closeOrgModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('admin.close') }}">
                     <i data-lucide="x" class="w-5 h-5"></i>

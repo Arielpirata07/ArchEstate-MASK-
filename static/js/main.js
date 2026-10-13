@@ -905,7 +905,8 @@ function initBudgetPopup() {
         const minValue = Number(minSlider.value);
         const maxValue = Number(maxSlider.value);
         const isUnlimited = unlimitedCheckbox.checked;
-        hiddenBudget.value = `${minValue} - ${maxValue}`;
+        // min 0 = "hasta max": el backend exige partes > 0, no enviar "0 - X".
+        hiddenBudget.value = minValue > 0 ? `${minValue} - ${maxValue}` : `${maxValue}`;
         if (isUnlimited) {
             trigger.textContent = t('budget.greater_than') + formatMoney(budgetData.max, currencySelect.value);
         } else {

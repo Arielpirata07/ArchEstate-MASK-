@@ -356,7 +356,7 @@
             btn.addEventListener('click', function () {
                 var name = btn.getAttribute('data-toggle-pass');
                 var input = $('input[name="' + name + '"]', form);
-                var icon = $('i[data-pass-icon]', btn);
+                var icon = $('[data-pass-icon]', btn);
                 if (!input) return;
                 if (input.type === 'password') {
                     input.type = 'text';

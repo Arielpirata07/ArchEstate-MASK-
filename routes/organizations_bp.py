@@ -54,8 +54,20 @@ def update_org(org_id):
     if not org:
         return jsonify({'success': False, 'error': t('org.not_found', lang)}), 404
 
+    filtered = {}
+    if 'name' in data:
+        filtered['name'] = (data.get('name') or '').strip()
+    if 'description' in data:
+        filtered['description'] = (data.get('description') or '').strip()
+    if not filtered:
+        return jsonify({'success': False, 'error': t('org.name_required', lang)}), 400
+    if 'name' in filtered and not filtered['name']:
+        return jsonify({'success': False, 'error': t('org.name_required', lang)}), 400
+
     try:
-        models.update_organization(org_id, data)
+        success = models.update_organization(org_id, filtered)
+        if not success:
+            return jsonify({'success': False, 'error': t('admin.internal_error_short', lang)}), 400
         utils.log_action('Organizacion Actualizada', f'Org ID: {org_id}', request)
         return jsonify({'success': True, 'message': t('org.updated', lang)})
     except Exception:

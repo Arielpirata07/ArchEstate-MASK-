@@ -32,7 +32,7 @@ def create_app():
     app.config['AVATAR_FOLDER'] = os.path.join(app.root_path, config.AVATAR_FOLDER)
     app.config['PERMANENT_SESSION_LIFETIME'] = config.PERMANENT_SESSION_LIFETIME
     app.config['SESSION_COOKIE_HTTPONLY'] = True
-    is_dev = os.environ.get('FLASK_DEBUG', '0') == '1' or os.environ.get('PYTEST_CURRENT_TEST')
+    is_dev = os.environ.get('FLASK_DEBUG', '0').lower() in ('1', 'true') or os.environ.get('PYTEST_CURRENT_TEST')
     is_secure = config.REMEMBER_COOKIE_SECURE
     app.config['SESSION_COOKIE_SECURE'] = is_secure or not is_dev
     app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'

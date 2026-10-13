@@ -56,6 +56,11 @@ def user_view():
     return render_template('user.html', is_first_lead=lead_count == 0, user=user_dict)
 
 
+def _reject(error):
+    logger.warning('submit_lead 400: %s', error)
+    return jsonify({'success': False, 'error': error}), 400
+
+
 @client_bp.route('/api/submit', methods=['POST'])
 @login_required
 @rate_limit.check_rate_limit(limit=100, window=60)
@@ -81,56 +86,56 @@ def submit_lead():
         email = session.get('email') or data.get('email', '')
         is_valid, error = validators.validate_email(email)
         if not is_valid:
-            return jsonify({"success": False, "error": error}), 400
+            return _reject(error)
 
         phone = data.get('phone', '').strip()
 
         phone_format_valid = 0
         if session.get('role') != 'admin':
             if not phone:
-                return jsonify({"success": False, "error": t('client.phone_required', lang)}), 400
+                return _reject(t('client.phone_required', lang))
             is_valid, error = validators.validate_phone(phone)
             if not is_valid:
-                return jsonify({"success": False, "error": error}), 400
+                return _reject(error)
             phone_format_valid = 1
 
         budget = data.get('budget')
         if budget:
             is_valid, error = validators.validate_budget(budget)
             if not is_valid:
-                return jsonify({"success": False, "error": error}), 400
+                return _reject(error)
 
         zone = data.get('zone')
         if zone:
             is_valid, error = validators.validate_zone(zone)
             if not is_valid:
-                return jsonify({"success": False, "error": error}), 400
+                return _reject(error)
 
         lead_type = data.get('type')
         if not lead_type:
-            return jsonify({"success": False, "error": t('client.operation_type_required', lang)}), 400
+            return _reject(t('client.operation_type_required', lang))
 
         zone = data.get('zone')
         if not zone:
-            return jsonify({"success": False, "error": t('client.zone_required', lang)}), 400
+            return _reject(t('client.zone_required', lang))
 
         budget = data.get('budget')
         if not budget:
-            return jsonify({"success": False, "error": t('client.budget_required', lang)}), 400
+            return _reject(t('client.budget_required', lang))
 
         property_type = data.get('property_type', 'departamento')
         valid_property_types = models.get_form_options_by_category('property_type')
         if property_type not in valid_property_types:
-            return jsonify({"success": False, "error": t('client.invalid_property_type', lang)}), 400
+            return _reject(t('client.invalid_property_type', lang))
 
         valid_currencies = models.get_form_options_by_category('currency')
         currency = data.get('currency', 'ARG')
         if currency not in valid_currencies:
-            return jsonify({"success": False, "error": t('client.invalid_currency', lang)}), 400
+            return _reject(t('client.invalid_currency', lang))
 
         valid_lead_types = models.get_form_options_by_category('operation_type')
         if lead_type not in valid_lead_types:
-            return jsonify({"success": False, "error": t('client.invalid_operation_type', lang)}), 400
+            return _reject(t('client.invalid_operation_type', lang))
 
         try:
             land_area = int(data.get('land_area') or 0)
@@ -140,14 +145,14 @@ def submit_lead():
             built_area = 0
 
         if property_type == 'casa' and built_area > land_area:
-            return jsonify({"success": False, "error": t('client.built_area_exceeds_land', lang)}), 400
+            return _reject(t('client.built_area_exceeds_land', lang))
 
         province = data.get('province', '')
         country = data.get('country', '')
 
         valid_countries = models.get_form_options_by_category('country')
         if country and country not in valid_countries:
-            return jsonify({"success": False, "error": t('client.invalid_country', lang)}), 400
+            return _reject(t('client.invalid_country', lang))
 
         cursor = conn.execute('''
             INSERT INTO leads (

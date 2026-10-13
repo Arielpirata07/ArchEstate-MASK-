@@ -23,7 +23,7 @@ def security_headers(response):
         response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
         response.headers['Permissions-Policy'] = 'camera=(), microphone=(), geolocation=()'
 
-        is_dev = os.environ.get('FLASK_DEBUG', '0') == '1'
+        is_dev = os.environ.get('FLASK_DEBUG', '0').lower() in ('1', 'true')
         if is_dev:
             csp = (
                 "default-src 'self'; "
