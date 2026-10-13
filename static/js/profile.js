@@ -154,7 +154,7 @@ function uploadAvatar(input) {
     .then(({ ok, data }) => {
         if (ok && data.avatar_url) {
             const img = document.getElementById('avatar-preview');
-            if (img) img.src = data.avatar_url;
+            if (img) img.src = data.avatar_url + '?v=' + Date.now();
             const ring = document.getElementById('avatar-ring');
             if (img && ring) {
                 img.addEventListener('load', function() { extractAvatarColors(img, ring); });
@@ -1362,7 +1362,7 @@ function uploadProfessionalPhoto(input) {
     .then(({ ok, data }) => {
         if (ok && data.photo_url) {
             const img = document.getElementById('pro-photo-preview');
-            if (img) img.src = data.photo_url;
+            if (img) img.src = data.photo_url + '?v=' + Date.now();
             const ring = document.getElementById('pro-photo-ring');
             if (img && ring) {
                 img.addEventListener('load', function() { extractAvatarColors(img, ring); });
