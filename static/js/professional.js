@@ -307,6 +307,8 @@ document.addEventListener('DOMContentLoaded', () => {
     try { setupLeadEventListeners(); } catch(e) { console.error('setupLeadEventListeners:', e); }
     // Show leads tab by default
     showProTab('leads');
+    // Precargar pipeline en segundo plano para que esté listo al cambiar de vista
+    try { if (document.getElementById('pipelineBoard')) loadPipeline(); } catch(e) {}
 });
 
 var currentFilters = {
@@ -499,6 +501,7 @@ async function loadLeads() {
             document.getElementById('leadsCount').textContent = data.total;
             renderPagination(data);
             renderActiveTags();
+            if (typeof leadsViewMode !== 'undefined' && leadsViewMode === 'pipeline') loadPipeline();
         } else {
             showLeadError(data.error || t('error.leads_load'));
         }
@@ -1139,39 +1142,44 @@ function populateMonthSelect() {
 }
 
 function showProTab(tab) {
-    const panelLeads = document.getElementById('panel-leads');
-    const panelStats = document.getElementById('panel-stats');
-    const tabLeads = document.getElementById('tab-leads');
-    const tabStats = document.getElementById('tab-stats');
-    const exportCsv = document.getElementById('exportCsvBtn');
-    const exportXlsx = document.getElementById('exportXlsxBtn');
+    var panels = { leads: 'panel-leads', dashboard: 'panel-dashboard', stats: 'panel-stats' };
+    var tabs = { leads: 'tab-leads', dashboard: 'tab-dashboard', stats: 'tab-stats' };
+    var panelLeads = document.getElementById('panel-leads');
+    var panelStats = document.getElementById('panel-stats');
+    var tabLeads = document.getElementById('tab-leads');
+    var tabStats = document.getElementById('tab-stats');
+    var exportCsv = document.getElementById('exportCsvBtn');
+    var exportXlsx = document.getElementById('exportXlsxBtn');
     if (!panelLeads || !panelStats || !tabLeads || !tabStats) return;
+    if (!panels[tab]) tab = 'leads';
 
     const activeClass = 'tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-midnight text-white';
     const inactiveClass = 'tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-all bg-paper-dark text-midnight hover:bg-gold hover:text-white';
 
+    Object.keys(panels).forEach(function(key) {
+        var panel = document.getElementById(panels[key]);
+        var tabBtn = document.getElementById(tabs[key]);
+        if (!panel || !tabBtn) return;
+        if (key === tab) {
+            panel.classList.remove('hidden');
+            panel.classList.remove('panel-enter');
+            void panel.offsetWidth;
+            panel.classList.add('panel-enter');
+            tabBtn.className = activeClass;
+        } else {
+            panel.classList.add('hidden');
+            tabBtn.className = inactiveClass;
+        }
+    });
     if (tab === 'stats') {
-        panelLeads.classList.add('hidden');
-        panelStats.classList.remove('hidden');
-        panelStats.classList.remove('panel-enter');
-        void panelStats.offsetWidth;
-        panelStats.classList.add('panel-enter');
-        tabLeads.className = inactiveClass;
-        tabStats.className = activeClass;
         if (exportCsv) exportCsv.href = exportCsv.dataset.statsHref;
         if (exportXlsx) exportXlsx.href = exportXlsx.dataset.statsHref;
         populateMonthSelect();
         loadMarketStats();
     } else {
-        panelStats.classList.add('hidden');
-        panelLeads.classList.remove('hidden');
-        panelLeads.classList.remove('panel-enter');
-        void panelLeads.offsetWidth;
-        panelLeads.classList.add('panel-enter');
-        tabStats.className = inactiveClass;
-        tabLeads.className = activeClass;
         if (exportCsv) exportCsv.href = exportCsv.dataset.leadsHref;
         if (exportXlsx) exportXlsx.href = exportXlsx.dataset.leadsHref;
+        if (tab === 'dashboard') loadDashboard();
     }
 }
 
@@ -1569,4 +1577,192 @@ function renderTopSearched(stats) {
     renderCard(stats.by_operation_type, 'topOperationType', 'topOperationTypePct', 'topOperationTypeBar', 'topOperationTypeSub');
 }
 
+/* ============================================
+   PIPELINE KANBAN (Fase 1)
+   ============================================ */
+var PIPELINE_STAGES = ['new', 'contacted', 'visit', 'negotiation', 'proposal', 'closed_won', 'closed_lost', 'archived'];
+var PIPELINE_STAGE_COLORS = {
+    new: '#735A3A', contacted: '#059669', visit: '#2563EB', negotiation: '#7C3AED',
+    proposal: '#D97706', closed_won: '#059669', closed_lost: '#DC2626', archived: '#6B7280'
+};
+var leadsViewMode = 'list';
 
+function pipelineStageLabel(stage) {
+    var labels = {
+        new: t('pipeline.new'), contacted: t('pipeline.contacted'), visit: t('pipeline.visit'),
+        negotiation: t('pipeline.negotiation'), proposal: t('pipeline.proposal'),
+        closed_won: t('pipeline.closed_won'), closed_lost: t('pipeline.closed_lost'), archived: t('pipeline.archived')
+    };
+    return labels[stage] || stage;
+}
+
+function setLeadsView(mode) {
+    leadsViewMode = mode === 'pipeline' ? 'pipeline' : 'list';
+    var board = document.getElementById('pipelineBoard');
+    var tableWrap = document.getElementById('leadsTableContainer');
+    var pagination = document.getElementById('paginationControls');
+    var btnList = document.getElementById('btnListView');
+    var btnPipe = document.getElementById('btnPipelineView');
+    var activeCls = 'px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors bg-gold text-white';
+    var inactiveCls = 'px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors text-midnight/50 hover:text-midnight';
+    if (leadsViewMode === 'pipeline') {
+        if (board) board.classList.remove('hidden');
+        if (tableWrap) tableWrap.classList.add('hidden');
+        if (pagination) pagination.classList.add('hidden');
+        if (btnList) btnList.className = inactiveCls;
+        if (btnPipe) btnPipe.className = activeCls;
+        loadPipeline();
+    } else {
+        if (board) board.classList.add('hidden');
+        if (tableWrap) tableWrap.classList.remove('hidden');
+        if (pagination) pagination.classList.remove('hidden');
+        if (btnList) btnList.className = activeCls;
+        if (btnPipe) btnPipe.className = inactiveCls;
+        loadLeads();
+    }
+}
+
+function pipelineQueryParams() {
+    var params = new URLSearchParams();
+    ['search', 'type', 'property_type', 'zone'].forEach(function(k) {
+        if (currentFilters[k]) params.set(k, currentFilters[k]);
+    });
+    params.set('my_leads', currentFilters.my_leads ? '1' : '0');
+    params.set('per_page', '100');
+    return params;
+}
+
+async function loadPipeline() {
+    var board = document.getElementById('pipelineBoard');
+    if (!board) return;
+    board.innerHTML = '<div class="flex justify-center items-center gap-2 p-8 text-midnight/60" data-pipeline-status="loading">' +
+        '<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gold"></div> ' + t('pipeline.loading') + '</div>';
+    try {
+        var res = await fetch('/api/pipeline/leads?' + pipelineQueryParams().toString());
+        var data = await res.json();
+        if (data.success) {
+            renderPipeline(data.leads || []);
+        } else {
+            board.innerHTML = '<p class="pipeline-empty">' + escapePipelineHtml(data.error || t('error.leads_load')) + '</p>';
+            if (typeof showToast === 'function') showToast(data.error || t('error.leads_load'), 'error');
+        }
+    } catch (err) {
+        board.innerHTML = '<p class="pipeline-empty">' + t('error.connection') + '</p>';
+        if (typeof showToast === 'function') showToast(t('error.connection'), 'error');
+    }
+}
+
+function escapePipelineHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+}
+
+function pipelineDots(days) {
+    var n = Math.min(7, Math.max(0, days || 0));
+    var html = '<span class="pipeline-dots" title="' + n + 'd">';
+    for (var i = 0; i < 7; i++) {
+        html += '<span class="pipeline-dot' + (i < n ? ' pipeline-dot-on' : '') + '"></span>';
+    }
+    return html + '</span>';
+}
+
+function renderPipeline(leads) {
+    var board = document.getElementById('pipelineBoard');
+    if (!board) return;
+    var grouped = {};
+    PIPELINE_STAGES.forEach(function(s) { grouped[s] = []; });
+    (leads || []).forEach(function(lead) {
+        var st = lead.pipeline_stage || 'new';
+        if (!grouped[st]) grouped[st] = [];
+        grouped[st].push(lead);
+    });
+    var total = (leads || []).length;
+    if (!total) {
+        board.innerHTML = '<div class="w-full bg-paper-dark rounded-lg p-8 text-center border border-midnight/5">' +
+            '<p class="text-lg font-serif text-midnight">' + t('pipeline.no_leads') + '</p></div>';
+        return;
+    }
+    var html = '';
+    PIPELINE_STAGES.forEach(function(stage) {
+        var color = PIPELINE_STAGE_COLORS[stage] || '#735A3A';
+        var cards = grouped[stage].map(function(lead) {
+            var budget = escapePipelineHtml(lead.budget || '—') + ' ' + escapePipelineHtml(lead.currency || '');
+            return '<div class="pipeline-card" draggable="true" data-lead-id="' + lead.id + '">' +
+                '<div class="flex items-center justify-between mb-1">' +
+                '<span class="text-[10px] font-bold text-midnight/40">#' + lead.id + '</span>' +
+                pipelineDots(lead.days_in_stage) +
+                '</div>' +
+                '<p class="text-[13px] font-bold text-midnight">' + escapePipelineHtml(lead.type || '') + '</p>' +
+                '<p class="text-[12px] text-midnight/50">' + escapePipelineHtml(lead.property_type || '') + ' · ' + escapePipelineHtml(lead.zone || '') + '</p>' +
+                '<p class="text-[12px] font-bold mt-1" style="color:' + color + '">' + budget.trim() + '</p>' +
+                '</div>';
+        }).join('');
+        if (!cards) cards = '<p class="pipeline-empty">' + t('pipeline.no_leads') + '</p>';
+        html += '<div class="pipeline-column" data-stage="' + stage + '">' +
+            '<div class="pipeline-column-header" style="border-top:3px solid ' + color + '">' +
+            '<span class="pipeline-column-title">' + pipelineStageLabel(stage) + '</span>' +
+            '<span class="pipeline-count">' + grouped[stage].length + '</span>' +
+            '</div>' +
+            '<div class="pipeline-cards" data-stage="' + stage + '">' + cards + '</div>' +
+            '</div>';
+    });
+    board.innerHTML = html;
+    setupPipelineDnD();
+    if (window.lucide) lucide.createIcons();
+}
+
+function setupPipelineDnD() {
+    var cards = document.querySelectorAll('#pipelineBoard .pipeline-card');
+    cards.forEach(function(card) {
+        card.addEventListener('dragstart', function(e) {
+            e.dataTransfer.setData('text/plain', card.dataset.leadId);
+            card.classList.add('pipeline-card-dragging');
+        });
+        card.addEventListener('dragend', function() {
+            card.classList.remove('pipeline-card-dragging');
+            document.querySelectorAll('#pipelineBoard .pipeline-column').forEach(function(c) {
+                c.classList.remove('pipeline-column-dragover');
+            });
+        });
+        card.addEventListener('click', function() {
+            if (typeof openLeadPreview === 'function') openLeadPreview(parseInt(card.dataset.leadId, 10));
+        });
+    });
+    var columns = document.querySelectorAll('#pipelineBoard .pipeline-cards');
+    columns.forEach(function(col) {
+        col.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            col.closest('.pipeline-column').classList.add('pipeline-column-dragover');
+        });
+        col.addEventListener('dragleave', function() {
+            col.closest('.pipeline-column').classList.remove('pipeline-column-dragover');
+        });
+        col.addEventListener('drop', function(e) {
+            e.preventDefault();
+            var leadId = e.dataTransfer.getData('text/plain');
+            var newStage = col.dataset.stage;
+            if (leadId && newStage) moveLeadToStage(leadId, newStage);
+        });
+    });
+}
+
+async function moveLeadToStage(leadId, newStage) {
+    try {
+        var res = await fetch('/api/pipeline/lead/' + leadId + '/move', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ stage: newStage })
+        });
+        var data = await res.json();
+        if (data.success) {
+            if (typeof showToast === 'function') showToast(t('pipeline.move_success'), 'success');
+            loadPipeline();
+            loadLeads();
+        } else if (typeof showToast === 'function') {
+            showToast(data.error || t('pipeline.move_error'), 'error');
+        }
+    } catch (err) {
+        if (typeof showToast === 'function') showToast(t('error.connection'), 'error');
+    }
+}

@@ -329,6 +329,32 @@ def init_db(app):
         ''')
 
         cursor.execute('''
+            CREATE TABLE IF NOT EXISTS lead_stages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                professional_id INTEGER NOT NULL,
+                lead_id INTEGER NOT NULL,
+                stage TEXT NOT NULL DEFAULT 'new',
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(professional_id, lead_id),
+                FOREIGN KEY (professional_id) REFERENCES users(id),
+                FOREIGN KEY (lead_id) REFERENCES leads(id)
+            )
+        ''')
+
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS lead_stage_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                professional_id INTEGER NOT NULL,
+                lead_id INTEGER NOT NULL,
+                from_stage TEXT DEFAULT NULL,
+                to_stage TEXT NOT NULL,
+                changed_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (professional_id) REFERENCES users(id),
+                FOREIGN KEY (lead_id) REFERENCES leads(id)
+            )
+        ''')
+
+        cursor.execute('''
             CREATE TABLE IF NOT EXISTS lead_reports (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 lead_id INTEGER NOT NULL,
@@ -532,6 +558,10 @@ def init_db(app):
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_professionals_status ON professionals(status)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_lead_tracking_professional ON lead_tracking(professional_id)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_lead_tracking_lead ON lead_tracking(lead_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_lead_stages_pro ON lead_stages(professional_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_lead_stages_lead ON lead_stages(lead_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_lead_stages_stage ON lead_stages(professional_id, stage)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_stage_history_pro ON lead_stage_history(professional_id)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_lead_reports_status ON lead_reports(status)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_audit_log_user ON audit_log(user_id)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_login_history_user ON user_login_history(user_id)')

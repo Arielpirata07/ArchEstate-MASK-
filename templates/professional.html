@@ -3,7 +3,7 @@
 {% block title %}{{ t('pro.title') }} | ArchEstate{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/professional.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/professional.css') }}?v=20261013b">
 {% endblock %}
 
 {% block content %}
@@ -298,6 +298,10 @@ window.__FORM_OPTIONS = {{ {
         <div class="p-4 bg-paper-dark border-b border-midnight/5 flex justify-between items-center">
             <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('pro.leads_available') }}</h3>
             <div class="flex items-center gap-3">
+                <div class="flex items-center bg-midnight/5 rounded-lg p-0.5">
+                    <button id="btnListView" onclick="setLeadsView('list')" class="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors bg-gold text-white">{{ t('pipeline.toggle_list') }}</button>
+                    <button id="btnPipelineView" onclick="setLeadsView('pipeline')" class="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors text-midnight/50 hover:text-midnight">{{ t('pipeline.toggle_pipeline') }}</button>
+                </div>
                 <span class="inline-flex items-center gap-1 text-[8px] text-midnight/30 font-bold uppercase tracking-widest"><i data-lucide="check-circle" class="w-2.5 h-2.5"></i> {{ t('pro.phone_valid') }}</span>
                 <span class="text-[10px] text-midnight/60 uppercase tracking-widest">{{ t('pro.sort_by') }}</span>
                 <select id="sortSelect" aria-label="{{ t('pro.sort_by') }}" class="text-[10px] px-2 py-1 border border-midnight/20 rounded focus:border-gold focus:outline-none">
@@ -338,6 +342,12 @@ window.__FORM_OPTIONS = {{ {
             </table>
         </div>
         <div id="paginationControls" class="p-4"></div>
+        <div id="pipelineBoard" class="hidden pipeline-board p-4">
+            <div class="flex justify-center items-center gap-2 p-8 text-midnight/60">
+                <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gold"></div>
+                {{ t('pipeline.loading') }}
+            </div>
+        </div>
     </div>
 
     <!-- Documentación: panel colapsable para profesional aprobado -->
@@ -479,7 +489,7 @@ window.__FORM_OPTIONS = {{ {
                     <div class="kpi-card stats-entrance">
                         <div class="kpi-card-accent bg-gradient-to-r from-blue-400 to-blue-500"></div>
                         <div class="flex items-center gap-2 mb-2">
-                            <i data-lucide="calendar-arrow-left" class="w-3.5 h-3.5 text-blue-500"></i>
+                            <i data-lucide="history" class="w-3.5 h-3.5 text-blue-500"></i>
                             <span class="text-[9px] uppercase tracking-widest font-bold text-midnight/35">{{ t('pro.prev_month') }}</span>
                         </div>
                         <p id="kpiPrevTotal" class="kpi-value">—</p>
@@ -623,5 +633,5 @@ window.__FORM_OPTIONS = {{ {
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/chart.umd.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/professional.js') }}" defer></script>
+<script src="{{ url_for('static', filename='js/professional.js') }}?v=20261013b" defer></script>
 {% endblock %}

@@ -769,3 +769,140 @@ tr.lead-row-unseen td:first-child {
     background: var(--accent) !important;
     color: #fff !important;
 }
+
+/* ============================================
+   PIPELINE KANBAN (Fase 1)
+   ============================================ */
+.pipeline-board {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding-bottom: 1rem;
+    align-items: flex-start;
+}
+.pipeline-column {
+    min-width: 260px;
+    max-width: 300px;
+    flex: 1 0 260px;
+    background: var(--bg-secondary, #f6f3ec);
+    border-radius: 0.5rem;
+    border: 1px solid rgba(26, 35, 50, 0.06);
+}
+.pipeline-column-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(26, 35, 50, 0.06);
+    border-radius: 0.5rem 0.5rem 0 0;
+}
+.pipeline-column-title {
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #735a3a;
+}
+.pipeline-count {
+    font-size: 10px;
+    font-weight: 800;
+    background: rgba(115, 90, 58, 0.12);
+    color: #735a3a;
+    border-radius: 999px;
+    padding: 0.1rem 0.5rem;
+}
+.pipeline-cards {
+    padding: 0.75rem;
+    min-height: 120px;
+}
+.pipeline-card {
+    background: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(26, 35, 50, 0.06);
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    cursor: grab;
+    animation: cardSlideIn 0.25s ease;
+}
+.pipeline-card:active {
+    cursor: grabbing;
+}
+.pipeline-card-dragging {
+    opacity: 0.4;
+}
+.pipeline-column-dragover {
+    background: rgba(115, 90, 58, 0.08);
+    animation: columnHighlight 0.6s ease;
+}
+.pipeline-card-ghost {
+    opacity: 0.4;
+    background: var(--bg-secondary, #f6f3ec);
+}
+.pipeline-card-drag {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    transform: rotate(2deg);
+}
+.pipeline-dots {
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
+}
+.pipeline-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(115, 90, 58, 0.3);
+}
+.pipeline-dot-on {
+    background: #735a3a;
+}
+.pipeline-empty {
+    font-size: 11px;
+    color: rgba(26, 35, 50, 0.4);
+    text-align: center;
+    padding: 1rem 0;
+}
+/* En pantallas lg+: 8 columnas al ancho, sin scroll horizontal.
+   En pantallas chicas: scroll horizontal con snap. */
+@media (min-width: 1024px) {
+    .pipeline-board {
+        display: grid;
+        grid-template-columns: repeat(8, minmax(0, 1fr));
+        overflow-x: visible;
+        gap: 0.75rem;
+    }
+    .pipeline-column {
+        min-width: 0;
+        max-width: none;
+    }
+    .pipeline-card {
+        padding: 0.6rem;
+    }
+}
+@media (max-width: 1023.98px) {
+    .pipeline-column {
+        scroll-snap-align: start;
+    }
+    .pipeline-board {
+        scroll-snap-type: x mandatory;
+    }
+}
+@keyframes cardSlideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes columnHighlight {
+    0% { background: rgba(115, 90, 58, 0.08); }
+    100% { background: transparent; }
+}
+.dark .pipeline-column {
+    background: var(--bg-secondary) !important;
+}
+.dark .pipeline-card {
+    background: var(--bg-card, #1a2332) !important;
+    border-color: rgba(255, 255, 255, 0.06) !important;
+}

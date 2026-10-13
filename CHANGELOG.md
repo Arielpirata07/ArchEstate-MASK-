@@ -27,6 +27,16 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ---
 
+## [Unreleased] — Pipeline Kanban (Fase 1, v0.34.0)
+
+### Añadido
+- **Pipeline Kanban** — tablero de 8 etapas por profesional en `/profesional` (toggle Lista | Pipeline):
+  - Tablas `lead_stages` (professional_id, lead_id, stage, updated_at, UNIQUE) + `lead_stage_history` (from/to, changed_at) con índices (`app_setup.py`).
+  - API en `routes/professional_bp.py` (todo `@professional_required` + cuenta aprobada): `GET /api/pipeline/stages`, `GET /api/pipeline/leads?stage=X` (filtros search/type/property_type/zone + `my_leads`, `days_in_stage`), `POST /api/pipeline/lead/<id>/move`, `POST /api/pipeline/leads/bulk-move`, `GET /api/pipeline/stats` (conteos + días promedio en etapa + movimientos).
+  - `models.py`: `PIPELINE_STAGES`, `get_lead_stage`, `get_pipeline_counts`, `move_lead_stage` (upsert + historial + `lead_tracking.contacted=1` desde `contacted`), `get_pipeline_stats`.
+  - UI: 8 columnas con conteos, cards con dots de días en etapa, drag & drop nativo (HTML5, sin dependencias), click en card abre el preview existente; respeta filtros actuales (`professional.html`, `professional.js`, `professional.css`); 18 keys i18n ES/EN (`pipeline.*`).
+  - Tests nuevos: `tests/test_pipeline.py` (13 tests move/historial/upsert/stages/stats/bulk/permisos). Total suite: 578 passed.
+
 ## [v0.33.0] — 2026-10
 
 ### Añadido

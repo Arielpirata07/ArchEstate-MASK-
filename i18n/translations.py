@@ -1138,6 +1138,25 @@ TRANSLATIONS = {
         'pro.budget_up_to': 'Hasta',
         'pro.budget_over': 'Más de',
 
+        # === PIPELINE ===
+        'pipeline.title': 'Pipeline',
+        'pipeline.toggle_list': 'Lista',
+        'pipeline.toggle_pipeline': 'Pipeline',
+        'pipeline.new': 'Nuevo',
+        'pipeline.contacted': 'Contactado',
+        'pipeline.visit': 'Visita Programada',
+        'pipeline.negotiation': 'Negociación',
+        'pipeline.proposal': 'Propuesta',
+        'pipeline.closed_won': 'Cerrado Ganado',
+        'pipeline.closed_lost': 'Cerrado Perdido',
+        'pipeline.archived': 'Archivado',
+        'pipeline.no_leads': 'Sin leads en esta etapa',
+        'pipeline.drag_hint': 'Arrastrá un lead a otra columna',
+        'pipeline.invalid_stage': 'Etapa inválida.',
+        'pipeline.move_success': 'Lead movido correctamente.',
+        'pipeline.loading': 'Cargando pipeline...',
+        'pipeline.move_error': 'Error al mover el lead.',
+
         # === ADMIN (additional) ===
         'admin.no_telemetry_data': 'Sin datos de telemetría en este período',
         'admin.telemetry_events_note': 'Los eventos se registrarán a medida que los profesionales interactúen.',
@@ -2384,6 +2403,25 @@ TRANSLATIONS = {
         'pro.zones': 'Zones',
         'pro.budget_up_to': 'Up to',
         'pro.budget_over': 'Over',
+
+        # === PIPELINE ===
+        'pipeline.title': 'Pipeline',
+        'pipeline.toggle_list': 'List',
+        'pipeline.toggle_pipeline': 'Pipeline',
+        'pipeline.new': 'New',
+        'pipeline.contacted': 'Contacted',
+        'pipeline.visit': 'Scheduled Visit',
+        'pipeline.negotiation': 'Negotiation',
+        'pipeline.proposal': 'Proposal',
+        'pipeline.closed_won': 'Closed Won',
+        'pipeline.closed_lost': 'Closed Lost',
+        'pipeline.archived': 'Archived',
+        'pipeline.no_leads': 'No leads in this stage',
+        'pipeline.drag_hint': 'Drag a lead to another column',
+        'pipeline.invalid_stage': 'Invalid stage.',
+        'pipeline.move_success': 'Lead moved successfully.',
+        'pipeline.loading': 'Loading pipeline...',
+        'pipeline.move_error': 'Error moving lead.',
 
         # === ADMIN (additional) ===
         'admin.no_telemetry_data': 'No telemetry data for this period',
