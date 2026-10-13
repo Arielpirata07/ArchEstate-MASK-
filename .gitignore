@@ -50,3 +50,7 @@ static/uploads/.git-rewrite/
 # Secrets & scratch
 .admin_initial_password
 *.patch
+
+# Noodle graph tooling artifacts
+noodle.json
+noodleScanOutput/
