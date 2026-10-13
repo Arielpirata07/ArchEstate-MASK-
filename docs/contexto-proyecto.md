@@ -724,6 +724,7 @@ flask, werkzeug, openpyxl, pytz, fpdf, phonenumbers, freezegun, twilio, gunicorn
 | `v0.31.3` | `15866a4` | fix(ui): carga de notificaciones fallaba con `pages<=1` (`querySelector('.font-serif p')` → null) |
 | `v0.31.4` | `787bcae` | fix(phone): eliminación de acumulación de códigos de área y corrección de 3 códigos AR |
 | `v0.32.0` | `a50409f` | feat(coverage): professional multi-zone/multi-specialty matching system |
+| `v0.33.0` | `fa9fba0` | feat(org): gestion de organizaciones (Fase 4) |
 
 > **Nota:** `v0.11.4` y `v0.25.0`–`v0.25.4` no tienen commit asociado en `main` (huecos de numeración histórica). `v0.11.3`/`v0.11.4` apuntaban originalmente a la rama `arreglo-version-antigua`; `v0.11.4` fue eliminado y `v0.11.3` re-apuntado al merge de `main`.
 
