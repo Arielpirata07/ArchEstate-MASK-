@@ -489,7 +489,8 @@
                     <!-- Cambiar contraseña -->
                     <div class="settings-section">
                         <h3 class="text-xs font-bold uppercase tracking-widest mb-4" style="color:var(--accent)">{{ t('profile.change_password') }}</h3>
-                        <div class="space-y-4 max-w-md">
+                        <form id="password-form" class="space-y-4 max-w-md" autocomplete="on">
+                            <input type="text" name="username" value="{{ user.username if user else '' }}" autocomplete="username" class="hidden" aria-hidden="true" tabindex="-1">
                             <div>
                                 <label for="current-password" class="input-label">{{ t('profile.current_password') }}</label>
                                 <input id="current-password" type="password" autocomplete="current-password" class="input-field">
@@ -504,14 +505,14 @@
                                 <input id="confirm-password" type="password" autocomplete="new-password" class="input-field">
                             </div>
                             <div class="flex items-center gap-4">
-                                <button id="save-password-btn" onclick="changePassword()" class="btn-primary">
+                                <button id="save-password-btn" type="submit" class="btn-primary">
                                     <i data-lucide="lock" class="w-4 h-4" aria-hidden="true"></i>
                                     {{ t('profile.change_password') }}
                                 </button>
                                 <span id="password-save-msg" class="hidden text-sm font-medium text-emerald-600" aria-live="polite">{{ t('profile.password_updated') }}</span>
                                 <span id="password-error-msg" class="hidden text-sm font-medium text-rose-600" role="alert"></span>
                             </div>
-                        </div>
+                        </form>
                     </div>
 
                     <!-- Sesiones activas -->

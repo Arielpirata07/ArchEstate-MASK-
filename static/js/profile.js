@@ -856,6 +856,17 @@ function saveSettings() {
 // ============================================================
 // PASSWORD
 // ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+    var pwForm = document.getElementById('password-form');
+    if (pwForm && !pwForm.dataset.bound) {
+        pwForm.dataset.bound = '1';
+        pwForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            changePassword();
+        });
+    }
+});
+
 function changePassword() {
     const btn = document.getElementById('save-password-btn');
     const msg = document.getElementById('password-save-msg');
