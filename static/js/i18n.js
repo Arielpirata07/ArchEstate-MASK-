@@ -546,6 +546,8 @@ window.I18N = {
         'profile.saving': 'Guardando...',
         'profile.contact_admin_sent': 'Mensaje enviado a los administradores.',
         'profile.coverage_save': 'Guardar cobertura',
+        'profile.coverage_reset': 'Reiniciar cobertura',
+        'profile.coverage_reset_confirm': '¿Reiniciar tu cobertura? Se borrarán zonas y especialidades.',
         // === PIPELINE ===
         'pipeline.title': 'Pipeline',
         'pipeline.toggle_list': 'Lista',
@@ -1157,6 +1159,8 @@ window.I18N = {
         'profile.saving': 'Saving...',
         'profile.contact_admin_sent': 'Message sent to administrators.',
         'profile.coverage_save': 'Save coverage',
+        'profile.coverage_reset': 'Reset coverage',
+        'profile.coverage_reset_confirm': 'Reset your coverage? Zones and specialties will be cleared.',
         // === PIPELINE ===
         'pipeline.title': 'Pipeline',
         'pipeline.toggle_list': 'List',

@@ -289,6 +289,18 @@ def api_update_professional_coverage():
     return jsonify({'success': True, 'coverage': result})
 
 
+@profile_bp.route('/api/profile/professional/coverage', methods=['DELETE'])
+@decorators.professional_required
+@rate_limit.check_rate_limit(limit=30, window=60)
+def api_reset_professional_coverage():
+    user_id = session['user_id']
+    result = models.set_professional_coverage(user_id, [], [])
+    if result is None:
+        return jsonify({'error': t('profile.no_valid_data', get_language())}), 500
+    utils.log_action('Reinicio cobertura profesional', f'Usuario: {session["username"]}', session)
+    return jsonify({'success': True, 'coverage': result})
+
+
 # ============================================================
 # NUEVOS ENDPOINTS — Preferencias, Sesiones, Actividad
 # ============================================================

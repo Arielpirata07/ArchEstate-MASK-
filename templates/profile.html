@@ -697,6 +697,10 @@
                                         <i data-lucide="save" class="w-4 h-4" aria-hidden="true"></i>
                                         <span id="coverage-save-btn-label">{{ t('profile.coverage_save') }}</span>
                                     </button>
+                                    <button type="button" id="coverage-reset-btn" onclick="resetCoverage()" class="btn-secondary">
+                                        <i data-lucide="rotate-ccw" class="w-4 h-4" aria-hidden="true"></i>
+                                        <span>{{ t('profile.coverage_reset') }}</span>
+                                    </button>
                                     <span id="coverage-save-msg" class="hidden text-sm font-medium text-emerald-600" aria-live="polite">{{ t('profile.saved') }}</span>
                                     <span id="coverage-save-error" class="hidden text-sm font-medium text-rose-500" aria-live="polite"></span>
                                 </div>

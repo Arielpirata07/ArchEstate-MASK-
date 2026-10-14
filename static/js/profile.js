@@ -1287,6 +1287,36 @@ function saveCoverage() {
     });
 }
 
+function resetCoverage() {
+    var promise = (typeof showConfirm === 'function')
+        ? showConfirm(t('profile.coverage_reset_confirm'))
+        : Promise.resolve(true);
+    promise.then(function(ok) {
+        if (!ok) return;
+        return fetch('/api/profile/professional/coverage', { method: 'DELETE' })
+        .then(r => r.json().then(data => ({ ok: r.ok, data })))
+        .then(({ ok, data }) => {
+            var msg = document.getElementById('coverage-save-msg');
+            var errEl = document.getElementById('coverage-save-error');
+            if (ok && data.success) {
+                _coverageZones = [];
+                document.querySelectorAll('.coverage-specialty-checkbox').forEach(cb => { cb.checked = false; });
+                renderCoverageZones();
+                if (msg) { msg.classList.remove('hidden'); setTimeout(() => msg.classList.add('hidden'), 3000); }
+                var hint = document.getElementById('coverage-fallback-hint');
+                if (hint) hint.classList.remove('hidden');
+            } else if (errEl) {
+                errEl.textContent = (data && data.error) || t('error.process_request');
+                errEl.classList.remove('hidden');
+            }
+        })
+        .catch(() => {
+            var errEl = document.getElementById('coverage-save-error');
+            if (errEl) { errEl.textContent = t('error.process_request'); errEl.classList.remove('hidden'); }
+        });
+    });
+}
+
 function saveProfessionalFullProfile() {
     const btn = document.querySelector('#panel-profesional .btn-primary');
     const msg = document.getElementById('pro-full-save-msg');

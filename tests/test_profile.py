@@ -355,6 +355,20 @@ class TestProfessionalCoverageAPI:
         resp = client.get('/api/profile/professional/coverage')
         assert resp.status_code in (302, 403)
 
+    def test_reset_coverage_clears_zones_and_specialties(self, auth_client, db):
+        client, _ = self._create_professional_auth_client(auth_client, db)
+        client.put('/api/profile/professional/coverage', json={
+            'zones': ['Villa Carlos Paz'], 'specialties': ['terreno'],
+        })
+        resp = client.delete('/api/profile/professional/coverage')
+        data = resp.get_json()
+        assert resp.status_code == 200
+        assert data['success'] is True
+        assert data['coverage']['zones'] == []
+        assert data['coverage']['specialties'] == []
+        resp = client.get('/api/profile/professional/coverage')
+        assert resp.get_json()['coverage']['configured'] is False
+
 
 class TestNotificationChannelAPI:
 
