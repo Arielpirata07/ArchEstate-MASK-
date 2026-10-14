@@ -27,7 +27,7 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ---
 
-## [Unreleased] — Calendario (Fase 3, v0.36.0)
+## [v0.36.0] — Calendario (Fase 3)
 
 ### Añadido
 - **Calendario** — 4to tab en `/profesional` (Leads | Dashboard | Stats | Calendar):
