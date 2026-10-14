@@ -187,14 +187,6 @@ window.__FORM_OPTIONS = {{ {
             <p id="kpiLeadsTotal" class="text-2xl font-serif text-midnight mt-1">—</p>
         </div>
     </div>
-    <!-- Mini actividad reciente -->
-    <div class="bg-white rounded-lg shadow-lg border border-midnight/5 px-6 py-4">
-        <div class="flex items-center justify-between mb-2">
-            <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('dash.activity_recent') }}</h3>
-            <button onclick="showProTab('dashboard')" class="text-[10px] font-bold uppercase tracking-widest text-midnight/50 hover:text-gold transition-colors">{{ t('dash.view_all') }}</button>
-        </div>
-        <div data-mini-activity></div>
-    </div>
     <!-- Panel de filtros -->
     <div class="bg-white rounded-lg shadow-lg border border-midnight/5 overflow-hidden">
 
@@ -385,6 +377,25 @@ window.__FORM_OPTIONS = {{ {
                 <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gold"></div>
                 {{ t('pipeline.loading') }}
             </div>
+        </div>
+    </div>
+
+    <!-- Actividad reciente: panel colapsable debajo de los leads -->
+    <div class="bg-white rounded-lg shadow-xl overflow-hidden animate-on-scroll fade-in-up">
+        <div class="w-full p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <i data-lucide="activity" class="w-4 h-4 text-gold"></i>
+                <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('dash.activity_recent') }}</h3>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="showProTab('dashboard')" class="text-[10px] font-bold uppercase tracking-widest text-midnight/50 hover:text-gold transition-colors">{{ t('dash.view_all') }}</button>
+                <button onclick="toggleMiniActivityPanel()" class="p-1 text-midnight/30 hover:text-midnight transition-colors" aria-label="{{ t('dash.activity_recent') }}">
+                    <i data-lucide="chevron-down" id="miniActivityChevron" class="w-4 h-4 transition-transform duration-200"></i>
+                </button>
+            </div>
+        </div>
+        <div id="miniActivityPanel" class="p-6">
+            <div data-mini-activity></div>
         </div>
     </div>
 
@@ -844,5 +855,5 @@ window.__FORM_OPTIONS = {{ {
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/chart.umd.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/professional.js') }}?v=20261013j" defer></script>
+<script src="{{ url_for('static', filename='js/professional.js') }}?v=20261013k" defer></script>
 {% endblock %}

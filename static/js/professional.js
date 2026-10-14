@@ -263,6 +263,16 @@ function toggleDocPanel() {
     }
 }
 
+// ---- Toggle mini actividad (debajo de leads) ----
+function toggleMiniActivityPanel() {
+    const panel   = document.getElementById('miniActivityPanel');
+    const chevron = document.getElementById('miniActivityChevron');
+    if (!panel || !chevron) return;
+    const isHidden = panel.classList.contains('hidden');
+    panel.classList.toggle('hidden', !isHidden);
+    chevron.style.transform = isHidden ? 'rotate(180deg)' : '';
+}
+
 // ---- Helpers ----
 function formatBytes(bytes) {
     if (bytes < 1024)         return bytes + ' B';
