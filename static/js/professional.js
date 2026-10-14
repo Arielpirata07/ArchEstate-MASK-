@@ -2081,6 +2081,12 @@ async function loadMiniActivity() {
    ============================================ */
 var CAL_TYPES = ['visit', 'call', 'followup', 'meeting', 'other'];
 var CAL_COLORS = { gold: '#735A3A', emerald: '#059669', blue: '#2563EB', violet: '#7C3AED', midnight: '#1a2332' };
+var CAL_TYPE_COLORS = { visit: '#735A3A', call: '#059669', followup: '#2563EB', meeting: '#7C3AED', other: '#1a2332' };
+
+function calColor(e) {
+    if (e && CAL_TYPE_COLORS[e.event_type]) return CAL_TYPE_COLORS[e.event_type];
+    return (e && CAL_COLORS[e.color]) || CAL_COLORS.gold;
+}
 var calState = { y: 0, m: 0, view: 'month', selDay: null, miniY: 0, miniM: 0 };
 var __calEvents = {};
 
@@ -2205,7 +2211,7 @@ async function loadCalendar() {
 }
 
 function calEventPill(e) {
-    var color = CAL_COLORS[e.color] || CAL_COLORS.gold;
+    var color = calColor(e);
     var time = e.all_day ? '' : escapePipelineHtml(e.start_time || '') + ' ';
     var done = e.completed ? ' style="opacity:0.45;text-decoration:line-through"' : '';
     return '<div class="cal-event" data-event-id="' + e.id + '" style="background:' + color + '"' + done + '>' +
@@ -2283,7 +2289,7 @@ function renderWeekRange(events, singleDay) {
                     height = Math.max(24, ((parseInt(pe[0], 10) || 0) * 60 + (parseInt(pe[1], 10) || 0)) - ((parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0)) * 0.8);
                 }
             }
-            var color = CAL_COLORS[e.color] || CAL_COLORS.gold;
+            var color = calColor(e);
             var done = e.completed ? 'opacity:0.45;text-decoration:line-through;' : '';
             dayBox.innerHTML += '<div class="cal-event-block" data-event-id="' + e.id + '" style="top:' + Math.round(top) + 'px;height:' + Math.round(height) + 'px;background:' + color + ';' + done + '">' +
                 (e.all_day ? '' : escapePipelineHtml(e.start_time || '') + ' ') + escapePipelineHtml(e.title) + '</div>';
@@ -2354,7 +2360,7 @@ async function loadCalUpcoming() {
             return;
         }
         box.innerHTML = data.events.map(function(e) {
-            var color = CAL_COLORS[e.color] || CAL_COLORS.gold;
+            var color = calColor(e);
             return '<div class="flex items-center gap-2 text-[12px] text-midnight cursor-pointer" data-event-id="' + e.id + '">' +
                 '<span class="dash-activity-dot" style="background:' + color + '"></span>' +
                 '<span class="font-bold">' + escapePipelineHtml(e.event_date.slice(5)) + ' ' + escapePipelineHtml(e.start_time || '') + '</span>' +

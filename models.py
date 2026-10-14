@@ -691,6 +691,8 @@ def update_calendar_event(professional_id, event_id, data):
                 return False
         if 'all_day' in filtered:
             filtered['all_day'] = 1 if filtered['all_day'] else 0
+        if 'event_type' in filtered:
+            filtered['color'] = CALENDAR_EVENT_COLORS[filtered['event_type']]
         from datetime import datetime as _dt
         filtered['updated_at'] = _dt.now().strftime('%Y-%m-%d %H:%M:%S')
         set_clause = ', '.join(f'{k} = ?' for k in filtered.keys())
