@@ -27,6 +27,17 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ---
 
+## [Unreleased] — Calendario (Fase 3, v0.36.0)
+
+### Añadido
+- **Calendario** — 4to tab en `/profesional` (Leads | Dashboard | Stats | Calendar):
+  - Tabla `calendar_events` (professional_id, lead_id nullable, title, description, event_date, start/end_time, event_type, location, color, all_day, completed) con índices (`app_setup.py`).
+  - API en `routes/professional_bp.py` (todo `@professional_required` + cuenta aprobada): `GET /api/calendar/events?month=|start=&end=`, `POST`, `PUT/DELETE /api/calendar/events/<id>`, `POST .../move`, `POST .../complete`, `GET .../upcoming?days=&limit=` (validación de fecha/hora/tipo/lead).
+  - `models.py`: `CALENDAR_EVENT_TYPES`, CRUD + `get_upcoming_events` (solo eventos propios).
+  - UI: vista mes (grid 42 celdas, pills, +N), semana (grilla horaria con bloques posicionados) y día, mini-calendario navegable, próximos 7 días, modal crear/editar con chips de tipo, búsqueda de lead y borrado; vista en `localStorage` (`professional.html`, `professional.js`, `professional.css`); 35 keys i18n ES/EN (`cal.*`).
+  - Tests nuevos: `tests/test_calendar.py` (9 tests CRUD/move/lead/upcoming/permisos).
+- **Corregido**: `admin.save` no existía como key (mostraba la key cruda en modales de admin).
+
 ## [v0.35.0] — Dashboard Ejecutivo (Fase 2)
 
 ### Añadido
