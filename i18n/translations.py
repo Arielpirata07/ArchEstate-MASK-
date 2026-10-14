@@ -595,6 +595,8 @@ TRANSLATIONS = {
         'leads.date': 'Fecha',
         'leads.follow_up': 'Seguimiento',
         'leads.action': 'Acción',
+        'leads.empty_my_leads': 'Estás viendo solo tus leads (tu zona/cobertura). Ninguno coincide.',
+        'leads.show_all': 'Ver todas las solicitudes',
 
         # === USER MANAGEMENT ===
         'um.title': 'Gestión de Usuarios',
@@ -1925,6 +1927,8 @@ TRANSLATIONS = {
         'leads.date': 'Date',
         'leads.follow_up': 'Follow-up',
         'leads.action': 'Action',
+        'leads.empty_my_leads': 'You are viewing only your leads (your zone/coverage). None match.',
+        'leads.show_all': 'View all requests',
 
         # === USER MANAGEMENT ===
         'um.title': 'User Management',

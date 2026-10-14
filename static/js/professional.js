@@ -558,11 +558,16 @@ function formatBudget(value) {
 function renderLeads(leads) {
     const tbody = document.getElementById('leadsTableBody');
     if (!leads.length) {
+        var myLeadsMsg = (typeof currentFilters !== 'undefined' && currentFilters.my_leads)
+            ? `<p class="text-xs text-gold mt-2">${t('leads.empty_my_leads')}</p>
+               <button onclick="setMyLeads(false)" class="mt-3 px-4 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors">${t('leads.show_all')}</button>`
+            : '';
         tbody.innerHTML = `
             <tr><td colspan="8" class="p-12 text-center text-midnight/60">
                 <i data-lucide="search-x" class="w-10 h-10 mx-auto mb-3 text-midnight/20"></i>
                 <p class="font-semibold text-midnight/60">${t('leads.no_results')}</p>
                 <p class="text-xs text-midnight/30 mt-1">${t('leads.no_results_hint')}</p>
+                ${myLeadsMsg}
             </td></tr>`;
         if (window.lucide) lucide.createIcons();
         return;

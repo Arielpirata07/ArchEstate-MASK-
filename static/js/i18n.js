@@ -239,6 +239,8 @@ window.I18N = {
         // === LEADS ===
         'leads.searching': 'Buscando leads...',
         'leads.no_results': 'Sin resultados para estos filtros',
+        'leads.empty_my_leads': 'Estás viendo solo tus leads (tu zona/cobertura). Ninguno coincide.',
+        'leads.show_all': 'Ver todas las solicitudes',
         'leads.no_results_hint': 'Probá ajustando el tipo de vivienda o el rango de inversión',
         'leads.no_type': 'Sin tipo',
         'leads.seen_by_singular': 'inmobiliaria ha visto',
@@ -845,6 +847,8 @@ window.I18N = {
         // === LEADS ===
         'leads.searching': 'Searching leads...',
         'leads.no_results': 'No results for these filters',
+        'leads.empty_my_leads': 'You are viewing only your leads (your zone/coverage). None match.',
+        'leads.show_all': 'View all requests',
         'leads.no_results_hint': 'Try adjusting the property type or investment range',
         'leads.no_type': 'No type',
         'leads.seen_by_singular': 'agency has seen',
