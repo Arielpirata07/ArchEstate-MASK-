@@ -305,6 +305,7 @@ if (!IS_PENDING) {
 document.addEventListener('DOMContentLoaded', () => {
     loadLeads().catch(function(){});
     try { setupLeadEventListeners(); } catch(e) { console.error('setupLeadEventListeners:', e); }
+    try { bindGlobalSearch(); } catch(e) {}
     // Show leads tab by default
     showProTab('leads');
     // Precargar pipeline en segundo plano para que esté listo al cambiar de vista
@@ -321,16 +322,47 @@ var currentFilters = {
 function setMyLeads(myLeads) {
     currentFilters.my_leads = myLeads;
     currentFilters.page = 1;
-    const btnMy = document.getElementById('btnMyLeads');
-    const btnAll = document.getElementById('btnAllLeads');
-    if (myLeads) {
-        btnMy.className = 'px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all bg-gold text-white';
-        btnAll.className = 'px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all text-midnight/50 hover:text-midnight';
-    } else {
-        btnMy.className = 'px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all text-midnight/50 hover:text-midnight';
-        btnAll.className = 'px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all bg-gold text-white';
-    }
+    setLeadsToggle('btnMyLeads', 'btnAllLeads', myLeads);
+    setLeadsToggle('btnGMyLeads', 'btnGAllLeads', myLeads);
     loadLeads();
+}
+
+function setLeadsToggle(btnMy, btnAll, myLeads) {
+    const elMy = document.getElementById(btnMy);
+    const elAll = document.getElementById(btnAll);
+    if (!elMy || !elAll) return;
+    if (myLeads) {
+        elMy.className = 'px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all bg-gold text-white';
+        elAll.className = 'px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all text-midnight/50 hover:text-midnight';
+    } else {
+        elMy.className = 'px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all text-midnight/50 hover:text-midnight';
+        elAll.className = 'px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-all bg-gold text-white';
+    }
+}
+
+function syncGlobalSearch() {
+    var g = document.getElementById('globalSearchInput');
+    if (g && typeof currentFilters !== 'undefined' && g.value !== currentFilters.search) {
+        g.value = currentFilters.search || '';
+    }
+}
+
+var globalSearchTimer = null;
+function bindGlobalSearch() {
+    var g = document.getElementById('globalSearchInput');
+    if (!g || g.dataset.bound) return;
+    g.dataset.bound = '1';
+    g.addEventListener('input', function() {
+        clearTimeout(globalSearchTimer);
+        globalSearchTimer = setTimeout(function() {
+            if (typeof currentFilters === 'undefined') return;
+            currentFilters.search = g.value.trim();
+            currentFilters.page = 1;
+            var s = document.getElementById('searchInput');
+            if (s) s.value = g.value;
+            loadLeads();
+        }, 400);
+    });
 }
 
 function setupLeadEventListeners() {
@@ -750,6 +782,7 @@ function applyFilters() {
     currentFilters.type   = document.getElementById('typeFilter').value;
     currentFilters.zone   = document.getElementById('zoneFilter').value.trim();
     currentFilters.page = 1;
+    syncGlobalSearch();
     loadLeads();
 }
 
@@ -768,6 +801,7 @@ function clearFilters() {
     setTimeRange('');
     const sortBtn = document.getElementById('sortOrder');
     if (sortBtn) { sortBtn.innerHTML = '<i data-lucide="arrow-down" class="w-3 h-3"></i>'; if (window.lucide) lucide.createIcons(); }
+    syncGlobalSearch();
     loadLeads();
 }
 
@@ -820,6 +854,10 @@ window.clearFilters = typeof clearFilters === 'function' ? clearFilters : undefi
 window.updateSort = typeof updateSort === 'function' ? updateSort : undefined;
 window.toggleSortOrder = typeof toggleSortOrder === 'function' ? toggleSortOrder : undefined;
 window.showLeadError = typeof showLeadError === 'function' ? showLeadError : undefined;
+window.syncGlobalSearch = typeof syncGlobalSearch === 'function' ? syncGlobalSearch : undefined;
+window.bindGlobalSearch = typeof bindGlobalSearch === 'function' ? bindGlobalSearch : undefined;
+window.applyPanoramaFilter = typeof applyPanoramaFilter === 'function' ? applyPanoramaFilter : undefined;
+window.loadLeadsPanorama = typeof loadLeadsPanorama === 'function' ? loadLeadsPanorama : undefined;
 
 } // end if (!IS_PENDING)
 
@@ -2088,7 +2126,33 @@ function calColor(e) {
     return (e && CAL_COLORS[e.color]) || CAL_COLORS.gold;
 }
 var calState = { y: 0, m: 0, view: 'month', selDay: null, miniY: 0, miniM: 0 };
+var calTypeFilter = '';
 var __calEvents = {};
+
+function renderCalTypeFilter() {
+    var box = document.getElementById('calTypeFilter');
+    if (!box) return;
+    var colors = { visit: '#735A3A', call: '#059669', followup: '#2563EB', meeting: '#7C3AED', other: '#1a2332' };
+    var html = '<button type="button" data-cal-filter="" class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all" ' +
+        'style="' + (!calTypeFilter ? 'background:#735A3A;color:#fff;border-color:#735A3A' : 'color:#735A3A;border-color:rgba(115,90,58,.3)') + '">' + t('admin.filter_all') + '</button>';
+    CAL_TYPES.forEach(function(tp) {
+        var on = calTypeFilter === tp;
+        html += '<button type="button" data-cal-filter="' + tp + '" class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-all" ' +
+            'style="' + (on ? 'background:' + colors[tp] + ';color:#fff;border-color:' + colors[tp] : 'color:#735A3A;border-color:rgba(115,90,58,.3)') + '">' + calTypeLabel(tp) + '</button>';
+    });
+    box.innerHTML = html;
+    box.querySelectorAll('[data-cal-filter]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            calTypeFilter = btn.dataset.calFilter;
+            renderCalTypeFilter();
+            loadCalendar();
+        });
+    });
+}
+
+function calPassesTypeFilter(e) {
+    return !calTypeFilter || e.event_type === calTypeFilter;
+}
 
 function calInitState() {
     var now = new Date();
@@ -2197,11 +2261,13 @@ async function loadCalendar() {
         var res = await fetch('/api/calendar/events?' + params);
         var data = await res.json();
         if (data.success) {
+            renderCalTypeFilter();
+            var events = (data.events || []).filter(calPassesTypeFilter);
             __calEvents = {};
-            (data.events || []).forEach(function(e) { __calEvents[e.id] = e; });
-            if (calState.view === 'month') renderMonth(data.events || []);
-            else if (calState.view === 'week') renderWeekRange(data.events || [], false);
-            else renderWeekRange(data.events || [], true);
+            events.forEach(function(e) { __calEvents[e.id] = e; });
+            if (calState.view === 'month') renderMonth(events);
+            else if (calState.view === 'week') renderWeekRange(events, false);
+            else renderWeekRange(events, true);
             renderMini();
             loadCalUpcoming();
         }
@@ -2359,7 +2425,12 @@ async function loadCalUpcoming() {
             box.innerHTML = '<p class="text-[12px] text-midnight/50">' + t('cal.no_events') + '</p>';
             return;
         }
-        box.innerHTML = data.events.map(function(e) {
+        var list = (data.events || []).filter(calPassesTypeFilter);
+        if (!list.length) {
+            box.innerHTML = '<p class="text-[12px] text-midnight/50">' + t('cal.no_events') + '</p>';
+            return;
+        }
+        box.innerHTML = list.map(function(e) {
             var color = calColor(e);
             return '<div class="flex items-center gap-2 text-[12px] text-midnight cursor-pointer" data-event-id="' + e.id + '">' +
                 '<span class="dash-activity-dot" style="background:' + color + '"></span>' +
