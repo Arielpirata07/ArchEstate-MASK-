@@ -475,6 +475,7 @@ TRANSLATIONS = {
         'profile.pro_availability': 'Disponibilidad',
         'profile.contact_admin_required': 'El asunto y el mensaje son obligatorios.',
         'profile.contact_admin_sent': 'Mensaje enviado a los administradores.',
+        'error.required_fields': 'Completá los campos obligatorios.',
         'profile.admin_msg_title': 'Mensaje de {user}: {subject}',
         'profile.admin_msg_body': '{message}',
         'profile.contact_admin_title': 'Contactar Administración',
@@ -1158,6 +1159,8 @@ TRANSLATIONS = {
         'pipeline.move_success': 'Lead movido correctamente.',
         'pipeline.loading': 'Cargando pipeline...',
         'pipeline.move_error': 'Error al mover el lead.',
+        'pagination.prev': '‹ Anterior',
+        'pagination.next': 'Siguiente ›',
 
         # === CALENDAR ===
         'cal.title': 'Calendario',
@@ -1800,6 +1803,7 @@ TRANSLATIONS = {
         'profile.pro_availability': 'Availability',
         'profile.contact_admin_required': 'Subject and message are required.',
         'profile.contact_admin_sent': 'Message sent to administrators.',
+        'error.required_fields': 'Please complete the required fields.',
         'profile.admin_msg_title': 'Message from {user}: {subject}',
         'profile.admin_msg_body': '{message}',
         'profile.contact_admin_title': 'Contact Administration',
@@ -2483,6 +2487,8 @@ TRANSLATIONS = {
         'pipeline.move_success': 'Lead moved successfully.',
         'pipeline.loading': 'Loading pipeline...',
         'pipeline.move_error': 'Error moving lead.',
+        'pagination.prev': '‹ Previous',
+        'pagination.next': 'Next ›',
 
         # === CALENDAR ===
         'cal.title': 'Calendar',
