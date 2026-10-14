@@ -165,6 +165,14 @@ window.__FORM_OPTIONS = {{ {
             <p id="kpiLeadsTotal" class="text-2xl font-serif text-midnight mt-1">—</p>
         </div>
     </div>
+    <!-- Mini actividad reciente -->
+    <div class="bg-white rounded-lg shadow-lg border border-midnight/5 px-6 py-4">
+        <div class="flex items-center justify-between mb-2">
+            <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('dash.activity_recent') }}</h3>
+            <button onclick="showProTab('dashboard')" class="text-[10px] font-bold uppercase tracking-widest text-midnight/50 hover:text-gold transition-colors">{{ t('dash.view_all') }}</button>
+        </div>
+        <div data-mini-activity></div>
+    </div>
     <!-- Panel de filtros -->
     <div class="bg-white rounded-lg shadow-lg border border-midnight/5 overflow-hidden">
 
@@ -470,6 +478,13 @@ window.__FORM_OPTIONS = {{ {
                     <h3 class="text-xs font-bold uppercase tracking-widest text-gold mb-3">{{ t('cal.upcoming') }}</h3>
                     <div id="calUpcoming" class="space-y-2"></div>
                 </div>
+                <div class="bg-white rounded-lg shadow-lg border border-midnight/5 p-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('dash.activity_recent') }}</h3>
+                        <button onclick="showProTab('dashboard')" class="text-[10px] font-bold uppercase tracking-widest text-midnight/50 hover:text-gold transition-colors">{{ t('dash.view_all') }}</button>
+                    </div>
+                    <div data-mini-activity></div>
+                </div>
             </div>
             <div class="lg:col-span-3 bg-white rounded-lg shadow-lg border border-midnight/5 p-4 min-w-0">
                 <div id="calMain"></div>
@@ -733,6 +748,13 @@ window.__FORM_OPTIONS = {{ {
                             </div>
                         </div>
                     </div>
+                    <div class="bg-white rounded-2xl shadow-lg border border-midnight/5 p-6 mt-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="text-[10px] font-bold uppercase tracking-widest text-midnight/50">{{ t('dash.activity_recent') }}</h4>
+                            <button onclick="showProTab('dashboard')" class="text-[10px] font-bold uppercase tracking-widest text-midnight/50 hover:text-gold transition-colors">{{ t('dash.view_all') }}</button>
+                        </div>
+                        <div data-mini-activity></div>
+                    </div>
                 </div>
                 </div>
             </div>
@@ -805,5 +827,5 @@ window.__FORM_OPTIONS = {{ {
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/chart.umd.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/professional.js') }}?v=20261013e" defer></script>
+<script src="{{ url_for('static', filename='js/professional.js') }}?v=20261013f" defer></script>
 {% endblock %}

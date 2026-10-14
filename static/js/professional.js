@@ -504,6 +504,7 @@ async function loadLeads() {
             if (typeof leadsViewMode !== 'undefined' && leadsViewMode === 'pipeline') loadPipeline();
             var calPanel = document.getElementById('panel-calendar');
             if (calPanel && !calPanel.classList.contains('hidden') && typeof loadCalendar === 'function') loadCalendar();
+            if (typeof loadMiniActivity === 'function') loadMiniActivity();
             var dashPanel = document.getElementById('panel-dashboard');
             if (dashPanel && !dashPanel.classList.contains('hidden') && typeof loadDashboard === 'function') loadDashboard();
         } else {
@@ -1211,6 +1212,9 @@ function showProTab(tab) {
         if (exportXlsx) exportXlsx.href = exportXlsx.dataset.leadsHref;
         if (tab === 'dashboard') loadDashboard();
         if (tab === 'calendar') loadCalendar();
+        if (tab === 'leads' || tab === 'stats' || tab === 'calendar') {
+            if (typeof loadMiniActivity === 'function') loadMiniActivity();
+        }
     }
 }
 
@@ -1969,6 +1973,32 @@ function renderDashTops(data) {
     }
 }
 
+function dashActivityItemHTML(e) {
+    var meta = {
+        stage_move: { color: '#735A3A' },
+        contacted: { color: '#059669' },
+        seen: { color: '#2563EB' }
+    };
+    var m = meta[e.kind] || meta.seen;
+    var desc = e.kind === 'stage_move'
+        ? 'Lead #' + e.lead_id + ' → ' + ((typeof pipelineStageLabel === 'function') ? pipelineStageLabel(e.to_stage) : e.to_stage)
+        : (e.kind === 'contacted' ? 'Lead #' + e.lead_id + ' contactado' : 'Lead #' + e.lead_id + ' visto');
+    return '<div class="dash-activity-item" data-lead-id="' + e.lead_id + '" style="cursor:pointer">' +
+        '<span class="dash-activity-dot" style="background:' + m.color + '"></span>' +
+        '<div class="flex-1">' +
+        '<p class="text-[13px] text-midnight font-bold">' + escapePipelineHtml(desc) + '</p>' +
+        '<p class="text-[11px] text-midnight/50">' + escapePipelineHtml(e.lead_type || '') + ' · ' + escapePipelineHtml(e.zone || '') + ' · ' + dashTimeAgo(e.at) + '</p>' +
+        '</div></div>';
+}
+
+function bindActivityClicks(box) {
+    box.querySelectorAll('.dash-activity-item').forEach(function(item) {
+        item.addEventListener('click', function() {
+            if (typeof openLeadPreview === 'function') openLeadPreview(parseInt(item.dataset.leadId, 10));
+        });
+    });
+}
+
 function renderDashActivity(events) {
     var box = document.getElementById('dashActivity');
     if (!box) return;
@@ -1976,28 +2006,27 @@ function renderDashActivity(events) {
         box.innerHTML = '<p class="text-sm text-midnight/50 py-4">' + t('dash.no_activity') + '</p>';
         return;
     }
-    var meta = {
-        stage_move: { color: '#735A3A', icon: 'arrow-right' },
-        contacted: { color: '#059669', icon: 'phone' },
-        seen: { color: '#2563EB', icon: 'eye' }
-    };
-    box.innerHTML = events.map(function(e) {
-        var m = meta[e.kind] || meta.seen;
-        var desc = e.kind === 'stage_move'
-            ? 'Lead #' + e.lead_id + ' → ' + ((typeof pipelineStageLabel === 'function') ? pipelineStageLabel(e.to_stage) : e.to_stage)
-            : (e.kind === 'contacted' ? 'Lead #' + e.lead_id + ' contactado' : 'Lead #' + e.lead_id + ' visto');
-        return '<div class="dash-activity-item" data-lead-id="' + e.lead_id + '" style="cursor:pointer">' +
-            '<span class="dash-activity-dot" style="background:' + m.color + '"></span>' +
-            '<div class="flex-1">' +
-            '<p class="text-[13px] text-midnight font-bold">' + escapePipelineHtml(desc) + '</p>' +
-            '<p class="text-[11px] text-midnight/50">' + escapePipelineHtml(e.lead_type || '') + ' · ' + escapePipelineHtml(e.zone || '') + ' · ' + dashTimeAgo(e.at) + '</p>' +
-            '</div></div>';
-    }).join('');
-    box.querySelectorAll('.dash-activity-item').forEach(function(item) {
-        item.addEventListener('click', function() {
-            if (typeof openLeadPreview === 'function') openLeadPreview(parseInt(item.dataset.leadId, 10));
+    box.innerHTML = events.map(dashActivityItemHTML).join('');
+    bindActivityClicks(box);
+}
+
+async function loadMiniActivity() {
+    var boxes = document.querySelectorAll('[data-mini-activity]');
+    if (!boxes.length) return;
+    try {
+        var res = await fetch('/api/dashboard/activity?limit=5');
+        var data = await res.json();
+        var html;
+        if (data.success && (data.activity || []).length) {
+            html = data.activity.map(dashActivityItemHTML).join('');
+        } else {
+            html = '<p class="text-[12px] text-midnight/50">' + t('dash.no_activity') + '</p>';
+        }
+        boxes.forEach(function(box) {
+            box.innerHTML = html;
+            bindActivityClicks(box);
         });
-    });
+    } catch (err) { /* silencioso */ }
 }
 
 /* ============================================

@@ -92,6 +92,16 @@ class TestDashboard:
         kinds = {e['kind'] for e in data['activity']}
         assert 'stage_move' in kinds or 'contacted' in kinds
 
+    def test_activity_no_duplicates_on_move(self, client, dash_pro, dash_leads):
+        user_id = _login_as_pro(client, dash_pro)
+        models.move_lead_stage(user_id, dash_leads[0], 'contacted')
+        data = client.get('/api/dashboard/activity?limit=20').get_json()
+        assert data['success'] is True
+        moves = [e for e in data['activity'] if e['kind'] == 'stage_move' and e['lead_id'] == dash_leads[0]]
+        contacted = [e for e in data['activity'] if e['kind'] == 'contacted' and e['lead_id'] == dash_leads[0]]
+        assert len(moves) == 1
+        assert contacted == []
+
     def test_empty_dashboard_returns_zeros(self, client, db):
         unique = uuid.uuid4().hex[:8]
         pro_name = f'Empty {unique}'

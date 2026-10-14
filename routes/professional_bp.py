@@ -1786,19 +1786,32 @@ def dashboard_activity():
                 'kind': 'stage_move', 'lead_id': m['lead_id'], 'from_stage': m['from_stage'],
                 'to_stage': m['to_stage'], 'at': m['at'], 'lead_type': m['lead_type'], 'zone': m['zone']
             })
+        contacted_stages = set(models.PIPELINE_STAGES[models.PIPELINE_STAGES.index('contacted'):])
+        move_keys = {(m['lead_id'], m['to_stage'], m['at']) for m in moves
+                     if m['to_stage'] in contacted_stages}
         for row in tracked:
             if row['contacted_at']:
-                events.append({
-                    'kind': 'contacted', 'lead_id': row['lead_id'], 'from_stage': None,
-                    'to_stage': None, 'at': row['contacted_at'], 'lead_type': row['lead_type'], 'zone': row['zone']
-                })
+                # El move a etapa de contacto ya setea contacted_at con el mismo
+                # timestamp: no duplicar el mismo hecho en el feed.
+                if not any(k[0] == row['lead_id'] and k[2] == row['contacted_at'] for k in move_keys):
+                    events.append({
+                        'kind': 'contacted', 'lead_id': row['lead_id'], 'from_stage': None,
+                        'to_stage': None, 'at': row['contacted_at'], 'lead_type': row['lead_type'], 'zone': row['zone']
+                    })
             if row['seen_at']:
                 events.append({
                     'kind': 'seen', 'lead_id': row['lead_id'], 'from_stage': None,
                     'to_stage': None, 'at': row['seen_at'], 'lead_type': row['lead_type'], 'zone': row['zone']
                 })
-        events.sort(key=lambda e: (e['at'] or ''), reverse=True)
-        return jsonify({'success': True, 'activity': events[:limit]})
+        seen_keys = set()
+        deduped = []
+        for e in sorted(events, key=lambda e: (e['at'] or ''), reverse=True):
+            key = (e['kind'], e['lead_id'], e.get('to_stage'), e['at'])
+            if key in seen_keys:
+                continue
+            seen_keys.add(key)
+            deduped.append(e)
+        return jsonify({'success': True, 'activity': deduped[:limit]})
     except Exception:
         logger.exception('Error en dashboard_activity')
         return jsonify({'success': False, 'error': t('prof.internal_error_short', lang)}), 500
