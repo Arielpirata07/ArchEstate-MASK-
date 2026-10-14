@@ -962,7 +962,10 @@ function openLeadPreview(leadId) {
     for (var i = 0; i < leads.length; i++) {
         if (leads[i].id === leadId) { lead = leads[i]; break; }
     }
-    if (!lead) return;
+    if (!lead) {
+        window.location.href = '/profesional/lead/' + leadId;
+        return;
+    }
 
     var overlay = document.getElementById('leadPreviewOverlay');
     var drawer = document.getElementById('leadPreviewDrawer');
@@ -1245,6 +1248,7 @@ function showProTab(tab) {
             tabBtn.className = inactiveClass;
         }
     });
+    try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) { window.scrollTo(0, 0); }
     if (tab === 'stats') {
         if (exportCsv) exportCsv.href = exportCsv.dataset.statsHref;
         if (exportXlsx) exportXlsx.href = exportXlsx.dataset.statsHref;
