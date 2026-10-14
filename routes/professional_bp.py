@@ -1394,6 +1394,8 @@ def calendar_create_event():
         end_time = (data.get('end_time') or '').strip()
         if not _valid_cal_time(start_time) or not _valid_cal_time(end_time):
             return jsonify({'success': False, 'error': t('cal.invalid_date', lang)}), 400
+        if start_time and end_time and end_time <= start_time:
+            return jsonify({'success': False, 'error': t('cal.invalid_range', lang)}), 400
         lead_id = data.get('lead_id')
         if lead_id is not None:
             try:
@@ -1449,6 +1451,9 @@ def calendar_update_event(event_id):
         for tk in ('start_time', 'end_time'):
             if tk in payload and not _valid_cal_time((payload[tk] or '').strip()):
                 return jsonify({'success': False, 'error': t('cal.invalid_date', lang)}), 400
+        if payload.get('start_time') and payload.get('end_time'):
+            if payload['end_time'] <= payload['start_time']:
+                return jsonify({'success': False, 'error': t('cal.invalid_range', lang)}), 400
         if 'lead_id' in payload and payload['lead_id'] is not None:
             try:
                 payload['lead_id'] = int(payload['lead_id'])

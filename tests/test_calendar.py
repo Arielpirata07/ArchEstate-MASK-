@@ -120,3 +120,12 @@ class TestCalendar:
     def test_non_professional_blocked(self, client, auth_client):
         resp = client.get('/api/calendar/events')
         assert resp.status_code in (302, 403)
+
+    def test_end_before_start_rejected(self, client, cal_pro):
+        _login_as_pro(client, cal_pro)
+        payload = dict(VALID_EVENT)
+        payload['start_time'] = '13:50'
+        payload['end_time'] = '13:40'
+        resp = client.post('/api/calendar/events', json=payload)
+        assert resp.status_code == 400
+        assert resp.get_json()['success'] is False

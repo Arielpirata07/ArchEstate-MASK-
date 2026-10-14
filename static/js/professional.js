@@ -2323,6 +2323,8 @@ function openCalModal(dateISO, event, prefill) {
     document.getElementById('cal-location').value = (event && event.location) || '';
     document.getElementById('cal-notes').value = (event && event.description) || '';
     document.getElementById('cal-allday').checked = !!(event && event.all_day);
+    document.getElementById('cal-allday').onchange = toggleCalAllDay;
+    toggleCalAllDay();
     document.getElementById('cal-lead-id').value = (event && event.lead_id) || '';
     document.getElementById('cal-lead-search').value = '';
     document.getElementById('cal-lead-search').oninput = function() {
@@ -2344,6 +2346,17 @@ function closeCalModal() {
     if (!modal) return;
     if (typeof closeModalAnim === 'function') closeModalAnim(modal);
     else modal.classList.add('hidden');
+}
+
+function toggleCalAllDay() {
+    var allDay = document.getElementById('cal-allday').checked;
+    ['cal-start', 'cal-end'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        el.disabled = allDay;
+        if (allDay) el.value = '';
+        el.classList.toggle('opacity-40', allDay);
+    });
 }
 
 var calLeadSearchTimer = null;
@@ -2386,6 +2399,11 @@ async function saveCalEvent() {
     };
     if (!payload.title || !payload.date) {
         errBox.textContent = t('cal.title_required');
+        errBox.classList.remove('hidden');
+        return;
+    }
+    if (!payload.all_day && payload.start_time && payload.end_time && payload.end_time <= payload.start_time) {
+        errBox.textContent = t('cal.invalid_range');
         errBox.classList.remove('hidden');
         return;
     }
