@@ -755,6 +755,28 @@ function showLeadError(msg) {
     if (window.lucide) lucide.createIcons();
 }
 
+// Exponer a scope global: las declaraciones dentro de if(!IS_PENDING) no son
+// visibles para los onclick inline ni para el resto del archivo en todos los
+// browsers. Solo existe si el profesional esta aprobado (el bloque no corre
+// en pendiente).
+window.setMyLeads = typeof setMyLeads === 'function' ? setMyLeads : undefined;
+window.setupLeadEventListeners = typeof setupLeadEventListeners === 'function' ? setupLeadEventListeners : undefined;
+window.setPropType = typeof setPropType === 'function' ? setPropType : undefined;
+window.setBudgetRange = typeof setBudgetRange === 'function' ? setBudgetRange : undefined;
+window.setTimeRange = typeof setTimeRange === 'function' ? setTimeRange : undefined;
+window.renderActiveTags = typeof renderActiveTags === 'function' ? renderActiveTags : undefined;
+window.removeFilter = typeof removeFilter === 'function' ? removeFilter : undefined;
+window.loadLeads = typeof loadLeads === 'function' ? loadLeads : undefined;
+window.goToPage = typeof goToPage === 'function' ? goToPage : undefined;
+window.renderPagination = typeof renderPagination === 'function' ? renderPagination : undefined;
+window.formatBudget = typeof formatBudget === 'function' ? formatBudget : undefined;
+window.renderLeads = typeof renderLeads === 'function' ? renderLeads : undefined;
+window.applyFilters = typeof applyFilters === 'function' ? applyFilters : undefined;
+window.clearFilters = typeof clearFilters === 'function' ? clearFilters : undefined;
+window.updateSort = typeof updateSort === 'function' ? updateSort : undefined;
+window.toggleSortOrder = typeof toggleSortOrder === 'function' ? toggleSortOrder : undefined;
+window.showLeadError = typeof showLeadError === 'function' ? showLeadError : undefined;
+
 } // end if (!IS_PENDING)
 
 /**
