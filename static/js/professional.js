@@ -421,6 +421,42 @@ function setTimeRange(days) {
 }
 
 // ---- Barra de filtros activos ----
+async function loadLeadsPanorama() {
+    var box = document.getElementById('leadsPanorama');
+    if (!box) return;
+    try {
+        var res = await fetch('/api/leads/panorama');
+        var data = await res.json();
+        if (!data.success) return;
+        var p = data.panorama;
+        function chips(items, kind) {
+            return (items || []).map(function(it) {
+                return '<button onclick="applyPanoramaFilter(\'' + kind + '\',\'' + String(it.label).replace(/'/g, "\\'") + '\')" ' +
+                    'class="px-2.5 py-1 rounded-full text-[10px] font-bold border border-gold/30 text-gold hover:bg-gold hover:text-white transition-colors">' +
+                    escapeHtml(it.label) + ' (' + it.value + ')</button>';
+            }).join('');
+        }
+        var html = '<p class="text-[11px] font-bold uppercase tracking-widest text-midnight/60 mb-2">' +
+            t('leads.panorama') + ' · ' + p.total + ' total' +
+            (p.my_total !== null && p.my_total !== undefined ? ' · ' + t('leads.panorama_mine') + ': ' + p.my_total : '') + '</p>';
+        if ((p.by_zone || []).length) html += '<p class="text-[10px] text-midnight/40 mb-1">' + t('pro.zones') + '</p><div class="flex flex-wrap gap-1.5 justify-center mb-2">' + chips(p.by_zone, 'zone') + '</div>';
+        if ((p.by_province || []).length) html += '<p class="text-[10px] text-midnight/40 mb-1">' + t('detail.province') + '</p><div class="flex flex-wrap gap-1.5 justify-center">' + chips(p.by_province, 'province') + '</div>';
+        box.innerHTML = html;
+    } catch (err) { /* silencioso */ }
+}
+
+function applyPanoramaFilter(kind, value) {
+    if (kind === 'zone' && typeof currentFilters !== 'undefined') {
+        currentFilters.zone = value;
+        currentFilters.page = 1;
+        var zi = document.getElementById('zoneFilter');
+        if (zi) zi.value = value;
+    }
+    if (typeof setMyLeads === 'function') setMyLeads(false);
+    else if (typeof loadLeads === 'function') loadLeads();
+    if (typeof renderActiveTags === 'function') renderActiveTags();
+}
+
 function renderActiveTags() {
     const container = document.getElementById('activeFilterTags');
     const countEl   = document.getElementById('activeFiltersCount');
@@ -560,7 +596,8 @@ function renderLeads(leads) {
     if (!leads.length) {
         var myLeadsMsg = (typeof currentFilters !== 'undefined' && currentFilters.my_leads)
             ? `<p class="text-xs text-gold mt-2">${t('leads.empty_my_leads')}</p>
-               <button onclick="setMyLeads(false)" class="mt-3 px-4 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors">${t('leads.show_all')}</button>`
+               <button onclick="setMyLeads(false)" class="mt-3 px-4 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors">${t('leads.show_all')}</button>
+               <div id="leadsPanorama" class="mt-4 text-left"></div>`
             : '';
         tbody.innerHTML = `
             <tr><td colspan="8" class="p-12 text-center text-midnight/60">
@@ -570,6 +607,7 @@ function renderLeads(leads) {
                 ${myLeadsMsg}
             </td></tr>`;
         if (window.lucide) lucide.createIcons();
+        if (myLeadsMsg && typeof loadLeadsPanorama === 'function') loadLeadsPanorama();
         return;
     }
 

@@ -130,6 +130,26 @@ class TestMyLeadsFilter:
         assert lead_buenos_aires in lead_ids
         assert lead_caba not in lead_ids
 
+
+class TestLeadsPanorama:
+    def test_panorama_returns_counts(self, client, pro_user_with_zone, lead_buenos_aires, lead_caba):
+        user_id, pro_name = pro_user_with_zone
+        with client.session_transaction() as sess:
+            sess['user_id'] = user_id
+            sess['username'] = pro_name
+            sess['role'] = 'professional'
+
+        resp = client.get('/api/leads/panorama')
+        data = resp.get_json()
+        assert resp.status_code == 200
+        assert data['success'] is True
+        pano = data['panorama']
+        assert pano['total'] >= 2
+        assert pano['my_total'] >= 1
+        zones = {z['label']: z['value'] for z in pano['by_zone']}
+        assert zones.get('Palermo', 0) >= 1
+        assert any(p['label'] == 'Buenos Aires' for p in pano['by_province'])
+
     def test_my_leads_zone_is_partial_match(self, client, db, lead_buenos_aires):
         """Zone filter should be partial (LIKE) match."""
         unique = uuid.uuid4().hex[:8]

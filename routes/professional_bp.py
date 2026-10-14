@@ -317,6 +317,52 @@ def get_leads_filter_options():
             conn.close()
 
 
+@professional_bp.route('/api/leads/panorama')
+@professional_required
+def get_leads_panorama():
+    lang = get_language()
+    conn = None
+    try:
+        conn = models.get_db_connection()
+        _, error = _get_approved_professional(conn, session['user_id'], lang)
+        if error:
+            return error
+        total = conn.execute('SELECT COUNT(*) AS n FROM leads').fetchone()['n']
+
+        def top(column):
+            return [dict(r) for r in conn.execute(
+                f"SELECT {column} AS label, COUNT(*) AS value FROM leads "
+                f"WHERE {column} IS NOT NULL AND {column} != '' "
+                f'GROUP BY {column} ORDER BY value DESC LIMIT 8'
+            ).fetchall()]
+
+        my_total = None
+        try:
+            conds, geo_params = _get_pro_geo_filter(conn, session['user_id'])
+            where = ' AND '.join(conds) if conds else '1=1'
+            my_total = conn.execute(
+                f'SELECT COUNT(*) AS n FROM leads WHERE {where}', geo_params
+            ).fetchone()['n']
+        except Exception:
+            pass
+        return jsonify({
+            'success': True,
+            'panorama': {
+                'total': total,
+                'my_total': my_total,
+                'by_zone': top('zone'),
+                'by_province': top('province'),
+                'by_country': top('country'),
+            }
+        })
+    except Exception:
+        logger.exception('Error en get_leads_panorama')
+        return jsonify({'success': False, 'error': t('prof.internal_error_short', lang)}), 500
+    finally:
+        if conn:
+            conn.close()
+
+
 def _get_pro_geo_filter(conn, user_id):
     """Condiciones SQL que acotan los leads a los que 'coinciden' con la zona
     del profesional (provincia/pais de su perfil + zonas configuradas).
