@@ -921,6 +921,11 @@ tr.lead-row-unseen td:first-child {
         grid-template-columns: repeat(6, minmax(0, 1fr));
     }
 }
+@media (min-width: 1024px) {
+    .lg\:grid-cols-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
 
 /* ============================================
    EXECUTIVE DASHBOARD (Fase 2)

@@ -3,7 +3,7 @@
 {% block title %}{{ t('pro.title') }} | ArchEstate{% endblock %}
 
 {% block head %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/professional.css') }}?v=20261013c">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/professional.css') }}?v=20261013d">
 {% endblock %}
 
 {% block content %}
@@ -527,7 +527,7 @@ window.__FORM_OPTIONS = {{ {
                         <textarea id="cal-notes" rows="2" class="w-full border border-midnight/20 rounded px-4 py-2 text-sm focus:border-gold focus:outline-none resize-none"></textarea>
                     </div>
                     <label class="flex items-center gap-2 text-sm text-midnight/70">
-                        <input id="cal-allday" type="checkbox" class="w-4 h-4 accent-[#735A3A]"> {{ t('cal.all_day') }}
+                        <input id="cal-allday" type="checkbox" class="w-4 h-4" style="accent-color:#735A3A"> {{ t('cal.all_day') }}
                     </label>
                     <p id="calModalError" class="hidden text-[10px] text-rose-500 font-medium"></p>
                     <div class="flex gap-3 pt-2">
@@ -805,5 +805,5 @@ window.__FORM_OPTIONS = {{ {
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/chart.umd.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/professional.js') }}?v=20261013b" defer></script>
+<script src="{{ url_for('static', filename='js/professional.js') }}?v=20261013d" defer></script>
 {% endblock %}
