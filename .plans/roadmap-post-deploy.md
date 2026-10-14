@@ -1,7 +1,7 @@
 # Roadmap Post-Deploy — ArchEstate
 
 > **Estado:** Plan de referencia — ejecutar después de deploy a Render + fixes de `fixes-pendientes.md`.
-> **Versión actual:** v0.36.0 (132 tags, 599 tests)
+> **Versión actual:** v0.36.0 + fixes (132 tags, 603 tests, coherencia 94/94)
 > **Convención de commits:** `feat(scope):`, `fix(scope):`, `test(scope):`, `docs:`
 > **Convención de tags:** Semver `v0.XX.Y` — cada fase = minor bump (`v0.34.0`, `v0.35.0`, `v0.36.0`, `v0.37.0`)
 

@@ -7,6 +7,23 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 ## [Unreleased]
 
 ### Añadido
+- **Panorama de solicitudes** — `GET /api/leads/panorama` (total, `my_total`, top zonas/provincias/países); el estado vacío de Mis leads muestra el panorama con chips que aplican zona + Todos.
+- **Mini-feed de actividad** en tabs Leads (colapsable debajo de la tabla), Stats y Calendario (sidebar), con "Ver todo" al Dashboard; se refresca con filtros y movimientos.
+- **Barra global de filtros** en vista profesional (buscador + Mis/Todos + limpiar, sincronizada con el panel de Leads) + filtro por tipo en Calendario.
+- **Botón Reiniciar cobertura** en Mi perfil (`DELETE /api/profile/professional/coverage`, con confirmación).
+- Keys i18n ES/EN: `leads.panorama*`, `leads.empty_my_leads`, `leads.show_all`, `dash.view_all`, `cal.invalid_range`, `pagination.prev/next`, `profile.coverage_reset*`, `admin.save`, `error.required_fields`.
+
+### Corregido
+- Duplicados en feed de actividad (move→contactado generaba 2 eventos; tarjeta duplicada en Dashboard).
+- Calendario: todo el día deshabilita horarios; fin posterior a inicio (cliente + servidor); color deriva del tipo.
+- Login dark: contraste del ojo, inputs underline transparentes, labels gold-light.
+- `api/submit` 400 por presupuesto `"0 - max"` (se envía max-only); log de motivo en `_reject`.
+- `FLASK_DEBUG=true` vs `== '1'` (CSP/cookies caían en prod); `calendar-arrow-left` → `history`; sourcemap fantasma de Chart.js.
+- Funciones de leads a scope global (inline onclick + Pipeline); scroll arriba al cambiar de tab; preview con fallback a detalle.
+- Password de perfil en `<form>` real (gestores de claves); modales admin con frame flex sin saltos.
+- Suite: 603 passed, coherencia 94/94.
+
+### Añadido (previo sin release)
 - **Coverage de profesionales** — sistema de cobertura para matching de leads:
   - Tabla `professional_coverage` + índice `idx_pro_coverage_user` (creados en `app_setup.py`).
   - `get_professional_coverage()` / `set_professional_coverage()` en `models.py` con fallback legacy a `zone`/`specialty` y flag `configured`.
