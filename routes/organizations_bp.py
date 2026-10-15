@@ -31,14 +31,17 @@ def create_org():
     data = request.json or {}
     name = (data.get('name') or '').strip()
     description = (data.get('description') or '').strip()
+    slug = (data.get('slug') or '').strip() or None
 
     if not name:
         return jsonify({'success': False, 'error': t('org.name_required', lang)}), 400
 
     try:
-        org_id = models.create_organization(name, description)
+        org_id = models.create_organization(name, description, slug)
         utils.log_action('Organizacion Creada', f'Org: {name} (ID: {org_id})', request)
         return jsonify({'success': True, 'id': org_id, 'message': t('org.created', lang)})
+    except ValueError:
+        return jsonify({'success': False, 'error': t('org.slug_exists', lang)}), 409
     except Exception:
         logger.exception('Error creating organization')
         return jsonify({'success': False, 'error': t('admin.internal_error_short', lang)}), 500
@@ -108,6 +111,73 @@ def delete_org(org_id):
         return jsonify({'success': True, 'message': t('org.deleted', lang)})
     except Exception:
         logger.exception('Error deleting organization')
+        return jsonify({'success': False, 'error': t('admin.internal_error_short', lang)}), 500
+
+
+@organizations_bp.route('/api/admin/organizations/<int:org_id>/members')
+@admin_required
+def list_org_members(org_id):
+    lang = get_language()
+    if not models.get_organization_by_id(org_id):
+        return jsonify({'success': False, 'error': t('org.not_found', lang)}), 404
+    try:
+        members = models.get_org_members(org_id)
+        return jsonify({'success': True, 'members': members})
+    except Exception:
+        logger.exception('Error listing org members')
+        return jsonify({'success': False, 'error': t('admin.internal_error_short', lang)}), 500
+
+
+@organizations_bp.route('/api/admin/organizations/<int:org_id>/members', methods=['POST'])
+@admin_required
+def add_org_member(org_id):
+    lang = get_language()
+    data = request.json or {}
+    user_id = data.get('user_id')
+    role = (data.get('role') or 'member').strip()
+    if not user_id:
+        return jsonify({'success': False, 'error': t('org.member_required', lang)}), 400
+    if role not in models.ORG_ROLES:
+        return jsonify({'success': False, 'error': t('org.invalid_role', lang)}), 400
+    if not models.get_organization_by_id(org_id):
+        return jsonify({'success': False, 'error': t('org.not_found', lang)}), 404
+    try:
+        ok = models.add_org_member(org_id, int(user_id), role)
+        if not ok:
+            return jsonify({'success': False, 'error': t('org.invalid_org', lang)}), 400
+        return jsonify({'success': True, 'message': t('org.member_added', lang)})
+    except Exception:
+        logger.exception('Error adding org member')
+        return jsonify({'success': False, 'error': t('admin.internal_error_short', lang)}), 500
+
+
+@organizations_bp.route('/api/admin/organizations/<int:org_id>/members/<int:user_id>', methods=['PUT'])
+@admin_required
+def change_org_member_role(org_id, user_id):
+    lang = get_language()
+    data = request.json or {}
+    role = (data.get('role') or '').strip()
+    if role not in models.ORG_ROLES:
+        return jsonify({'success': False, 'error': t('org.invalid_role', lang)}), 400
+    try:
+        ok = models.set_member_role(org_id, user_id, role)
+        if not ok:
+            return jsonify({'success': False, 'error': t('org.not_found', lang)}), 404
+        return jsonify({'success': True, 'message': t('org.role_updated', lang)})
+    except Exception:
+        logger.exception('Error changing org member role')
+        return jsonify({'success': False, 'error': t('admin.internal_error_short', lang)}), 500
+
+
+@organizations_bp.route('/api/admin/organizations/<int:org_id>/members/<int:user_id>', methods=['DELETE'])
+@admin_required
+def remove_org_member(org_id, user_id):
+    lang = get_language()
+    try:
+        models.remove_org_member(org_id, user_id)
+        return jsonify({'success': True, 'message': t('org.member_removed', lang)})
+    except Exception:
+        logger.exception('Error removing org member')
         return jsonify({'success': False, 'error': t('admin.internal_error_short', lang)}), 500
 
 

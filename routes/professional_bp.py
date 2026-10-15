@@ -363,7 +363,53 @@ def get_leads_panorama():
             conn.close()
 
 
-def _get_pro_geo_filter(conn, user_id):
+@professional_bp.route('/api/professional/my-org')
+@professional_required
+def get_my_org():
+    lang = get_language()
+    conn = None
+    try:
+        conn = models.get_db_connection()
+        _, error = _get_approved_professional(conn, session['user_id'], lang)
+        if error:
+            return error
+        org = models.get_my_org(session['user_id'])
+        if not org:
+            return jsonify({'success': True, 'org': None, 'message': t('org.no_org', lang)})
+        members = models.get_org_members(org['id'])
+        return jsonify({'success': True, 'org': org, 'members': members})
+    except Exception:
+        logger.exception('Error en get_my_org')
+        return jsonify({'success': False, 'error': t('prof.internal_error_short', lang)}), 500
+    finally:
+        if conn:
+            conn.close()
+
+
+@professional_bp.route('/api/professional/org-leads')
+@professional_required
+def get_org_leads():
+    lang = get_language()
+    conn = None
+    try:
+        conn = models.get_db_connection()
+        _, error = _get_approved_professional(conn, session['user_id'], lang)
+        if error:
+            return error
+        org = models.get_my_org(session['user_id'])
+        if not org:
+            return jsonify({'success': True, 'leads': [], 'total': 0, 'message': t('org.no_org', lang)})
+        rows = conn.execute(
+            'SELECT * FROM leads WHERE org_id = ? ORDER BY timestamp DESC LIMIT 100',
+            (org['id'],)
+        ).fetchall()
+        return jsonify({'success': True, 'org_id': org['id'], 'leads': [dict(r) for r in rows], 'total': len(rows)})
+    except Exception:
+        logger.exception('Error en get_org_leads')
+        return jsonify({'success': False, 'error': t('prof.internal_error_short', lang)}), 500
+    finally:
+        if conn:
+            conn.close()
     """Condiciones SQL que acotan los leads a los que 'coinciden' con la zona
     del profesional (provincia/pais de su perfil + zonas configuradas).
     Usado para el filtro 'my_leads=1'. Si el profesional pertenece a una

@@ -1559,8 +1559,12 @@ def get_organization_by_slug(slug):
         conn.close()
 
 
-def create_organization(name, description=''):
-    base_slug = slugify(name)
+def create_organization(name, description='', slug=None):
+    base_slug = slugify(slug) if slug else slugify(name)
+    if slug:
+        existing = get_organization_by_slug(base_slug)
+        if existing:
+            raise ValueError('duplicate slug')
     slug = _unique_slug(base_slug)
     conn = get_db_connection()
     try:
