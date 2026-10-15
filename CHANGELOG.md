@@ -8,6 +8,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ---
 
+## [v0.42.0] — 2026-10-15 — Calidad Fase 3 (Auditoría)
+
+### Cambiado
+- **Splits**: `models.py` → paquete `models/` (10 módulos + re-exports); `app_setup.init_db` → `db_schema` + `db_migrations` + `db_seeds` (schema verificado idéntico en DBs frescas); `professional_bp` → `routes/professional/` (9 módulos) y `profile_bp` → `routes/profile/` (6 módulos), todos <500 líneas, blueprint names intactos.
+- **`config.py`** usa `dotenv.load_dotenv()`; **`lead_bp`** reutiliza `rate_limit.check_rate()` (store único; `conftest` simplificado).
+- **SQL**: `date_format_sql()` con allowlist, `top()` validado (ORDER BY ya allowlisteado).
+- **Nombres**: `delete_reported_lead` → `mark_report_deleted`.
+- **Sin `pass` silenciosos**: 17 bloques ahora loguean (debug/warning/exception según criticidad).
+- Suite parcial: 120+76+52+42 passed en subsets por split.
+
+---
+
 ## [v0.41.0] — 2026-10-15 — Performance Fase 2 (Auditoría)
 
 ### Cambiado
