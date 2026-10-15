@@ -121,11 +121,6 @@ def init_db(app):
         ''')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_org_members_org ON org_members(org_id)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_org_members_user ON org_members(user_id)')
-        cursor.execute('''
-            INSERT OR IGNORE INTO org_members (org_id, user_id, role)
-            SELECT p.org_id, p.user_id, 'member' FROM professionals p
-            WHERE p.org_id IS NOT NULL
-        ''')
 
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
@@ -603,6 +598,11 @@ def init_db(app):
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_lead_stages_stage ON lead_stages(professional_id, stage)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_stage_history_pro ON lead_stage_history(professional_id)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_stage_history_lead ON lead_stage_history(lead_id)')
+        cursor.execute('''
+            INSERT OR IGNORE INTO org_members (org_id, user_id, role)
+            SELECT p.org_id, p.user_id, 'member' FROM professionals p
+            WHERE p.org_id IS NOT NULL
+        ''')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_cal_events_pro ON calendar_events(professional_id)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_cal_events_date ON calendar_events(professional_id, event_date)')
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_cal_events_type ON calendar_events(professional_id, event_type)')

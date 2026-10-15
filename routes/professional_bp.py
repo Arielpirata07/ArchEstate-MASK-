@@ -410,6 +410,9 @@ def get_org_leads():
     finally:
         if conn:
             conn.close()
+
+
+def _get_pro_geo_filter(conn, user_id):
     """Condiciones SQL que acotan los leads a los que 'coinciden' con la zona
     del profesional (provincia/pais de su perfil + zonas configuradas).
     Usado para el filtro 'my_leads=1'. Si el profesional pertenece a una
