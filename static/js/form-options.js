@@ -1,3 +1,6 @@
+/* FASE 5.1: IIFE — solo window.* es público. */
+(function () {
+
 /* ================================================================
    form-options.js — Dynamic form option rendering
    Reads from window.__FORM_OPTIONS (injected by Jinja)
@@ -84,3 +87,8 @@ function foSetActiveChip(containerId, value) {
         }
     });
 }
+
+/* API pública (usada por otros archivos/templates) */
+window.foRenderPropertyTypeButtons = foRenderPropertyTypeButtons;
+
+})();

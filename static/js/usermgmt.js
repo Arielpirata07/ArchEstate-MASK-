@@ -1,3 +1,6 @@
+/* FASE 5.1: IIFE — solo window.* es público. */
+(function () {
+
 // ---- Estado ----
 let targetUserId   = null;
 let targetUsername = null;
@@ -426,3 +429,5 @@ delegateActions({
 delegateActions({
     'um-keyup-validate': function() { validatePasswordModal(); }
 }, 'keyup');
+
+})();

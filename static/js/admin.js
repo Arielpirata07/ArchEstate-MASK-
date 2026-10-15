@@ -1,3 +1,6 @@
+/* FASE 5.1: IIFE — solo window.* es público. */
+(function () {
+
 // noodle --calls-> routes (api,admin,users,leads)
 // ---- Tab switching ----
 function showTab(tab) {
@@ -2581,3 +2584,19 @@ delegateActions({
 delegateActions({
     'adm-chg-notif': function() { saveAdminNotifPrefs(); }
 }, 'change');
+
+/* API pública (usada por otros archivos/templates) */
+window.applyProFilters = applyProFilters;
+window.clearProFilters = clearProFilters;
+window.filterBySearch = filterBySearch;
+window.filterZoneChart = filterZoneChart;
+window.filterPhoneAreaCodes = filterPhoneAreaCodes;
+window.loadNotificationLog = loadNotificationLog;
+window.saveAdminNotifPrefs = saveAdminNotifPrefs;
+window.setToggle = setToggle;
+window.baseFont = baseFont;
+window.chartGridColor = chartGridColor;
+window.getPalette = getPalette;
+window.isDarkMode = isDarkMode;
+
+})();

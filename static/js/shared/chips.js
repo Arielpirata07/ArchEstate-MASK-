@@ -1,3 +1,6 @@
+/* FASE 5.1: IIFE — solo window.* es público. */
+(function () {
+
 /**
  * shared/chips.js — selector de chips de valor único (user.js + edit_lead.js).
  *
@@ -61,3 +64,8 @@ function createChipSelector(opts) {
 }
 
 window.createChipSelector = createChipSelector;
+
+/* API pública (usada por otros archivos/templates) */
+window.createChipSelector = createChipSelector;
+
+})();

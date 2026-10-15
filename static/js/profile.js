@@ -1,3 +1,6 @@
+/* FASE 5.1: IIFE — solo window.* es público. */
+(function () {
+
 // noodle --calls-> routes (api,profile,leads,coverage)
 // ============================================================
 // PROFILE SETTINGS — ArchEstate
@@ -1824,3 +1827,15 @@ function profHoverLink(el, e) {
 }
 delegateActions({ 'prof-hover': profHoverLink }, 'mouseover');
 delegateActions({ 'prof-hover': profHoverLink }, 'mouseout');
+
+/* API pública (usada por otros archivos/templates) */
+window.initSettingsPage = initSettingsPage;
+window.openPhoneVerifyModal = openPhoneVerifyModal;
+window.closePhoneVerifyModal = closePhoneVerifyModal;
+window.submitVerificationCode = submitVerificationCode;
+window.resendVerificationCode = resendVerificationCode;
+window.toggleProvinceSearch = toggleProvinceSearch;
+window.onProvinceSearchInput = onProvinceSearchInput;
+window.onProvinceSearchKeydown = onProvinceSearchKeydown;
+
+})();

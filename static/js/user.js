@@ -1,3 +1,6 @@
+/* FASE 5.1: IIFE — solo window.* es público. */
+(function () {
+
 // noodle --calls-> routes (api,submit_lead,phone)
 // ================================================================
 // TIPO DE PROPIEDAD: toggle dinámico desde form_options
@@ -439,3 +442,5 @@ delegateActions({
 delegateActions({
     'user-key-province': function(el, e) { onProvinceSearchKeydown(el.dataset.target, e); }
 }, 'keydown');
+
+})();

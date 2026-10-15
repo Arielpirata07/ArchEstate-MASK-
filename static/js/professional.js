@@ -1,3 +1,6 @@
+/* FASE 5.1: IIFE — solo window.* es público. */
+(function () {
+
 // noodle --calls-> routes (api,professional,leads,coverage)
 // ================================================================
 // UPLOAD WIDGET
@@ -2642,3 +2645,15 @@ delegateActions({
 delegateActions({
     'pro-chg-market': function() { loadMarketStats(false); }
 }, 'change');
+
+/* API pública (usada por otros archivos/templates) */
+window.applyFilters = applyFilters;
+window.baseFont = baseFont;
+window.calTypeFilter = calTypeFilter;
+window.chartGridColor = chartGridColor;
+window.clearFilters = clearFilters;
+window.getPalette = getPalette;
+window.isDarkMode = isDarkMode;
+window.loadMarketStats = loadMarketStats;
+
+})();

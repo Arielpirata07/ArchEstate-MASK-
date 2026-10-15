@@ -1,3 +1,6 @@
+/* FASE 5.1: IIFE — solo window.* es público. */
+(function () {
+
 /**
  * LOGICA PRINCIPAL - ARCHESTATE
  */
@@ -1569,4 +1572,16 @@ function setLoading(btn, loading, loadingText) {
     document.addEventListener('mouseenter', function() {
         spotlight.style.opacity = '1';
     });
+})();
+
+/* API pública (usada por otros archivos/templates) */
+window.showToast = showToast;
+window.showConfirm = showConfirm;
+window.openModalAnim = openModalAnim;
+window.closeModalAnim = closeModalAnim;
+window.togglePhone = togglePhone;
+window.updateProStatus = updateProStatus;
+window.animateCounter = animateCounter;
+window.chartAnim = chartAnim;
+
 })();

@@ -1,3 +1,6 @@
+/* FASE 5.1: IIFE — solo window.* es público. */
+(function () {
+
 document.addEventListener('DOMContentLoaded', function() {
     initScrollAnimations();
     initParallax();
@@ -344,3 +347,5 @@ delegateActions({
     'dismiss-alert': function() { dismissAlert(); },
     'toggle-faq': function(el) { toggleFaq(el); }
 });
+
+})();

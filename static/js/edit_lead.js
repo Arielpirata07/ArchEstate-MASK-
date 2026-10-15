@@ -1,3 +1,6 @@
+/* FASE 5.1: IIFE — solo window.* es público. */
+(function () {
+
 // ============================================================
 // EDIT LEAD FORM — ArchEstate
 // ============================================================
@@ -162,3 +165,9 @@ delegateActions({
     'edit-chip': function(el) { selectEditChip(el.dataset.group, el.dataset.value); },
     'edit-step': function(el) { stepEditNum(el.dataset.field, parseInt(el.dataset.delta, 10)); }
 });
+
+/* API pública (usada por otros archivos/templates) */
+window.initEditLeadForm = initEditLeadForm;
+window.initEditChips = initEditChips;
+
+})();
