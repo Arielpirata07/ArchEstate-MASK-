@@ -79,7 +79,7 @@ function renderUsers(users) {
         const resetBtn = isAdmin
             ? `<span class="text-[10px] text-midnight/20 font-bold uppercase tracking-widest">${t('status.protected')}</span>`
             : `<button
-                onclick="openResetModal(${u.id}, '${escapeHtml(u.username)}')"
+                data-action="um-open-reset" data-id="${u.id}" data-name="${escapeHtml(u.username)}"
                 class="inline-flex items-center gap-2 px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">
                     <i data-lucide="key-round" class="w-3 h-3"></i> ${t('action.reset_password')}
                </button>`;
@@ -92,11 +92,11 @@ function renderUsers(users) {
         const toggleBtn = isAdmin
             ? `<span class="text-[10px] text-midnight/20 font-bold uppercase tracking-widest">${t('status.protected')}</span>`
             : (isActive
-                ? `<button onclick="openDisableModal(${u.id}, '${escapeHtml(u.username)}')"
+                ? `<button data-action="um-open-disable" data-id="${u.id}" data-name="${escapeHtml(u.username)}"
                     class="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-rose-50 text-rose-600 rounded text-[9px] font-bold uppercase tracking-widest hover:bg-rose-600 hover:text-white transition-all">
                     <i data-lucide="user-x" class="w-3 h-3"></i> ${t('action.disable')}
                    </button>`
-                : `<button onclick="openEnableModal(${u.id}, '${escapeHtml(u.username)}')"
+                : `<button data-action="um-open-enable" data-id="${u.id}" data-name="${escapeHtml(u.username)}"
                     class="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-50 text-emerald-600 rounded text-[9px] font-bold uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all">
                     <i data-lucide="user-check" class="w-3 h-3"></i> ${t('action.enable')}
                    </button>`);
@@ -417,5 +417,8 @@ delegateActions({
     'um-close-enable': function() { closeEnableModal(); },
     'um-confirm-reset': function() { confirmReset(); },
     'um-confirm-disable': function() { confirmDisable(); },
-    'um-confirm-enable': function() { confirmEnable(); }
+    'um-confirm-enable': function() { confirmEnable(); },
+    'um-open-reset': function(el) { openResetModal(el.dataset.id, el.dataset.name); },
+    'um-open-disable': function(el) { openDisableModal(el.dataset.id, el.dataset.name); },
+    'um-open-enable': function(el) { openEnableModal(el.dataset.id, el.dataset.name); }
 });

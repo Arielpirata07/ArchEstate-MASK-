@@ -665,23 +665,23 @@ function renderProfessionals(pros) {
             approvalActions = '<span class="text-[10px] text-midnight/20 font-bold uppercase tracking-widest">—</span>';
         } else if (pro.status === 'pending') {
             approvalActions = `
-                <button onclick="updateProStatus('${pro.id}', 'approved', this)"
+                <button data-action="adm-pro-status" data-id="${pro.id}" data-status="approved"
                     class="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-100 transition-colors">
                     <i data-lucide="check" class="w-3 h-3"></i> ${t('action.approve')}
                 </button>
-                <button onclick="updateProStatus('${pro.id}', 'rejected', this)"
+                <button data-action="adm-pro-status" data-id="${pro.id}" data-status="rejected"
                     class="inline-flex items-center gap-1 px-2 py-1 bg-rose-50 text-rose-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-rose-100 transition-colors">
                     <i data-lucide="x" class="w-3 h-3"></i> ${t('action.reject')}
                 </button>`;
         } else if (pro.status === 'approved') {
             approvalActions = `
-                <button onclick="updateProStatus('${pro.id}', 'rejected', this)"
+                <button data-action="adm-pro-status" data-id="${pro.id}" data-status="rejected"
                     class="inline-flex items-center gap-1 px-2 py-1 bg-rose-50 text-rose-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-rose-100 transition-colors">
                     <i data-lucide="x" class="w-3 h-3"></i> ${t('action.disapprove')}
                 </button>`;
         } else if (pro.status === 'rejected') {
             approvalActions = `
-                <button onclick="updateProStatus('${pro.id}', 'approved', this)"
+                <button data-action="adm-pro-status" data-id="${pro.id}" data-status="approved"
                     class="inline-flex items-center gap-1 px-2 py-1 bg-emerald-50 text-emerald-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-emerald-100 transition-colors">
                     <i data-lucide="check" class="w-3 h-3"></i> ${t('action.approve')}
                 </button>`;
@@ -724,7 +724,7 @@ function renderProfessionals(pros) {
                 <td class="px-4 py-3 text-right">
                     <div class="flex justify-end items-center gap-2 flex-wrap">
                         ${approvalActions}
-                        <button onclick="openNotifyModal('${pro.user_id}', '${escapeHtml(pro.name)}')"
+                        <button data-action="adm-open-notify" data-user="${pro.user_id}" data-name="${escapeHtml(pro.name)}"
                             class="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 rounded font-bold uppercase tracking-widest text-[9px] hover:bg-blue-100 transition-colors">
                             <i data-lucide="bell" class="w-3 h-3"></i> ${t('admin.send_notification_to')}
                         </button>
@@ -1107,20 +1107,20 @@ function renderReports(reports) {
         let actions;
         if (r.status === 'pending') {
             actions = `<div class="flex justify-end gap-2 flex-wrap">
-                    <button onclick="viewLeadDetail(${r.lead_id})" class="px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">
+                    <button data-action="adm-view-lead" data-lead="${r.lead_id}" class="px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">
                         ${t('action.view_lead')}
                     </button>
-                    <button onclick="deleteLead(${r.id}, ${r.lead_id})" class="px-3 py-2 bg-rose-600 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
+                    <button data-action="adm-delete-lead" data-id="${r.id}" data-lead="${r.lead_id}" class="px-3 py-2 bg-rose-600 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
                         ${t('action.delete')}
                     </button>
-                    <button onclick="dismissReport(${r.id})" class="px-3 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-all">
+                    <button data-action="adm-dismiss-report" data-id="${r.id}" class="px-3 py-2 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-all">
                         ${t('action.dismiss')}
                     </button>
                </div>`;
         } else {
             actions = `<div class="flex justify-end gap-2 flex-wrap">
-                    ${r.lead_id ? `<button onclick="viewLeadDetail(${r.lead_id})" class="px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">${t('action.view_lead')}</button>` : ''}
-                    <button onclick="restoreReport(${r.id})" class="px-3 py-2 bg-emerald-600 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
+                    ${r.lead_id ? `<button data-action="adm-view-lead" data-lead="${r.lead_id}" class="px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">${t('action.view_lead')}</button>` : ''}
+                    <button data-action="adm-restore-report" data-id="${r.id}" class="px-3 py-2 bg-emerald-600 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-all">
                         ${t('action.restore')}
                     </button>
                </div>`;
@@ -1427,12 +1427,12 @@ function renderIconPicker(selectedIcon) {
         '<label for="fo-icon-search" class="sr-only">' + t('icon.search') + '</label>' +
         '<input id="fo-icon-search" type="text" placeholder="' + t('icon.search_placeholder') + '" oninput="filterIcons(this.value)" class="icon-search w-full px-2 py-1.5 text-xs border-0 border-b border-midnight/10 outline-none bg-paper-dark/50">' +
         '<div id="icon-picker-grid" class="grid grid-cols-6 gap-0.5 p-1.5 max-h-32 overflow-y-auto">';
-    html += '<button type="button" data-icon="" data-search="ninguno" onclick="selectIconOption(this)" aria-label="' + t('icon.none') + '" class="icon-pick p-1 rounded border text-[10px] flex flex-col items-center gap-px transition-all ' +
+    html += '<button type="button" data-icon="" data-search="ninguno" data-action="adm-icon-option" aria-label="' + t('icon.none') + '" class="icon-pick p-1 rounded border text-[10px] flex flex-col items-center gap-px transition-all ' +
         (!selectedIcon ? 'border-gold bg-gold/10 text-gold' : 'border-transparent text-midnight/60 hover:border-midnight/20') + '" title="' + t('icon.none') + '">' +
         '<i data-lucide="x" class="w-3 h-3"></i><span class="leading-none">' + t('icon.none_label') + '</span></button>';
     FORM_OPTION_ICONS.forEach(function(icon) {
         var active = selectedIcon === icon.name;
-        html += '<button type="button" data-icon="' + icon.name + '" data-search="' + (icon.name + ' ' + icon.label).toLowerCase() + '" onclick="selectIconOption(this)" aria-label="' + escapeHtml(icon.label) + '" class="icon-pick p-1 rounded border text-[10px] flex flex-col items-center gap-px transition-all ' +
+        html += '<button type="button" data-icon="' + icon.name + '" data-search="' + (icon.name + ' ' + icon.label).toLowerCase() + '" data-action="adm-icon-option" aria-label="' + escapeHtml(icon.label) + '" class="icon-pick p-1 rounded border text-[10px] flex flex-col items-center gap-px transition-all ' +
             (active ? 'border-gold bg-gold/10 text-gold' : 'border-transparent text-midnight/50 hover:border-midnight/20 hover:text-midnight') + '" title="' + escapeHtml(icon.label) + '">' +
             '<i data-lucide="' + icon.name + '" class="w-3 h-3"></i><span class="leading-none truncate w-full text-center">' + escapeHtml(icon.label) + '</span></button>';
     });
@@ -1487,10 +1487,10 @@ function buildCategoryFilters() {
         if (cats.indexOf(o.category) === -1) cats.push(o.category);
     });
     var container = document.getElementById('category-filters');
-    var html = '<button role="tab" aria-pressed="' + (!currentCategoryFilter) + '" onclick="filterCategory(\'\')" class="cat-filter px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded ' +
+    var html = '<button role="tab" aria-pressed="' + (!currentCategoryFilter) + '" data-action="adm-filter-cat" data-cat="" class="cat-filter px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded ' +
         (!currentCategoryFilter ? 'bg-midnight text-white' : 'bg-paper-dark text-midnight hover:bg-gold hover:text-white') + '">' + t('form_options.all_categories') + '</button>';
     cats.forEach(function(c) {
-        html += '<button role="tab" aria-pressed="' + (currentCategoryFilter === c) + '" onclick="filterCategory(\'' + c + '\')" class="cat-filter px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded ' +
+        html += '<button role="tab" aria-pressed="' + (currentCategoryFilter === c) + '" data-action="adm-filter-cat" data-cat="' + c + '" class="cat-filter px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded ' +
             (currentCategoryFilter === c ? 'bg-midnight text-white' : 'bg-paper-dark text-midnight hover:bg-gold hover:text-white') + '">' + c.replace(/_/g, ' ') + '</button>';
     });
     container.innerHTML = html;
@@ -1538,9 +1538,9 @@ function renderFormOptions() {
             (o.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700') + '">' +
             (o.is_active ? t('status.active') : t('status.inactive')) + '</span></td>' +
             '<td class="px-4 py-3 text-right"><div class="flex gap-1 justify-end">' +
-            '<button onclick="editFormOption(' + o.id + ')" aria-label="' + t('action.edit') + ' ' + escapeHtml(o.label) + '" class="p-1.5 rounded hover:bg-paper-dark" title="' + t('action.edit') + '"><i data-lucide="pencil" class="w-3 h-3"></i></button>' +
-            '<button onclick="toggleFormOption(' + o.id + ', ' + (o.is_active ? 0 : 1) + ')" aria-label="' + (o.is_active ? t('action.deactivate') : t('action.activate')) + ' ' + escapeHtml(o.label) + '" class="p-1.5 rounded hover:bg-paper-dark" title="' + (o.is_active ? t('action.deactivate') : t('action.activate')) + '"><i data-lucide="' + (o.is_active ? 'eye-off' : 'eye') + '" class="w-3 h-3"></i></button>' +
-            '<button onclick="deleteFormOption(' + o.id + ')" aria-label="' + t('action.delete') + ' ' + escapeHtml(o.label) + '" class="p-1.5 rounded hover:bg-rose-50 text-rose-600" title="' + t('action.delete') + '"><i data-lucide="trash-2" class="w-3 h-3"></i></button>' +
+            '<button data-action="adm-fo-edit" data-id="' + o.id + '" aria-label="' + t('action.edit') + ' ' + escapeHtml(o.label) + '" class="p-1.5 rounded hover:bg-paper-dark" title="' + t('action.edit') + '"><i data-lucide="pencil" class="w-3 h-3"></i></button>' +
+            '<button data-action="adm-fo-toggle" data-id="' + o.id + '" data-active="' + (o.is_active ? 0 : 1) + '" aria-label="' + (o.is_active ? t('action.deactivate') : t('action.activate')) + ' ' + escapeHtml(o.label) + '" class="p-1.5 rounded hover:bg-paper-dark" title="' + (o.is_active ? t('action.deactivate') : t('action.activate')) + '"><i data-lucide="' + (o.is_active ? 'eye-off' : 'eye') + '" class="w-3 h-3"></i></button>' +
+            '<button data-action="adm-fo-delete" data-id="' + o.id + '" aria-label="' + t('action.delete') + ' ' + escapeHtml(o.label) + '" class="p-1.5 rounded hover:bg-rose-50 text-rose-600" title="' + t('action.delete') + '"><i data-lucide="trash-2" class="w-3 h-3"></i></button>' +
             '</div></td></tr>';
     }).join('');
     if (liveRegion) liveRegion.textContent = t('form_options.results_count', {count: filtered.length});
@@ -1553,7 +1553,7 @@ function openCreateOptionModal() {
         return '<option value="' + c + '">' + c.replace(/_/g, ' ') + '</option>';
     }).join('');
     var html = '<div id="formOptionModal" class="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-labelledby="fo-modal-title">' +
-        '<div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeFormOptionModal()"></div>' +
+        '<div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" data-action="adm-close-fo"></div>' +
         '<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md max-h-[90vh] mx-4 sm:mx-0 flex flex-col">' +
         '<div class="bg-white rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-full">' +
         '<div class="border-t-4 border-gold px-4 sm:px-6 pt-6 pb-3 flex-shrink-0">' +
@@ -1572,8 +1572,8 @@ function openCreateOptionModal() {
         '<div><label for="fo-order" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">' + t('form_options.sort_order') + '</label>' +
         '<input id="fo-order" type="number" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" value="0"></div>' +
         '<div class="flex gap-3 pt-2">' +
-        '<button onclick="closeFormOptionModal()" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-all">' + t('action.cancel') + '</button>' +
-        '<button id="fo-save-btn" onclick="saveFormOption()" class="flex-1 py-3 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">' + t('action.save') + '</button>' +
+        '<button data-action="adm-close-fo" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-all">' + t('action.cancel') + '</button>' +
+        '<button id="fo-save-btn" data-action="adm-save-fo" class="flex-1 py-3 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">' + t('action.save') + '</button>' +
         '</div></div></div></div></div>';
     document.body.insertAdjacentHTML('beforeend', html);
     _setupFormOptionModalFocusTrap();
@@ -1649,7 +1649,7 @@ function editFormOption(id) {
         return '<option value="' + c + '"' + (c === opt.category ? ' selected' : '') + '>' + c.replace(/_/g, ' ') + '</option>';
     }).join('');
     var html = '<div id="formOptionModal" class="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-labelledby="fo-modal-title">' +
-        '<div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeFormOptionModal()"></div>' +
+        '<div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" data-action="adm-close-fo"></div>' +
         '<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md max-h-[90vh] mx-4 sm:mx-0 flex flex-col">' +
         '<div class="bg-white rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-full">' +
         '<div class="border-t-4 border-gold px-4 sm:px-6 pt-6 pb-3 flex-shrink-0">' +
@@ -1668,8 +1668,8 @@ function editFormOption(id) {
         '<div><label for="fo-order" class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">' + t('form_options.sort_order') + '</label>' +
         '<input id="fo-order" type="number" class="w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm" value="' + opt.sort_order + '"></div>' +
         '<div class="flex gap-3 pt-2">' +
-        '<button onclick="closeFormOptionModal()" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-all">' + t('action.cancel') + '</button>' +
-        '<button id="fo-save-btn" onclick="saveFormOption(' + id + ')" class="flex-1 py-3 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">' + t('action.update') + '</button>' +
+        '<button data-action="adm-close-fo" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-all">' + t('action.cancel') + '</button>' +
+        '<button id="fo-save-btn" data-action="adm-save-fo" data-id="' + id + '" class="flex-1 py-3 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">' + t('action.update') + '</button>' +
         '</div></div></div></div></div>';
     document.body.insertAdjacentHTML('beforeend', html);
     _setupFormOptionModalFocusTrap();
@@ -2018,10 +2018,10 @@ function renderPacCountryFilters() {
     allPhoneAreaCodes.forEach(function(c) {
         countries[c.country_code] = (countries[c.country_code] || 0) + 1;
     });
-    var html = '<button onclick="filterPacByCountry(\'\')" class="report-filter-chip ' + (!pacCurrentCountryFilter ? 'report-filter-active' : '') + '" data-filter="all">' + window.t('admin.filter_all') + '</button>';
+    var html = '<button data-action="adm-pac-country" data-cc="" class="report-filter-chip ' + (!pacCurrentCountryFilter ? 'report-filter-active' : '') + '" data-filter="all">' + window.t('admin.filter_all') + '</button>';
     Object.keys(countries).sort().forEach(function(cc) {
         var active = pacCurrentCountryFilter === cc ? ' report-filter-active' : '';
-        html += '<button onclick="filterPacByCountry(\'' + cc + '\')" class="report-filter-chip' + active + '" data-filter="' + cc + '">' + cc + ' (' + countries[cc] + ')</button>';
+        html += '<button data-action="adm-pac-country" data-cc="' + cc + '" class="report-filter-chip' + active + '" data-filter="' + cc + '">' + cc + ' (' + countries[cc] + ')</button>';
     });
     container.innerHTML = html;
 }
@@ -2071,8 +2071,8 @@ function renderPhoneAreaCodes() {
             '<td class="text-[13px] text-midnight/50 px-4 py-3">' + c.sort_order + '</td>' +
             '<td class="text-[13px] px-4 py-3">' + activeLabel + '</td>' +
             '<td class="text-right px-4 py-3">' +
-                '<button onclick="openEditAreaCodeModal(' + c.id + ')" class="text-midnight/30 hover:text-gold transition-colors mr-2" title="' + window.t('admin.edit') + '"><i data-lucide="pencil" class="w-3 h-3 inline"></i></button>' +
-                '<button onclick="deletePhoneAreaCode(' + c.id + ')" class="text-midnight/30 hover:text-rose-500 transition-colors" title="' + window.t('admin.delete') + '"><i data-lucide="trash-2" class="w-3 h-3 inline"></i></button>' +
+                '<button data-action="adm-areacode-edit" data-id="' + c.id + '" class="text-midnight/30 hover:text-gold transition-colors mr-2" title="' + window.t('admin.edit') + '"><i data-lucide="pencil" class="w-3 h-3 inline"></i></button>' +
+                '<button data-action="adm-areacode-delete" data-id="' + c.id + '" class="text-midnight/30 hover:text-rose-500 transition-colors" title="' + window.t('admin.delete') + '"><i data-lucide="trash-2" class="w-3 h-3 inline"></i></button>' +
             '</td></tr>';
     });
     tbody.innerHTML = html;
@@ -2207,16 +2207,16 @@ function renderOrganizations() {
             ? '<span class="px-2 py-1 bg-emerald-50 text-emerald-700 text-[9px] font-bold uppercase tracking-widest rounded">' + t('status.active') + '</span>'
             : '<span class="px-2 py-1 bg-rose-50 text-rose-700 text-[9px] font-bold uppercase tracking-widest rounded">' + t('status.inactive') + '</span>';
         var actions = '<div class="flex justify-end gap-1">';
-        actions += '<button onclick="openEditOrgModal(' + org.id + ')" class="p-1.5 rounded hover:bg-paper-dark" title="' + t('action.edit') + '"><i data-lucide="pencil" class="w-3 h-3"></i></button>';
+        actions += '<button data-action="adm-org-edit" data-id="' + org.id + '" class="p-1.5 rounded hover:bg-paper-dark" title="' + t('action.edit') + '"><i data-lucide="pencil" class="w-3 h-3"></i></button>';
         if (org.is_active) {
-            actions += '<button onclick="deactivateOrg(' + org.id + ')" class="p-1.5 rounded hover:bg-amber-50 text-amber-600" title="' + t('admin.org_deactivate') + '"><i data-lucide="eye-off" class="w-3 h-3"></i></button>';
+            actions += '<button data-action="adm-org-deactivate" data-id="' + org.id + '" class="p-1.5 rounded hover:bg-amber-50 text-amber-600" title="' + t('admin.org_deactivate') + '"><i data-lucide="eye-off" class="w-3 h-3"></i></button>';
         }
-        actions += '<button onclick="deleteOrg(' + org.id + ')" class="p-1.5 rounded hover:bg-rose-50 text-rose-600" title="' + t('admin.org_delete') + '"><i data-lucide="trash-2" class="w-3 h-3"></i></button>';
+        actions += '<button data-action="adm-org-delete" data-id="' + org.id + '" class="p-1.5 rounded hover:bg-rose-50 text-rose-600" title="' + t('admin.org_delete') + '"><i data-lucide="trash-2" class="w-3 h-3"></i></button>';
         actions += '</div>';
         return '<tr class="hover:bg-paper-dark/30">' +
             '<td class="px-4 py-3 text-[13px] font-medium text-midnight">' + escapeHtml(org.name) + '</td>' +
             '<td class="px-4 py-3 font-mono text-[11px] text-midnight/60">' + escapeHtml(org.slug) + '</td>' +
-            '<td class="px-4 py-3"><button onclick="openOrgMembersModal(' + org.id + ')" class="text-[13px] text-midnight/50 hover:text-gold underline underline-offset-2">' + (org.member_count || 0) + '</button></td>' +
+            '<td class="px-4 py-3"><button data-action="adm-org-members" data-id="' + org.id + '" class="text-[13px] text-midnight/50 hover:text-gold underline underline-offset-2">' + (org.member_count || 0) + '</button></td>' +
             '<td class="px-4 py-3 text-[13px] text-midnight/50">' + (org.lead_count || 0) + '</td>' +
             '<td class="px-4 py-3">' + statusLabel + '</td>' +
             '<td class="px-4 py-3 text-right">' + actions + '</td>' +
@@ -2439,7 +2439,7 @@ function loadOrgMembers(orgId) {
                 '<div class="flex-1 min-w-0"><p class="text-xs font-bold text-midnight truncate">' + escapeHtml(m.username || ('#' + m.user_id)) + '</p>' +
                 '<p class="text-[10px] text-midnight/50 truncate">' + escapeHtml(m.email || '') + '</p></div>' +
                 '<select class="text-[11px] border border-midnight/20 rounded px-2 py-1" onchange="changeOrgMemberRole(' + orgId + ', ' + m.user_id + ', this.value)">' + opts + '</select>' +
-                '<button onclick="removeOrgMember(' + orgId + ', ' + m.user_id + ')" class="p-1.5 rounded hover:bg-rose-50 text-rose-600" title="' + t('org.remove_member') + '"><i data-lucide="trash-2" class="w-3 h-3"></i></button>' +
+                '<button data-action="adm-member-remove" data-org="' + orgId + '" data-user="' + m.user_id + '" class="p-1.5 rounded hover:bg-rose-50 text-rose-600" title="' + t('org.remove_member') + '"><i data-lucide="trash-2" class="w-3 h-3"></i></button>' +
                 '</div>';
         }).join('');
         if (window.lucide) lucide.createIcons();
@@ -2519,3 +2519,55 @@ function removeOrgMember(orgId, userId) {
         if (typeof showToast !== 'undefined') showToast(t('error.connection'), 'error');
     });
 }
+
+/* Delegación data-action (FASE 5.9): reemplaza onclick inline */
+delegateActions({
+    'adm-period': function(el) { setPeriod(parseInt(el.dataset.period, 10)); },
+    'adm-close-org': function() { closeOrgModal(); },
+    'adm-close-notify': function() { closeNotifyModal(); },
+    'adm-close-deactivate': function() { closeDeactivateModal(); },
+    'adm-close-areacode': function() { closeAreaCodeModal(); },
+    'adm-close-orgmembers': function() { closeOrgMembersModal(); },
+    'adm-close-leaddetail': function() { closeLeadDetailModal(); },
+    'adm-section': function(el) { toggleSection(el.dataset.section); },
+    'adm-toggle-chart': function() { toggleChartType(); },
+    'adm-tab': function(el) { showTab(el.dataset.tab); },
+    'adm-month-chart': function(el) { setMonthChartType(el.dataset.type); },
+    'adm-save-org': function() { saveOrg(); },
+    'adm-save-areacode': function() { saveAreaCode(); },
+    'adm-refresh': function() { refreshDashboard(); },
+    'adm-open-org': function() { openCreateOrgModal(); },
+    'adm-open-option': function() { openCreateOptionModal(); },
+    'adm-open-areacode': function() { openCreateAreaCodeModal(); },
+    'adm-confirm-notify': function() { confirmNotify(); },
+    'adm-confirm-deactivate': function() { confirmDeactivate(); },
+    'adm-clear-pa': function() { clearPhoneAuditFilters(); },
+    'adm-add-member': function() { addOrgMember(); },
+    'adm-load-pa': function() { loadPhoneAudit(); },
+    'adm-reports-page': function(el) { loadReportsPage(currentReportsPage + (el.dataset.dir === '+' ? 1 : -1)); },
+    'adm-pa-page': function(el) { loadPhoneAuditPage(currentPaPage + (el.dataset.dir === '+' ? 1 : -1)); },
+    'adm-notif-page': function(el) { loadNotificationLog(currentNotifLogPage + (el.dataset.dir === '+' ? 1 : -1)); },
+    'adm-filter-reports': function(el) { filterReports(el.dataset.filter); },
+    'adm-export-chart': function(el) { exportChart(el.dataset.chart, el.dataset.name); },
+    'adm-pro-status': function(el) { updateProStatus(el.dataset.id, el.dataset.status, el); },
+    'adm-open-notify': function(el) { openNotifyModal(el.dataset.user, el.dataset.name); },
+    'adm-view-lead': function(el) { viewLeadDetail(el.dataset.lead); },
+    'adm-delete-lead': function(el) { deleteLead(el.dataset.id, el.dataset.lead); },
+    'adm-dismiss-report': function(el) { dismissReport(el.dataset.id); },
+    'adm-restore-report': function(el) { restoreReport(el.dataset.id); },
+    'adm-icon-option': function(el) { selectIconOption(el); },
+    'adm-filter-cat': function(el) { filterCategory(el.dataset.cat); },
+    'adm-fo-edit': function(el) { editFormOption(parseInt(el.dataset.id, 10)); },
+    'adm-fo-toggle': function(el) { toggleFormOption(el.dataset.id, parseInt(el.dataset.active, 10)); },
+    'adm-fo-delete': function(el) { deleteFormOption(el.dataset.id); },
+    'adm-close-fo': function() { closeFormOptionModal(); },
+    'adm-save-fo': function(el) { saveFormOption(el.dataset.id ? parseInt(el.dataset.id, 10) : undefined); },
+    'adm-pac-country': function(el) { filterPacByCountry(el.dataset.cc); },
+    'adm-areacode-edit': function(el) { openEditAreaCodeModal(parseInt(el.dataset.id, 10)); },
+    'adm-areacode-delete': function(el) { deletePhoneAreaCode(el.dataset.id); },
+    'adm-org-edit': function(el) { openEditOrgModal(parseInt(el.dataset.id, 10)); },
+    'adm-org-deactivate': function(el) { deactivateOrg(parseInt(el.dataset.id, 10)); },
+    'adm-org-delete': function(el) { deleteOrg(parseInt(el.dataset.id, 10)); },
+    'adm-org-members': function(el) { openOrgMembersModal(parseInt(el.dataset.id, 10)); },
+    'adm-member-remove': function(el) { removeOrgMember(parseInt(el.dataset.org, 10), parseInt(el.dataset.user, 10)); }
+});

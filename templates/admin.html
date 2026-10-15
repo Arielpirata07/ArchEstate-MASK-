@@ -17,34 +17,34 @@
         </div>
         <!-- Tabs -->
         <div class="flex gap-2">
-            <button onclick="showTab('dashboard')" id="tab-dashboard"
+            <button data-action="adm-tab" data-tab="dashboard" id="tab-dashboard"
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-midnight text-white hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2"><i data-lucide="bar-chart-2" class="w-4 h-4"></i> {{ t('admin.dashboard') }}</span>
             </button>
-            <button onclick="showTab('management')" id="tab-management"
+            <button data-action="adm-tab" data-tab="management" id="tab-management"
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2"><i data-lucide="building-2" class="w-4 h-4"></i> {{ t('admin.professionals') }}</span>
             </button>
-            <button onclick="showTab('reports')" id="tab-reports"
+            <button data-action="adm-tab" data-tab="reports" id="tab-reports"
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2">
                     <i data-lucide="flag" class="w-4 h-4"></i> {{ t('admin.reports') }}
                     <span id="reportBadge" class="hidden ml-1 px-1.5 py-0.5 bg-rose-600 dark:bg-rose-700 text-white text-[8px] font-bold rounded-full">0</span>
                 </span>
             </button>
-            <button onclick="showTab('form-options')" id="tab-form-options"
+            <button data-action="adm-tab" data-tab="form-options" id="tab-form-options"
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2"><i data-lucide="list" class="w-4 h-4"></i> {{ t('admin.options') }}</span>
             </button>
-            <button onclick="showTab('phone-area-codes')" id="tab-phone-area-codes"
+            <button data-action="adm-tab" data-tab="phone-area-codes" id="tab-phone-area-codes"
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2"><i data-lucide="phone" class="w-4 h-4"></i> {{ t('admin.phone_area_codes') }}</span>
             </button>
-            <button onclick="showTab('organizations')" id="tab-organizations"
+            <button data-action="adm-tab" data-tab="organizations" id="tab-organizations"
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2"><i data-lucide="building" class="w-4 h-4"></i> {{ t('admin.organizations') }}</span>
             </button>
-            <button onclick="showTab('notifications')" id="tab-notifications"
+            <button data-action="adm-tab" data-tab="notifications" id="tab-notifications"
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4"></i> {{ t('admin.notifications') }}</span>
             </button>
@@ -64,14 +64,14 @@
             <div class="flex items-center gap-2">
                 <span class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">{{ t('admin.period') }}</span>
                 <div class="flex gap-1" id="period-btns">
-                    <button onclick="setPeriod(7)"   data-period="7"   class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-midnight text-white">7d</button>
-                    <button onclick="setPeriod(30)"  data-period="30"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">30d</button>
-                    <button onclick="setPeriod(90)"  data-period="90"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">90d</button>
-                    <button onclick="setPeriod(365)" data-period="365" class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">1a</button>
-                    <button onclick="setPeriod(0)"   data-period="0"   class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">Siempre</button>
+                    <button data-action="adm-period" data-period="7"   data-period="7"   class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-midnight text-white">7d</button>
+                    <button data-action="adm-period" data-period="30"  data-period="30"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">30d</button>
+                    <button data-action="adm-period" data-period="90"  data-period="90"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">90d</button>
+                    <button data-action="adm-period" data-period="365" data-period="365" class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">1a</button>
+                    <button data-action="adm-period" data-period="0"   data-period="0"   class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">Siempre</button>
                 </div>
             </div>
-            <button id="refresh-btn" onclick="refreshDashboard()"
+            <button id="refresh-btn" data-action="adm-refresh"
                 class="flex items-center gap-2 px-4 py-2 bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors rounded text-[10px] font-bold uppercase tracking-widest">
                 <i data-lucide="refresh-cw" id="refresh-icon" class="w-4 h-4"></i> {{ t('admin.refresh') }}
             </button>
@@ -144,11 +144,11 @@
                 <div class="p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between">
                     <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('admin.leads_by_type') }}</h3>
                     <div class="flex items-center gap-2">
-                        <button onclick="toggleChartType()" id="toggle-type-btn"
+                        <button data-action="adm-toggle-chart" id="toggle-type-btn"
                             class="px-2 py-1 text-[9px] font-bold uppercase tracking-widest rounded bg-midnight/5 text-midnight/50 hover:bg-gold hover:text-white transition-colors">
                             {{ t('admin.donut_bar') }}
                         </button>
-                        <button onclick="exportChart('chart-type', 'leads-tipo')" class="p-1 text-midnight/30 hover:text-gold transition-colors" title="{{ t('admin.export_png') }}" aria-label="{{ t('admin.export_chart_type') }}">
+                        <button data-action="adm-export-chart" data-chart="chart-type" data-name="leads-tipo" class="p-1 text-midnight/30 hover:text-gold transition-colors" title="{{ t('admin.export_png') }}" aria-label="{{ t('admin.export_chart_type') }}">
                             <i data-lucide="download" class="w-4 h-4"></i>
                         </button>
                     </div>
@@ -166,7 +166,7 @@
                         <input id="zone-filter-input" type="text" placeholder="Filtrar zona..." aria-label="Filtrar zona"
                                oninput="filterZoneChart()"
                                class="px-2 py-1 text-[10px] border border-midnight/20 rounded focus:border-gold focus:outline-none w-28">
-                        <button onclick="exportChart('chart-zone', 'leads-zonas')" class="p-1 text-midnight/30 hover:text-gold transition-colors" title="{{ t('admin.export_png') }}" aria-label="{{ t('admin.export_chart_zones') }}">
+                        <button data-action="adm-export-chart" data-chart="chart-zone" data-name="leads-zonas" class="p-1 text-midnight/30 hover:text-gold transition-colors" title="{{ t('admin.export_png') }}" aria-label="{{ t('admin.export_chart_zones') }}">
                             <i data-lucide="download" class="w-4 h-4"></i>
                         </button>
                     </div>
@@ -186,16 +186,16 @@
                     <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('admin.leads_activity') }}</h3>
                     <div class="flex items-center gap-2">
                         <div class="flex gap-1" id="chart-month-type-btns">
-                            <button onclick="setMonthChartType('line')" data-mtype="line"
+                            <button data-action="adm-month-chart" data-type="line" data-mtype="line"
                                 class="month-type-btn px-2 py-1 text-[9px] font-bold uppercase tracking-widest rounded bg-midnight text-white">
                                 {{ t('admin.line') }}
                             </button>
-                            <button onclick="setMonthChartType('bar')" data-mtype="bar"
+                            <button data-action="adm-month-chart" data-type="bar" data-mtype="bar"
                                 class="month-type-btn px-2 py-1 text-[9px] font-bold uppercase tracking-widest rounded bg-midnight/5 text-midnight/50 hover:bg-gold hover:text-white transition-colors">
                                 {{ t('admin.bars') }}
                             </button>
                         </div>
-                        <button onclick="exportChart('chart-month', 'actividad-mensual')" class="p-1 text-midnight/30 hover:text-gold transition-colors" title="{{ t('admin.export_png') }}" aria-label="{{ t('admin.export_chart_month') }}">
+                        <button data-action="adm-export-chart" data-chart="chart-month" data-name="actividad-mensual" class="p-1 text-midnight/30 hover:text-gold transition-colors" title="{{ t('admin.export_png') }}" aria-label="{{ t('admin.export_chart_month') }}">
                             <i data-lucide="download" class="w-4 h-4"></i>
                         </button>
                     </div>
@@ -209,7 +209,7 @@
             <div class="bg-white rounded-lg shadow-xl overflow-hidden">
                 <div class="p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between">
                     <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('admin.budget_chart') }}</h3>
-                    <button onclick="exportChart('chart-budget', 'leads-presupuesto')" class="p-1 text-midnight/30 hover:text-gold transition-colors" title="{{ t('admin.export_png') }}" aria-label="{{ t('admin.export_chart_budget') }}">
+                    <button data-action="adm-export-chart" data-chart="chart-budget" data-name="leads-presupuesto" class="p-1 text-midnight/30 hover:text-gold transition-colors" title="{{ t('admin.export_png') }}" aria-label="{{ t('admin.export_chart_budget') }}">
                         <i data-lucide="download" class="w-4 h-4"></i>
                     </button>
                 </div>
@@ -221,7 +221,7 @@
 
         <!-- Telemetría de Contacto -->
         <div class="bg-white rounded-lg shadow-xl overflow-hidden mt-6 animate-on-scroll fade-in-up">
-            <button onclick="toggleSection('tm')" class="w-full p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between hover:bg-midnight/5 transition-colors">
+            <button data-action="adm-section" data-section="tm" class="w-full p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between hover:bg-midnight/5 transition-colors">
                 <h3 class="text-xs font-bold uppercase tracking-widest text-gold flex items-center gap-2">
                     <i data-lucide="smartphone" class="w-3.5 h-3.5"></i> {{ t('admin.phone_telemetry') }}
                 </h3>
@@ -306,7 +306,7 @@
 
         <!-- Historial de Acceso a Teléfonos -->
         <div class="bg-white rounded-lg shadow-xl overflow-hidden animate-on-scroll fade-in-up" id="phone-audit-card">
-            <button onclick="toggleSection('pa')" class="w-full p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between hover:bg-midnight/5 transition-colors">
+            <button data-action="adm-section" data-section="pa" class="w-full p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between hover:bg-midnight/5 transition-colors">
                 <h3 class="text-xs font-bold uppercase tracking-widest text-gold flex items-center gap-2">
                     <i data-lucide="phone" class="w-3.5 h-3.5"></i> {{ t('admin.phone_history') }}
                 </h3>
@@ -342,10 +342,10 @@
                     </div>
                 </div>
                 <div class="flex gap-2 mb-4">
-                    <button onclick="loadPhoneAudit()" class="px-3 py-1.5 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors flex items-center gap-1.5">
+                    <button data-action="adm-load-pa" class="px-3 py-1.5 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors flex items-center gap-1.5">
                         <i data-lucide="search" class="w-4 h-4"></i> {{ t('admin.filter') }}
                     </button>
-                    <button onclick="clearPhoneAuditFilters()" class="px-3 py-1.5 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-colors flex items-center gap-1.5">
+                    <button data-action="adm-clear-pa" class="px-3 py-1.5 bg-paper-dark text-midnight rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold hover:text-white transition-colors flex items-center gap-1.5">
                         <i data-lucide="x" class="w-3 h-3"></i> {{ t('admin.clear') }}
                     </button>
                 </div>
@@ -386,11 +386,11 @@
                 <div id="pa-pagination" class="hidden flex items-center justify-between mt-4 pt-4 border-t border-midnight/10">
                     <p id="pa-info" class="text-[10px] text-midnight/60 font-bold tracking-wider"></p>
                     <div class="flex gap-1">
-                        <button id="pa-prev" aria-label="{{ t('admin.prev_page') }}" onclick="loadPhoneAuditPage(currentPaPage - 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                        <button id="pa-prev" aria-label="{{ t('admin.prev_page') }}" data-action="adm-pa-page" data-dir="-" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled>
                             <i data-lucide="chevron-left" class="w-3 h-3"></i>
                         </button>
                         <span id="pa-page-indicator" class="px-2.5 py-1 text-[10px] font-bold text-midnight/50"></span>
-                        <button id="pa-next" aria-label="{{ t('admin.next_page') }}" onclick="loadPhoneAuditPage(currentPaPage + 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                        <button id="pa-next" aria-label="{{ t('admin.next_page') }}" data-action="adm-pa-page" data-dir="+" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled>
                             <i data-lucide="chevron-right" class="w-3 h-3"></i>
                         </button>
                     </div>
@@ -577,10 +577,10 @@
                     <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('admin.reported_leads') }}</h3>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="filterReports('pending')" class="report-filter-chip report-filter-active" data-filter="pending">{{ t('admin.filter_pending') }}</button>
-                    <button onclick="filterReports('all')" class="report-filter-chip" data-filter="all">{{ t('admin.filter_all') }}</button>
-                    <button onclick="filterReports('dismissed')" class="report-filter-chip" data-filter="dismissed">{{ t('admin.filter_dismissed') }}</button>
-                    <button onclick="filterReports('deleted')" class="report-filter-chip" data-filter="deleted">{{ t('admin.filter_deleted') }}</button>
+                    <button data-action="adm-filter-reports" data-filter="pending" class="report-filter-chip report-filter-active" data-filter="pending">{{ t('admin.filter_pending') }}</button>
+                    <button data-action="adm-filter-reports" data-filter="all" class="report-filter-chip" data-filter="all">{{ t('admin.filter_all') }}</button>
+                    <button data-action="adm-filter-reports" data-filter="dismissed" class="report-filter-chip" data-filter="dismissed">{{ t('admin.filter_dismissed') }}</button>
+                    <button data-action="adm-filter-reports" data-filter="deleted" class="report-filter-chip" data-filter="deleted">{{ t('admin.filter_deleted') }}</button>
                 </div>
             </div>
             <div id="reportsTableContainer" class="overflow-x-auto">
@@ -614,11 +614,11 @@
                 <div id="reports-pagination" class="hidden flex items-center justify-between px-4 py-3 border-t border-midnight/10">
                     <p id="reports-page-info" class="text-[10px] text-midnight/60 font-bold tracking-wider"></p>
                     <div class="flex gap-1">
-                        <button id="reports-prev" aria-label="{{ t('admin.prev_page') }}" onclick="loadReportsPage(currentReportsPage - 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                        <button id="reports-prev" aria-label="{{ t('admin.prev_page') }}" data-action="adm-reports-page" data-dir="-" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled>
                             <i data-lucide="chevron-left" class="w-3 h-3"></i>
                         </button>
                         <span id="reports-page-indicator" class="px-2.5 py-1 text-[10px] font-bold text-midnight/50"></span>
-                        <button id="reports-next" aria-label="{{ t('admin.next_page') }}" onclick="loadReportsPage(currentReportsPage + 1)" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled>
+                        <button id="reports-next" aria-label="{{ t('admin.next_page') }}" data-action="adm-reports-page" data-dir="+" class="px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/50 hover:bg-gold hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed" disabled>
                             <i data-lucide="chevron-right" class="w-3 h-3"></i>
                         </button>
                     </div>
@@ -634,7 +634,7 @@
                 <h3 class="text-lg font-bold text-midnight">{{ t('admin.form_options') }}</h3>
                 <p class="text-xs text-midnight/50">{{ t('admin.form_options_desc') }}</p>
             </div>
-            <button onclick="openCreateOptionModal()" class="px-4 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-colors flex items-center gap-2">
+            <button data-action="adm-open-option" class="px-4 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-colors flex items-center gap-2">
                 <i data-lucide="plus" class="w-4 h-4"></i> {{ t('admin.new_option') }}
             </button>
         </div>
@@ -680,7 +680,7 @@
                 <h3 class="text-lg font-bold text-midnight">{{ t('admin.phone_area_codes') }}</h3>
                 <p class="text-xs text-midnight/50">{{ t('admin.phone_area_codes_desc') }}</p>
             </div>
-            <button onclick="openCreateAreaCodeModal()" class="px-4 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-colors flex items-center gap-2">
+            <button data-action="adm-open-areacode" class="px-4 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-colors flex items-center gap-2">
                 <i data-lucide="plus" class="w-4 h-4"></i> {{ t('admin.new_area_code') }}
             </button>
         </div>
@@ -723,7 +723,7 @@
 
 <!-- ===== MODAL: DETALLE DE LEAD REPORTADO ===== -->
 <div id="leadDetailModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
-    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeLeadDetailModal()"></div>
+    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" data-action="adm-close-leaddetail"></div>
     <div class="absolute inset-0 flex overflow-y-auto p-4">
         <div class="modal-panel bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto" style="margin:auto">
             <!-- Header -->
@@ -732,7 +732,7 @@
                     <p class="text-[10px] uppercase tracking-widest font-bold text-gold mb-1">{{ t('admin.detail_lead') }}</p>
                     <h3 class="text-2xl font-serif">Lead <span id="leadDetailId" class="serif-italic text-gold"></span></h3>
                 </div>
-                <button onclick="closeLeadDetailModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('admin.close') }}">
+                <button data-action="adm-close-leaddetail" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('admin.close') }}">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -749,7 +749,7 @@
 
 <!-- ===== MODAL: DAR DE BAJA / REACTIVAR ===== -->
 <div id="deactivateModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="deactivateModalTitle">
-    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeDeactivateModal()"></div>
+    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" data-action="adm-close-deactivate"></div>
     <div class="absolute inset-0 flex overflow-y-auto p-4">
         <div class="modal-panel bg-white rounded-lg shadow-2xl overflow-hidden w-full max-w-md" id="deactivateModalBox" style="margin:auto">
 
@@ -763,7 +763,7 @@
                             {{ t('admin.user_label') }} <strong id="deactivateModalUsername" class="text-midnight font-bold"></strong>
                         </p>
                     </div>
-                    <button onclick="closeDeactivateModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('admin.close') }}">
+                    <button data-action="adm-close-deactivate" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('admin.close') }}">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>
@@ -791,11 +791,11 @@
                 <p id="deactivateModalError" class="hidden text-[10px] text-rose-500 font-medium"></p>
 
                 <div class="flex gap-3 pt-2">
-                    <button onclick="closeDeactivateModal()"
+                    <button data-action="adm-close-deactivate"
                         class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-colors">
                         {{ t('admin.cancel') }}
                     </button>
-                    <button id="confirmDeactivateBtn" onclick="confirmDeactivate()"
+                    <button id="confirmDeactivateBtn" data-action="adm-confirm-deactivate"
                         class="flex-1 py-3 bg-rose-600 dark:bg-rose-700 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-rose-700 dark:hover:bg-rose-800 transition-colors flex items-center justify-center gap-2">
                         <i data-lucide="user-x" class="w-4 h-4"></i>
                         <span id="confirmDeactivateBtnLabel">{{ t('admin.deactivate') }}</span>
@@ -814,7 +814,7 @@
                 <h3 class="text-lg font-bold text-midnight">{{ t('admin.organizations') }}</h3>
                 <p class="text-xs text-midnight/50">{{ t('admin.org_description') }}</p>
             </div>
-            <button onclick="openCreateOrgModal()" class="px-4 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-colors flex items-center gap-2">
+            <button data-action="adm-open-org" class="px-4 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-colors flex items-center gap-2">
                 <i data-lucide="plus" class="w-4 h-4"></i> {{ t('admin.org_new') }}
             </button>
         </div>
@@ -892,16 +892,16 @@
             </table>
         </div>
         <div id="notif-log-pagination" class="hidden flex items-center justify-between mt-4 pt-4 border-t border-midnight/10 dark:border-white/10">
-            <button id="notif-log-prev" onclick="loadNotificationLog(currentNotifLogPage - 1)" class="text-[10px] uppercase tracking-wider font-bold text-midnight/40 hover:text-gold transition-colors">{{ t('notif.page_prev') }}</button>
+            <button id="notif-log-prev" data-action="adm-notif-page" data-dir="-" class="text-[10px] uppercase tracking-wider font-bold text-midnight/40 hover:text-gold transition-colors">{{ t('notif.page_prev') }}</button>
             <span id="notif-log-page-info" class="text-[10px] text-midnight/40 dark:text-white/40"></span>
-            <button id="notif-log-next" onclick="loadNotificationLog(currentNotifLogPage + 1)" class="text-[10px] uppercase tracking-wider font-bold text-midnight/40 hover:text-gold transition-colors">{{ t('notif.page_next') }}</button>
+            <button id="notif-log-next" data-action="adm-notif-page" data-dir="+" class="text-[10px] uppercase tracking-wider font-bold text-midnight/40 hover:text-gold transition-colors">{{ t('notif.page_next') }}</button>
         </div>
     </div>
 </div>
 
 <!-- ===== MODAL: NOTIFICAR PROFESIONAL ===== -->
 <div id="notifyModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="notifyModalTitle">
-    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeNotifyModal()"></div>
+    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" data-action="adm-close-notify"></div>
     <div class="absolute inset-0 flex overflow-y-auto p-4">
         <div class="modal-panel bg-white rounded-lg shadow-2xl overflow-hidden w-full max-w-md" style="margin:auto">
             <div class="border-t-4 border-gold px-8 pt-8 pb-4">
@@ -910,7 +910,7 @@
                         <p class="text-[10px] uppercase tracking-widest font-bold text-gold mb-1">{{ t('admin.send_notification') }}</p>
                         <h3 id="notifyModalTitle" class="text-2xl font-serif">{{ t('admin.send_notification_to') }} <span id="notifyModalProName" class="font-bold"></span></h3>
                     </div>
-                    <button onclick="closeNotifyModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('admin.close') }}">
+                    <button data-action="adm-close-notify" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('admin.close') }}">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>
@@ -926,10 +926,10 @@
                 </div>
                 <p id="notifyModalError" class="hidden text-[10px] text-rose-500 font-medium"></p>
                 <div class="flex gap-3 pt-2">
-                    <button onclick="closeNotifyModal()" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-colors">
+                    <button data-action="adm-close-notify" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-colors">
                         {{ t('admin.cancel') }}
                     </button>
-                    <button id="confirmNotifyBtn" onclick="confirmNotify()" class="flex-1 py-3 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors flex items-center justify-center gap-2">
+                    <button id="confirmNotifyBtn" data-action="adm-confirm-notify" class="flex-1 py-3 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors flex items-center justify-center gap-2">
                         <i data-lucide="send" class="w-4 h-4"></i>
                         {{ t('admin.send') }}
                     </button>
@@ -941,7 +941,7 @@
 
 <!-- ===== MODAL: PHONE AREA CODE ===== -->
 <div id="areaCodeModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="pac-modal-title">
-    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeAreaCodeModal()"></div>
+    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" data-action="adm-close-areacode"></div>
     <div class="absolute inset-0 flex overflow-y-auto p-2">
         <div class="modal-panel bg-white rounded-lg shadow-2xl w-full max-w-full box-border w-[95vw] max-w-[calc(100vw-1rem)] max-h-[90vh] overflow-y-auto overflow-x-hidden" style="margin:auto">
             <div class="border-t-4 border-gold px-4 sm:px-8 pt-6 pb-4 flex items-start justify-between gap-3">
@@ -949,7 +949,7 @@
                     <p class="text-[10px] uppercase tracking-widest font-bold text-gold mb-1">{{ t('pac.area_code') }}</p>
                     <h3 id="pac-modal-title" class="text-xl font-serif"></h3>
                 </div>
-                <button onclick="closeAreaCodeModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('admin.close') }}">
+                <button data-action="adm-close-areacode" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('admin.close') }}">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -993,10 +993,10 @@
                     </div>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3 pt-2">
-                    <button onclick="closeAreaCodeModal()" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-colors">
+                    <button data-action="adm-close-areacode" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-colors">
                         {{ t('admin.cancel') }}
                     </button>
-                    <button onclick="saveAreaCode()" class="flex-1 py-3 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors flex items-center justify-center gap-2">
+                    <button data-action="adm-save-areacode" class="flex-1 py-3 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors flex items-center justify-center gap-2">
                         <i data-lucide="save" class="w-4 h-4"></i> {{ t('admin.save') }}
                     </button>
                 </div>
@@ -1007,7 +1007,7 @@
 
 <!-- ===== MODAL: ORGANIZACION ===== -->
 <div id="orgModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="org-modal-title">
-    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeOrgModal()"></div>
+    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" data-action="adm-close-org"></div>
     <div class="absolute inset-0 flex overflow-y-auto p-4">
         <div class="modal-panel bg-white rounded-lg shadow-2xl overflow-hidden w-full max-w-md" style="margin:auto">
             <div class="border-t-4 border-gold px-8 pt-8 pb-4 flex items-start justify-between">
@@ -1015,7 +1015,7 @@
                     <p class="text-[10px] uppercase tracking-widest font-bold text-gold mb-1" id="orgModalTag">{{ t('admin.org_new') }}</p>
                     <h3 id="org-modal-title" class="text-2xl font-serif">{{ t('admin.org_new') }}</h3>
                 </div>
-                <button onclick="closeOrgModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('admin.close') }}">
+                <button data-action="adm-close-org" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('admin.close') }}">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -1031,10 +1031,10 @@
                 </div>
                 <p id="orgModalError" class="hidden text-[10px] text-rose-500 font-medium"></p>
                 <div class="flex gap-3 pt-2">
-                    <button onclick="closeOrgModal()" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-colors">
+                    <button data-action="adm-close-org" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-colors">
                         {{ t('admin.cancel') }}
                     </button>
-                    <button id="orgSaveBtn" onclick="saveOrg()" class="flex-1 py-3 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors flex items-center justify-center gap-2">
+                    <button id="orgSaveBtn" data-action="adm-save-org" class="flex-1 py-3 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors flex items-center justify-center gap-2">
                         <i data-lucide="save" class="w-4 h-4"></i> {{ t('admin.save') }}
                     </button>
                 </div>
@@ -1044,7 +1044,7 @@
 </div>
 
 <div id="orgMembersModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="org-members-title">
-    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeOrgMembersModal()"></div>
+    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" data-action="adm-close-orgmembers"></div>
     <div class="absolute inset-0 flex overflow-y-auto p-4">
         <div class="modal-panel bg-white rounded-lg shadow-2xl overflow-hidden w-full max-w-md" style="margin:auto">
             <div class="border-t-4 border-gold px-8 pt-8 pb-4 flex items-start justify-between">
@@ -1052,7 +1052,7 @@
                     <p class="text-[10px] uppercase tracking-widest font-bold text-gold mb-1">{{ t('org.members') }}</p>
                     <h3 id="org-members-title" class="text-2xl font-serif">{{ t('org.members') }}</h3>
                 </div>
-                <button onclick="closeOrgMembersModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('admin.close') }}">
+                <button data-action="adm-close-orgmembers" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('admin.close') }}">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -1066,7 +1066,7 @@
                         <option value="admin">{{ t('org.role_admin') }}</option>
                         <option value="owner">{{ t('org.role_owner') }}</option>
                     </select>
-                    <button onclick="addOrgMember()" class="px-4 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors">{{ t('org.add_member') }}</button>
+                    <button data-action="adm-add-member" class="px-4 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors">{{ t('org.add_member') }}</button>
                 </div>
                 <p id="orgMembersError" class="hidden text-[10px] text-rose-500 font-medium"></p>
             </div>

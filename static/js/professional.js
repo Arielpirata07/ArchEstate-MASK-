@@ -17,7 +17,7 @@ function renderUploadWidget(cid) {
             <!-- Zona drag & drop -->
             <div id="dropzone-${cid}"
                  class="relative border-2 border-dashed border-midnight/20 rounded-lg p-8 text-center transition-all duration-200 cursor-pointer hover:border-gold hover:bg-paper group"
-                 onclick="document.getElementById('fileInput-${cid}').click()"
+                 data-action="pro-click-input" data-target="fileInput-${cid}"
                  ondragover="handleDragOver(event,'${cid}')"
                  ondragleave="handleDragLeave(event,'${cid}')"
                  ondrop="handleDrop(event,'${cid}')">
@@ -43,7 +43,7 @@ function renderUploadWidget(cid) {
                         <p id="fileName-${cid}" class="text-sm font-semibold text-midnight truncate"></p>
                         <p id="fileSize-${cid}" class="text-[10px] text-midnight/60 mt-0.5 uppercase tracking-widest font-bold"></p>
                     </div>
-                    <button onclick="clearFile('${cid}')" class="p-2 text-midnight/30 hover:text-rose-500 transition-colors flex-shrink-0" title="${t('upload.remove_file')}">
+                    <button data-action="pro-clear-file" data-cid="${cid}" class="p-2 text-midnight/30 hover:text-rose-500 transition-colors flex-shrink-0" title="${t('upload.remove_file')}">
                         <i data-lucide="x" class="w-4 h-4"></i>
                     </button>
                 </div>
@@ -73,7 +73,7 @@ function renderUploadWidget(cid) {
                         <i data-lucide="download" class="w-3 h-3"></i> ${t('action.download')}
                     </a>
                 </div>
-                <button onclick="replaceDoc('${cid}')"
+                <button data-action="pro-replace-doc" data-cid="${cid}"
                     class="w-full text-[10px] text-midnight/60 hover:text-gold transition-colors font-bold uppercase tracking-widest py-1 flex items-center justify-center gap-1">
                     <i data-lucide="refresh-cw" class="w-3 h-3"></i> ${t('upload.replace_doc')}
                 </button>
@@ -81,7 +81,7 @@ function renderUploadWidget(cid) {
 
             <!-- Botón de envío -->
             <div id="submitWrapper-${cid}" class="hidden">
-                <button id="uploadBtn-${cid}" onclick="uploadFile('${cid}')"
+                <button id="uploadBtn-${cid}" data-action="pro-upload-file" data-cid="${cid}"
                     class="w-full py-3 bg-midnight text-white rounded font-bold uppercase tracking-widest text-[10px] hover:bg-gold transition-all flex items-center justify-center gap-2">
                     <i data-lucide="upload" class="w-4 h-4"></i>
                     ${t('upload.submit_docs')}
@@ -473,7 +473,7 @@ async function loadLeadsPanorama() {
         var p = data.panorama;
         function chips(items, kind) {
             return (items || []).map(function(it) {
-                return '<button onclick="applyPanoramaFilter(\'' + kind + '\',\'' + String(it.label).replace(/'/g, "\\'") + '\')" ' +
+                return '<button data-action="pro-panorama" data-kind="' + kind + '" data-label="' + String(it.label).replace(/'/g, "&#39;") + '" ' +
                     'class="px-2.5 py-1 rounded-full text-[10px] font-bold border border-gold/30 text-gold hover:bg-gold hover:text-white transition-colors">' +
                     escapeHtml(it.label) + ' (' + it.value + ')</button>';
             }).join('');
@@ -526,7 +526,7 @@ function renderActiveTags() {
     container.innerHTML = tags.map(tag => `
         <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gold/10 text-gold border border-gold/20 rounded-full text-[9px] font-bold uppercase tracking-widest">
             ${escapeHtml(tag.label)}
-            <button onclick="removeFilter('${tag.key}')" class="hover:text-rose-500 transition-colors">
+            <button data-action="pro-remove-filter" data-key="${tag.key}" class="hover:text-rose-500 transition-colors">
                 <i data-lucide="x" class="w-2.5 h-2.5"></i>
             </button>
         </span>
@@ -607,17 +607,17 @@ function renderPagination(data) {
         return;
     }
     let html = '<div class="flex items-center justify-center gap-2 mt-4">';
-    html += `<button onclick="goToPage(${page - 1})" class="px-3 py-1.5 text-[10px] font-bold rounded border border-midnight/20 ${page <= 1 ? 'text-midnight/20 cursor-not-allowed' : 'text-midnight/60 hover:border-gold hover:text-gold'}" ${page <= 1 ? 'disabled' : ''}>${t('pagination.prev') || '‹ Anterior'}</button>`;
+    html += `<button data-action="pro-page" data-page="${page - 1}" class="px-3 py-1.5 text-[10px] font-bold rounded border border-midnight/20 ${page <= 1 ? 'text-midnight/20 cursor-not-allowed' : 'text-midnight/60 hover:border-gold hover:text-gold'}" ${page <= 1 ? 'disabled' : ''}>${t('pagination.prev') || '‹ Anterior'}</button>`;
     for (let p = 1; p <= total_pages; p++) {
         if (p === page) {
             html += `<span class="px-3 py-1.5 text-[10px] font-bold rounded bg-gold text-white">${p}</span>`;
         } else if (p === 1 || p === total_pages || Math.abs(p - page) <= 2) {
-            html += `<button onclick="goToPage(${p})" class="px-3 py-1.5 text-[10px] font-bold rounded text-midnight/60 hover:text-gold">${p}</button>`;
+            html += `<button data-action="pro-page" data-page="${p}" class="px-3 py-1.5 text-[10px] font-bold rounded text-midnight/60 hover:text-gold">${p}</button>`;
         } else if (p === page - 3 || p === page + 3) {
             html += `<span class="px-1 text-midnight/30">…</span>`;
         }
     }
-    html += `<button onclick="goToPage(${page + 1})" class="px-3 py-1.5 text-[10px] font-bold rounded border border-midnight/20 ${page >= total_pages ? 'text-midnight/20 cursor-not-allowed' : 'text-midnight/60 hover:border-gold hover:text-gold'}" ${page >= total_pages ? 'disabled' : ''}>${t('pagination.next') || 'Siguiente ›'}</button>`;
+    html += `<button data-action="pro-page" data-page="${page + 1}" class="px-3 py-1.5 text-[10px] font-bold rounded border border-midnight/20 ${page >= total_pages ? 'text-midnight/20 cursor-not-allowed' : 'text-midnight/60 hover:border-gold hover:text-gold'}" ${page >= total_pages ? 'disabled' : ''}>${t('pagination.next') || 'Siguiente ›'}</button>`;
     html += '</div>';
     container.innerHTML = html;
 }
@@ -638,7 +638,7 @@ function renderLeads(leads) {
     if (!leads.length) {
         var myLeadsMsg = (typeof currentFilters !== 'undefined' && currentFilters.my_leads)
             ? `<p class="text-xs text-gold mt-2">${t('leads.empty_my_leads')}</p>
-               <button onclick="setMyLeads(false)" class="mt-3 px-4 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors">${t('leads.show_all')}</button>
+               <button data-action="pro-myleads" data-value="false" class="mt-3 px-4 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors">${t('leads.show_all')}</button>
                <div id="leadsPanorama" class="mt-4 text-left"></div>`
             : '';
         tbody.innerHTML = `
@@ -735,7 +735,7 @@ function renderLeads(leads) {
                 <td class="px-4 py-3 text-right">
                     <div class="flex flex-col items-end gap-1">
                         <div class="flex justify-end gap-1.5 items-center">
-                            <button onclick="togglePhone(this,'${lead.id}')"
+                            <button data-action="pro-toggle-phone" data-id="${lead.id}"
                                 class="inline-flex items-center gap-1.5 px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all">
                                 <i data-lucide="phone" class="w-3 h-3"></i> ${t('action.phone')}
                             </button>
@@ -1051,13 +1051,13 @@ function openLeadPreview(leadId) {
 
     // Status buttons
     html += '<div class="flex gap-2">';
-    html += '<button type="button" class="status-btn status-btn-seen ' + (tracking.seen ? 'status-active' : '') + '" data-status="seen" data-lead-id="' + lead.id + '" onclick="event.stopPropagation(); toggleLeadStatus(' + lead.id + ', \'seen\', this)"><i data-lucide="eye" class="w-3 h-3"></i><span>' + (tracking.seen ? t('status.seen') : t('action.view')) + '</span></button>';
-    html += '<button type="button" class="status-btn status-btn-contacted ' + (tracking.contacted ? 'status-active' : '') + '" data-status="contacted" data-lead-id="' + lead.id + '" onclick="event.stopPropagation(); toggleLeadStatus(' + lead.id + ', \'contacted\', this)"><i data-lucide="message-circle" class="w-3 h-3"></i><span>' + (tracking.contacted ? t('status.contacted') : t('action.contact')) + '</span></button>';
+    html += '<button type="button" class="status-btn status-btn-seen ' + (tracking.seen ? 'status-active' : '') + '" data-status="seen" data-lead-id="' + lead.id + '" data-action="pro-lead-status" data-id="' + lead.id + '" data-status="seen"><i data-lucide="eye" class="w-3 h-3"></i><span>' + (tracking.seen ? t('status.seen') : t('action.view')) + '</span></button>';
+    html += '<button type="button" class="status-btn status-btn-contacted ' + (tracking.contacted ? 'status-active' : '') + '" data-status="contacted" data-lead-id="' + lead.id + '" data-action="pro-lead-status" data-id="' + lead.id + '" data-status="contacted"><i data-lucide="message-circle" class="w-3 h-3"></i><span>' + (tracking.contacted ? t('status.contacted') : t('action.contact')) + '</span></button>';
     html += '</div>';
 
     // Phone + contact
     html += '<div class="flex flex-wrap gap-2">';
-    html += '<button onclick="event.stopPropagation(); togglePhone(this,\'' + lead.id + '\')" class="inline-flex items-center gap-1.5 px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all"><i data-lucide="phone" class="w-3 h-3"></i> ' + t('action.phone') + '</button>';
+    html += '<button data-action="pro-toggle-phone-stop" data-id="' + lead.id + '" class="inline-flex items-center gap-1.5 px-3 py-2 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all"><i data-lucide="phone" class="w-3 h-3"></i> ' + t('action.phone') + '</button>';
     if (lead.phone_is_mobile) {
         html += '<a href="/api/lead/' + lead.id + '/r/whatsapp" data-wa-link data-lead-id="' + lead.id + '" class="contact-btn contact-btn-whatsapp inline-flex items-center gap-1.5 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-widest"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/><path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1Zm0 0a5 5 0 0 0 5 5m0 0a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1v1a.5.5 0 0 0 1 0v-1a.5.5 0 0 0-1 0Z"/><path d="M17 8a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2"/><path d="M12 12h.01"/></svg> WhatsApp</a>';
     } else if (lead.phone_format_valid == 1) {
@@ -2607,3 +2607,34 @@ async function deleteCalEvent() {
 }
 
 
+
+/* Delegación data-action (FASE 5.9): reemplaza onclick inline */
+delegateActions({
+    'pro-tab': function(el) { showProTab(el.dataset.tab); },
+    'pro-timerange': function(el) { setTimeRange(el.dataset.range); },
+    'pro-close-cal': function() { closeCalModal(); },
+    'pro-myleads': function(el) { setMyLeads(el.dataset.value === 'true'); },
+    'pro-close-preview': function() { closeLeadPreview(); },
+    'pro-toggle-activity': function() { toggleMiniActivityPanel(); },
+    'pro-toggle-doc': function() { toggleDocPanel(); },
+    'pro-proptype': function(el) { setPropType(el.dataset.value); },
+    'pro-view': function(el) { setLeadsView(el.dataset.view); },
+    'pro-calview': function(el) { setCalView(el.dataset.view); },
+    'pro-budget': function(el) { setBudgetRange(el.dataset.range); },
+    'pro-save-event': function() { saveCalEvent(); },
+    'pro-delete-event': function() { deleteCalEvent(); },
+    'pro-clear-filters': function() { clearFilters(); },
+    'pro-cal-today': function() { calToday(); },
+    'pro-cal-nav': function(el) { calNavigate(parseInt(el.dataset.delta, 10)); },
+    'pro-calmini-nav': function(el) { calMiniNav(parseInt(el.dataset.delta, 10)); },
+    'pro-click-input': function(el) { document.getElementById(el.dataset.target).click(); },
+    'pro-clear-file': function(el) { clearFile(el.dataset.cid); },
+    'pro-replace-doc': function(el) { replaceDoc(el.dataset.cid); },
+    'pro-upload-file': function(el) { uploadFile(el.dataset.cid); },
+    'pro-panorama': function(el) { applyPanoramaFilter(el.dataset.kind, el.dataset.label); },
+    'pro-remove-filter': function(el) { removeFilter(el.dataset.key); },
+    'pro-page': function(el) { goToPage(parseInt(el.dataset.page, 10)); },
+    'pro-toggle-phone': function(el) { togglePhone(el, el.dataset.id); },
+    'pro-toggle-phone-stop': function(el, e) { e.stopPropagation(); togglePhone(el, el.dataset.id); },
+    'pro-lead-status': function(el, e) { e.stopPropagation(); toggleLeadStatus(el.dataset.id, el.dataset.status, el); }
+});

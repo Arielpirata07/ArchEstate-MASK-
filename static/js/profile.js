@@ -129,7 +129,7 @@ function updatePhoneVerificationArea(phone) {
         + '<i data-lucide="phone-off" class="w-3 h-3"></i> ' + t('phone.not_verified') + '</span>'
         + '<button type="button" id="verify-phone-btn"'
         + ' class="text-[10px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors"'
-        + ' onclick="openPhoneVerifyModal()">' + t('action.verify') + '</button>';
+        + ' data-action="prof-open-phone-verify-modal">' + t('action.verify') + '</button>';
     if (window.lucide) lucide.createIcons();
 }
 
@@ -948,7 +948,7 @@ function loadUserSessions() {
                 <td class="font-mono text-[10px]">${s.ip_address || '-'}</td>
                 <td class="text-[11px]">${escapeHtml(ua)}</td>
                 <td class="text-[11px]">${s.last_active || s.created_at || '-'}</td>
-                <td><button onclick="terminateSession(${s.id})" class="text-[9px] uppercase tracking-widest font-bold hover:text-rose-500 transition-colors" style="color:var(--text-secondary)">${t('action.close')}</button></td>
+                <td><button data-action="prof-terminate-session" data-id="${s.id}" class="text-[9px] uppercase tracking-widest font-bold hover:text-rose-500 transition-colors" style="color:var(--text-secondary)">${t('action.close')}</button></td>
             </tr>`;
         });
         html += '</tbody></table>';
@@ -1198,7 +1198,7 @@ function renderCoverageZones() {
     if (list) {
         list.innerHTML = _coverageZones.map((zone, i) =>
             '<span class="coverage-zone-tag">' + escapeHtml(zone) +
-            '<button type="button" onclick="removeCoverageZone(' + i + ')" aria-label="' + t('profile.coverage_remove') + '">' +
+            '<button type="button" data-action="prof-remove-zone" data-index="' + i + '" aria-label="' + t('profile.coverage_remove') + '">' +
             '<i data-lucide="x" class="w-3 h-3" aria-hidden="true"></i></button></span>'
         ).join('');
         if (window.lucide) lucide.createIcons();
@@ -1793,5 +1793,7 @@ delegateActions({
     'prof-contact-admin': function() { contactAdmin(); },
     'prof-close-phone-verify-modal': function() { closePhoneVerifyModal(); },
     'prof-apply-phone-correction': function() { applyPhoneCorrection(); },
-    'prof-add-coverage-zone': function() { addCoverageZone(); }
+    'prof-add-coverage-zone': function() { addCoverageZone(); },
+    'prof-terminate-session': function(el) { terminateSession(el.dataset.id); },
+    'prof-remove-zone': function(el) { removeCoverageZone(parseInt(el.dataset.index, 10)); }
 });

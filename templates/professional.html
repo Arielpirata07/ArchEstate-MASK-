@@ -26,19 +26,19 @@ window.__FORM_OPTIONS = {{ {
         {% if not pending %}
         <div class="flex flex-wrap items-center gap-3">
             <div class="flex gap-2">
-                <button onclick="showProTab('leads')" id="tab-leads"
+                <button data-action="pro-tab" data-tab="leads" id="tab-leads"
                     class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-midnight text-white">
                     <span class="flex items-center gap-2"><i data-lucide="layout-dashboard" class="w-3 h-3"></i> {{ t('pro.leads_tab') }}</span>
                 </button>
-                <button onclick="showProTab('stats')" id="tab-stats"
+                <button data-action="pro-tab" data-tab="stats" id="tab-stats"
                     class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                     <span class="flex items-center gap-2"><i data-lucide="trending-up" class="w-3 h-3"></i> {{ t('pro.stats_tab') }}</span>
                 </button>
-                <button onclick="showProTab('dashboard')" id="tab-dashboard"
+                <button data-action="pro-tab" data-tab="dashboard" id="tab-dashboard"
                     class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                     <span class="flex items-center gap-2"><i data-lucide="bar-chart-3" class="w-3 h-3"></i> {{ t('dash.title') }}</span>
                 </button>
-                <button onclick="showProTab('calendar')" id="tab-calendar"
+                <button data-action="pro-tab" data-tab="calendar" id="tab-calendar"
                     class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                     <span class="flex items-center gap-2"><i data-lucide="calendar" class="w-3 h-3"></i> {{ t('cal.title') }}</span>
                 </button>
@@ -70,14 +70,14 @@ window.__FORM_OPTIONS = {{ {
                    class="w-full pl-8 pr-3 py-2 border border-midnight/20 rounded text-sm focus:border-gold focus:outline-none">
         </div>
         <div class="flex items-center bg-midnight/5 rounded-lg p-0.5">
-            <button id="btnGMyLeads" onclick="setMyLeads(true)" class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors bg-gold text-white">
+            <button id="btnGMyLeads" data-action="pro-myleads" data-value="true" class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors bg-gold text-white">
                 {{ t('pro.my_leads') }}
             </button>
-            <button id="btnGAllLeads" onclick="setMyLeads(false)" class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors text-midnight/50 hover:text-midnight">
+            <button id="btnGAllLeads" data-action="pro-myleads" data-value="false" class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors text-midnight/50 hover:text-midnight">
                 {{ t('pro.all_leads') }}
             </button>
         </div>
-        <button onclick="clearFilters()" class="text-[10px] font-bold uppercase tracking-widest text-midnight/60 hover:text-rose-500 transition-colors flex items-center gap-1">
+        <button data-action="pro-clear-filters" class="text-[10px] font-bold uppercase tracking-widest text-midnight/60 hover:text-rose-500 transition-colors flex items-center gap-1">
             <i data-lucide="x" class="w-3 h-3"></i> {{ t('pro.clear_all') }}
         </button>
     </div>
@@ -161,10 +161,10 @@ window.__FORM_OPTIONS = {{ {
         <div class="flex items-center gap-2">
             <span class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">{{ t('pro.period') }}</span>
             <div class="flex gap-1" id="timeRangeChips">
-                <button onclick="setTimeRange('')"  data-days=""   class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-midnight text-white">{{ t('pro.period_all') }}</button>
-                <button onclick="setTimeRange('1')" data-days="1"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">{{ t('pro.period_today') }}</button>
-                <button onclick="setTimeRange('7')" data-days="7"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">7d</button>
-                <button onclick="setTimeRange('30')" data-days="30" class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">30d</button>
+                <button data-action="pro-timerange" data-range=""  data-days=""   class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-midnight text-white">{{ t('pro.period_all') }}</button>
+                <button data-action="pro-timerange" data-range="1" data-days="1"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">{{ t('pro.period_today') }}</button>
+                <button data-action="pro-timerange" data-range="7" data-days="7"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">7d</button>
+                <button data-action="pro-timerange" data-range="30" data-days="30" class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">30d</button>
             </div>
         </div>
     </div>
@@ -198,10 +198,10 @@ window.__FORM_OPTIONS = {{ {
             </div>
             <div class="flex items-center gap-3">
                 <div class="flex items-center bg-midnight/5 rounded-lg p-0.5">
-                    <button id="btnMyLeads" onclick="setMyLeads(true)" class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors bg-gold text-white">
+                    <button id="btnMyLeads" data-action="pro-myleads" data-value="true" class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors bg-gold text-white">
                         <i data-lucide="user" class="w-3 h-3 inline -mt-0.5 mr-1"></i>{{ t('pro.my_leads') }}
                     </button>
-                    <button id="btnAllLeads" onclick="setMyLeads(false)" class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors text-midnight/50 hover:text-midnight">
+                    <button id="btnAllLeads" data-action="pro-myleads" data-value="false" class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors text-midnight/50 hover:text-midnight">
                         <i data-lucide="globe" class="w-3 h-3 inline -mt-0.5 mr-1"></i>{{ t('pro.all_leads') }}
                     </button>
                 </div>
@@ -247,27 +247,27 @@ window.__FORM_OPTIONS = {{ {
             <div>
                 <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">{{ t('pro.prop_type') }}</label>
                 <div class="flex flex-wrap gap-2" id="propTypeChips">
-                    <button data-value="" onclick="setPropType('')"
+                    <button data-value="" data-action="pro-proptype" data-value=""
                         class="prop-chip active px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight bg-midnight text-white">
                         {{ t('pro.all_types') }}
                     </button>
-                    <button data-value="departamento" onclick="setPropType('departamento')"
+                    <button data-value="departamento" data-action="pro-proptype" data-value="departamento"
                         class="prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
                         <i data-lucide="building" class="w-3 h-3 inline -mt-0.5 mr-1"></i>{{ t('pro.pt_dept') }}
                     </button>
-                    <button data-value="casa" onclick="setPropType('casa')"
+                    <button data-value="casa" data-action="pro-proptype" data-value="casa"
                         class="prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
                         <i data-lucide="home" class="w-3 h-3 inline -mt-0.5 mr-1"></i>{{ t('pro.pt_house') }}
                     </button>
-                    <button data-value="duplex" onclick="setPropType('duplex')"
+                    <button data-value="duplex" data-action="pro-proptype" data-value="duplex"
                         class="prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
                         <i data-lucide="layers" class="w-3 h-3 inline -mt-0.5 mr-1"></i>{{ t('pro.op_duplex') }}
                     </button>
-                    <button data-value="penthouse" onclick="setPropType('penthouse')"
+                    <button data-value="penthouse" data-action="pro-proptype" data-value="penthouse"
                         class="prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
                         <i data-lucide="crown" class="w-3 h-3 inline -mt-0.5 mr-1"></i>{{ t('pro.pt_penthouse') }}
                     </button>
-                    <button data-value="local_comercial" onclick="setPropType('local_comercial')"
+                    <button data-value="local_comercial" data-action="pro-proptype" data-value="local_comercial"
                         class="prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
                         <i data-lucide="store" class="w-3 h-3 inline -mt-0.5 mr-1"></i>Local Comercial
                     </button>
@@ -278,27 +278,27 @@ window.__FORM_OPTIONS = {{ {
             <div>
                 <label class="block text-[10px] uppercase tracking-widest font-bold text-midnight/50 mb-2">{{ t('pro.budget_range_label') }}</label>
                 <div class="flex flex-wrap gap-2" id="budgetRangeChips">
-                    <button data-range="" onclick="setBudgetRange('')"
+                    <button data-range="" data-action="pro-budget" data-range=""
                         class="budget-chip active px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight bg-midnight text-white">
                         {{ t('pro.any_amount') }}
                     </button>
-                    <button data-range="hasta_200k" onclick="setBudgetRange('hasta_200k')"
+                    <button data-range="hasta_200k" data-action="pro-budget" data-range="hasta_200k"
                         class="budget-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
                         {{ t('pro.budget_up_to') }} $200k
                     </button>
-                    <button data-range="200k_500k" onclick="setBudgetRange('200k_500k')"
+                    <button data-range="200k_500k" data-action="pro-budget" data-range="200k_500k"
                         class="budget-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
                         $200k – $500k
                     </button>
-                    <button data-range="500k_1m" onclick="setBudgetRange('500k_1m')"
+                    <button data-range="500k_1m" data-action="pro-budget" data-range="500k_1m"
                         class="budget-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
                         $500k – $1M
                     </button>
-                    <button data-range="1m_2m" onclick="setBudgetRange('1m_2m')"
+                    <button data-range="1m_2m" data-action="pro-budget" data-range="1m_2m"
                         class="budget-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
                         $1M – $2M
                     </button>
-                    <button data-range="mas_2m" onclick="setBudgetRange('mas_2m')"
+                    <button data-range="mas_2m" data-action="pro-budget" data-range="mas_2m"
                         class="budget-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
                         {{ t('pro.budget_over') }} $2M
                     </button>
@@ -329,8 +329,8 @@ window.__FORM_OPTIONS = {{ {
             <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('pro.leads_available') }}</h3>
             <div class="flex items-center gap-3">
                 <div class="flex items-center bg-midnight/5 rounded-lg p-0.5">
-                    <button id="btnListView" onclick="setLeadsView('list')" class="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors bg-gold text-white">{{ t('pipeline.toggle_list') }}</button>
-                    <button id="btnPipelineView" onclick="setLeadsView('pipeline')" class="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors text-midnight/50 hover:text-midnight">{{ t('pipeline.toggle_pipeline') }}</button>
+                    <button id="btnListView" data-action="pro-view" data-view="list" class="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors bg-gold text-white">{{ t('pipeline.toggle_list') }}</button>
+                    <button id="btnPipelineView" data-action="pro-view" data-view="pipeline" class="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors text-midnight/50 hover:text-midnight">{{ t('pipeline.toggle_pipeline') }}</button>
                 </div>
                 <span class="inline-flex items-center gap-1 text-[8px] text-midnight/30 font-bold uppercase tracking-widest"><i data-lucide="check-circle" class="w-2.5 h-2.5"></i> {{ t('pro.phone_valid') }}</span>
                 <span class="text-[10px] text-midnight/60 uppercase tracking-widest">{{ t('pro.sort_by') }}</span>
@@ -388,8 +388,8 @@ window.__FORM_OPTIONS = {{ {
                 <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('dash.activity_recent') }}</h3>
             </div>
             <div class="flex items-center gap-3">
-                <button onclick="showProTab('dashboard')" class="text-[10px] font-bold uppercase tracking-widest text-midnight/50 hover:text-gold transition-colors">{{ t('dash.view_all') }}</button>
-                <button onclick="toggleMiniActivityPanel()" class="p-1 text-midnight/30 hover:text-midnight transition-colors" aria-label="{{ t('dash.activity_recent') }}">
+                <button data-action="pro-tab" data-tab="dashboard" class="text-[10px] font-bold uppercase tracking-widest text-midnight/50 hover:text-gold transition-colors">{{ t('dash.view_all') }}</button>
+                <button data-action="pro-toggle-activity" class="p-1 text-midnight/30 hover:text-midnight transition-colors" aria-label="{{ t('dash.activity_recent') }}">
                     <i data-lucide="chevron-down" id="miniActivityChevron" class="w-4 h-4 transition-transform duration-200"></i>
                 </button>
             </div>
@@ -403,7 +403,7 @@ window.__FORM_OPTIONS = {{ {
     <div class="bg-white rounded-lg shadow-xl overflow-hidden animate-on-scroll fade-in-up">
         <button id="toggleDocSection"
             class="w-full p-4 bg-paper-dark border-b border-midnight/5 flex items-center justify-between hover:bg-paper transition-colors"
-            onclick="toggleDocPanel()">
+            data-action="pro-toggle-doc">
             <div class="flex items-center gap-3">
                 <i data-lucide="file-check" class="w-4 h-4 text-gold"></i>
                 <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('pro.my_docs') }}</h3>
@@ -480,24 +480,24 @@ window.__FORM_OPTIONS = {{ {
     <div id="panel-calendar" class="hidden space-y-6">
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex items-center gap-2">
-                <button onclick="calNavigate(-1)" class="p-2 text-midnight/60 hover:text-gold" aria-label="←"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
+                <button data-action="pro-cal-nav" data-delta="-1" class="p-2 text-midnight/60 hover:text-gold" aria-label="←"><i data-lucide="chevron-left" class="w-4 h-4"></i></button>
                 <h3 id="calTitle" class="text-xl font-serif text-midnight min-w-0"></h3>
-                <button onclick="calNavigate(1)" class="p-2 text-midnight/60 hover:text-gold" aria-label="→"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
-                <button onclick="calToday()" class="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-md bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">{{ t('cal.today') }}</button>
+                <button data-action="pro-cal-nav" data-delta="1" class="p-2 text-midnight/60 hover:text-gold" aria-label="→"><i data-lucide="chevron-right" class="w-4 h-4"></i></button>
+                <button data-action="pro-cal-today" class="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-md bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">{{ t('cal.today') }}</button>
             </div>
             <div class="flex items-center bg-midnight/5 rounded-lg p-0.5">
-                <button id="btnCalMonth" onclick="setCalView('month')" class="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors bg-gold text-white">{{ t('cal.month_view') }}</button>
-                <button id="btnCalWeek" onclick="setCalView('week')" class="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors text-midnight/50 hover:text-midnight">{{ t('cal.week_view') }}</button>
-                <button id="btnCalDay" onclick="setCalView('day')" class="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors text-midnight/50 hover:text-midnight">{{ t('cal.day_view') }}</button>
+                <button id="btnCalMonth" data-action="pro-calview" data-view="month" class="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors bg-gold text-white">{{ t('cal.month_view') }}</button>
+                <button id="btnCalWeek" data-action="pro-calview" data-view="week" class="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors text-midnight/50 hover:text-midnight">{{ t('cal.week_view') }}</button>
+                <button id="btnCalDay" data-action="pro-calview" data-view="day" class="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors text-midnight/50 hover:text-midnight">{{ t('cal.day_view') }}</button>
             </div>
         </div>
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
             <div class="space-y-6">
                 <div class="bg-white rounded-lg shadow-lg border border-midnight/5 p-4">
                     <div class="flex items-center justify-between mb-2">
-                        <button onclick="calMiniNav(-1)" class="p-1 text-midnight/60 hover:text-gold"><i data-lucide="chevron-left" class="w-3 h-3"></i></button>
+                        <button data-action="pro-calmini-nav" data-delta="-1" class="p-1 text-midnight/60 hover:text-gold"><i data-lucide="chevron-left" class="w-3 h-3"></i></button>
                         <p id="calMiniTitle" class="text-[11px] font-bold uppercase tracking-widest text-gold"></p>
-                        <button onclick="calMiniNav(1)" class="p-1 text-midnight/60 hover:text-gold"><i data-lucide="chevron-right" class="w-3 h-3"></i></button>
+                        <button data-action="pro-calmini-nav" data-delta="1" class="p-1 text-midnight/60 hover:text-gold"><i data-lucide="chevron-right" class="w-3 h-3"></i></button>
                     </div>
                     <div id="calMini" class="cal-mini-grid"></div>
                 </div>
@@ -508,7 +508,7 @@ window.__FORM_OPTIONS = {{ {
                 <div class="bg-white rounded-lg shadow-lg border border-midnight/5 p-4">
                     <div class="flex items-center justify-between mb-2">
                         <h3 class="text-xs font-bold uppercase tracking-widest text-gold">{{ t('dash.activity_recent') }}</h3>
-                        <button onclick="showProTab('dashboard')" class="text-[10px] font-bold uppercase tracking-widest text-midnight/50 hover:text-gold transition-colors">{{ t('dash.view_all') }}</button>
+                        <button data-action="pro-tab" data-tab="dashboard" class="text-[10px] font-bold uppercase tracking-widest text-midnight/50 hover:text-gold transition-colors">{{ t('dash.view_all') }}</button>
                     </div>
                     <div data-mini-activity></div>
                 </div>
@@ -522,12 +522,12 @@ window.__FORM_OPTIONS = {{ {
 
     <!-- Calendar modal -->
     <div id="calModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
-        <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeCalModal()"></div>
+        <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" data-action="pro-close-cal"></div>
         <div class="absolute inset-0 flex overflow-y-auto p-4">
             <div class="modal-panel bg-white rounded-lg shadow-2xl overflow-hidden w-full max-w-md" style="margin:auto">
                 <div class="border-t-4 border-gold px-8 pt-6 pb-4 flex items-start justify-between">
                     <h3 id="calModalTitle" class="text-2xl font-serif">{{ t('cal.new_event') }}</h3>
-                    <button onclick="closeCalModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('admin.close') }}">
+                    <button data-action="pro-close-cal" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('admin.close') }}">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>
@@ -574,9 +574,9 @@ window.__FORM_OPTIONS = {{ {
                     </label>
                     <p id="calModalError" class="hidden text-[10px] text-rose-500 font-medium"></p>
                     <div class="flex gap-3 pt-2">
-                        <button id="cal-delete-btn" onclick="deleteCalEvent()" class="hidden px-4 py-3 border border-rose-200 text-rose-600 rounded text-[10px] font-bold uppercase tracking-widest hover:bg-rose-50 transition-colors">{{ t('admin.org_delete') }}</button>
-                        <button onclick="closeCalModal()" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-colors">{{ t('admin.cancel') }}</button>
-                        <button onclick="saveCalEvent()" class="flex-1 py-3 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors">{{ t('admin.save') }}</button>
+                        <button id="cal-delete-btn" data-action="pro-delete-event" class="hidden px-4 py-3 border border-rose-200 text-rose-600 rounded text-[10px] font-bold uppercase tracking-widest hover:bg-rose-50 transition-colors">{{ t('admin.org_delete') }}</button>
+                        <button data-action="pro-close-cal" class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-colors">{{ t('admin.cancel') }}</button>
+                        <button data-action="pro-save-event" class="flex-1 py-3 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors">{{ t('admin.save') }}</button>
                     </div>
                 </div>
             </div>
@@ -779,7 +779,7 @@ window.__FORM_OPTIONS = {{ {
                     <div class="bg-white rounded-2xl shadow-lg border border-midnight/5 p-6 mt-6">
                         <div class="flex items-center justify-between mb-2">
                             <h4 class="text-[10px] font-bold uppercase tracking-widest text-midnight/50">{{ t('dash.activity_recent') }}</h4>
-                            <button onclick="showProTab('dashboard')" class="text-[10px] font-bold uppercase tracking-widest text-midnight/50 hover:text-gold transition-colors">{{ t('dash.view_all') }}</button>
+                            <button data-action="pro-tab" data-tab="dashboard" class="text-[10px] font-bold uppercase tracking-widest text-midnight/50 hover:text-gold transition-colors">{{ t('dash.view_all') }}</button>
                         </div>
                         <div data-mini-activity></div>
                     </div>
@@ -790,7 +790,7 @@ window.__FORM_OPTIONS = {{ {
     </div>
 
     <!-- Lead Preview Drawer -->
-    <div id="leadPreviewOverlay" onclick="closeLeadPreview()" class="fixed inset-0 z-40 bg-midnight/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300 pointer-events-none"></div>
+    <div id="leadPreviewOverlay" data-action="pro-close-preview" class="fixed inset-0 z-40 bg-midnight/60 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300 pointer-events-none"></div>
     <div id="leadPreviewDrawer" class="fixed top-0 right-0 z-50 h-full w-full max-w-md bg-white shadow-2xl border-l border-midnight/10 transform translate-x-full transition-transform duration-300 ease-out overflow-y-auto hidden">
         <div class="p-6">
             <div class="flex items-center justify-between mb-6">
@@ -798,7 +798,7 @@ window.__FORM_OPTIONS = {{ {
                     <p class="text-[9px] uppercase tracking-widest font-bold text-gold">Lead <span id="previewLeadId" class="font-mono"></span></p>
                     <h3 id="previewLeadTitle" class="text-lg font-serif text-midnight mt-1">{{ t('pro.quick_view') }}</h3>
                 </div>
-                <button onclick="closeLeadPreview()" class="p-2 text-midnight/60 hover:text-midnight rounded-lg hover:bg-paper-dark transition-colors" aria-label="{{ t('pro.close_quick_view') }}">
+                <button data-action="pro-close-preview" class="p-2 text-midnight/60 hover:text-midnight rounded-lg hover:bg-paper-dark transition-colors" aria-label="{{ t('pro.close_quick_view') }}">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
