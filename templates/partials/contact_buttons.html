@@ -22,7 +22,7 @@
 {% set lead_id = lead.id %}
 
 {% if phone_raw %}
-  {% set wa_message = 'Hola, soy ' ~ (pro_name or 'el equipo') ~ ' de ArchEstate. Te escribo por tu consulta de ' ~ (operation or 'una propiedad') ~ ((' en ' ~ zone) if zone else '') ~ '. ¿Tenés un momento para hablar?' %}
+  {% set wa_message = t('contact.wa_hello') ~ ' ' ~ (pro_name or t('contact.wa_team')) ~ ' ' ~ t('contact.wa_from') ~ ' ' ~ (operation or t('contact.wa_property')) ~ (((' ' ~ t('contact.wa_in') ~ ' ' ~ zone)) if zone else '') ~ t('contact.wa_close') %}
 
   <div class="flex flex-wrap items-center gap-2 mt-3" id="contact-buttons-{{ lead_id }}">
 
@@ -31,7 +31,7 @@
          data-wa-link
          data-lead-id="{{ lead_id }}"
          class="contact-btn contact-btn-whatsapp inline-flex items-center gap-1.5 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-widest transition-colors"
-         aria-label="Contactar por WhatsApp">
+         aria-label="{{ t('contact.whatsapp_aria') }}">
         <i data-lucide="message-circle" class="w-3 h-3" aria-hidden="true"></i>
         WhatsApp
       </a>
@@ -42,7 +42,7 @@
          data-sms-link
          data-lead-id="{{ lead_id }}"
          class="contact-btn contact-btn-sms inline-flex items-center gap-1.5 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-widest transition-colors"
-         aria-label="Enviar mensaje SMS">
+         aria-label="{{ t('contact.sms_aria') }}">
         <i data-lucide="smartphone" class="w-3 h-3" aria-hidden="true"></i>
         SMS
       </a>
@@ -52,8 +52,8 @@
        data-tel-link
        data-lead-id="{{ lead_id }}"
        class="contact-btn contact-btn-tel text-[10px] font-bold uppercase tracking-widest underline-offset-2 hover:underline"
-       aria-label="Llamar por teléfono">
-      Llamar
+       aria-label="{{ t('contact.call_aria') }}">
+      {{ t('contact.call') }}
     </a>
 
   </div>

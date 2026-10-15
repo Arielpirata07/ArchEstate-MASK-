@@ -1411,6 +1411,13 @@ TRANSLATIONS = {
         'contact.whatsapp_aria': 'Contactar por WhatsApp',
         'contact.sms_aria': 'Enviar mensaje SMS',
         'contact.call_aria': 'Llamar por teléfono',
+        'contact.call': 'Llamar',
+        'contact.wa_hello': 'Hola, soy',
+        'contact.wa_team': 'el equipo',
+        'contact.wa_from': 'de ArchEstate. Te escribo por tu consulta de',
+        'contact.wa_property': 'una propiedad',
+        'contact.wa_in': 'en',
+        'contact.wa_close': '. ¿Tenés un momento para hablar?',
 
         # === AMENITIES ===
         'amenity.piscina_infinity': 'Piscina Infinity',
@@ -2837,6 +2844,13 @@ TRANSLATIONS = {
         'contact.whatsapp_aria': 'Contact via WhatsApp',
         'contact.sms_aria': 'Send SMS message',
         'contact.call_aria': 'Call by phone',
+        'contact.call': 'Call',
+        'contact.wa_hello': 'Hi, I am',
+        'contact.wa_team': 'the team',
+        'contact.wa_from': 'from ArchEstate. I am writing about your inquiry for',
+        'contact.wa_property': 'a property',
+        'contact.wa_in': 'in',
+        'contact.wa_close': '. Do you have a moment to talk?',
 
         # === AMENITIES ===
         'amenity.piscina_infinity': 'Infinity Pool',
