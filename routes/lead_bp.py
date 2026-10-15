@@ -5,15 +5,14 @@ Blueprint para endpoints relacionados con leads: revelación server-side de
 contacto WhatsApp/SMS, telemetría de eventos, y reporte de teléfonos inválidos.
 """
 
-import json
-import os
-import tempfile
-import threading
-import time
+import logging
 import urllib.parse
+
+logger = logging.getLogger(__name__)
 
 from flask import Blueprint, redirect, request, session, jsonify, current_app
 
+import rate_limit
 import utils
 from decorators import professional_required
 from i18n import t, get_language
@@ -25,46 +24,11 @@ lead_bp = Blueprint('lead', __name__, url_prefix='/api/lead')
 
 _WA_PER_HOUR = 60
 _REVEAL_PER_HOUR = 60
-
-_rate_lock = threading.Lock()
-_rate_file = os.path.join(tempfile.gettempdir(), 'archestate_lead_rate_limits.json')
+_RATE_WINDOW = 3600
 
 
-def _load_rate_store():
-    try:
-        with open(_rate_file, 'r') as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return {}
-
-
-def _save_rate_store(store):
-    dir_name = os.path.dirname(_rate_file)
-    fd, tmp_path = tempfile.mkstemp(dir=dir_name, suffix='.json')
-    try:
-        with os.fdopen(fd, 'w') as f:
-            json.dump(store, f)
-        os.replace(tmp_path, _rate_file)
-    except Exception:
-        try:
-            os.unlink(tmp_path)
-        except OSError:
-            pass
-
-
-def _check_rate(key, limit, window=3600):
-    now = time.time()
-    with _rate_lock:
-        store = _load_rate_store()
-        bucket = store.get(key, [])
-        bucket = [t for t in bucket if now - t < window]
-        if len(bucket) >= limit:
-            _save_rate_store(store)
-            return False
-        bucket.append(now)
-        store[key] = bucket
-        _save_rate_store(store)
-        return True
+def _check_rate(key, limit, window=_RATE_WINDOW):
+    return rate_limit.check_rate(key, limit, window)
 
 
 @lead_bp.route('/<int:lead_id>/r/whatsapp')
@@ -135,7 +99,7 @@ def redirect_whatsapp(lead_id):
             new_q = urllib.parse.urlencode({k: v[0] for k, v in q.items()}, quote_via=urllib.parse.quote_plus)
             wa_url = f"{u.scheme}://{u.netloc}{u.path}?{new_q}"
         except Exception:
-            pass
+            logger.debug('UTM enrich falló, se usa URL base')
 
         utils.log_action(
             "WhatsApp link generated",

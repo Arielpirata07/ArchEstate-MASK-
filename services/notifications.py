@@ -70,7 +70,7 @@ def _render_email(template_name: str, **kwargs) -> tuple:
             html = render_template(f'email/{template_name}.html', **kwargs)
             return html, ''
         except Exception:
-            pass
+            logger.warning('Render de email falló, se usa fallback plano: %s', template_name)
 
     lang = get_language()
     html = f"""

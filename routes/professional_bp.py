@@ -167,7 +167,7 @@ def get_leads_api():
                 query += " AND CAST(REPLACE(REPLACE(budget, '.', ''), ',', '') AS REAL) >= ?"
                 params.append(min_val)
             except ValueError:
-                pass
+                logger.debug('min_budget inválido: %r', min_budget)
 
         if max_budget:
             try:
@@ -175,7 +175,7 @@ def get_leads_api():
                 query += " AND CAST(REPLACE(REPLACE(budget, '.', ''), ',', '') AS REAL) <= ?"
                 params.append(max_val)
             except ValueError:
-                pass
+                logger.debug('max_budget inválido: %r', max_budget)
 
         if currency_filter:
             query += ' AND currency = ?'
@@ -196,7 +196,7 @@ def get_leads_api():
                     query += " AND timestamp >= datetime('now', ?)"
                     params.append(f'-{tr} days')
             except ValueError:
-                pass
+                logger.debug('time_range inválido: %r', time_range)
 
         count_query = f'SELECT COUNT(*) as total FROM ({query}) AS sub'
         total = conn.execute(count_query, params).fetchone()['total']
@@ -330,6 +330,8 @@ def get_leads_panorama():
         total = conn.execute('SELECT COUNT(*) AS n FROM leads').fetchone()['n']
 
         def top(column):
+            if column not in ('zone', 'province', 'country', 'type', 'property_type'):
+                raise ValueError(f'Columna no permitida en top(): {column!r}')
             return [dict(r) for r in conn.execute(
                 f"SELECT {column} AS label, COUNT(*) AS value FROM leads "
                 f"WHERE {column} IS NOT NULL AND {column} != '' "
@@ -344,7 +346,7 @@ def get_leads_panorama():
                 f'SELECT COUNT(*) AS n FROM leads WHERE {where}', geo_params
             ).fetchone()['n']
         except Exception:
-            pass
+            logger.debug('my_total falló, se omite')
         return jsonify({
             'success': True,
             'panorama': {
@@ -1148,7 +1150,7 @@ def toggle_lead_status(lead_id):
             try:
                 notify_lead_status_change(lead_id, professional_id, status_type)
             except Exception:
-                pass
+                logger.warning('notify_lead_status_change falló para lead=%s', lead_id)
 
         return jsonify({
             'success': True,
@@ -2093,7 +2095,7 @@ def upload_professional_doc():
                 try:
                     os.remove(prev_path)
                 except Exception:
-                    pass
+                    logger.warning('No se pudo borrar doc previo: %s', prev_path)
 
         file.save(os.path.join(upload_dir, filename))
 

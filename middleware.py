@@ -123,7 +123,7 @@ def inject_theme():
             prefs = models.get_user_preferences(user_id)
             theme = prefs.get('theme', 'light')
         except Exception:
-            pass
+            logger.exception('Error en inject_theme')
     return dict(user_theme=theme)
 
 
@@ -134,7 +134,7 @@ def inject_notifications():
         try:
             count = models.get_unread_notification_count(user_id)
         except Exception:
-            pass
+            logger.exception('Error en inject_notifications')
     return dict(unread_notifications=count)
 
 
@@ -154,7 +154,7 @@ def close_db_connection(exc=None):
             try:
                 conn.close()
             except Exception:
-                pass
+                logger.debug('Error al cerrar conexión en teardown')
             setattr(g, attr, None)
 
 

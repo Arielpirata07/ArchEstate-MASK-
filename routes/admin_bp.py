@@ -142,7 +142,7 @@ def update_pro_status(pro_id):
             try:
                 notify_professional_status_change(pro_id, new_status)
             except Exception:
-                pass
+                logger.warning('notify_professional_status_change falló para pro=%s', pro_id)
 
             action = "Aprobación" if new_status == 'approved' else "Rechazo"
             utils.log_action(action, pro['name'], session)
@@ -168,7 +168,7 @@ def admin_stats():
             try:
                 days = int(period)
             except (ValueError, TypeError):
-                pass
+                logger.debug('period inválido: %r', period)
 
         leads_where = ''
         events_where = ''
@@ -555,7 +555,7 @@ def admin_phone_audit():
 
 @admin_bp.route('/api/admin/report/<int:report_id>/delete', methods=['POST'])
 @admin_required
-def delete_reported_lead(report_id):
+def mark_report_deleted(report_id):
     lang = get_language()
     conn = None
     try:
@@ -585,14 +585,14 @@ def delete_reported_lead(report_id):
         try:
             notify_report_deleted(lead_id, report['reported_by'])
         except Exception:
-            pass
+            logger.warning('notify_report_deleted falló para lead=%s', lead_id)
 
         return jsonify({
             'success': True,
             'message': t('admin.lead_deleted', lang)
         })
     except Exception as e:
-        logger.exception('Error en delete_reported_lead')
+        logger.exception('Error en mark_report_deleted')
         return jsonify({'error': t('admin.internal_error_short', lang)}), 500
     finally:
         if conn:

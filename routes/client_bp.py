@@ -203,7 +203,7 @@ def submit_lead():
                 import threading
                 threading.Thread(target=notify_lead_created, args=(cursor.lastrowid,), daemon=True).start()
         except Exception:
-            pass
+            logger.exception('No se pudo lanzar hilo de notify_lead_created')
 
         return jsonify({
             "success": True,

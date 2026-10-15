@@ -1,13 +1,11 @@
 import os
 
-env_file = os.path.join(os.path.dirname(__file__), '.env')
-if os.path.exists(env_file):
-    with open(env_file) as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith('#') and '=' in line:
-                key, value = line.split('=', 1)
-                os.environ.setdefault(key, value)
+from dotenv import load_dotenv
+
+# Misma precedencia que el parser manual anterior: el entorno real gana
+# sobre .env (override=False). python-dotenv además maneja comillas,
+# prefijo `export ` y líneas multilínea.
+load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
 
 DATABASE = os.path.join(os.path.dirname(__file__), 'database.db')
 

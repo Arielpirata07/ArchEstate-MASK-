@@ -147,7 +147,7 @@ def login():
                     )
                     conn.commit()
                 except Exception:
-                    pass
+                    logger.warning('No se pudo registrar login_history')
 
                 remember_response = None
                 if request.form.get('remember') == 'on':

@@ -8,6 +8,7 @@ despliegue actual; pendiente migrar a Redis (Render KV) cuando esté disponible.
 """
 
 import json
+import logging
 import os
 import tempfile
 import threading
@@ -15,6 +16,8 @@ import time
 from functools import wraps
 
 from flask import jsonify, render_template, request
+
+logger = logging.getLogger(__name__)
 
 
 _rate_lock = threading.Lock()
@@ -40,7 +43,7 @@ def _save_store(store):
         try:
             os.unlink(tmp_path)
         except OSError:
-            pass
+            logger.debug('No se pudo borrar tmp de rate-limit')
 
 
 def get_client_ip():
@@ -52,6 +55,25 @@ def get_client_ip():
 def _rate_limit_html_response():
     """Retorna la página de error 429 renderizada (i18n + estilos consistentes)."""
     return render_template('errors/429.html'), 429
+
+
+def check_rate(key, limit, window=3600):
+    """
+    Sliding-window por clave arbitraria sobre el store compartido.
+    Permite rate limiting por zona (usuario, IP, recurso) sin stores propios.
+    """
+    now = time.time()
+    with _rate_lock:
+        store = _load_store()
+        bucket = [t for t in store.get(key, []) if now - t < window]
+        if len(bucket) >= limit:
+            store[key] = bucket
+            _save_store(store)
+            return False
+        bucket.append(now)
+        store[key] = bucket
+        _save_store(store)
+        return True
 
 
 def check_rate_limit(limit=10, window=60):

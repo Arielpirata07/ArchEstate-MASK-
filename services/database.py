@@ -136,7 +136,12 @@ def _driver():
     return 'sqlite'
 
 
+DATE_FORMAT_COLUMNS = frozenset({'timestamp', 'ts', 'created_at', 'event_date', 'changed_at'})
+
+
 def date_format_sql(column, fmt):
+    if column not in DATE_FORMAT_COLUMNS:
+        raise ValueError(f'Columna no permitida en date_format_sql: {column!r}')
     if _driver() == 'postgresql':
         pg_fmt = fmt.replace('%Y', 'YYYY').replace('%m', 'MM').replace('%d', 'DD')
         return f"to_char({column}, '{pg_fmt}')"
