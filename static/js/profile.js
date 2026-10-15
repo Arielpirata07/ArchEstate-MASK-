@@ -1797,3 +1797,30 @@ delegateActions({
     'prof-terminate-session': function(el) { terminateSession(el.dataset.id); },
     'prof-remove-zone': function(el) { removeCoverageZone(parseInt(el.dataset.index, 10)); }
 });
+
+delegateActions({
+    'prof-in-email': function() { validateProfileEmail(); },
+    'prof-in-phone': function() { validateProfilePhone(); },
+    'prof-in-province': function(el) { onProvinceSearchInput(el.dataset.target, el); }
+}, 'input');
+delegateActions({
+    'prof-chg-avatar': function(el) { uploadAvatar(el); },
+    'prof-chg-photo': function(el) { uploadProfessionalPhoto(el); },
+    'prof-chg-phonefmt': function() { updateProfilePhoneFormat(); },
+    'prof-chg-prefix': function() { applyProvincePrefix(); },
+    'prof-chg-channel': function() { savePreferredChannel(); toggleWhatsappHint(); },
+    'prof-chg-settings': function() { saveSettings(); },
+    'prof-chg-notifchannel': function() { saveNotifChannel(); },
+    'prof-chg-services': function() { updateServicesOffered(); },
+    'prof-chg-avail': function() { updateAvailability(); }
+}, 'change');
+delegateActions({
+    'prof-key-province': function(el, e) { onProvinceSearchKeydown(el.dataset.target, e); },
+    'prof-coverage-key': function(el, e) { if (e.key === 'Enter') { e.preventDefault(); addCoverageZone(); } },
+    'prof-avatar-key': function(el, e) { if (e.key === 'Enter' || e.key === ' ') el.click(); }
+}, 'keydown');
+function profHoverLink(el, e) {
+    el.style.color = e.type === 'mouseover' ? 'var(--text-primary)' : 'var(--accent)';
+}
+delegateActions({ 'prof-hover': profHoverLink }, 'mouseover');
+delegateActions({ 'prof-hover': profHoverLink }, 'mouseout');

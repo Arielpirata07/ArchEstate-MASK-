@@ -138,7 +138,7 @@
                             type="password"
                             placeholder="{{ t('um.min_6_chars') }}"
                             class="w-full bg-transparent border-0 border-b border-midnight/20 focus:border-gold focus:ring-0 py-3 pl-8 transition-colors outline-none text-sm"
-                            onkeyup="validatePasswordModal()"
+                            data-action="um-keyup-validate"
                         >
                     </div>
                 </div>
@@ -152,7 +152,7 @@
                             type="password"
                             placeholder="{{ t('um.repeat_password') }}"
                             class="w-full bg-transparent border-0 border-b border-midnight/20 focus:border-gold focus:ring-0 py-3 pl-8 transition-colors outline-none text-sm"
-                            onkeyup="validatePasswordModal()"
+                            data-action="um-keyup-validate"
                         >
                     </div>
                     <p id="passwordMatchError" class="hidden text-[10px] text-rose-500 font-medium mt-1"></p>

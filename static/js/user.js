@@ -426,3 +426,16 @@ delegateActions({
     'user-submit-code': function() { submitVerificationCode(); },
     'user-toggle-province': function(el) { toggleProvinceSearch(el.dataset.target, el); }
 });
+
+delegateActions({
+    'user-in-province': function(el) { onProvinceSearchInput(el.dataset.target, el); },
+    'user-in-phone': function() { onUserPhoneInput(); }
+}, 'input');
+delegateActions({
+    'user-chg-gated': function(el) { toggleGatedCommunity(el.checked); },
+    'user-chg-country': function() { updateCountryCode(); },
+    'user-chg-prefix': function() { applyPhoneProvincePrefix(); }
+}, 'change');
+delegateActions({
+    'user-key-province': function(el, e) { onProvinceSearchKeydown(el.dataset.target, e); }
+}, 'keydown');

@@ -422,3 +422,7 @@ delegateActions({
     'um-open-disable': function(el) { openDisableModal(el.dataset.id, el.dataset.name); },
     'um-open-enable': function(el) { openEnableModal(el.dataset.id, el.dataset.name); }
 });
+
+delegateActions({
+    'um-keyup-validate': function() { validatePasswordModal(); }
+}, 'keyup');

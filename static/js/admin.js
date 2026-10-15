@@ -2571,3 +2571,13 @@ delegateActions({
     'adm-org-members': function(el) { openOrgMembersModal(parseInt(el.dataset.id, 10)); },
     'adm-member-remove': function(el) { removeOrgMember(parseInt(el.dataset.org, 10), parseInt(el.dataset.user, 10)); }
 });
+
+delegateActions({
+    'adm-in-zone': function() { filterZoneChart(); },
+    'adm-in-search': function(el) { filterBySearch(el.value); },
+    'adm-in-phone-area': function(el) { filterPhoneAreaCodes(el.value); },
+    'adm-in-notiflog': function() { loadNotificationLog(1); }
+}, 'input');
+delegateActions({
+    'adm-chg-notif': function() { saveAdminNotifPrefs(); }
+}, 'change');

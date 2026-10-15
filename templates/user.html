@@ -347,7 +347,7 @@ window.__FORM_OPTIONS = {{ {
                                 <div class="mt-5 p-4 bg-paper-dark rounded-lg border border-midnight/10">
                                     <div class="flex items-center justify-between mb-3">
                                         <label class="flex items-center gap-2 cursor-pointer">
-                                            <input id="gated-community-check" type="checkbox" name="amenities" value="Barrio privado" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0" onchange="toggleGatedCommunity(this.checked)">
+                                            <input id="gated-community-check" type="checkbox" name="amenities" value="Barrio privado" class="w-4 h-4 text-gold border-midnight/20 rounded focus:ring-0" data-action="user-chg-gated">
                                             <span class="text-sm font-semibold text-midnight">{{ t('user.gated_community') }}</span>
                                         </label>
                                     </div>
@@ -546,7 +546,7 @@ window.__FORM_OPTIONS = {{ {
                                  <select
                                      id="country-code-select"
                                       aria-label="{{ t('user.country_code_aria') }}"
-                                     onchange="updateCountryCode()"
+                                     data-action="user-chg-country"
                                      class="w-14 bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 text-sm text-midnight"
                                  >
                                      <option value="+54">+54</option>
@@ -567,12 +567,12 @@ window.__FORM_OPTIONS = {{ {
                                          <span id="province-search-label" class="truncate text-midnight/70">{{ t('user.search_city') }}</span>
                                          <i data-lucide="search" class="w-3.5 h-3.5 flex-shrink-0 text-midnight/40"></i>
                                      </button>
-                                     <select id="phone-province" aria-label="{{ t('user.area_code_aria') }}" onchange="applyPhoneProvincePrefix()" class="hidden">
+                                     <select id="phone-province" aria-label="{{ t('user.area_code_aria') }}" data-action="user-chg-prefix" class="hidden">
                                      </select>
                                      <div id="province-search-wrapper" class="hidden absolute right-0 top-9 z-20 w-96">
                                          <input id="province-search" type="text" placeholder="{{ t('user.search_city') }}..."
-                                             oninput="onProvinceSearchInput('phone-province', this)"
-                                             onkeydown="onProvinceSearchKeydown('phone-province', event)"
+                                             data-action="user-in-province" data-target="phone-province"
+                                             data-action="user-key-province" data-target="phone-province"
                                              class="px-3 py-2 text-sm bg-white text-midnight border border-midnight/20 rounded shadow focus:border-gold focus:outline-none w-full">
                                          <ul id="province-search-list" class="hidden absolute top-full left-0 right-0 bg-white border border-slate-200 rounded shadow-md z-10 overflow-y-auto mt-1" role="listbox"></ul>
                                      </div>
@@ -585,7 +585,7 @@ window.__FORM_OPTIONS = {{ {
                                     inputmode="tel"
                                     autocapitalize="off"
                                     spellcheck="false"
-                                    oninput="onUserPhoneInput()"
+                                    data-action="user-in-phone"
                                     {% if session.get('role') != 'admin' %}required{% endif %}
                                     value="{{ session.get('phone', '') }}"
                                     placeholder="1234 5678"

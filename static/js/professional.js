@@ -2638,3 +2638,7 @@ delegateActions({
     'pro-toggle-phone-stop': function(el, e) { e.stopPropagation(); togglePhone(el, el.dataset.id); },
     'pro-lead-status': function(el, e) { e.stopPropagation(); toggleLeadStatus(el.dataset.id, el.dataset.status, el); }
 });
+
+delegateActions({
+    'pro-chg-market': function() { loadMarketStats(false); }
+}, 'change');

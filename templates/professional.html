@@ -604,7 +604,7 @@ window.__FORM_OPTIONS = {{ {
                     <div class="flex items-center gap-3 stats-entrance">
                         <label for="statsMonthSelect" class="text-[10px] uppercase tracking-widest font-bold text-midnight/50">{{ t('pro.month') }}</label>
                         <div class="relative">
-                            <select id="statsMonthSelect" onchange="loadMarketStats(false)"
+                            <select id="statsMonthSelect" data-action="pro-chg-market"
                                 class="appearance-none px-4 py-2 pr-10 border border-midnight/10 rounded-xl text-sm focus:border-gold focus:ring-2 focus:ring-gold/10 focus:outline-none text-midnight/70 bg-paper-dark transition-all cursor-pointer">
                             </select>
                             <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-midnight/30 pointer-events-none"></i>

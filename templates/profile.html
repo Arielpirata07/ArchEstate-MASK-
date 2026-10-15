@@ -13,7 +13,7 @@
             <h1 class="text-3xl font-serif italic" style="color:var(--text-primary)">{{ t('profile.title') }}</h1>
             <p class="text-sm mt-1" style="color:var(--text-secondary)">{{ t('profile.subtitle') }}</p>
         </div>
-        <a href="{{ url_for('public.index') }}" class="text-[10px] uppercase tracking-widest font-bold" style="color:var(--accent);" onmouseover="this.style.color='var(--text-primary)'" onmouseout="this.style.color='var(--accent)'">
+        <a href="{{ url_for('public.index') }}" class="text-[10px] uppercase tracking-widest font-bold" style="color:var(--accent);" data-action="prof-hover">
             <i data-lucide="arrow-left" class="w-4 h-4 inline -mt-0.5"></i>
             {{ t('profile.back_to_site') }}
         </a>
@@ -74,14 +74,14 @@
                     <div class="flex flex-col sm:flex-row items-start gap-4 sm:gap-8 mb-8">
                         <!-- Avatar -->
                         <div class="flex-shrink-0 text-center">
-                            <div class="avatar-upload relative mx-auto" id="avatar-container" data-action="prof-click" data-target="avatar-input" role="button" tabindex="0" aria-label="{{ t('profile.avatar_change') }}" onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
+                            <div class="avatar-upload relative mx-auto" id="avatar-container" data-action="prof-click" data-target="avatar-input" role="button" tabindex="0" aria-label="{{ t('profile.avatar_change') }}" data-action="prof-avatar-key">
                                 <div class="avatar-ring" id="avatar-ring"></div>
                                 <img id="avatar-preview" src="{% if user and user.avatar_path %}{{ url_for('static', filename=user.avatar_path) }}{% else %}{{ url_for('static', filename='img/default-avatar.svg') }}{% endif %}" alt="Foto de perfil" class="w-full h-full rounded-full object-cover border-4" style="border-color:var(--border)">
                                 <div class="avatar-overlay">
                                     <i data-lucide="camera" class="w-6 h-6 text-white"></i>
                                 </div>
                             </div>
-                            <input type="file" id="avatar-input" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" onchange="uploadAvatar(this)">
+                            <input type="file" id="avatar-input" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" data-action="prof-chg-avatar">
                             <button data-action="prof-delete-avatar" class="text-[9px] uppercase tracking-widest font-bold mt-2 hover:text-rose-500 transition-colors" style="color:var(--text-secondary)" type="button">
                                 <span class="sr-only">{{ t('profile.avatar_delete') }}</span>{{ t('profile.avatar_delete') }}
                             </button>
@@ -106,7 +106,7 @@
                             </div>
                             <div>
                                 <label for="profile-email" class="input-label">{{ t('profile.email') }}</label>
-                                <input id="profile-email" type="email" value="{{ user.email if user else '' }}" class="input-field" oninput="validateProfileEmail()">
+                                <input id="profile-email" type="email" value="{{ user.email if user else '' }}" class="input-field" data-action="prof-in-email">
                                 <div class="flex items-center justify-between mt-1">
                                     <p id="profile-email-hint" class="text-[9px] hint-text">{{ t('profile.email_hint') }}</p>
                                     <p id="profile-email-valid" class="hidden text-[9px] font-medium text-emerald-600">{{ t('profile.email_valid') }}</p>
@@ -116,7 +116,7 @@
                             <div>
                                 <label for="profile-phone" class="input-label">{{ t('profile.phone') }}</label>
                                 <div class="relative flex gap-2">
-                                    <select id="profile-country-code" aria-label="{{ t('user.country_code_aria') }}" onchange="updateProfilePhoneFormat()" class="px-2 py-2 border border-midnight/20 rounded text-sm bg-white text-midnight w-14 flex-shrink-0">
+                                    <select id="profile-country-code" aria-label="{{ t('user.country_code_aria') }}" data-action="prof-chg-phonefmt" class="px-2 py-2 border border-midnight/20 rounded text-sm bg-white text-midnight w-14 flex-shrink-0">
                                         <option value="+54">+54</option>
                                         <option value="+598">+598</option>
                                         <option value="+56">+56</option>
@@ -137,17 +137,17 @@
                                         </button>
                                         <div id="province-search-wrapper" class="hidden absolute right-0 top-9 z-20 w-96">
                                             <input id="province-search" type="text" placeholder="Buscar ciudad..."
-                                                oninput="onProvinceSearchInput('profile-province', this)"
-                                                onkeydown="onProvinceSearchKeydown('profile-province', event)"
+                                                data-action="prof-in-province" data-target="profile-province"
+                                                data-action="prof-key-province" data-target="profile-province"
                                                 class="px-3 py-2 text-sm bg-white text-midnight border border-midnight/20 rounded shadow focus:border-gold focus:outline-none w-full">
                                             <ul id="province-search-list" class="hidden absolute top-full left-0 right-0 bg-white border border-slate-200 rounded shadow-md z-10 overflow-y-auto mt-1" role="listbox"></ul>
                                         </div>
                                     </div>
-                                    <select id="profile-province" aria-label="{{ t('user.area_code_aria') }}" onchange="applyProvincePrefix()" class="hidden">
+                                    <select id="profile-province" aria-label="{{ t('user.area_code_aria') }}" data-action="prof-chg-prefix" class="hidden">
                                         <option value="other">Otra...</option>
                                     </select>
                                     <input id="profile-custom-area" type="tel" maxlength="5" placeholder="Cod." aria-label="{{ t('profile.custom_area_aria') }}" class="px-2 py-2 border border-midnight/20 rounded text-sm bg-white text-midnight w-14 flex-shrink-0 hidden">
-                                    <input id="profile-phone" type="tel" autocomplete="tel" inputmode="tel" autocapitalize="off" spellcheck="false" value="{{ user.phone if user and user.phone else '' }}" class="input-field flex-1 min-w-0" placeholder="9 11 1234 5678" maxlength="16" oninput="validateProfilePhone()">
+                                    <input id="profile-phone" type="tel" autocomplete="tel" inputmode="tel" autocapitalize="off" spellcheck="false" value="{{ user.phone if user and user.phone else '' }}" class="input-field flex-1 min-w-0" placeholder="9 11 1234 5678" maxlength="16" data-action="prof-in-phone">
                                 </div>
                                 <div class="flex items-center justify-between mt-1">
                                     <p id="profile-phone-hint" class="text-[9px] hint-text">{{ t('profile.phone_hint') }}</p>
@@ -197,7 +197,7 @@
                                 </div>
                                 <div class="flex items-center gap-2 mt-1" id="channel-preference-area">
                                     <label class="text-[9px] text-midnight/60 font-bold uppercase tracking-widest">{{ t('profile.channel') }}</label>
-                                    <select id="preferred-channel-select" onchange="savePreferredChannel(); toggleWhatsappHint()"
+                                    <select id="preferred-channel-select" data-action="prof-chg-channel"
                                         class="px-2 py-1 border border-midnight/20 rounded text-[10px] bg-white text-midnight focus:border-gold focus:outline-none">
                                         <option value="auto">{{ t('profile.channel_auto') }}</option>
                                         <option value="sms">{{ t('profile.channel_sms') }}</option>
@@ -275,24 +275,24 @@
                     <div class="space-y-5">
                         <label class="toggle-row">
                             <span class="toggle-label">{{ t('profile.notif_email') }}</span>
-                            <input type="checkbox" id="notif-email" class="toggle-input" checked onchange="saveSettings()">
+                            <input type="checkbox" id="notif-email" class="toggle-input" checked data-action="prof-chg-settings">
                             <span class="toggle-slider" aria-hidden="true"></span>
                         </label>
                         <label class="toggle-row">
                             <span class="toggle-label">{{ t('profile.notif_sms') }}</span>
-                            <input type="checkbox" id="notif-sms" class="toggle-input" checked onchange="saveSettings()">
+                            <input type="checkbox" id="notif-sms" class="toggle-input" checked data-action="prof-chg-settings">
                             <span class="toggle-slider" aria-hidden="true"></span>
                         </label>
                         <label class="toggle-row">
                             <span class="toggle-label">{{ t('profile.notif_leads') }}</span>
-                            <input type="checkbox" id="notif-leads" class="toggle-input" checked onchange="saveSettings()">
+                            <input type="checkbox" id="notif-leads" class="toggle-input" checked data-action="prof-chg-settings">
                             <span class="toggle-slider" aria-hidden="true"></span>
                         </label>
                     </div>
 
                     <div class="mt-6 pt-4 border-t" style="border-color:var(--border)">
                         <label class="text-xs font-semibold mb-2 block" style="color:var(--text-primary)">{{ t('profile.notif_channel') }}</label>
-                        <select id="notif-channel" onchange="saveNotifChannel()"
+                        <select id="notif-channel" data-action="prof-chg-notifchannel"
                                 class="w-full max-w-xs px-3 py-1.5 text-xs rounded border"
                                 style="border-color:var(--border);color:var(--text-primary);background:var(--bg-card)">
                             <option value="email">Email</option>
@@ -588,14 +588,14 @@
                         <!-- Columna izquierda: foto + datos básicos -->
                         <div class="space-y-6">
                             <div class="text-center">
-                                <div class="avatar-upload relative mx-auto" id="pro-photo-container" data-action="prof-click" data-target="pro-photo-input" role="button" tabindex="0" aria-label="{{ t('profile.pro_photo_change') }}" onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
+                                <div class="avatar-upload relative mx-auto" id="pro-photo-container" data-action="prof-click" data-target="pro-photo-input" role="button" tabindex="0" aria-label="{{ t('profile.pro_photo_change') }}" data-action="prof-avatar-key">
                                     <div class="avatar-ring" id="pro-photo-ring"></div>
                                     <img id="pro-photo-preview" src="{{ url_for('static', filename='img/default-avatar.svg') }}" alt="Foto profesional" class="w-full h-full rounded-full object-cover border-4" style="border-color:var(--border)">
                                     <div class="avatar-overlay">
                                         <i data-lucide="camera" class="w-6 h-6 text-white"></i>
                                     </div>
                                 </div>
-                                <input type="file" id="pro-photo-input" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" onchange="uploadProfessionalPhoto(this)">
+                                <input type="file" id="pro-photo-input" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" data-action="prof-chg-photo">
                                 <button data-action="prof-delete-professional-photo" class="text-[9px] uppercase tracking-widest font-bold mt-2 hover:text-rose-500 transition-colors" style="color:var(--text-secondary)" type="button">{{ t('profile.avatar_delete') }}</button>
                                 <p id="pro-photo-status" class="text-[9px] mt-1" aria-live="polite"></p>
                             </div>
@@ -672,7 +672,7 @@
                                     <div class="flex gap-2 mb-1">
                                         <input id="coverage-zone-input" type="text" maxlength="60" class="input-field flex-1"
                                             placeholder="{{ t('profile.coverage_zone_placeholder') }}"
-                                            onkeydown="if(event.key==='Enter'){event.preventDefault();addCoverageZone();}">
+                                            data-action="prof-coverage-key">
                                         <button type="button" id="coverage-zone-add-btn" data-action="prof-add-coverage-zone" class="btn-secondary px-4" aria-label="{{ t('profile.coverage_add') }}">
                                             <i data-lucide="plus" class="w-4 h-4" aria-hidden="true"></i>
                                         </button>
@@ -711,35 +711,35 @@
                                 <label class="input-label">{{ t('profile.pro_services') }}</label>
                                 <div class="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2" id="services-container">
                                     <label class="chip-checkbox">
-                                        <input type="checkbox" value="tasacion" onchange="updateServicesOffered()">
+                                        <input type="checkbox" value="tasacion" data-action="prof-chg-services">
                                         <span class="chip-label">{{ t('profile.pro_valuation') }}</span>
                                     </label>
                                     <label class="chip-checkbox">
-                                        <input type="checkbox" value="proyecto" onchange="updateServicesOffered()">
+                                        <input type="checkbox" value="proyecto" data-action="prof-chg-services">
                                         <span class="chip-label">{{ t('profile.pro_project') }}</span>
                                     </label>
                                     <label class="chip-checkbox">
-                                        <input type="checkbox" value="direccion_obra" onchange="updateServicesOffered()">
+                                        <input type="checkbox" value="direccion_obra" data-action="prof-chg-services">
                                         <span class="chip-label">{{ t('profile.pro_direction') }}</span>
                                     </label>
                                     <label class="chip-checkbox">
-                                        <input type="checkbox" value="venta" onchange="updateServicesOffered()">
+                                        <input type="checkbox" value="venta" data-action="prof-chg-services">
                                         <span class="chip-label">{{ t('profile.pro_sale') }}</span>
                                     </label>
                                     <label class="chip-checkbox">
-                                        <input type="checkbox" value="alquiler" onchange="updateServicesOffered()">
+                                        <input type="checkbox" value="alquiler" data-action="prof-chg-services">
                                         <span class="chip-label">{{ t('profile.pro_rent') }}</span>
                                     </label>
                                     <label class="chip-checkbox">
-                                        <input type="checkbox" value="property_management" onchange="updateServicesOffered()">
+                                        <input type="checkbox" value="property_management" data-action="prof-chg-services">
                                         <span class="chip-label">{{ t('profile.pro_mgmt') }}</span>
                                     </label>
                                     <label class="chip-checkbox">
-                                        <input type="checkbox" value="decoracion" onchange="updateServicesOffered()">
+                                        <input type="checkbox" value="decoracion" data-action="prof-chg-services">
                                         <span class="chip-label">{{ t('profile.pro_decor') }}</span>
                                     </label>
                                     <label class="chip-checkbox">
-                                        <input type="checkbox" value="otro" onchange="updateServicesOffered()">
+                                        <input type="checkbox" value="otro" data-action="prof-chg-services">
                                         <span class="chip-label">{{ t('profile.pro_other') }}</span>
                                     </label>
                                 </div>
@@ -760,27 +760,27 @@
                                 <label class="input-label">{{ t('profile.pro_availability') }}</label>
                                 <div class="flex flex-wrap gap-3 mt-2" id="availability-container">
                                     <label class="chip-checkbox">
-                                        <input type="checkbox" value="lun" onchange="updateAvailability()">
+                                        <input type="checkbox" value="lun" data-action="prof-chg-avail">
                                         <span class="chip-label">Lun</span>
                                     </label>
                                     <label class="chip-checkbox">
-                                        <input type="checkbox" value="mar" onchange="updateAvailability()">
+                                        <input type="checkbox" value="mar" data-action="prof-chg-avail">
                                         <span class="chip-label">Mar</span>
                                     </label>
                                     <label class="chip-checkbox">
-                                        <input type="checkbox" value="mie" onchange="updateAvailability()">
+                                        <input type="checkbox" value="mie" data-action="prof-chg-avail">
                                         <span class="chip-label">Mie</span>
                                     </label>
                                     <label class="chip-checkbox">
-                                        <input type="checkbox" value="jue" onchange="updateAvailability()">
+                                        <input type="checkbox" value="jue" data-action="prof-chg-avail">
                                         <span class="chip-label">Jue</span>
                                     </label>
                                     <label class="chip-checkbox">
-                                        <input type="checkbox" value="vie" onchange="updateAvailability()">
+                                        <input type="checkbox" value="vie" data-action="prof-chg-avail">
                                         <span class="chip-label">Vie</span>
                                     </label>
                                     <label class="chip-checkbox">
-                                        <input type="checkbox" value="sab" onchange="updateAvailability()">
+                                        <input type="checkbox" value="sab" data-action="prof-chg-avail">
                                         <span class="chip-label">Sab</span>
                                     </label>
                                 </div>
