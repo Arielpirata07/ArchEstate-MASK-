@@ -229,6 +229,38 @@ def create_lead_version(lead_id, version, snapshot, user_id, summary):
         conn.close()
 
 
+def update_lead_versioned(lead_id, data, user_id, snapshot, summary=''):
+    '''Actualiza un lead y registra su versión en UNA sola transacción.
+
+    Evita que la versión persista si el UPDATE falla (y viceversa).
+    '''
+    filtered = {k: v for k, v in data.items() if k in ALLOWED_LEAD_UPDATE_FIELDS}
+    if not filtered:
+        return False
+    conn = get_db_connection()
+    try:
+        row = conn.execute(
+            'SELECT COALESCE(MAX(version), 0) as max_ver FROM lead_versions WHERE lead_id = ?',
+            (lead_id,)
+        ).fetchone()
+        max_ver = row['max_ver'] if row else 0
+        conn.execute(
+            'INSERT INTO lead_versions (lead_id, version, data_snapshot, created_by, change_summary) VALUES (?, ?, ?, ?, ?)',
+            (lead_id, max_ver + 1, snapshot, user_id, summary)
+        )
+        set_clause = ', '.join(f'{k} = ?' for k in filtered.keys())
+        values = list(filtered.values()) + [lead_id]
+        conn.execute(f'UPDATE leads SET {set_clause} WHERE id = ?', values)
+        conn.commit()
+        return True
+    except Exception:
+        logger.exception('update_lead_versioned failed for lead_id=%s', lead_id)
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
+
+
 def get_lead_versions(lead_id):
     conn = get_db_connection()
     try:
@@ -367,6 +399,58 @@ def update_user_credentials(user_id, email, phone):
         conn.commit()
         return True
     except Exception:
+        return False
+    finally:
+        conn.close()
+
+
+def update_user_account(user_id, email, phone, profile_data):
+    '''Actualiza credenciales (email/teléfono) + perfil en UNA sola transacción.
+
+    Replica la lógica de update_user_phone_only + update_user_credentials +
+    update_user_profile sin conexiones intermedias: o todo se persiste o nada.
+    '''
+    filtered = {k: v for k, v in (profile_data or {}).items() if k in ALLOWED_PROFILE_FIELDS}
+    conn = get_db_connection()
+    try:
+        if phone:
+            current = conn.execute(
+                'SELECT phone, phone_verified FROM users WHERE id = ?', (user_id,)
+            ).fetchone()
+            old_phone = current['phone'] if current else ''
+            e164 = utils.normalize_phone_to_e164(phone)
+            ntype = utils.classify_phone_type(e164) if e164 else ''
+            old_e164 = utils.normalize_phone_to_e164(old_phone) if old_phone else ''
+            invalidate_otp = bool(e164) and (old_e164 != e164)
+            if invalidate_otp:
+                conn.execute(
+                    'UPDATE users SET phone = ?, phone_e164 = ?, phone_number_type = ?, '
+                    'phone_format_valid = 1, phone_verified = 0, verification_code = \'\', '
+                    'verification_expires = NULL WHERE id = ?',
+                    (phone, e164, ntype, user_id)
+                )
+            else:
+                conn.execute(
+                    'UPDATE users SET phone = ?, phone_e164 = ?, phone_number_type = ? WHERE id = ?',
+                    (phone, e164, ntype, user_id)
+                )
+        conn.execute('UPDATE users SET email = ? WHERE id = ?', (email, user_id))
+        if filtered:
+            existing = conn.execute('SELECT id FROM user_profiles WHERE user_id = ?', (user_id,)).fetchone()
+            if existing:
+                set_clause = ', '.join(f'{k} = ?' for k in filtered.keys())
+                values = list(filtered.values()) + [user_id]
+                conn.execute(f'UPDATE user_profiles SET {set_clause}, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?', values)
+            else:
+                filtered['user_id'] = user_id
+                columns = ', '.join(filtered.keys())
+                placeholders = ', '.join('?' for _ in filtered)
+                conn.execute(f'INSERT INTO user_profiles ({columns}) VALUES ({placeholders})', list(filtered.values()))
+        conn.commit()
+        return True
+    except Exception:
+        logger.exception('update_user_account failed for user_id=%s', user_id)
+        conn.rollback()
         return False
     finally:
         conn.close()

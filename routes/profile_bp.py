@@ -109,10 +109,8 @@ def api_update_lead(lead_id):
         return jsonify({'error': t('profile.no_valid_data', lang)}), 400
 
     snapshot = json.dumps({k: str(lead.get(k, '')) for k in allowed})
-    max_ver = models.get_lead_max_version(lead_id)
-    models.create_lead_version(lead_id, max_ver + 1, snapshot, user_id, '')
-
-    models.update_lead(lead_id, update_data)
+    if not models.update_lead_versioned(lead_id, update_data, user_id, snapshot):
+        return jsonify({'error': t('admin.internal_error_short', lang)}), 500
 
     utils.log_action('Edicion de Lead', f'Lead ID: {lead_id} editado por {session["username"]}', session)
 
@@ -168,12 +166,12 @@ def api_update_user():
         if not is_valid:
             return jsonify({'error': error}), 400
 
-    models.update_user_credentials(user_id, email, phone)
-    models.update_user_profile(user_id, {
+    if not models.update_user_account(user_id, email, phone, {
         'first_name': first_name,
         'last_name': last_name,
         'bio': bio,
-    })
+    }):
+        return jsonify({'error': t('admin.internal_error_short', lang)}), 500
 
     session['email'] = email
     session['phone'] = phone

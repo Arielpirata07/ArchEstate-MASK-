@@ -84,10 +84,13 @@ def restore_session_from_remember_cookie():
 
     try:
         conn = models.get_db_connection()
-        user = conn.execute(
-            'SELECT id, username, email, phone, role, is_active FROM users WHERE id = ?',
-            (user_id,)
-        ).fetchone()
+        try:
+            user = conn.execute(
+                'SELECT id, username, email, phone, role, is_active FROM users WHERE id = ?',
+                (user_id,)
+            ).fetchone()
+        finally:
+            conn.close()
         if not user or not user['is_active']:
             utils.revoke_remember_token(selector)
             return None
