@@ -27,17 +27,17 @@ def security_headers(response):
         if is_dev:
             csp = (
                 "default-src 'self'; "
-                "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://unpkg.com; "
+                "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; "
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
                 "font-src https://fonts.gstatic.com; "
                 "img-src 'self' data: blob: https:; "
-                "connect-src 'self' https://unpkg.com; "
+                "connect-src 'self'; "
                 "frame-ancestors 'none'"
             )
         else:
             csp = (
                 "default-src 'self'; "
-                "script-src 'self' 'unsafe-inline' https://unpkg.com; "
+                "script-src 'self' 'unsafe-inline'; "
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
                 "font-src https://fonts.gstatic.com; "
                 "img-src 'self' data: blob: https:; "

@@ -26,13 +26,13 @@
     <meta property="og:url" content="{{ request.url }}">
     <meta property="og:locale" content="{% if lang == 'en' %}en_US{% else %}es_AR{% endif %}">
     <meta property="og:site_name" content="ArchEstate">
-    <meta property="og:image" content="{{ url_for('static', filename='img/og-image.png', _external=True) }}">
+    <meta property="og:image" content="{{ url_for('static', filename='img/hero.jpg', _external=True) }}">
 
     <!-- Twitter Cards -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{% block twitter_title %}ArchEstate | Private Ledger{% endblock %}">
     <meta name="twitter:description" content="{{ t('seo.og_description') }}">
-    <meta name="twitter:image" content="{{ url_for('static', filename='img/og-image.png', _external=True) }}">
+    <meta name="twitter:image" content="{{ url_for('static', filename='img/hero.jpg', _external=True) }}">
 
     <!-- JSON-LD Structured Data -->
     <script type="application/ld+json">
@@ -95,11 +95,10 @@
     <!-- Google Fonts: preconnect para carga rápida -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Manrope:wght@200..800&display=swap">
     <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Manrope:wght@200..800&display=swap" rel="stylesheet">
 
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@0.468.0" defer></script>
+    <!-- Lucide Icons (self-hosted, v0.468.0 — sin CDN) -->
+    <script src="{{ url_for('static', filename='js/lucide.min.js') }}" defer></script>
 
     <!-- Estilos y Configuración Externos -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}?v=20261013">
