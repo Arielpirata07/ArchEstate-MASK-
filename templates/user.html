@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Solicitud | ArchEstate{% endblock %}
+{% block title %}{{ t('nav.request') }} | ArchEstate{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/user.css') }}">
@@ -110,19 +110,19 @@ window.__FORM_OPTIONS = {{ {
                                     <div class="relative h-12 mb-8">
                                         <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 h-2 bg-midnight/10 rounded-full"></div>
                                         <div id="budget-slider-fill" class="absolute top-1/2 -translate-y-1/2 h-2 bg-gold rounded-full" style="left:0%;width:100%"></div>
-                                        <input type="range" id="budget-min-slider" aria-label="Presupuesto mínimo" class="budget-range-slider absolute inset-x-0" min="0" max="10000000000" value="0" step="10000000">
-                                        <input type="range" id="budget-max-slider" aria-label="Presupuesto máximo" class="budget-range-slider absolute inset-x-0" min="0" max="10000000000" value="10000000000" step="10000000">
+                                        <input type="range" id="budget-min-slider" aria-label="{{ t('user.budget_min_aria') }}" class="budget-range-slider absolute inset-x-0" min="0" max="10000000000" value="0" step="10000000">
+                                        <input type="range" id="budget-max-slider" aria-label="{{ t('user.budget_max_aria') }}" class="budget-range-slider absolute inset-x-0" min="0" max="10000000000" value="10000000000" step="10000000">
                                     </div>
 
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                                         <div>
-                                            <label for="budget-min-input" class="block text-[10px] uppercase tracking-widest font-medium text-midnight/60 mb-1">Mínimo</label>
+                                            <label for="budget-min-input" class="block text-[10px] uppercase tracking-widest font-medium text-midnight/60 mb-1">{{ t('user.min') }}</label>
                                             <input type="number" id="budget-min-input"
                                                    class="w-full bg-paper-dark border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 text-sm"
                                                     min="0" max="10000000000" value="0">
                                         </div>
                                         <div>
-                                            <label for="budget-max-input" class="block text-[10px] uppercase tracking-widest font-medium text-midnight/60 mb-1">Máximo</label>
+                                            <label for="budget-max-input" class="block text-[10px] uppercase tracking-widest font-medium text-midnight/60 mb-1">{{ t('user.max') }}</label>
                                             <input type="number" id="budget-max-input"
                                                    class="w-full bg-paper-dark border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 text-sm"
                                                     min="0" max="10000000000" value="10000000000">
@@ -180,7 +180,7 @@ window.__FORM_OPTIONS = {{ {
                         <div>
                             <label for="architectural-style-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.arch_style') }}</label>
                             <div class="relative">
-                                <input id="architectural-style-input" name="architectural_style" type="text" placeholder="Ej. Moderno, Clásico, Minimalista..." class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm">
+                                <input id="architectural-style-input" name="architectural_style" type="text" placeholder="{{ t('user.style_placeholder') }}" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm">
                                 <ul id="architectural-style-suggestions" class="hidden absolute top-full left-0 right-0 bg-white border border-slate-200 rounded shadow-md z-10" role="listbox"></ul>
                             </div>
                         </div>
@@ -220,10 +220,10 @@ window.__FORM_OPTIONS = {{ {
                             <div>
                                 <label for="bathrooms-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.bathrooms') }}</label>
                                 <div class="flex items-center gap-3">
-                                    <button type="button" aria-label="Reducir baños" onclick="stepNum('bathrooms',-1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-base md:text-lg leading-none">−</button>
+                                    <button type="button" aria-label="{{ t('user.dec_bath_aria') }}" onclick="stepNum('bathrooms',-1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-base md:text-lg leading-none">−</button>
                                     <input id="bathrooms-input" name="bathrooms" type="number" min="0" max="20" value="" placeholder="—"
                                            class="w-12 text-center bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-1 text-sm font-semibold">
-                                    <button type="button" aria-label="Aumentar baños" onclick="stepNum('bathrooms',1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-base md:text-lg leading-none">+</button>
+                                    <button type="button" aria-label="{{ t('user.inc_bath_aria') }}" onclick="stepNum('bathrooms',1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-base md:text-lg leading-none">+</button>
                                 </div>
                             </div>
                         </div>
@@ -507,7 +507,7 @@ window.__FORM_OPTIONS = {{ {
                         <!-- Características adicionales -->
                         <div>
                                         <label for="additional_features" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.additional_features') }}</label>
-                                        <textarea id="additional_features" name="additional_features" placeholder="Vistas, materiales preferidos, detalles de diseño, requerimientos especiales..." rows="3" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm resize-none"></textarea>
+                                        <textarea id="additional_features" name="additional_features" placeholder="{{ t('user.features_placeholder') }}" rows="3" class="w-full bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm resize-none"></textarea>
                         </div>
 
                     </div>
@@ -545,7 +545,7 @@ window.__FORM_OPTIONS = {{ {
                             <div class="relative flex gap-2">
                                  <select
                                      id="country-code-select"
-                                     aria-label="Código de país"
+                                      aria-label="{{ t('user.country_code_aria') }}"
                                      onchange="updateCountryCode()"
                                      class="w-14 bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 text-sm text-midnight"
                                  >
@@ -567,7 +567,7 @@ window.__FORM_OPTIONS = {{ {
                                          <span id="province-search-label" class="truncate text-midnight/70">{{ t('user.search_city') }}</span>
                                          <i data-lucide="search" class="w-3.5 h-3.5 flex-shrink-0 text-midnight/40"></i>
                                      </button>
-                                     <select id="phone-province" aria-label="Código de área" onchange="applyPhoneProvincePrefix()" class="hidden">
+                                     <select id="phone-province" aria-label="{{ t('user.area_code_aria') }}" onchange="applyPhoneProvincePrefix()" class="hidden">
                                      </select>
                                      <div id="province-search-wrapper" class="hidden absolute right-0 top-9 z-20 w-96">
                                          <input id="province-search" type="text" placeholder="{{ t('user.search_city') }}..."
@@ -684,23 +684,23 @@ window.__FORM_OPTIONS = {{ {
                 {{ t('user.verify_code_hint') }}
             </p>
 
-            <div class="flex gap-2 justify-center mb-6" id="verify-code-inputs" role="group" aria-label="Código de verificación de 6 dígitos">
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="one-time-code" aria-label="Dígito 1 de 6"
+            <div class="flex gap-2 justify-center mb-6" id="verify-code-inputs" role="group" aria-label="{{ t('otp.verify_group') }}">
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="one-time-code" aria-label="{{ t('otp.digit_label', n=1) }}"
                     class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-colors"
                     data-index="0">
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="no" aria-label="Dígito 2 de 6"
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="no" aria-label="{{ t('otp.digit_label', n=2) }}"
                     class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-colors"
                     data-index="1">
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="no" aria-label="Dígito 3 de 6"
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="no" aria-label="{{ t('otp.digit_label', n=3) }}"
                     class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-colors"
                     data-index="2">
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="no" aria-label="Dígito 4 de 6"
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="no" aria-label="{{ t('otp.digit_label', n=4) }}"
                     class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-colors"
                     data-index="3">
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="no" aria-label="Dígito 5 de 6"
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="no" aria-label="{{ t('otp.digit_label', n=5) }}"
                     class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-colors"
                     data-index="4">
-                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="no" aria-label="Dígito 6 de 6"
+                <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="no" aria-label="{{ t('otp.digit_label', n=6) }}"
                     class="verify-digit w-10 h-12 text-center text-lg font-semibold border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 outline-none transition-colors"
                     data-index="5">
             </div>
