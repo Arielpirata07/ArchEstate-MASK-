@@ -943,6 +943,7 @@ git tag -l --sort=-v:refname | head -10     # Ver tags nuevos
 | `v0.36.0` | Fase 3 | Calendario (Google Calendar-style) | 599 |
 | `v0.36.1` | Fix | Panorama, mini-feed, filtros globales, reset cobertura + fixes | 603 |
 | `v0.37.0` | Fase 4 | Multi-Tenant (org_members + roles + my-org/org-leads) | 618 |
+| `v0.38.0` | Auditoría F4 | i18n completo (templates + emails + SEO, 1300 keys) | 624 |
 | (sin tag) | Prerequisito | Deploy + fixes de bugs conocidos | 543 |
 | `v0.34.0` | Fase 1 | Pipeline Kanban (Jira-style) | +12 |
 | `v0.35.0` | Fase 2 | Dashboard Ejecutivo | +10 |

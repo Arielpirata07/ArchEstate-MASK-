@@ -8,6 +8,22 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ---
 
+## [v0.38.0] — 2026-10-15 — i18n Fase 4 (Auditoría)
+
+### Añadido
+- **i18n completo en templates** — 0 líneas de español hardcoded en 19 templates/emails (verificado por test de scan):
+  - 72 keys nuevas ES/EN (`user.*`, `otp.*`, `admin.*`, `profile.*`, `seo.*`, `landing.*`, `pro.pt_*`, `auth.*`, `edit_lead.*`, `email.*`, `contact.*`); total 1300/1300 con paridad.
+  - `user.html`, `admin.html`, `profile.html`: labels, tooltips, aria-labels, placeholders, OTP (`otp.digit_label` con interpolación `{n}`).
+  - `base.html`: meta/OG/Twitter description + keywords + JSON-LD (`@graph`) traducidos; `og:locale` e `inLanguage` dinámicos (`es_AR`/`en_US`).
+  - `landing.html`: título + JSON-LD Organization/FAQ (reutiliza keys `faq.*` del cuerpo, fuente única).
+  - `professional.html`: chips de tipo de propiedad + headers de tabla.
+  - `login.html`/`register.html`: `data-auth-rules` traducidos (validados como JSON tras render).
+  - `contact_buttons.html`: aria-labels + mensaje de WhatsApp por idioma (verificado ES/EN).
+  - Emails: `professional_status`, `status_change`, `report_deleted` (subjects backend ya usaban `t()`).
+- Tests nuevos en `tests/test_i18n.py`: scan anti-hardcode (con whitelist documentada: valores de formulario, strings de lógica, nombres nativos), keys fase 4, render EN (register/login/`og:locale`). Total suite: 624 passed, coherencia 94/94.
+
+---
+
 ## [v0.37.0] — 2026-10-15 — Multi-Tenant (Fase 4)
 
 ### Añadido
