@@ -110,6 +110,24 @@ def init_db(app):
         ''')
 
         cursor.execute('''
+            CREATE TABLE IF NOT EXISTS org_members (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                org_id INTEGER NOT NULL REFERENCES organizations(id),
+                user_id INTEGER NOT NULL REFERENCES users(id),
+                role TEXT NOT NULL DEFAULT 'member',
+                joined_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(org_id, user_id)
+            )
+        ''')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_org_members_org ON org_members(org_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_org_members_user ON org_members(user_id)')
+        cursor.execute('''
+            INSERT OR IGNORE INTO org_members (org_id, user_id, role)
+            SELECT p.org_id, p.user_id, 'member' FROM professionals p
+            WHERE p.org_id IS NOT NULL
+        ''')
+
+        cursor.execute('''
             CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT NOT NULL UNIQUE,
