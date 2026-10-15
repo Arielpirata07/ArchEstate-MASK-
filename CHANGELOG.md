@@ -8,6 +8,17 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ---
 
+## [v0.41.0] — 2026-10-15 — Performance Fase 2 (Auditoría)
+
+### Cambiado
+- **N+1 eliminados**: `get_professional_coverage_batch()` (2 queries) en `auto_assign_lead`; `_create_notification()` acepta `conn` y `notify_lead_created` inserta en batch con 1 conexión.
+- **Conexiones request-scoped**: `models.get_db_connection()` cachea en `g` con proxy de close no-op; `close_db_connection` cierra ambas en teardown.
+- **Índices**: `idx_leads_assigned`, `idx_leads_property_type`, `idx_lead_reports_lead_reported`, `idx_notifications_user_created`.
+- **`table_columns()`** reutiliza la conexión del request en vez de abrir raw.
+- Suite parcial: 46 passed (assignment, notifications, database).
+
+---
+
 ## [v0.40.0] — 2026-10-15 — Seguridad Fase 1 (Auditoría)
 
 ### Corregido
