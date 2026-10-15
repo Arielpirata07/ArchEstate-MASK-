@@ -6,6 +6,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ## [Unreleased]
 
+---
+
+## [v0.36.1] — 2026-10-15
+
 ### Añadido
 - **Panorama de solicitudes** — `GET /api/leads/panorama` (total, `my_total`, top zonas/provincias/países); el estado vacío de Mis leads muestra el panorama con chips que aplican zona + Todos.
 - **Mini-feed de actividad** en tabs Leads (colapsable debajo de la tabla), Stats y Calendario (sidebar), con "Ver todo" al Dashboard; se refresca con filtros y movimientos.

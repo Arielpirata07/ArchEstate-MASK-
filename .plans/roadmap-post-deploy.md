@@ -941,6 +941,7 @@ git tag -l --sort=-v:refname | head -10     # Ver tags nuevos
 | `v0.34.0` | Fase 1 | Pipeline Kanban (Jira-style) | 578 |
 | `v0.35.0` | Fase 2 | Dashboard Ejecutivo | 585 |
 | `v0.36.0` | Fase 3 | Calendario (Google Calendar-style) | 599 |
+| `v0.36.1` | Fix | Panorama, mini-feed, filtros globales, reset cobertura + fixes | 603 |
 | (sin tag) | Prerequisito | Deploy + fixes de bugs conocidos | 543 |
 | `v0.34.0` | Fase 1 | Pipeline Kanban (Jira-style) | +12 |
 | `v0.35.0` | Fase 2 | Dashboard Ejecutivo | +10 |
