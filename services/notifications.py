@@ -153,80 +153,88 @@ def notify_lead_created(lead_id: int) -> list:
         if ap:
             assigned_pro_name = ap['name']
 
-    for pro in professionals:
-        is_assigned = assigned_user_id and pro['id'] == assigned_user_id
+    notif_conn = models.get_db_connection()
+    try:
+        for pro in professionals:
+            is_assigned = assigned_user_id and pro['id'] == assigned_user_id
 
-        prefs = all_prefs.get(pro['id'], {})
+            prefs = all_prefs.get(pro['id'], {})
 
-        if not prefs.get('lead_alerts') and not is_assigned:
-            continue
-
-        # Geo/filter matching — skip for the assigned professional
-        if not is_assigned:
-            pro_country = (pro['country'] or '').strip()
-            pro_province = (pro['province'] or '').strip()
-            pro_zone = (pro['zone'] or '').strip()
-            if pro_country and lead_country and pro_country != lead_country:
-                continue
-            if pro_province and lead_province and pro_province != lead_province:
-                continue
-            if pro_zone and lead_zone and pro_zone.lower() not in lead_zone.lower():
+            if not prefs.get('lead_alerts') and not is_assigned:
                 continue
 
-            nf = _load_notification_filters(pro['id'])
-            filter_types = nf.get('types', [])
-            filter_property_types = nf.get('property_types', [])
-            if filter_types and lead_type not in filter_types:
-                continue
-            if filter_property_types and lead_property_type not in filter_property_types:
-                continue
+            # Geo/filter matching — skip for the assigned professional
+            if not is_assigned:
+                pro_country = (pro['country'] or '').strip()
+                pro_province = (pro['province'] or '').strip()
+                pro_zone = (pro['zone'] or '').strip()
+                if pro_country and lead_country and pro_country != lead_country:
+                    continue
+                if pro_province and lead_province and pro_province != lead_province:
+                    continue
+                if pro_zone and lead_zone and pro_zone.lower() not in lead_zone.lower():
+                    continue
 
-            budget_min = prefs.get('budget_min') or 0
-            budget_max = prefs.get('budget_max') or 0
-            if budget_min > 0 and lead_budget < budget_min:
-                continue
-            if budget_max > 0 and lead_budget > budget_max:
-                continue
+                nf = _load_notification_filters(pro['id'])
+                filter_types = nf.get('types', [])
+                filter_property_types = nf.get('property_types', [])
+                if filter_types and lead_type not in filter_types:
+                    continue
+                if filter_property_types and lead_property_type not in filter_property_types:
+                    continue
 
-        if is_assigned:
-            _create_notification(pro['id'], lead_id,
-                title=t('notif.lead_assigned_title', lang, type=lead["type"], zone=lead["zone"]),
-                body=t('notif.lead_assigned_body', lang, property_type=lead["property_type"], currency=lead.get("currency", ""), budget=lead.get("budget", "")),
-                actor_id=assigner_user_id,
-                notif_type='lead_assigned'
+                budget_min = prefs.get('budget_min') or 0
+                budget_max = prefs.get('budget_max') or 0
+                if budget_min > 0 and lead_budget < budget_min:
+                    continue
+                if budget_max > 0 and lead_budget > budget_max:
+                    continue
+
+            if is_assigned:
+                _create_notification(pro['id'], lead_id,
+                    title=t('notif.lead_assigned_title', lang, type=lead["type"], zone=lead["zone"]),
+                    body=t('notif.lead_assigned_body', lang, property_type=lead["property_type"], currency=lead.get("currency", ""), budget=lead.get("budget", "")),
+                    actor_id=assigner_user_id,
+                    notif_type='lead_assigned',
+                    conn=notif_conn
+                )
+            else:
+                _create_notification(pro['id'], lead_id,
+                    title=t('notif.new_lead_title', lang, type=lead["type"], zone=lead["zone"]),
+                    body=t('notif.new_lead_body', lang, property_type=lead["property_type"], currency=lead.get("currency", ""), budget=lead.get("budget", "")),
+                    actor_id=assigner_user_id,
+                    notif_type='lead_new',
+                    conn=notif_conn
+                )
+
+            # Route channel: email / whatsapp / ambos / auto
+            channel = (prefs.get('preferred_channel') or 'email').strip().lower()
+            sent_email = False
+            sent_whatsapp = False
+
+            if channel in ('email', 'ambos', 'auto'):
+                _send_lead_email(pro, lead, lead_data, lead_id)
+                sent_email = True
+
+            if channel in ('whatsapp', 'ambos') or (channel == 'auto' and not sent_email):
+                whatsapp_ok = _send_lead_whatsapp(pro['id'], pro.get('phone_e164'), lead_data, prefs=prefs)
+                if whatsapp_ok:
+                    sent_whatsapp = True
+
+            # Fallback: if auto tried WhatsApp only and it failed, send email
+            if channel == 'auto' and not sent_whatsapp and not sent_email:
+                _send_lead_email(pro, lead, lead_data, lead_id)
+
+            notified.append(pro['name'])
+            utils.log_action(
+                'Notificaci\u00f3n lead asignado',
+                f'Lead #{lead_id} -> {pro["name"]} (canal: {channel})',
+                None
             )
-        else:
-            _create_notification(pro['id'], lead_id,
-                title=t('notif.new_lead_title', lang, type=lead["type"], zone=lead["zone"]),
-                body=t('notif.new_lead_body', lang, property_type=lead["property_type"], currency=lead.get("currency", ""), budget=lead.get("budget", "")),
-                actor_id=assigner_user_id,
-                notif_type='lead_new'
-            )
 
-        # Route channel: email / whatsapp / ambos / auto
-        channel = (prefs.get('preferred_channel') or 'email').strip().lower()
-        sent_email = False
-        sent_whatsapp = False
-
-        if channel in ('email', 'ambos', 'auto'):
-            _send_lead_email(pro, lead, lead_data, lead_id)
-            sent_email = True
-
-        if channel in ('whatsapp', 'ambos') or (channel == 'auto' and not sent_email):
-            whatsapp_ok = _send_lead_whatsapp(pro['id'], pro.get('phone_e164'), lead_data, prefs=prefs)
-            if whatsapp_ok:
-                sent_whatsapp = True
-
-        # Fallback: if auto tried WhatsApp only and it failed, send email
-        if channel == 'auto' and not sent_whatsapp and not sent_email:
-            _send_lead_email(pro, lead, lead_data, lead_id)
-
-        notified.append(pro['name'])
-        utils.log_action(
-            'Notificaci\u00f3n lead asignado',
-            f'Lead #{lead_id} -> {pro["name"]} (canal: {channel})',
-            None
-        )
+        notif_conn.commit()
+    finally:
+        notif_conn.close()
 
     return notified
 
@@ -304,8 +312,20 @@ def _send_client_status_email(client_user_id: int, lead_id: int, subject: str, b
     sender.send(user['email'], subject, html)
 
 
-def _create_notification(user_id: int, lead_id: int, title: str, body: str = '', actor_id: int = 0, notif_type: str = 'lead') -> None:
-    """Inserta una notificación en la tabla notifications."""
+def _create_notification(user_id: int, lead_id: int, title: str, body: str = '', actor_id: int = 0, notif_type: str = 'lead', conn=None) -> None:
+    """Inserta una notificación en la tabla notifications.
+
+    Si se pasa conn, reutiliza esa conexión sin commit/close (batch del llamador).
+    """
+    if conn is not None:
+        try:
+            conn.execute(
+                'INSERT INTO notifications (user_id, lead_id, title, body, actor_id, type) VALUES (?, ?, ?, ?, ?, ?)',
+                (user_id, lead_id, title[:255], body[:500], actor_id if actor_id else None, notif_type)
+            )
+        except Exception:
+            logger.exception('Error creating notification for user_id=%s', user_id)
+        return
     conn = None
     try:
         conn = models.get_db_connection()

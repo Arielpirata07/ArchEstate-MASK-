@@ -148,13 +148,14 @@ def inject_language():
 
 
 def close_db_connection(exc=None):
-    conn = getattr(g, 'db_conn', None)
-    if conn is not None:
-        try:
-            conn.close()
-        except Exception:
-            pass
-        g.db_conn = None
+    for attr in ('db_conn', '_shared_db_conn'):
+        conn = getattr(g, attr, None)
+        if conn is not None:
+            try:
+                conn.close()
+            except Exception:
+                pass
+            setattr(g, attr, None)
 
 
 def register_middleware(app):

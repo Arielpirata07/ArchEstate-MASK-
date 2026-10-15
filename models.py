@@ -57,10 +57,49 @@ class DatabaseError(Exception):
 def get_db_connection():
     from services.database import get_db_connection as _get_db
     try:
+        from flask import g, has_app_context
+        if has_app_context():
+            real = getattr(g, '_shared_db_conn', None)
+            if real is None:
+                real = _get_db()
+                g._shared_db_conn = real
+            return _GuardedConnection(real)
+    except Exception:
+        logger.exception('Error al cachear conexión del request')
+    try:
         return _get_db()
     except Exception:
         logger.exception('Error al conectar a la base de datos')
         raise DatabaseError('No se pudo conectar a la base de datos')
+
+
+class _GuardedConnection:
+    '''Proxy a la conexión compartida del request: close() es no-op.
+
+    La conexión real se cierra en teardown_appcontext (close_db_connection).
+    Así N llamadas en un request reusan 1 conexión sin cambiar callers.
+    '''
+    def __init__(self, real):
+        self._real = real
+
+    def execute(self, sql, params=None):
+        return self._real.execute(sql, params)
+
+    def cursor(self):
+        return self._real.cursor()
+
+    def commit(self):
+        return self._real.commit()
+
+    def rollback(self):
+        return self._real.rollback()
+
+    def close(self):
+        return None
+
+    @property
+    def total_changes(self):
+        return self._real.total_changes
 
 
 def get_user_by_id(user_id):
@@ -502,6 +541,54 @@ def get_professional_coverage(user_id):
         legacy_zones = [pro['zone']] if pro and pro['zone'] else []
         legacy_specialties = [pro['specialty']] if pro and pro['specialty'] else []
         return {'zones': legacy_zones, 'specialties': legacy_specialties, 'configured': False}
+    finally:
+        conn.close()
+
+
+def get_professional_coverage_batch(user_ids):
+    '''Cobertura de varios profesionales en 2 queries (evita N+1 en auto_assign).
+
+    Replica la lógica de get_professional_coverage (coverage + fallback legacy).
+    '''
+    user_ids = list(dict.fromkeys(user_ids))
+    if not user_ids:
+        return {}
+    conn = get_db_connection()
+    try:
+        placeholders = ','.join('?' for _ in user_ids)
+        rows = conn.execute(
+            f'SELECT user_id, coverage_type, value FROM professional_coverage WHERE user_id IN ({placeholders}) ORDER BY value',
+            user_ids
+        ).fetchall()
+        by_user = {}
+        for r in rows:
+            entry = by_user.setdefault(r['user_id'], {'zones': [], 'specialties': []})
+            if r['coverage_type'] == 'zone':
+                entry['zones'].append(r['value'])
+            elif r['coverage_type'] == 'specialty':
+                entry['specialties'].append(r['value'])
+        missing = [uid for uid in user_ids if not by_user.get(uid, {}).get('zones') and not by_user.get(uid, {}).get('specialties')]
+        legacy = {}
+        if missing:
+            placeholders = ','.join('?' for _ in missing)
+            for pro in conn.execute(
+                f'SELECT user_id, zone, specialty, province FROM professionals WHERE user_id IN ({placeholders})',
+                missing
+            ).fetchall():
+                legacy[pro['user_id']] = pro
+        result = {}
+        for uid in user_ids:
+            entry = by_user.get(uid, {'zones': [], 'specialties': []})
+            if entry['zones'] or entry['specialties']:
+                result[uid] = {'zones': entry['zones'], 'specialties': entry['specialties'], 'configured': True}
+            else:
+                pro = legacy.get(uid)
+                result[uid] = {
+                    'zones': [pro['zone']] if pro and pro['zone'] else [],
+                    'specialties': [pro['specialty']] if pro and pro['specialty'] else [],
+                    'configured': False,
+                }
+        return result
     finally:
         conn.close()
 

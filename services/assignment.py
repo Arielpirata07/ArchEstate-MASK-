@@ -53,8 +53,10 @@ def auto_assign_lead(lead_id: int) -> int | None:
         best_score = -1
         best_pro = None
 
+        coverages = models.get_professional_coverage_batch(pro_ids)
+
         for pro in professionals:
-            coverage = models.get_professional_coverage(pro['user_id'])
+            coverage = coverages.get(pro['user_id'], {'zones': [], 'specialties': [], 'configured': False})
             score = score_lead_for_coverage(lead_dict, coverage, pro['province'])
             if score < MIN_MATCH_SCORE:
                 continue

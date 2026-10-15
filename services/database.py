@@ -154,6 +154,16 @@ def now_sql(fmt='%Y-%m'):
 
 def table_columns(table):
     """Return list of column names for a table, works with both SQLite and PostgreSQL."""
+    from services.database import get_db_connection as _get_db
+    try:
+        from flask import has_app_context
+        in_ctx = has_app_context()
+    except Exception:
+        in_ctx = False
+    if in_ctx:
+        # Reusa la conexión del request cuando hay una (cerrada en teardown).
+        import models
+        return _table_columns_conn(models.get_db_connection(), table)
     url = config.DATABASE_URL
     if url and url.startswith('postgresql://'):
         import psycopg2
@@ -175,6 +185,18 @@ def table_columns(table):
             return [r[1] for r in cur.fetchall()]
         finally:
             conn.close()
+
+
+def _table_columns_conn(conn, table):
+    url = config.DATABASE_URL
+    if url and url.startswith('postgresql://'):
+        rows = conn.execute(
+            'SELECT column_name FROM information_schema.columns WHERE table_name = %s',
+            (table,)
+        ).fetchall()
+        return [r[0] for r in rows]
+    rows = conn.execute(f'PRAGMA table_info({table})').fetchall()
+    return [r[1] for r in rows]
 
 
 def get_db_connection():
