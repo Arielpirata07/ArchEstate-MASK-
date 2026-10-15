@@ -2211,7 +2211,7 @@ function renderOrganizations() {
         return '<tr class="hover:bg-paper-dark/30">' +
             '<td class="px-4 py-3 text-[13px] font-medium text-midnight">' + escapeHtml(org.name) + '</td>' +
             '<td class="px-4 py-3 font-mono text-[11px] text-midnight/60">' + escapeHtml(org.slug) + '</td>' +
-            '<td class="px-4 py-3 text-[13px] text-midnight/50">' + (org.member_count || 0) + '</td>' +
+            '<td class="px-4 py-3"><button onclick="openOrgMembersModal(' + org.id + ')" class="text-[13px] text-midnight/50 hover:text-gold underline underline-offset-2">' + (org.member_count || 0) + '</button></td>' +
             '<td class="px-4 py-3 text-[13px] text-midnight/50">' + (org.lead_count || 0) + '</td>' +
             '<td class="px-4 py-3">' + statusLabel + '</td>' +
             '<td class="px-4 py-3 text-right">' + actions + '</td>' +
@@ -2387,6 +2387,124 @@ function setLeadOrg(orgId, leadId) {
     .then(function(r) { return r.json(); })
     .then(function(res) {
         if (res.success) {
+            if (typeof showToast !== 'undefined') showToast(res.message, 'success');
+        } else {
+            if (typeof showToast !== 'undefined') showToast(res.error || t('error.generic'), 'error');
+        }
+    })
+    .catch(function() {
+        if (typeof showToast !== 'undefined') showToast(t('error.connection'), 'error');
+    });
+}
+
+function openOrgMembersModal(orgId) {
+    document.getElementById('org-members-id').value = orgId;
+    document.getElementById('org-member-user').value = '';
+    document.getElementById('orgMembersError').classList.add('hidden');
+    loadOrgMembers(orgId);
+    openModalAnim(document.getElementById('orgMembersModal'));
+    document.body.style.overflow = 'hidden';
+}
+
+function closeOrgMembersModal() {
+    closeModalAnim(document.getElementById('orgMembersModal'));
+    document.body.style.overflow = '';
+}
+
+function loadOrgMembers(orgId) {
+    var listEl = document.getElementById('org-members-list');
+    listEl.innerHTML = '<p class="text-xs text-midnight/50">' + t('admin.loading') + '</p>';
+    fetch('/api/admin/organizations/' + orgId + '/members')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+        if (!data.success) {
+            listEl.innerHTML = '<p class="text-xs text-rose-500">' + escapeHtml(data.error || t('error.generic')) + '</p>';
+            return;
+        }
+        var members = data.members || [];
+        if (!members.length) {
+            listEl.innerHTML = '<p class="text-xs text-midnight/50">' + t('org.no_org') + '</p>';
+            return;
+        }
+        listEl.innerHTML = members.map(function(m) {
+            var opts = ['member', 'admin', 'owner'].map(function(r) {
+                return '<option value="' + r + '"' + (m.role === r ? ' selected' : '') + '>' + t('org.role_' + r) + '</option>';
+            }).join('');
+            return '<div class="flex items-center gap-2 border border-midnight/10 rounded px-3 py-2">' +
+                '<div class="flex-1 min-w-0"><p class="text-xs font-bold text-midnight truncate">' + escapeHtml(m.username || ('#' + m.user_id)) + '</p>' +
+                '<p class="text-[10px] text-midnight/50 truncate">' + escapeHtml(m.email || '') + '</p></div>' +
+                '<select class="text-[11px] border border-midnight/20 rounded px-2 py-1" onchange="changeOrgMemberRole(' + orgId + ', ' + m.user_id + ', this.value)">' + opts + '</select>' +
+                '<button onclick="removeOrgMember(' + orgId + ', ' + m.user_id + ')" class="p-1.5 rounded hover:bg-rose-50 text-rose-600" title="' + t('org.remove_member') + '"><i data-lucide="trash-2" class="w-3 h-3"></i></button>' +
+                '</div>';
+        }).join('');
+        if (window.lucide) lucide.createIcons();
+    })
+    .catch(function() {
+        listEl.innerHTML = '<p class="text-xs text-rose-500">' + t('error.connection') + '</p>';
+    });
+}
+
+function addOrgMember() {
+    var orgId = document.getElementById('org-members-id').value;
+    var userId = parseInt(document.getElementById('org-member-user').value, 10);
+    var role = document.getElementById('org-member-role').value;
+    var errEl = document.getElementById('orgMembersError');
+    if (!userId) {
+        errEl.textContent = t('org.member_required');
+        errEl.classList.remove('hidden');
+        return;
+    }
+    fetch('/api/admin/organizations/' + orgId + '/members', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, role: role })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+        if (res.success) {
+            errEl.classList.add('hidden');
+            document.getElementById('org-member-user').value = '';
+            loadOrgMembers(orgId);
+            loadOrganizations();
+            if (typeof showToast !== 'undefined') showToast(res.message, 'success');
+        } else {
+            errEl.textContent = res.error || t('error.generic');
+            errEl.classList.remove('hidden');
+        }
+    })
+    .catch(function() {
+        errEl.textContent = t('error.connection');
+        errEl.classList.remove('hidden');
+    });
+}
+
+function changeOrgMemberRole(orgId, userId, role) {
+    fetch('/api/admin/organizations/' + orgId + '/members/' + userId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: role })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+        if (res.success) {
+            if (typeof showToast !== 'undefined') showToast(res.message, 'success');
+        } else {
+            if (typeof showToast !== 'undefined') showToast(res.error || t('error.generic'), 'error');
+            loadOrgMembers(orgId);
+        }
+    })
+    .catch(function() {
+        if (typeof showToast !== 'undefined') showToast(t('error.connection'), 'error');
+    });
+}
+
+function removeOrgMember(orgId, userId) {
+    fetch('/api/admin/organizations/' + orgId + '/members/' + userId, { method: 'DELETE' })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+        if (res.success) {
+            loadOrgMembers(orgId);
+            loadOrganizations();
             if (typeof showToast !== 'undefined') showToast(res.message, 'success');
         } else {
             if (typeof showToast !== 'undefined') showToast(res.error || t('error.generic'), 'error');

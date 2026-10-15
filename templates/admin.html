@@ -1043,6 +1043,37 @@
     </div>
 </div>
 
+<div id="orgMembersModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="org-members-title">
+    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeOrgMembersModal()"></div>
+    <div class="absolute inset-0 flex overflow-y-auto p-4">
+        <div class="modal-panel bg-white rounded-lg shadow-2xl overflow-hidden w-full max-w-md" style="margin:auto">
+            <div class="border-t-4 border-gold px-8 pt-8 pb-4 flex items-start justify-between">
+                <div>
+                    <p class="text-[10px] uppercase tracking-widest font-bold text-gold mb-1">{{ t('org.members') }}</p>
+                    <h3 id="org-members-title" class="text-2xl font-serif">{{ t('org.members') }}</h3>
+                </div>
+                <button onclick="closeOrgMembersModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('admin.close') }}">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="px-8 pb-8 space-y-5">
+                <input type="hidden" id="org-members-id">
+                <div id="org-members-list" class="space-y-2 max-h-64 overflow-y-auto"></div>
+                <div class="flex gap-2">
+                    <input id="org-member-user" type="number" min="1" placeholder="ID" class="w-24 border border-midnight/20 rounded px-3 py-2 text-sm focus:border-gold focus:outline-none">
+                    <select id="org-member-role" class="flex-1 border border-midnight/20 rounded px-3 py-2 text-sm focus:border-gold focus:outline-none">
+                        <option value="member">{{ t('org.role_member') }}</option>
+                        <option value="admin">{{ t('org.role_admin') }}</option>
+                        <option value="owner">{{ t('org.role_owner') }}</option>
+                    </select>
+                    <button onclick="addOrgMember()" class="px-4 py-2 bg-gold text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-midnight transition-colors">{{ t('org.add_member') }}</button>
+                </div>
+                <p id="orgMembersError" class="hidden text-[10px] text-rose-500 font-medium"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
