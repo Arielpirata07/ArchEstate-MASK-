@@ -8,6 +8,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ---
 
+## [v0.37.0] — 2026-10-15 — Multi-Tenant (Fase 4)
+
+### Añadido
+- **Miembros de organización con roles** — tabla `org_members` (org_id, user_id, role, UNIQUE) con roles `owner`/`admin`/`member`, índices y backfill desde `professionals.org_id` (`app_setup.py`).
+- `models.py`: `ORG_ROLES`, `get_org_members`, `add_org_member`, `remove_org_member`, `set_member_role`, `get_user_orgs`, `get_my_org`; sync bidireccional con `professionals.org_id`; cascada en deactivate/delete; `member_count` cuenta `org_members`.
+- API admin en `routes/organizations_bp.py`: `GET/POST /api/admin/organizations/<id>/members`, `PUT/DELETE .../members/<user_id>` (todo `@admin_required`, i18n ES/EN); `POST /api/admin/organizations` acepta `slug` opcional (duplicado explícito → 409).
+- API profesional en `routes/professional_bp.py`: `GET /api/professional/my-org` (org + miembros) y `GET /api/professional/org-leads` (pool compartido, límite 100).
+- UI admin: conteo de miembros clicable + modal de miembros (alta por ID + rol, cambio de rol, baja) (`admin.html`, `admin.js`); 25 keys i18n ES/EN (`org.*`) en `translations.py` + `i18n.js`.
+- Tests nuevos: `tests/test_multitenant.py` (15 tests CRUD/miembros/roles/pool/permisos). Total suite: 618 passed, coherencia 94/94.
+
+---
+
 ## [v0.36.1] — 2026-10-15
 
 ### Añadido
