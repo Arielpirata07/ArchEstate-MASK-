@@ -476,7 +476,7 @@ async function loadLeadsPanorama() {
         var p = data.panorama;
         function chips(items, kind) {
             return (items || []).map(function(it) {
-                return '<button data-action="pro-panorama" data-kind="' + kind + '" data-label="' + String(it.label).replace(/'/g, "&#39;") + '" ' +
+                return '<button data-action="pro-panorama" data-kind="' + kind + '" data-label="' + escapeHtml(String(it.label)) + '" ' +
                     'class="px-2.5 py-1 rounded-full text-[10px] font-bold border border-gold/30 text-gold hover:bg-gold hover:text-white transition-colors">' +
                     escapeHtml(it.label) + ' (' + it.value + ')</button>';
             }).join('');
