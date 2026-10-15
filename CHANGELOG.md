@@ -8,6 +8,20 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ---
 
+## [v0.40.0] — 2026-10-15 — Seguridad Fase 1 (Auditoría)
+
+### Corregido
+- **Connection leak**: `restore_session_from_remember_cookie` cierra su conexión (`try/finally`).
+- **Atomicidad**: `update_lead_versioned()` (versión + UPDATE en 1 transacción) y `update_user_account()` (email + teléfono + perfil en 1 transacción); rutas responden 500 si falla.
+- **Confirm nativo**: último `confirm()` (`deletePhoneAreaCode`) migrado a `showConfirm()`.
+- **FK constraints**: `PRAGMA foreign_keys = ON` en SQLite fuera de tests (gating por `PYTEST_CURRENT_TEST`; deletes verificados seguros).
+
+### Verificado (sin cambio necesario)
+- **XSS `admin.js`**: re-auditoría completa — todas las interpolaciones de datos usan `escapeHtml()` (profesionales, reportes, lead detail, form options, miembros, area codes, log).
+- Suite parcial: 48 passed (remember, admin, notifications).
+
+---
+
 ## [v0.39.0] — 2026-10-15 — Frontend Fase 5 (Auditoría)
 
 ### Añadido
