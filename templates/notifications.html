@@ -186,7 +186,7 @@ function deleteReadNotifications() {
 
 notifPage(1);
 
-/* Delegación data-action (FASE 5.9) — main.js es defer, registrar tras DOMContentLoaded */
+/* data-action dispatch (FASE 5.9) — main.js es defer: registrar en DOMContentLoaded */
 window.addEventListener('DOMContentLoaded', function() {
     delegateActions({
         'notif-delete-read': function() { deleteReadNotifications(); },

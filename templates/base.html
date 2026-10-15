@@ -417,7 +417,7 @@
             }).catch(function(err) { console.error('markAllRead failed:', err); });
     }
 
-    /* Delegación data-action (FASE 5.9): reemplaza onclick inline.
+    /* data-action dispatch (FASE 5.9): en lugar de onclick inline.
        main.js es defer → registrar tras DOMContentLoaded. */
     window.addEventListener('DOMContentLoaded', function() {
         delegateActions({
