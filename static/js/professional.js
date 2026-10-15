@@ -313,13 +313,13 @@ const PROP_ICONS = {
 if (!IS_PENDING) {
 
 document.addEventListener('DOMContentLoaded', () => {
-    loadLeads().catch(function(){});
+    loadLeads().catch(function(err){ console.error('initial loadLeads failed:', err); });
     try { setupLeadEventListeners(); } catch(e) { console.error('setupLeadEventListeners:', e); }
-    try { bindGlobalSearch(); } catch(e) {}
+    try { bindGlobalSearch(); } catch(e) { console.error('bindGlobalSearch:', e); }
     // Show leads tab by default
     showProTab('leads');
     // Precargar pipeline en segundo plano para que esté listo al cambiar de vista
-    try { if (document.getElementById('pipelineBoard')) loadPipeline(); } catch(e) {}
+    try { if (document.getElementById('pipelineBoard')) loadPipeline(); } catch(e) { console.error('pipeline preload failed:', e); }
 });
 
 var currentFilters = {
@@ -484,7 +484,7 @@ async function loadLeadsPanorama() {
         if ((p.by_zone || []).length) html += '<p class="text-[10px] text-midnight/40 mb-1">' + t('pro.zones') + '</p><div class="flex flex-wrap gap-1.5 justify-center mb-2">' + chips(p.by_zone, 'zone') + '</div>';
         if ((p.by_province || []).length) html += '<p class="text-[10px] text-midnight/40 mb-1">' + t('detail.province') + '</p><div class="flex flex-wrap gap-1.5 justify-center">' + chips(p.by_province, 'province') + '</div>';
         box.innerHTML = html;
-    } catch (err) { /* silencioso */ }
+    } catch (err) { console.error('loadLeadsPanorama render failed:', err); }
 }
 
 function applyPanoramaFilter(kind, value) {
@@ -1175,7 +1175,7 @@ function trackWhatsAppClick(link, e) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ event: 'wa_button_clicked', props: { source: 'professional_table' } })
-    }).catch(function() {});
+    }).catch(function(err) { console.error('wa telemetry failed:', err); });
 }
 
 function trackSmsClick(link) {
@@ -1184,7 +1184,7 @@ function trackSmsClick(link) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ event: 'sms_button_clicked', props: { source: 'professional_table' } })
-    }).catch(function() {});
+    }).catch(function(err) { console.error('sms telemetry failed:', err); });
 }
 
 document.addEventListener('click', function(e) {
@@ -1199,7 +1199,7 @@ document.addEventListener('click', function(e) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ event: 'tel_clicked' })
-        }).catch(function() {});
+        }).catch(function(err) { console.error('tel telemetry failed:', err); });
     }
 });
 
@@ -2121,7 +2121,7 @@ async function loadMiniActivity() {
             box.innerHTML = html;
             bindActivityClicks(box);
         });
-    } catch (err) { /* silencioso */ }
+    } catch (err) { console.error('mini activity render failed:', err); }
 }
 
 /* ============================================
@@ -2167,7 +2167,7 @@ function calPassesTypeFilter(e) {
 function calInitState() {
     var now = new Date();
     var saved = null;
-    try { saved = localStorage.getItem('calView'); } catch (e) {}
+    try { saved = localStorage.getItem('calView'); } catch (e) { console.error('calView read failed:', e); }
     if (saved === 'week' || saved === 'day' || saved === 'month') calState.view = saved;
     calState.y = now.getFullYear();
     calState.m = now.getMonth();
@@ -2200,7 +2200,7 @@ function calMonday(d) {
 function setCalView(view) {
     if (view !== 'month' && view !== 'week' && view !== 'day') view = 'month';
     calState.view = view;
-    try { localStorage.setItem('calView', view); } catch (e) {}
+    try { localStorage.setItem('calView', view); } catch (e) { console.error('calView save failed:', e); }
     var activeCls = 'px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors bg-gold text-white';
     var inactiveCls = 'px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-md transition-colors text-midnight/50 hover:text-midnight';
     var bM = document.getElementById('btnCalMonth');
@@ -2452,7 +2452,7 @@ async function loadCalUpcoming() {
                 openCalModal(null, __calEvents[el.dataset.eventId] || { id: el.dataset.eventId });
             });
         });
-    } catch (err) { /* silencioso */ }
+    } catch (err) { console.error('calendar mini panel render failed:', err); }
 }
 
 var calCurrentType = 'visit';
@@ -2543,7 +2543,7 @@ async function searchCalLeads() {
                 box.innerHTML = '<p class="text-[12px] text-midnight/60">Lead #' + btn.dataset.leadPick + '</p>';
             });
         });
-    } catch (err) { /* silencioso */ }
+    } catch (err) { console.error('calendar lead picker failed:', err); }
 }
 
 async function saveCalEvent() {

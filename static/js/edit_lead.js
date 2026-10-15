@@ -40,7 +40,7 @@ function checkAreaRatio() {
 }
 
 // ============================================================
-// CHIPS — same pattern as user.js but with edit- prefixes
+// CHIPS — vía shared/chips.js (misma lógica que user.js)
 // ============================================================
 var EDIT_CHIP_GROUPS = {
     parking:     { hidden: 'edit-parking',     cls: 'edit-parking-chip' },
@@ -56,6 +56,19 @@ var EDIT_CHIP_BASE = {
     age:         'edit-age-chip w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all',
 };
 
+var editChips = createChipSelector({
+    groups: EDIT_CHIP_GROUPS, base: EDIT_CHIP_BASE, ageSection: 'edit-age-section', ageCls: 'edit-age-chip',
+});
+
+// Wrappers globales: los templates los invocan vía onclick.
+function selectEditChip(field, value) {
+    editChips.select(field, value);
+}
+
+function syncEditAgeToCondition(condition) {
+    editChips.syncAge(condition);
+}
+
 function initEditChips() {
     if (!window.__leadData) return;
     var d = window.__leadData;
@@ -63,49 +76,6 @@ function initEditChips() {
     if (d.orientation) selectEditChip('orientation', d.orientation);
     if (d.property_condition) selectEditChip('condition', d.property_condition);
     if (d.property_age) selectEditChip('age', d.property_age);
-}
-
-function selectEditChip(field, value) {
-    var g = EDIT_CHIP_GROUPS[field];
-    if (!g) return;
-    var hidden = document.getElementById(g.hidden);
-    if (hidden) hidden.value = value;
-
-    document.querySelectorAll('.' + g.cls).forEach(function(btn) {
-        var active = btn.dataset.value === value;
-        btn.className = EDIT_CHIP_BASE[field] + ' '
-            + (active
-                ? 'border-midnight bg-midnight text-white'
-                : 'border-midnight/20 text-midnight hover:border-gold');
-    });
-
-    if (field === 'condition') syncEditAgeToCondition(value);
-}
-
-function syncEditAgeToCondition(condition) {
-    var ageSection = document.getElementById('edit-age-section');
-    var ageChips = document.querySelectorAll('.edit-age-chip');
-
-    if (condition === 'A estrenar') {
-        selectEditChip('age', 'Hasta 5 años');
-        ageChips.forEach(function(btn) {
-            var isForced = btn.dataset.value === 'Hasta 5 años';
-            btn.disabled = !isForced;
-            btn.style.opacity = isForced ? '1' : '0.35';
-            btn.style.cursor = isForced ? 'default' : 'not-allowed';
-        });
-        if (ageSection) ageSection.classList.remove('hidden');
-    } else if (condition === 'En construcción') {
-        selectEditChip('age', '');
-        if (ageSection) ageSection.classList.add('hidden');
-    } else if (condition === 'A reciclar') {
-        if (ageSection) ageSection.classList.remove('hidden');
-        ageChips.forEach(function(btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = ''; });
-        selectEditChip('age', 'Más de 30 años');
-    } else {
-        if (ageSection) ageSection.classList.remove('hidden');
-        ageChips.forEach(function(btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = ''; });
-    }
 }
 
 // ============================================================

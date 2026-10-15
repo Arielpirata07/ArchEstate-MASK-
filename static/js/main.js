@@ -45,6 +45,8 @@ function escapeHtml(str) {
     div.textContent = String(str);
     return div.innerHTML;
 }
+// Fuente única para todos los módulos (auth.js, admin.js, ...).
+window.escapeHtml = escapeHtml;
 
 /**
  * Detecta la preferencia de movimiento reducido del sistema.
@@ -1040,7 +1042,7 @@ async function togglePhone(btn, leadId) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ event: 'phone_button_clicked' })
-        }).catch(function() {});
+        }).catch(function(err) { console.error('whatsapp-event telemetry failed:', err); });
 
         const cachedPhone = btn.getAttribute('data-phone');
 

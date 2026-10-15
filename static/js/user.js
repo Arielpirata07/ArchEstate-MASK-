@@ -70,7 +70,7 @@ function toggleGatedCommunity(checked) {
 }
 
 // ================================================================
-// CHIPS: selector de valor único con estado visual activo
+// CHIPS: selector de valor único con estado visual activo (vía shared/chips.js)
 // ================================================================
 const CHIP_GROUPS = {
     parking:     { hidden: 'parking-input',     cls: 'parking-chip' },
@@ -86,56 +86,20 @@ const CHIP_BASE = {
     age:         'age-chip w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-all',
 };
 
-function selectChip(group, value) {
-    const g = CHIP_GROUPS[group];
-    if (!g) return;
-    document.getElementById(g.hidden).value = value;
-    document.querySelectorAll('.' + g.cls).forEach(btn => {
-        const active = btn.dataset.value === value;
-        btn.className = CHIP_BASE[group] + ' '
-            + (active
-                ? 'border-midnight bg-midnight text-white'
-                : 'border-midnight/20 text-midnight hover:border-gold');
-    });
+const userChips = createChipSelector({
+    groups: CHIP_GROUPS, base: CHIP_BASE, ageSection: 'age-section', ageCls: 'age-chip',
+});
 
-    // Coherencia Condition → Age
-    if (group === 'condition') syncAgeToCondition(value);
+// Wrappers globales: los templates los invocan vía onclick.
+function selectChip(group, value) {
+    userChips.select(group, value);
 }
 
 // ================================================================
 // COHERENCIA: Estado de Propiedad ↔ Antigüedad
 // ================================================================
 function syncAgeToCondition(condition) {
-    const ageSection = document.getElementById('age-section');
-    const ageChips   = document.querySelectorAll('.age-chip');
-
-    if (condition === 'A estrenar') {
-        // Auto-seleccionar "Hasta 5 años" y bloquear el resto
-        selectChip('age', 'Hasta 5 años');
-        ageChips.forEach(btn => {
-            const isForced = btn.dataset.value === 'Hasta 5 años';
-            btn.disabled = !isForced;
-            btn.style.opacity = isForced ? '1' : '0.35';
-            btn.style.cursor  = isForced ? 'default' : 'not-allowed';
-        });
-        if (ageSection) ageSection.classList.remove('hidden');
-
-    } else if (condition === 'En construcción') {
-        // Sin antigüedad aplicable → ocultar la sección
-        selectChip('age', '');
-        if (ageSection) ageSection.classList.add('hidden');
-
-    } else if (condition === 'A reciclar') {
-        // Sugerir "Más de 30 años" pero sin bloquear
-        if (ageSection) ageSection.classList.remove('hidden');
-        ageChips.forEach(btn => { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = ''; });
-        selectChip('age', 'Más de 30 años');
-
-    } else {
-        // Sin preferencia / Usado → todo desbloqueado
-        if (ageSection) ageSection.classList.remove('hidden');
-        ageChips.forEach(btn => { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = ''; });
-    }
+    userChips.syncAge(condition);
 }
 
 // ================================================================

@@ -601,7 +601,7 @@ async function loadProfessionals() {
                 var orgRes = await fetch('/api/admin/organizations');
                 var orgData = await orgRes.json();
                 if (orgData.success) allOrganizations = orgData.organizations || [];
-            } catch(e) {}
+            } catch(e) { console.error('loadOrganizations preload failed:', e); }
         }
         const params = new URLSearchParams(currentProFilters);
         const response = await fetch(`/api/professionals?${params}`);
@@ -1156,7 +1156,7 @@ function viewLeadDetail(leadId) {
 
     var orgPromise = allOrganizations.length
         ? Promise.resolve()
-        : fetch('/api/admin/organizations').then(function(r) { return r.json(); }).then(function(d) { if (d.success) allOrganizations = d.organizations || []; }).catch(function() {});
+        : fetch('/api/admin/organizations').then(function(r) { return r.json(); }).then(function(d) { if (d.success) allOrganizations = d.organizations || []; }).catch(function(err) { console.error('loadOrganizations failed:', err); });
 
     orgPromise.then(function() {
         return fetch(`/api/admin/lead/${leadId}`);
@@ -1744,7 +1744,7 @@ function initPhoneAudit() {
                 }
             }
         })
-        .catch(function() {});
+        .catch(function(err) { console.error('initPhoneAudit professionals failed:', err); });
     loadPhoneAudit();
 }
 
@@ -1917,7 +1917,7 @@ function loadAdminNotifPrefs() {
         setToggle('admin-notif-sms', data.sms_notifications);
         setToggle('admin-notif-leads', data.lead_alerts);
     })
-    .catch(function() {});
+    .catch(function(err) { console.error('loadAdminNotifPrefs failed:', err); });
 }
 
 function saveAdminNotifPrefs() {
@@ -1936,9 +1936,14 @@ function saveAdminNotifPrefs() {
         if (result.success) {
             var msg = document.getElementById('admin-notif-save-msg');
             if (msg) { msg.classList.remove('hidden'); setTimeout(function() { msg.classList.add('hidden'); }, 3000); }
+        } else {
+            if (typeof showToast !== 'undefined') showToast(result.error || t('error.generic'), 'error');
         }
     })
-    .catch(function() {});
+    .catch(function(err) {
+        console.error('saveAdminNotifPrefs failed:', err);
+        if (typeof showToast !== 'undefined') showToast(t('error.connection'), 'error');
+    });
 }
 
 function loadNotificationLog(page) {

@@ -260,7 +260,7 @@ function toggleFaq(questionEl) {
     // Update aria-expanded on the control
     try {
         questionEl.setAttribute('aria-expanded', (!isOpen).toString());
-    } catch (e) {}
+    } catch (e) { console.error('faq aria-expanded failed:', e); }
 
     // Re-init lucide icons
     if (window.lucide) lucide.createIcons();

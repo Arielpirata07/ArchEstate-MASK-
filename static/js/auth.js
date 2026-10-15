@@ -24,15 +24,7 @@
     var CHECK_URL = '/api/auth/check-username';
     var USERNAME_DEBOUNCE_MS = 300;
 
-    var escapeHtml = window.escapeHtml || function (str) {
-        if (str === null || str === undefined) return '';
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
-    };
+    // escapeHtml vive en main.js (cargado siempre vía base.html).
 
     // -------------------------------------------------------------- helpers
 

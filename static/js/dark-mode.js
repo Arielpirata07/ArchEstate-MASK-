@@ -18,8 +18,8 @@
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ theme: theme })
-            });
-        } catch (e) {}
+            }).catch(function(err) { console.error('theme persist failed:', err); });
+        } catch (e) { console.error('theme persist failed:', e); }
     }
 
     function applyTheme(theme) {

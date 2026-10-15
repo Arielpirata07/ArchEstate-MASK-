@@ -398,6 +398,7 @@ window.__FORM_OPTIONS = {{ {
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/shared/chips.js') }}" defer></script>
 <script src="{{ url_for('static', filename='js/edit_lead.js') }}" defer></script>
 <script>
 window.__leadData = {
