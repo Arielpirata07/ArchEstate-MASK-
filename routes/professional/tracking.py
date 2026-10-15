@@ -1,0 +1,121 @@
+# noodle --uses-> services (export,pdf,xlsx)
+# noodle --uses-> services (matching,coverage)
+# noodle --queries-> database (sql,leads,professionals)
+# noodle --renders-> templates (html,professional,lead_detail)
+import csv
+import io
+import logging
+import os
+import re
+
+from datetime import datetime
+from io import StringIO
+
+import openpyxl
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side, numbers
+import pytz
+
+logger = logging.getLogger(__name__)
+
+from flask import Blueprint, flash, jsonify, redirect, render_template, request, Response, send_file, session, url_for
+from fpdf import FPDF
+from werkzeug.utils import secure_filename
+
+import config
+import models
+import rate_limit
+import utils
+from decorators import login_required, professional_required
+from i18n import t, get_language
+from services.database import date_format_sql, now_sql
+from services.export_helpers import pdf_safe, pdf_val, _style_header_row, _apply_data_border
+from services.matching import lead_matches_coverage
+from utils import allowed_file, convert_to_argentina_time
+
+
+from routes.professional import professional_bp
+from routes.professional.helpers import _get_approved_professional, _get_pro_geo_filter
+
+@professional_bp.route('/api/lead/<int:lead_id>/toggle-status', methods=['POST'])
+@professional_required
+def toggle_lead_status(lead_id):
+    lang = get_language()
+    conn = None
+    try:
+        conn = models.get_db_connection()
+
+        user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
+        if not user:
+            return jsonify({'error': t('prof.access_denied', lang)}), 403
+
+        professional = conn.execute(
+            'SELECT status FROM professionals WHERE name = ?',
+            (user['username'],)
+        ).fetchone()
+        if not professional or professional['status'] != 'approved':
+            return jsonify({'error': t('prof.account_pending', lang)}), 403
+
+        lead = conn.execute('SELECT id FROM leads WHERE id = ?', (lead_id,)).fetchone()
+        if not lead:
+            return jsonify({'error': t('prof.lead_not_found', lang)}), 404
+
+        data = request.get_json(silent=True) or {}
+        status_type = data.get('status')
+
+        if status_type not in ('seen', 'contacted'):
+            return jsonify({'error': t('prof.invalid_status_type', lang)}), 400
+
+        professional_id = session['user_id']
+        argentina_tz = pytz.timezone('America/Argentina/Buenos_Aires')
+        now = datetime.now(argentina_tz).strftime('%Y-%m-%d %H:%M:%S')
+
+        tracking = conn.execute(
+            'SELECT * FROM lead_tracking WHERE professional_id = ? AND lead_id = ?',
+            (professional_id, lead_id)
+        ).fetchone()
+
+        if tracking:
+            current_value = tracking[status_type]
+            new_value = 0 if current_value else 1
+            timestamp_col = f'{status_type}_at'
+            timestamp_value = now if new_value else None
+
+            conn.execute(
+                f'UPDATE lead_tracking SET {status_type} = ?, {timestamp_col} = ? WHERE professional_id = ? AND lead_id = ?',
+                (new_value, timestamp_value, professional_id, lead_id)
+            )
+        else:
+            seen_val = 1 if status_type == 'seen' else 0
+            contacted_val = 1 if status_type == 'contacted' else 0
+            seen_at = now if status_type == 'seen' else None
+            contacted_at = now if status_type == 'contacted' else None
+
+            conn.execute(
+                'INSERT INTO lead_tracking (professional_id, lead_id, seen, contacted, seen_at, contacted_at) VALUES (?, ?, ?, ?, ?, ?)',
+                (professional_id, lead_id, seen_val, contacted_val, seen_at, contacted_at)
+            )
+            new_value = 1
+
+        conn.commit()
+
+        if new_value:
+            from services.notifications import notify_lead_status_change
+            try:
+                notify_lead_status_change(lead_id, professional_id, status_type)
+            except Exception:
+                logger.warning('notify_lead_status_change falló para lead=%s', lead_id)
+
+        return jsonify({
+            'success': True,
+            'status': status_type,
+            'value': new_value,
+            'timestamp': now if new_value else None
+        })
+    except Exception as e:
+        logger.exception('Error en toggle_lead_status')
+        return jsonify({'error': t('prof.internal_error_short', lang)}), 500
+    finally:
+        if conn:
+            conn.close()
+
+
