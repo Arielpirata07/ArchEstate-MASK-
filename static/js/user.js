@@ -411,3 +411,18 @@ function dismissUserPhoneCorrection() {
 })();
 
 // (submit handler lives in main.js:DOMContentLoaded -> initUserForm)
+
+/* Delegación data-action (FASE 5.9): reemplaza onclick inline */
+delegateActions({
+    'user-apply-correction': function() { applyUserPhoneCorrection(); },
+    'user-close-verify': function() { closePhoneVerifyModal(); },
+    'user-dismiss-correction': function() { dismissUserPhoneCorrection(); },
+    'user-open-verify': function() { openPhoneVerifyModal(); },
+    'user-resend-code': function() { resendVerificationCode(); },
+    'user-save-phone': function() { savePhoneToProfile(); },
+    'user-chip': function(el) { selectChip(el.dataset.group, el.dataset.value); },
+    'user-show-correction': function() { showUserPhoneCorrection(); },
+    'user-step': function(el) { stepNum(el.dataset.field, parseInt(el.dataset.delta, 10)); },
+    'user-submit-code': function() { submitVerificationCode(); },
+    'user-toggle-province': function(el) { toggleProvinceSearch(el.dataset.target, el); }
+});

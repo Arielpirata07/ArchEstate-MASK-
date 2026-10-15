@@ -201,29 +201,29 @@ window.__FORM_OPTIONS = {{ {
                             <div>
                                 <label for="ambientes-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.rooms') }}</label>
                                 <div class="flex items-center gap-3">
-                                    <button type="button" onclick="stepNum('ambientes',-1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-base md:text-lg leading-none">−</button>
+                                    <button type="button" data-action="user-step" data-field="ambientes" data-delta="-1" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-base md:text-lg leading-none">−</button>
                                     <input id="ambientes-input" name="ambientes" type="number" min="1" max="20" value="" placeholder="—"
                                            class="w-12 text-center bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-1 text-sm font-semibold">
-                                    <button type="button" onclick="stepNum('ambientes',1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-base md:text-lg leading-none">+</button>
+                                    <button type="button" data-action="user-step" data-field="ambientes" data-delta="1" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-base md:text-lg leading-none">+</button>
                                 </div>
                                 <p class="text-[9px] text-midnight/30 mt-1">{{ t('user.rooms_hint') }}</p>
                             </div>
                             <div>
                                 <label for="bedrooms-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.bedrooms') }}</label>
                                 <div class="flex items-center gap-3">
-                                    <button type="button" aria-label="Reducir dormitorios" onclick="stepNum('bedrooms',-1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-base md:text-lg leading-none">−</button>
+                                    <button type="button" aria-label="Reducir dormitorios" data-action="user-step" data-field="bedrooms" data-delta="-1" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-base md:text-lg leading-none">−</button>
                                     <input id="bedrooms-input" name="bedrooms" type="number" min="0" max="20" value="" placeholder="—"
                                            class="w-12 text-center bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-1 text-sm font-semibold">
-                                    <button type="button" aria-label="Aumentar dormitorios" onclick="stepNum('bedrooms',1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-base md:text-lg leading-none">+</button>
+                                    <button type="button" aria-label="Aumentar dormitorios" data-action="user-step" data-field="bedrooms" data-delta="1" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-base md:text-lg leading-none">+</button>
                                 </div>
                             </div>
                             <div>
                                 <label for="bathrooms-input" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.bathrooms') }}</label>
                                 <div class="flex items-center gap-3">
-                                    <button type="button" aria-label="{{ t('user.dec_bath_aria') }}" onclick="stepNum('bathrooms',-1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-base md:text-lg leading-none">−</button>
+                                    <button type="button" aria-label="{{ t('user.dec_bath_aria') }}" data-action="user-step" data-field="bathrooms" data-delta="-1" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-base md:text-lg leading-none">−</button>
                                     <input id="bathrooms-input" name="bathrooms" type="number" min="0" max="20" value="" placeholder="—"
                                            class="w-12 text-center bg-white border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-1 text-sm font-semibold">
-                                    <button type="button" aria-label="{{ t('user.inc_bath_aria') }}" onclick="stepNum('bathrooms',1)" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-base md:text-lg leading-none">+</button>
+                                    <button type="button" aria-label="{{ t('user.inc_bath_aria') }}" data-action="user-step" data-field="bathrooms" data-delta="1" class="w-11 h-11 md:w-8 md:h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-base md:text-lg leading-none">+</button>
                                 </div>
                             </div>
                         </div>
@@ -233,7 +233,7 @@ window.__FORM_OPTIONS = {{ {
                             <label for="parking-chips" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.parking') }}</label>
                             <div class="flex flex-wrap gap-2" id="parking-chips">
                                 {% for opt in form_options.get('parking', []) %}
-                                <button type="button" data-value="{{ opt.value }}" onclick="selectChip('parking','{{ opt.value }}')"
+                                <button type="button" data-action="user-chip" data-group="parking" data-value="{{ opt.value }}"
                                     class="parking-chip {% if loop.first %}active-chip border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-colors hover:border-gold">{{ opt.label }}</button>
                                 {% endfor %}
                             </div>
@@ -246,7 +246,7 @@ window.__FORM_OPTIONS = {{ {
                             {% set orient_short = {'': '', 'Norte': 'N', 'Sur': 'S', 'Este': 'E', 'Oeste': 'O', 'Noreste': 'NE', 'Noroeste': 'NO', 'Sureste': 'SE', 'Suroeste': 'SO'} %}
                             <div class="flex flex-wrap gap-2" id="orientation-chips">
                                 {% for opt in form_options.get('orientation', []) %}
-                                <button type="button" data-value="{{ opt.value }}" onclick="selectChip('orientation','{{ opt.value }}')"
+                                <button type="button" data-action="user-chip" data-group="orientation" data-value="{{ opt.value }}"
                                     class="orientation-chip {% if loop.first %}active-chip border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-colors hover:border-gold">{{ orient_short.get(opt.value, opt.label) }}</button>
                                 {% endfor %}
                             </div>
@@ -259,7 +259,7 @@ window.__FORM_OPTIONS = {{ {
                                 <label for="condition-chips" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.condition') }}</label>
                                 <div class="space-y-2" id="condition-chips">
                                     {% for opt in form_options.get('condition', []) %}
-                                    <button type="button" data-value="{{ opt.value }}" onclick="selectChip('condition','{{ opt.value }}')" class="condition-chip {% if loop.first %}active-chip border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-colors hover:border-gold">{{ opt.label }}</button>
+                                    <button type="button" data-action="user-chip" data-group="condition" data-value="{{ opt.value }}" class="condition-chip {% if loop.first %}active-chip border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-colors hover:border-gold">{{ opt.label }}</button>
                                     {% endfor %}
                                 </div>
                                 <input type="hidden" id="condition-input" name="property_condition" value="">
@@ -268,7 +268,7 @@ window.__FORM_OPTIONS = {{ {
                                 <label for="age-chips" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-3">{{ t('user.age') }}</label>
                                 <div class="space-y-2" id="age-chips">
                                     {% for opt in form_options.get('age', []) %}
-                                    <button type="button" data-value="{{ opt.value }}" onclick="selectChip('age','{{ opt.value }}')" class="age-chip {% if loop.first %}active-chip border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-colors hover:border-gold">{{ opt.label }}</button>
+                                    <button type="button" data-action="user-chip" data-group="age" data-value="{{ opt.value }}" class="age-chip {% if loop.first %}active-chip border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-colors hover:border-gold">{{ opt.label }}</button>
                                     {% endfor %}
                                 </div>
                                 <input type="hidden" id="age-input" name="property_age" value="">
@@ -561,7 +561,7 @@ window.__FORM_OPTIONS = {{ {
                                      <option value="+1">+1</option>
                                  </select>
                                  <div class="flex-shrink-0" id="province-search-wrap">
-                                     <button type="button" id="province-search-toggle" onclick="toggleProvinceSearch('phone-province', this)"
+                                     <button type="button" id="province-search-toggle" data-action="user-toggle-province" data-target="phone-province"
                                          class="hidden items-center justify-between gap-2 px-1 py-2 border-0 border-b-2 border-midnight/20 hover:border-gold focus:border-gold transition-colors text-sm text-midnight bg-transparent w-28"
                                          aria-label="{{ t('user.search_city') }}" aria-expanded="false" title="{{ t('user.search_city') }}">
                                          <span id="province-search-label" class="truncate text-midnight/70">{{ t('user.search_city') }}</span>
@@ -600,7 +600,7 @@ window.__FORM_OPTIONS = {{ {
                                 <button
                                     type="button"
                                     id="save-phone-btn"
-                                    onclick="savePhoneToProfile()"
+                                    data-action="user-save-phone"
                                     class="text-[9px] uppercase tracking-widest font-bold text-midnight/30 hover:text-gold transition-colors flex items-center gap-1"
                                 >
                                     <i data-lucide="save" class="w-3 h-3"></i>
@@ -608,7 +608,7 @@ window.__FORM_OPTIONS = {{ {
                                 </button>
                             </div>
                             <div id="user-phone-suggestion" class="hidden mt-1">
-                                <button type="button" onclick="showUserPhoneCorrection()" class="text-[9px] text-amber-600 hover:text-amber-800 transition-colors cursor-pointer">
+                                <button type="button" data-action="user-show-correction" class="text-[9px] text-amber-600 hover:text-amber-800 transition-colors cursor-pointer">
                                     {{ t('profile.phone_correct') }}
                                 </button>
                             </div>
@@ -620,8 +620,8 @@ window.__FORM_OPTIONS = {{ {
                                         <span class="text-amber-700 font-medium" id="user-correction-to"></span>
                                     </div>
                                     <div class="flex gap-2 ml-2">
-                                        <button type="button" onclick="applyUserPhoneCorrection()" class="text-[9px] font-bold text-emerald-600 hover:text-emerald-800">{{ t('profile.phone_apply') }}</button>
-                                        <button type="button" onclick="dismissUserPhoneCorrection()" class="text-[9px] font-bold text-midnight/60 hover:text-midnight/80">{{ t('profile.phone_dismiss') }}</button>
+                                        <button type="button" data-action="user-apply-correction" class="text-[9px] font-bold text-emerald-600 hover:text-emerald-800">{{ t('profile.phone_apply') }}</button>
+                                        <button type="button" data-action="user-dismiss-correction" class="text-[9px] font-bold text-midnight/60 hover:text-midnight/80">{{ t('profile.phone_dismiss') }}</button>
                                     </div>
                                 </div>
                             </div>
@@ -640,7 +640,7 @@ window.__FORM_OPTIONS = {{ {
                                 <span class="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest bg-paper-dark text-midnight/60 inline-flex items-center gap-1">
                                     <i data-lucide="phone-off" class="w-3 h-3"></i> {{ t('user.not_verified') }}
                                 </span>
-                                <button type="button" onclick="openPhoneVerifyModal()"
+                                <button type="button" data-action="user-open-verify"
                                     class="text-[10px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors">
                                     {{ t('user.verify') }}
                                 </button>
@@ -674,7 +674,7 @@ window.__FORM_OPTIONS = {{ {
         <div class="relative p-8">
             <button type="button" id="close-verify-modal" aria-label="Cerrar"
                 class="absolute top-4 right-4 p-2 rounded hover:bg-paper-dark transition-colors duration-200 text-midnight/30 hover:text-gold"
-                onclick="closePhoneVerifyModal()">
+                data-action="user-close-verify">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
 
@@ -712,14 +712,14 @@ window.__FORM_OPTIONS = {{ {
 
             <button id="verify-submit-btn"
                 class="w-full bg-gold text-white py-4 rounded font-bold uppercase tracking-widest text-xs hover:bg-midnight transition-colors duration-300"
-                onclick="submitVerificationCode()">
+                data-action="user-submit-code">
                 Verificar
             </button>
 
             <p class="text-center mt-4">
                 <button type="button" id="resend-code-btn"
                     class="text-[10px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors"
-                    onclick="resendVerificationCode()">
+                    data-action="user-resend-code">
                     {{ t('user.resend_code') }}
                 </button>
                 <span id="resend-cooldown" class="hidden text-[10px] text-midnight/60 ml-2">(60s)</span>
