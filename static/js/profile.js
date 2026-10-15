@@ -1770,3 +1770,28 @@ async function contactAdmin() {
         errEl.classList.remove('hidden');
     }
 }
+
+/* Delegación data-action (FASE 5.9): reemplaza onclick inline */
+delegateActions({
+    'prof-tab': function(el) { showSettingsTab(el.dataset.tab); },
+    'prof-theme': function(el) { setTheme(el.dataset.theme); },
+    'prof-click': function(el) { document.getElementById(el.dataset.target).click(); },
+    'prof-toggle-province': function(el) { toggleProvinceSearch(el.dataset.target, el); },
+    'prof-submit-verification-code': function() { submitVerificationCode(); },
+    'prof-show-phone-correction': function() { showPhoneCorrection(); },
+    'prof-save-user-profile': function() { saveUserProfile(); },
+    'prof-save-settings': function() { saveSettings(); },
+    'prof-save-professional-full-profile': function() { saveProfessionalFullProfile(); },
+    'prof-save-notif-filters': function() { saveNotifFilters(); },
+    'prof-save-coverage': function() { saveCoverage(); },
+    'prof-reset-coverage': function() { resetCoverage(); },
+    'prof-resend-verification-code': function() { resendVerificationCode(); },
+    'prof-open-phone-verify-modal': function() { openPhoneVerifyModal(); },
+    'prof-dismiss-phone-correction': function() { dismissPhoneCorrection(); },
+    'prof-delete-professional-photo': function() { deleteProfessionalPhoto(); },
+    'prof-delete-avatar': function() { deleteAvatar(); },
+    'prof-contact-admin': function() { contactAdmin(); },
+    'prof-close-phone-verify-modal': function() { closePhoneVerifyModal(); },
+    'prof-apply-phone-correction': function() { applyPhoneCorrection(); },
+    'prof-add-coverage-zone': function() { addCoverageZone(); }
+});

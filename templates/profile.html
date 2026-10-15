@@ -24,40 +24,40 @@
         <aside class="lg:col-span-1 settings-sidebar p-6 lg:min-h-[600px]" role="tablist" aria-label="{{ t('profile.title') }}">
             <nav class="space-y-1">
                 <button role="tab" aria-selected="true" aria-controls="panel-cuenta" id="tab-cuenta" tabindex="0"
-                    class="settings-tab active" onclick="showSettingsTab('cuenta')">
+                    class="settings-tab active" data-action="prof-tab" data-tab="cuenta">
                     <i data-lucide="user" class="w-4 h-4" aria-hidden="true"></i>
                     <span>{{ t('profile.account') }}</span>
                 </button>
                 <button role="tab" aria-selected="false" aria-controls="panel-apariencia" id="tab-apariencia" tabindex="-1"
-                    class="settings-tab" onclick="showSettingsTab('apariencia')">
+                    class="settings-tab" data-action="prof-tab" data-tab="apariencia">
                     <i data-lucide="palette" class="w-4 h-4" aria-hidden="true"></i>
                     <span>{{ t('profile.appearance') }}</span>
                 </button>
                 <button role="tab" aria-selected="false" aria-controls="panel-notificaciones" id="tab-notificaciones" tabindex="-1"
-                    class="settings-tab" onclick="showSettingsTab('notificaciones')">
+                    class="settings-tab" data-action="prof-tab" data-tab="notificaciones">
                     <i data-lucide="bell" class="w-4 h-4" aria-hidden="true"></i>
                     <span>{{ t('profile.notifications') }}</span>
                 </button>
                 <button role="tab" aria-selected="false" aria-controls="panel-seguridad" id="tab-seguridad" tabindex="-1"
-                    class="settings-tab" onclick="showSettingsTab('seguridad')">
+                    class="settings-tab" data-action="prof-tab" data-tab="seguridad">
                     <i data-lucide="shield" class="w-4 h-4" aria-hidden="true"></i>
                     <span>{{ t('profile.security') }}</span>
                 </button>
                 <button role="tab" aria-selected="false" aria-controls="panel-actividad" id="tab-actividad" tabindex="-1"
-                    class="settings-tab" onclick="showSettingsTab('actividad')">
+                    class="settings-tab" data-action="prof-tab" data-tab="actividad">
                     <i data-lucide="activity" class="w-4 h-4" aria-hidden="true"></i>
                     <span>{{ t('profile.activity') }}</span>
                 </button>
                 {% if not user or user.role != 'professional' %}
                 <button role="tab" aria-selected="false" aria-controls="panel-solicitudes" id="tab-solicitudes" tabindex="-1"
-                    class="settings-tab" onclick="showSettingsTab('solicitudes')">
+                    class="settings-tab" data-action="prof-tab" data-tab="solicitudes">
                     <i data-lucide="file-text" class="w-4 h-4" aria-hidden="true"></i>
                     <span>{{ t('profile.leads') }}</span>
                 </button>
                 {% endif %}
                 {% if user and user.role == 'professional' %}
                 <button role="tab" aria-selected="false" aria-controls="panel-profesional" id="tab-profesional" tabindex="-1"
-                    class="settings-tab" onclick="showSettingsTab('profesional')">
+                    class="settings-tab" data-action="prof-tab" data-tab="profesional">
                     <i data-lucide="briefcase" class="w-4 h-4" aria-hidden="true"></i>
                     <span>{{ t('profile.professional_tab') }}</span>
                 </button>
@@ -74,7 +74,7 @@
                     <div class="flex flex-col sm:flex-row items-start gap-4 sm:gap-8 mb-8">
                         <!-- Avatar -->
                         <div class="flex-shrink-0 text-center">
-                            <div class="avatar-upload relative mx-auto" id="avatar-container" onclick="document.getElementById('avatar-input').click()" role="button" tabindex="0" aria-label="{{ t('profile.avatar_change') }}" onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
+                            <div class="avatar-upload relative mx-auto" id="avatar-container" data-action="prof-click" data-target="avatar-input" role="button" tabindex="0" aria-label="{{ t('profile.avatar_change') }}" onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
                                 <div class="avatar-ring" id="avatar-ring"></div>
                                 <img id="avatar-preview" src="{% if user and user.avatar_path %}{{ url_for('static', filename=user.avatar_path) }}{% else %}{{ url_for('static', filename='img/default-avatar.svg') }}{% endif %}" alt="Foto de perfil" class="w-full h-full rounded-full object-cover border-4" style="border-color:var(--border)">
                                 <div class="avatar-overlay">
@@ -82,7 +82,7 @@
                                 </div>
                             </div>
                             <input type="file" id="avatar-input" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" onchange="uploadAvatar(this)">
-                            <button onclick="deleteAvatar()" class="text-[9px] uppercase tracking-widest font-bold mt-2 hover:text-rose-500 transition-colors" style="color:var(--text-secondary)" type="button">
+                            <button data-action="prof-delete-avatar" class="text-[9px] uppercase tracking-widest font-bold mt-2 hover:text-rose-500 transition-colors" style="color:var(--text-secondary)" type="button">
                                 <span class="sr-only">{{ t('profile.avatar_delete') }}</span>{{ t('profile.avatar_delete') }}
                             </button>
                             <p id="avatar-status" class="text-[9px] mt-1" aria-live="polite"></p>
@@ -129,7 +129,7 @@
                                         <option value="+1">+1</option>
                                     </select>
                                     <div class="flex-shrink-0" id="province-search-wrap">
-                                        <button type="button" id="province-search-toggle" onclick="toggleProvinceSearch('profile-province', this)"
+                                        <button type="button" id="province-search-toggle" data-action="prof-toggle-province" data-target="profile-province"
                                             class="hidden items-center justify-between gap-2 px-1 py-2 border-0 border-b-2 border-midnight/20 hover:border-gold focus:border-gold transition-colors text-sm text-midnight bg-transparent w-28"
                                             aria-label="Buscar ciudad" aria-expanded="false" title="Buscar ciudad">
                                             <span id="province-search-label" class="truncate text-midnight/70">Buscar ciudad</span>
@@ -156,7 +156,7 @@
                                 </div>
                                 <p id="profile-phone-city" class="hidden text-[9px] font-medium text-midnight/40 mt-0.5"></p>
                                 <div id="profile-phone-suggestion" class="hidden mt-1">
-                                    <button type="button" onclick="showPhoneCorrection()" class="text-[9px] text-amber-600 hover:text-amber-800 dark:hover:text-amber-300 transition-colors cursor-pointer">
+                                    <button type="button" data-action="prof-show-phone-correction" class="text-[9px] text-amber-600 hover:text-amber-800 dark:hover:text-amber-300 transition-colors cursor-pointer">
                                         {{ t('profile.phone_correct') }}
                                     </button>
                                 </div>
@@ -168,8 +168,8 @@
                                             <span class="text-amber-700 font-medium" id="correction-to"></span>
                                         </div>
                                         <div class="flex gap-2 ml-2">
-                                            <button type="button" onclick="applyPhoneCorrection()" class="text-[9px] font-bold text-emerald-600 hover:text-emerald-800 dark:hover:text-emerald-300">{{ t('profile.phone_apply') }}</button>
-                                            <button type="button" onclick="dismissPhoneCorrection()" class="text-[9px] font-bold text-midnight/60 hover:text-midnight/60">{{ t('profile.phone_dismiss') }}</button>
+                                            <button type="button" data-action="prof-apply-phone-correction" class="text-[9px] font-bold text-emerald-600 hover:text-emerald-800 dark:hover:text-emerald-300">{{ t('profile.phone_apply') }}</button>
+                                            <button type="button" data-action="prof-dismiss-phone-correction" class="text-[9px] font-bold text-midnight/60 hover:text-midnight/60">{{ t('profile.phone_dismiss') }}</button>
                                         </div>
                                     </div>
                                 </div>
@@ -189,7 +189,7 @@
                                         </span>
                                         <button type="button" id="verify-phone-btn"
                                             class="text-[10px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors"
-                                            onclick="openPhoneVerifyModal()">
+                                            data-action="prof-open-phone-verify-modal">
                                             {{ t('profile.verify') }}
                                         </button>
                                         {% endif %}
@@ -217,7 +217,7 @@
                     </div>
 
                     <div class="flex items-center gap-4 pt-6 border-t" style="border-color:var(--border)">
-                        <button id="save-profile-btn" onclick="saveUserProfile()" class="btn-primary">
+                        <button id="save-profile-btn" data-action="prof-save-user-profile" class="btn-primary">
                             <i data-lucide="save" class="w-4 h-4" aria-hidden="true"></i>
                             {{ t('profile.save_changes') }}
                         </button>
@@ -236,11 +236,11 @@
                         <div>
                             <label class="input-label">{{ t('profile.theme') }}</label>
                             <div class="flex gap-4 mt-2">
-                                <button id="theme-light-btn" onclick="setTheme('light')" class="theme-option active" data-theme="light" aria-pressed="true">
+                                <button id="theme-light-btn" data-action="prof-theme" data-theme="light" class="theme-option active" data-theme="light" aria-pressed="true">
                                     <i data-lucide="sun" class="w-5 h-5" aria-hidden="true"></i>
                                     <span class="text-xs font-bold uppercase tracking-widest">{{ t('profile.theme_light') }}</span>
                                 </button>
-                                <button id="theme-dark-btn" onclick="setTheme('dark')" class="theme-option" data-theme="dark" aria-pressed="false">
+                                <button id="theme-dark-btn" data-action="prof-theme" data-theme="dark" class="theme-option" data-theme="dark" aria-pressed="false">
                                     <i data-lucide="moon" class="w-5 h-5" aria-hidden="true"></i>
                                     <span class="text-xs font-bold uppercase tracking-widest">{{ t('profile.theme_dark') }}</span>
                                 </button>
@@ -257,7 +257,7 @@
                     </div>
 
                     <div class="flex items-center gap-4 pt-6 mt-6 border-t" style="border-color:var(--border)">
-                        <button onclick="saveSettings()" class="btn-primary">
+                        <button data-action="prof-save-settings" class="btn-primary">
                             <i data-lucide="save" class="w-4 h-4" aria-hidden="true"></i>
                             {{ t('profile.save_preferences') }}
                         </button>
@@ -352,7 +352,7 @@
                             </div>
                         </div>
 
-                        <button onclick="saveNotifFilters()" class="btn-primary text-xs mt-2">
+                        <button data-action="prof-save-notif-filters" class="btn-primary text-xs mt-2">
                             <i data-lucide="save" class="w-3 h-3" aria-hidden="true"></i>
                             {{ t('profile.filter_save') }}
                         </button>
@@ -382,7 +382,7 @@
                                 if (minInput) minInput.value = data.budget_min || '';
                                 if (maxInput) maxInput.value = data.budget_max || '';
                             })
-                            .catch(function() {});
+                            .catch(function(fetchErr) { console.error('loadNotifFilters failed:', fetchErr); });
                     }
 
                     function loadNotifChannel() {
@@ -393,7 +393,7 @@
                                 var sel = document.getElementById('notif-channel');
                                 if (sel) sel.value = data.channel || 'email';
                             })
-                            .catch(function() {});
+                            .catch(function(fetchErr) { console.error('loadNotifChannel failed:', fetchErr); });
                     }
 
                     function updateChipState(checkbox) {
@@ -439,12 +439,13 @@
                                 msg.classList.remove('hidden');
                                 setTimeout(function() { msg.classList.add('hidden'); }, 3000);
                             } else {
-                                err.textContent = data.error || 'Error al guardar';
+                                err.textContent = data.error || '{{ t('error.save_failed') }}';
                                 err.classList.remove('hidden');
                             }
                         })
-                        .catch(function() {
-                            err.textContent = 'Error de red';
+                        .catch(function(fetchErr) {
+                            console.error('saveNotifFilters failed:', fetchErr);
+                            err.textContent = '{{ t('error.network') }}';
                             err.classList.remove('hidden');
                         });
                     }
@@ -466,7 +467,7 @@
                                 setTimeout(function() { msg.classList.add('hidden'); }, 3000);
                             }
                         })
-                        .catch(function() {});
+                        .catch(function(fetchErr) { console.error('saveNotifChannel failed:', fetchErr); });
                     }
 
                     document.addEventListener('DOMContentLoaded', function() {
@@ -587,7 +588,7 @@
                         <!-- Columna izquierda: foto + datos básicos -->
                         <div class="space-y-6">
                             <div class="text-center">
-                                <div class="avatar-upload relative mx-auto" id="pro-photo-container" onclick="document.getElementById('pro-photo-input').click()" role="button" tabindex="0" aria-label="{{ t('profile.pro_photo_change') }}" onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
+                                <div class="avatar-upload relative mx-auto" id="pro-photo-container" data-action="prof-click" data-target="pro-photo-input" role="button" tabindex="0" aria-label="{{ t('profile.pro_photo_change') }}" onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
                                     <div class="avatar-ring" id="pro-photo-ring"></div>
                                     <img id="pro-photo-preview" src="{{ url_for('static', filename='img/default-avatar.svg') }}" alt="Foto profesional" class="w-full h-full rounded-full object-cover border-4" style="border-color:var(--border)">
                                     <div class="avatar-overlay">
@@ -595,7 +596,7 @@
                                     </div>
                                 </div>
                                 <input type="file" id="pro-photo-input" accept="image/jpeg,image/png,image/gif,image/webp" class="hidden" onchange="uploadProfessionalPhoto(this)">
-                                <button onclick="deleteProfessionalPhoto()" class="text-[9px] uppercase tracking-widest font-bold mt-2 hover:text-rose-500 transition-colors" style="color:var(--text-secondary)" type="button">{{ t('profile.avatar_delete') }}</button>
+                                <button data-action="prof-delete-professional-photo" class="text-[9px] uppercase tracking-widest font-bold mt-2 hover:text-rose-500 transition-colors" style="color:var(--text-secondary)" type="button">{{ t('profile.avatar_delete') }}</button>
                                 <p id="pro-photo-status" class="text-[9px] mt-1" aria-live="polite"></p>
                             </div>
 
@@ -672,7 +673,7 @@
                                         <input id="coverage-zone-input" type="text" maxlength="60" class="input-field flex-1"
                                             placeholder="{{ t('profile.coverage_zone_placeholder') }}"
                                             onkeydown="if(event.key==='Enter'){event.preventDefault();addCoverageZone();}">
-                                        <button type="button" id="coverage-zone-add-btn" onclick="addCoverageZone()" class="btn-secondary px-4" aria-label="{{ t('profile.coverage_add') }}">
+                                        <button type="button" id="coverage-zone-add-btn" data-action="prof-add-coverage-zone" class="btn-secondary px-4" aria-label="{{ t('profile.coverage_add') }}">
                                             <i data-lucide="plus" class="w-4 h-4" aria-hidden="true"></i>
                                         </button>
                                     </div>
@@ -693,11 +694,11 @@
                                 </div>
 
                                 <div class="flex items-center gap-4 pt-4 mt-4 border-t" style="border-color:var(--border)">
-                                    <button type="button" id="coverage-save-btn" onclick="saveCoverage()" class="btn-secondary">
+                                    <button type="button" id="coverage-save-btn" data-action="prof-save-coverage" class="btn-secondary">
                                         <i data-lucide="save" class="w-4 h-4" aria-hidden="true"></i>
                                         <span id="coverage-save-btn-label">{{ t('profile.coverage_save') }}</span>
                                     </button>
-                                    <button type="button" id="coverage-reset-btn" onclick="resetCoverage()" class="btn-secondary">
+                                    <button type="button" id="coverage-reset-btn" data-action="prof-reset-coverage" class="btn-secondary">
                                         <i data-lucide="rotate-ccw" class="w-4 h-4" aria-hidden="true"></i>
                                         <span>{{ t('profile.coverage_reset') }}</span>
                                     </button>
@@ -806,7 +807,7 @@
                     </div>
 
                     <div class="flex items-center gap-4 pt-6 mt-6 border-t" style="border-color:var(--border)">
-                        <button onclick="saveProfessionalFullProfile()" class="btn-primary">
+                        <button data-action="prof-save-professional-full-profile" class="btn-primary">
                             <i data-lucide="save" class="w-4 h-4" aria-hidden="true"></i>
                             {{ t('profile.save_changes') }}
                         </button>
@@ -843,7 +844,7 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-4">
-                            <button onclick="contactAdmin()" class="btn-primary">
+                            <button data-action="prof-contact-admin" class="btn-primary">
                                 <i data-lucide="send" class="w-4 h-4" aria-hidden="true"></i>
                                 {{ t('profile.contact_admin_send') }}
                             </button>
@@ -863,7 +864,7 @@
             <div class="relative p-8">
                 <button type="button" id="close-verify-modal" aria-label="Cerrar"
                     class="absolute top-4 right-4 p-2 rounded hover:bg-paper-dark transition-colors duration-200 text-midnight/30 hover:text-gold"
-                    onclick="closePhoneVerifyModal()">
+                    data-action="prof-close-phone-verify-modal">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
 
@@ -906,14 +907,14 @@
 
                 <button id="verify-submit-btn"
                     class="w-full bg-gold text-white py-4 rounded font-bold uppercase tracking-widest text-xs hover:bg-midnight transition-colors duration-300"
-                    onclick="submitVerificationCode()">
+                    data-action="prof-submit-verification-code">
                     {{ t('profile.verify') }}
                 </button>
 
                 <p class="text-center mt-4">
                     <button type="button" id="resend-code-btn"
                         class="text-[10px] uppercase tracking-widest font-bold text-gold hover:text-midnight transition-colors"
-                        onclick="resendVerificationCode()">
+                        data-action="prof-resend-verification-code">
                         {{ t('user.resend_code') }}
                     </button>
                     <span id="resend-cooldown" class="hidden text-[10px] text-midnight/60 ml-2">(60s)</span>
