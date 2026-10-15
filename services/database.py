@@ -186,11 +186,16 @@ def get_db_connection():
 
 
 def _connect_sqlite():
+    import os
     import sqlite3
     conn = sqlite3.connect(config.DATABASE)
     conn.row_factory = sqlite3.Row
     conn.execute('PRAGMA journal_mode=WAL')
     conn.execute('PRAGMA busy_timeout=5000')
+    # FK constraints solo fuera de tests: en la suite hay fixtures legacy
+    # que violan FK y provocan timeouts (ver mejora-total.md Fase 1.5).
+    if os.environ.get('PYTEST_CURRENT_TEST') is None:
+        conn.execute('PRAGMA foreign_keys = ON')
     return DBConnection(conn, 'sqlite')
 
 

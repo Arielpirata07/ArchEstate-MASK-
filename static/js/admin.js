@@ -2158,7 +2158,14 @@ function saveAreaCode() {
 }
 
 function deletePhoneAreaCode(id) {
-    if (!confirm(window.t('pac.confirm_delete'))) return;
+    var promise = typeof showConfirm === 'function' ? showConfirm(window.t('pac.confirm_delete')) : Promise.resolve(true);
+    promise.then(function(ok) {
+        if (!ok) return;
+        deletePhoneAreaCodeConfirmed(id);
+    });
+}
+
+function deletePhoneAreaCodeConfirmed(id) {
     var csrfToken = document.querySelector('meta[name="csrf-token"]');
     fetch('/api/phone-area-codes/' + id, {
         method: 'DELETE',
@@ -2173,7 +2180,8 @@ function deletePhoneAreaCode(id) {
         loadPhoneAreaCodes();
         if (typeof showToast !== 'undefined') showToast(window.t('pac.deleted'), 'success');
     })
-    .catch(function() {
+    .catch(function(err) {
+        console.error('deletePhoneAreaCode failed:', err);
         if (typeof showToast !== 'undefined') showToast(window.t('pac.delete_error'), 'error');
     });
 }
