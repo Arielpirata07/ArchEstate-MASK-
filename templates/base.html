@@ -6,7 +6,7 @@
     <title>{% block title %}ArchEstate | Private Ledger{% endblock %}</title>
 
     {% block meta_description %}
-    <meta name="description" content="ArchEstate - Plataforma de gestión inmobiliaria exclusiva para clientes y profesionales.">
+    <meta name="description" content="{{ t('seo.meta_description') }}">
     {% endblock %}
 
     <meta name="robots" content="index, follow">
@@ -14,24 +14,24 @@
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <meta name="keywords" content="inmobiliaria, gestión inmobiliaria, bienes raíces, propiedades, Argentina, leads inmobiliarios, plataforma inmobiliaria">
+    <meta name="keywords" content="{{ t('seo.keywords') }}">
     <meta name="theme-color" content="#1a1a2e">
 
     <link rel="canonical" href="{{ request.url }}">
 
     <!-- Open Graph -->
     <meta property="og:title" content="{% block og_title %}ArchEstate | Private Ledger{% endblock %}">
-    <meta property="og:description" content="Plataforma de gestión inmobiliaria exclusiva para clientes y profesionales.">
+    <meta property="og:description" content="{{ t('seo.og_description') }}">
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ request.url }}">
-    <meta property="og:locale" content="es_AR">
+    <meta property="og:locale" content="{% if lang == 'en' %}en_US{% else %}es_AR{% endif %}">
     <meta property="og:site_name" content="ArchEstate">
     <meta property="og:image" content="{{ url_for('static', filename='img/og-image.png', _external=True) }}">
 
     <!-- Twitter Cards -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="{% block twitter_title %}ArchEstate | Private Ledger{% endblock %}">
-    <meta name="twitter:description" content="Plataforma de gestión inmobiliaria exclusiva para clientes y profesionales.">
+    <meta name="twitter:description" content="{{ t('seo.og_description') }}">
     <meta name="twitter:image" content="{{ url_for('static', filename='img/og-image.png', _external=True) }}">
 
     <!-- JSON-LD Structured Data -->
@@ -44,13 +44,13 @@
                 "@id": "{{ request.url_root }}#organization",
                 "name": "ArchEstate",
                 "url": "{{ request.url_root }}",
-                "description": "Plataforma de gestión inmobiliaria exclusiva para clientes y profesionales del sector.",
+                "description": "{{ t('seo.jsonld_description') }}",
                 "areaServed": { "@type": "Country", "name": "Argentina" },
-                "availableLanguage": ["es-AR"],
+                "availableLanguage": ["{% if lang == 'en' %}en-US{% else %}es-AR{% endif %}"],
                 "contactPoint": {
                     "@type": "ContactPoint",
                     "contactType": "customer service",
-                    "availableLanguage": ["es-AR"]
+                    "availableLanguage": ["{% if lang == 'en' %}en-US{% else %}es-AR{% endif %}"]
                 }
             },
             {
@@ -58,19 +58,19 @@
                 "@id": "{{ request.url_root }}#website",
                 "url": "{{ request.url_root }}",
                 "name": "ArchEstate",
-                "description": "Plataforma de gestión inmobiliaria exclusiva para clientes y profesionales del sector.",
+                "description": "{{ t('seo.jsonld_description') }}",
                 "publisher": { "@id": "{{ request.url_root }}#organization" },
-                "inLanguage": "es-AR"
+                "inLanguage": "{% if lang == 'en' %}en-US{% else %}es-AR{% endif %}"
             },
             {
                 "@type": "RealEstateAgent",
                 "@id": "{{ request.url_root }}#realestateagent",
                 "name": "ArchEstate",
                 "url": "{{ request.url_root }}",
-                "description": "Plataforma de gestión inmobiliaria exclusiva para clientes y profesionales del sector.",
+                "description": "{{ t('seo.jsonld_description') }}",
                 "parentOrganization": { "@id": "{{ request.url_root }}#organization" },
                 "areaServed": { "@type": "Country", "name": "Argentina" },
-                "availableLanguage": ["es-AR"]
+                "availableLanguage": ["{% if lang == 'en' %}en-US{% else %}es-AR{% endif %}"]
             }
         ]
     }

@@ -31,7 +31,7 @@
                         name="role"
                         required
                         aria-describedby="err-role"
-                        data-auth-rules='{"required": true, "messages": {"required": "Elegí un tipo de cuenta."}}'
+                        data-auth-rules='{"required": true, "messages": {"required": "{{ t('auth.req_account_type') }}"}}'
                         class="w-full bg-paper-dark dark:bg-midnight border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 transition-colors text-sm">
                     <option value="client">{{ t('auth.client_option') }}</option>
                     <option value="professional">{{ t('auth.pro_option') }}</option>
@@ -69,7 +69,7 @@
                            data-async-check="true"
                            placeholder="{{ t('auth.username_format') }}"
                            aria-describedby="err-username username-hint"
-                           data-auth-rules='{"required": true, "usernameFormat": true, "messages": {"required": "Elegí un nombre de usuario.", "usernameFormat": "3-30 caracteres, solo letras, números y guión bajo."}}'
+                           data-auth-rules='{"required": true, "usernameFormat": true, "messages": {"required": "{{ t('auth.req_username') }}", "usernameFormat": "{{ t('auth.username_format') }}"}}'
                            class="input-animated w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-colors">
                 </div>
                 <div id="err-username" class="field-error" data-for="username" aria-live="polite"></div>
@@ -89,7 +89,7 @@
                            autocomplete="email"
                            placeholder="usuario@ejemplo.com"
                            aria-describedby="err-email"
-                           data-auth-rules='{"required": true, "email": true, "messages": {"required": "Ingresá tu email.", "email": "Formato de email inválido."}}'
+                           data-auth-rules='{"required": true, "email": true, "messages": {"required": "{{ t('auth.req_email') }}", "email": "{{ t('auth.email_invalid') }}"}}'
                            class="input-animated w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 transition-colors">
                 </div>
                 <div id="err-email" class="field-error" data-for="email" aria-live="polite"></div>
@@ -111,7 +111,7 @@
                            spellcheck="false"
                            placeholder="+54 9 11 1234 5678"
                            aria-describedby="err-phone phone-hint phone-preview"
-                           data-auth-rules='{"required": true, "phone": true, "messages": {"required": "Ingresá tu teléfono.", "phone": "Formato inválido. Ejemplo: +54 9 11 1234 5678"}}'
+                           data-auth-rules='{"required": true, "phone": true, "messages": {"required": "{{ t('auth.req_phone') }}", "phone": "{{ t('auth.phone_invalid') }}"}}'
                            maxlength="20"
                            class="input-animated w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 pr-8 transition-colors">
                     <span id="phone-status" data-phone-status class="absolute right-0 bottom-3 hidden" aria-hidden="true">
@@ -142,7 +142,7 @@
                            autocomplete="new-password"
                            data-strength="true"
                            aria-describedby="err-password password-strength password-rules"
-                           data-auth-rules='{"required": true, "minLength": 6, "hasLetter": true, "hasNumber": true, "messages": {"required": "Elegí una contraseña.", "minLength": "Mínimo 6 caracteres.", "hasLetter": "Debe contener al menos una letra.", "hasNumber": "Debe contener al menos un número."}}'
+                           data-auth-rules='{"required": true, "minLength": 6, "hasLetter": true, "hasNumber": true, "messages": {"required": "{{ t('auth.req_password') }}", "minLength": "{{ t('auth.pass_min6') }}", "hasLetter": "{{ t('auth.pass_letter') }}", "hasNumber": "{{ t('auth.pass_number') }}"}}'
                            class="input-animated w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 pr-10 transition-colors">
                     <button type="button"
                             data-toggle-pass="password"
@@ -154,7 +154,7 @@
                 <div id="err-password" class="field-error" data-for="password" aria-live="polite"></div>
                 <div id="password-strength" class="password-strength" data-strength-meter aria-hidden="true">
                     <div class="password-strength__bar" data-strength-bar></div>
-                    <div class="password-strength__label" data-strength-label>vacía</div>
+                    <div class="password-strength__label" data-strength-label>{{ t('auth.password_strength_empty') }}</div>
                 </div>
                 <ul id="password-rules" class="password-rules" aria-label="{{ t('auth.password_rules') }}">
                     <li data-password-rule="length">

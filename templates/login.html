@@ -38,7 +38,7 @@
                                autocomplete="username"
                                placeholder="{{ t('auth.username_placeholder') }}"
                                aria-describedby="err-username"
-                               data-auth-rules='{"required": true, "messages": {"required": "Ingresá tu nombre de usuario."}}'
+                               data-auth-rules='{"required": true, "messages": {"required": "{{ t('auth.req_login_user') }}"}}'
                                class="input-animated w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 pr-8 transition-colors outline-none">
                     </div>
                     <div id="err-username" class="field-error" data-for="username" aria-live="polite"></div>
@@ -62,7 +62,7 @@
                                autocomplete="current-password"
                                placeholder="••••••••"
                                aria-describedby="err-password"
-                               data-auth-rules='{"required": true, "messages": {"required": "Ingresá tu contraseña."}}'
+                               data-auth-rules='{"required": true, "messages": {"required": "{{ t('auth.req_login_pass') }}"}}'
                                class="input-animated w-full bg-transparent border-0 border-b border-midnight/10 dark:border-white/10 focus:border-gold focus:ring-0 py-3 pl-8 pr-10 transition-colors outline-none">
                         <button type="button"
                                 data-toggle-pass="password"

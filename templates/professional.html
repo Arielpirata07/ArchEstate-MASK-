@@ -253,19 +253,19 @@ window.__FORM_OPTIONS = {{ {
                     </button>
                     <button data-value="departamento" onclick="setPropType('departamento')"
                         class="prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
-                        <i data-lucide="building" class="w-3 h-3 inline -mt-0.5 mr-1"></i>Departamento
+                        <i data-lucide="building" class="w-3 h-3 inline -mt-0.5 mr-1"></i>{{ t('pro.pt_dept') }}
                     </button>
                     <button data-value="casa" onclick="setPropType('casa')"
                         class="prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
-                        <i data-lucide="home" class="w-3 h-3 inline -mt-0.5 mr-1"></i>Casa
+                        <i data-lucide="home" class="w-3 h-3 inline -mt-0.5 mr-1"></i>{{ t('pro.pt_house') }}
                     </button>
                     <button data-value="duplex" onclick="setPropType('duplex')"
                         class="prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
-                        <i data-lucide="layers" class="w-3 h-3 inline -mt-0.5 mr-1"></i>Dúplex
+                        <i data-lucide="layers" class="w-3 h-3 inline -mt-0.5 mr-1"></i>{{ t('pro.op_duplex') }}
                     </button>
                     <button data-value="penthouse" onclick="setPropType('penthouse')"
                         class="prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
-                        <i data-lucide="crown" class="w-3 h-3 inline -mt-0.5 mr-1"></i>Penthouse
+                        <i data-lucide="crown" class="w-3 h-3 inline -mt-0.5 mr-1"></i>{{ t('pro.pt_penthouse') }}
                     </button>
                     <button data-value="local_comercial" onclick="setPropType('local_comercial')"
                         class="prop-chip px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest border transition-colors border-midnight/20 text-midnight/60 hover:border-gold hover:text-gold">
@@ -351,12 +351,12 @@ window.__FORM_OPTIONS = {{ {
                     <tr class="bg-paper-dark table-header-border">
                         <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">ID</th>
                         <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Estado</th>
-                        <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Tipo Operación</th>
+                        <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('pro.col_operation') }}</th>
                         <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Vivienda</th>
                         <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Zona</th>
                         <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Presupuesto</th>
                         <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Fecha</th>
-                        <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold text-right">Acción</th>
+                        <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold text-right">{{ t('leads.action') }}</th>
                     </tr>
                 </thead>
                 <tbody id="leadsTableBody" class="stagger-rows">

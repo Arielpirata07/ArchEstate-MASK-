@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}ArchEstate - Plataforma de Gestion Inmobiliaria | Argentina{% endblock %}
+{% block title %}{{ t('landing.page_title') }}{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
@@ -10,12 +10,12 @@
   "@type": "Organization",
   "name": "ArchEstate",
   "url": "https://archestate.com.ar",
-  "description": "Plataforma de gestion inmobiliaria exclusiva para clientes y profesionales en Argentina.",
+  "description": "{{ t('landing.org_description') }}",
   "areaServed": {
     "@type": "Country",
     "name": "Argentina"
   },
-  "serviceType": "Gestion Inmobiliaria"
+  "serviceType": "{{ t('landing.service_type') }}"
 }
 </script>
 <script type="application/ld+json">
@@ -25,34 +25,34 @@
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "¿Es gratuito para usuarios?",
+      "name": "{{ t('faq.free_q') }}",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Sí, el servicio es completamente gratuito para usuarios que buscan profesionales. Solo los profesionales pagan para acceder a los leads."
+        "text": "{{ t('faq.free_a') }}"
       }
     },
     {
       "@type": "Question",
-      "name": "¿Cómo se verifican los profesionales?",
+      "name": "{{ t('faq.verified_q') }}",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Cada profesional debe presentar documentación válida (matrícula profesional, identificación) que es revisada manualmente por nuestro equipo antes de ser aprobado."
+        "text": "{{ t('faq.verified_a') }}"
       }
     },
     {
       "@type": "Question",
-      "name": "¿En qué zonas operan?",
+      "name": "{{ t('faq.zones_q') }}",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Operamos en múltiples ciudades de Latinoamérica y España. La cobertura se expande constantemente a medida que se incorporan nuevos profesionales."
+        "text": "{{ t('faq.zones_a') }}"
       }
     },
     {
       "@type": "Question",
-      "name": "¿Cuán rápido recibo respuestas?",
+      "name": "{{ t('faq.fast_q') }}",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "La mayoría de los profesionales se contactan dentro de las primeras 24 horas. El tiempo puede variar según la disponibilidad y la zona."
+        "text": "{{ t('faq.fast_a') }}"
       }
     }
   ]
@@ -109,7 +109,7 @@
             <p class="text-sm font-bold text-emerald-700 dark:text-emerald-300">{{ t('hero.submit_success') }}</p>
             <p class="text-xs text-emerald-600/80 dark:text-emerald-400/80 mt-1">{{ t('hero.submit_modify') }} <a href="{{ url_for('profile.profile_view') }}" class="underline font-semibold hover:text-emerald-500">{{ t('hero.submit_settings') }}</a>.</p>
         </div>
-        <button onclick="dismissAlert()" class="text-emerald-500/60 hover:text-emerald-500 transition-colors" aria-label="Cerrar">
+        <button onclick="dismissAlert()" class="text-emerald-500/60 hover:text-emerald-500 transition-colors" aria-label="{{ t('admin.close') }}">
             <i data-lucide="x" class="w-4 h-4"></i>
         </button>
     </div>
