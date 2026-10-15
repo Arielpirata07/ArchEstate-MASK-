@@ -404,7 +404,7 @@ function validateProfilePhone() {
     const suggestionEl = document.getElementById('profile-phone-suggestion');
     const previewEl = document.getElementById('phone-correction-preview');
     const cityEl = document.getElementById('profile-phone-city');
-    _lastPhoneSuggestion = '';
+    _lastPhoneSuggestion = window._lastPhoneSuggestion = '';
     if (suggestionEl) suggestionEl.classList.add('hidden');
     if (previewEl) previewEl.classList.add('hidden');
     if (cityEl) { cityEl.classList.add('hidden'); cityEl.textContent = ''; }
@@ -441,7 +441,7 @@ function validateProfilePhone() {
         if (suggestion) {
             const sugNational = suggestion.replace(/^(\+\d+)\s*/, '').replace(/\D/g, '');
             if (sugNational !== localDigits) {
-                _lastPhoneSuggestion = suggestion;
+                _lastPhoneSuggestion = window._lastPhoneSuggestion = suggestion;
                 if (suggestionEl) suggestionEl.classList.remove('hidden');
             }
         }
@@ -1838,5 +1838,15 @@ window.resendVerificationCode = resendVerificationCode;
 window.toggleProvinceSearch = toggleProvinceSearch;
 window.onProvinceSearchInput = onProvinceSearchInput;
 window.onProvinceSearchKeydown = onProvinceSearchKeydown;
+/* API de tests (node --test): funciones ejercitadas por tests/*.test.js */
+window.loadCoverage = loadCoverage;
+window.saveCoverage = saveCoverage;
+window.addCoverageZone = addCoverageZone;
+window.removeCoverageZone = removeCoverageZone;
+window.validateProfilePhone = validateProfilePhone;
+window.showPhoneCorrection = showPhoneCorrection;
+window.applyPhoneCorrection = applyPhoneCorrection;
+window.applyProvincePrefix = applyProvincePrefix;
+window.formatProfilePhone = formatProfilePhone;
 
 })();

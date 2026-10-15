@@ -83,6 +83,8 @@ test('suggest and apply phone correction for Villa Carlos Paz', () => {
     clearTimeout,
     MutationObserver: class {},
     lucide: { createIcons() {} },
+    delegateActions() {},
+    createChipSelector: () => ({ select() {}, syncAge() {} }),
     t: () => '',
     escapeHtml: (value) => value,
   };
@@ -99,14 +101,14 @@ test('suggest and apply phone correction for Villa Carlos Paz', () => {
   vm.runInContext(fs.readFileSync('static/js/profile.js', 'utf8'), context);
 
   phoneInput.value = '3541388368';
-  context.validateProfilePhone();
+  context.window.validateProfilePhone();
 
-  const suggestion = vm.runInContext('_lastPhoneSuggestion', context);
+  const suggestion = vm.runInContext('window._lastPhoneSuggestion', context);
   assert.equal(suggestion, '+54 9 3541 388 368');
-  context.showPhoneCorrection();
+  context.window.showPhoneCorrection();
   assert.equal(correctionTo.textContent, '+54 9 3541 388 368');
 
-  context.applyPhoneCorrection();
+  context.window.applyPhoneCorrection();
   assert.equal(phoneInput.value, '9 3541 388 368');
   assert.equal(customAreaInput.value, '3541');
 });
@@ -150,6 +152,8 @@ test('applyProvincePrefix no acumula codigos de area al cambiar de provincia var
     clearTimeout,
     MutationObserver: class {},
     lucide: { createIcons() {} },
+    delegateActions() {},
+    createChipSelector: () => ({ select() {}, syncAge() {} }),
     t: () => '',
     escapeHtml: (value) => value,
   };
@@ -169,11 +173,11 @@ test('applyProvincePrefix no acumula codigos de area al cambiar de provincia var
   phoneInput.value = '4123456';
 
   provinceSelect.value = '351';
-  context.applyProvincePrefix();
+  context.window.applyProvincePrefix();
   provinceSelect.value = '11';
-  context.applyProvincePrefix();
+  context.window.applyProvincePrefix();
   provinceSelect.value = '221';
-  context.applyProvincePrefix();
+  context.window.applyProvincePrefix();
 
   const finalDigits = phoneInput.value.replace(/\D/g, '');
   assert.equal(finalDigits.length, 11);
@@ -215,6 +219,8 @@ test('formatProfilePhone no duplica el area con prefijo movil (Fase 0 item 1)', 
     clearTimeout,
     MutationObserver: class {},
     lucide: { createIcons() {} },
+    delegateActions() {},
+    createChipSelector: () => ({ select() {}, syncAge() {} }),
     t: () => '',
     escapeHtml: (value) => value,
   };
@@ -233,6 +239,6 @@ test('formatProfilePhone no duplica el area con prefijo movil (Fase 0 item 1)', 
     ['+54 9 11 2345 6789', '+54 9 11 23456789'],
   ];
   for (const [input, expected] of cases) {
-    assert.equal(context.formatProfilePhone(input, '+54'), expected, `input: ${input}`);
+    assert.equal(context.window.formatProfilePhone(input, '+54'), expected, `input: ${input}`);
   }
 });

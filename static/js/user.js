@@ -314,7 +314,7 @@ function onUserPhoneInput() {
     const countrySelect = document.getElementById('country-code-select');
     const suggestionEl = document.getElementById('user-phone-suggestion');
     const previewEl = document.getElementById('user-correction-preview');
-    _lastUserPhoneSuggestion = '';
+    _lastUserPhoneSuggestion = window._lastUserPhoneSuggestion = '';
     if (suggestionEl) suggestionEl.classList.add('hidden');
     if (previewEl) previewEl.classList.add('hidden');
     if (!phoneInput || !countrySelect || typeof PhoneSuggest === 'undefined') return;
@@ -332,7 +332,7 @@ function onUserPhoneInput() {
     if (!suggestion) return;
     const sugNational = suggestion.replace(/^(\+\d+)\s*/, '').replace(/\D/g, '');
     if (sugNational === national) return;
-    _lastUserPhoneSuggestion = suggestion;
+    _lastUserPhoneSuggestion = window._lastUserPhoneSuggestion = suggestion;
     if (suggestionEl) suggestionEl.classList.remove('hidden');
 }
 
@@ -353,7 +353,7 @@ function applyUserPhoneCorrection() {
     const input = document.getElementById('phone-input');
     const cc = document.getElementById('country-code-select').value;
     if (input) input.value = _lastUserPhoneSuggestion.replace(cc + ' ', '');
-    _lastUserPhoneSuggestion = '';
+    _lastUserPhoneSuggestion = window._lastUserPhoneSuggestion = '';
     const suggestionEl = document.getElementById('user-phone-suggestion');
     const previewEl = document.getElementById('user-correction-preview');
     if (suggestionEl) suggestionEl.classList.add('hidden');
@@ -361,7 +361,7 @@ function applyUserPhoneCorrection() {
 }
 
 function dismissUserPhoneCorrection() {
-    _lastUserPhoneSuggestion = '';
+    _lastUserPhoneSuggestion = window._lastUserPhoneSuggestion = '';
     const suggestionEl = document.getElementById('user-phone-suggestion');
     const previewEl = document.getElementById('user-correction-preview');
     if (suggestionEl) suggestionEl.classList.add('hidden');
@@ -442,5 +442,12 @@ delegateActions({
 delegateActions({
     'user-key-province': function(el, e) { onProvinceSearchKeydown(el.dataset.target, e); }
 }, 'keydown');
+
+
+/* API pública (tests + otros módulos) */
+window.onUserPhoneInput = onUserPhoneInput;
+window.applyUserPhoneCorrection = applyUserPhoneCorrection;
+window.savePhoneToProfile = savePhoneToProfile;
+window.applyPhoneProvincePrefix = applyPhoneProvincePrefix;
 
 })();

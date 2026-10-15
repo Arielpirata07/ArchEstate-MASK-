@@ -91,6 +91,8 @@ function buildContext(fetchImpl) {
     clearTimeout,
     MutationObserver: class {},
     lucide: { createIcons() {} },
+    delegateActions() {},
+    createChipSelector: () => ({ select() {}, syncAge() {} }),
     t: (key) => key,
     escapeHtml: (value) => value,
     showToast() {},
@@ -134,10 +136,10 @@ test('user.js suggests and applies AR phone correction', () => {
   const countrySelect = elements['country-code-select'];
   countrySelect.value = '+54';
   elements['phone-input'].value = '3541388368';
-  context.onUserPhoneInput();
-  let suggestion = vm.runInContext('_lastUserPhoneSuggestion', context);
+  context.window.onUserPhoneInput();
+  let suggestion = vm.runInContext('window._lastUserPhoneSuggestion', context);
   assert.equal(suggestion, '+54 9 3541 388 368');
-  context.applyUserPhoneCorrection();
+  context.window.applyUserPhoneCorrection();
   assert.equal(elements['phone-input'].value, '9 3541 388 368');
 });
 
@@ -153,7 +155,7 @@ test('user.js savePhoneToProfile rejects implausible length', async () => {
   const countrySelect = elements['country-code-select'];
   countrySelect.value = '+54';
   elements['phone-input'].value = '388368';
-  await context.savePhoneToProfile();
+  await context.window.savePhoneToProfile();
   assert.equal(fetchCalls, 0, 'fetch must not be called for implausible phone');
   assert.equal(elements['phone-error-msg'].textContent, 'phone.incomplete_autocomplete');
 });
@@ -170,7 +172,7 @@ test('user.js savePhoneToProfile sends formatted MX phone', async () => {
   const countrySelect = elements['country-code-select'];
   countrySelect.value = '+52';
   elements['phone-input'].value = '5512345678';
-  await context.savePhoneToProfile();
+  await context.window.savePhoneToProfile();
   assert.deepEqual(body, { phone: '+52 55 1234 5678' });
 });
 
@@ -194,11 +196,11 @@ test('user.js applyPhoneProvincePrefix no acumula codigos de area al cambiar de 
 
   phoneInput.value = '4123456';
   provinceSelect.value = '351';
-  context.applyPhoneProvincePrefix();
+  context.window.applyPhoneProvincePrefix();
   provinceSelect.value = '11';
-  context.applyPhoneProvincePrefix();
+  context.window.applyPhoneProvincePrefix();
   provinceSelect.value = '221';
-  context.applyPhoneProvincePrefix();
+  context.window.applyPhoneProvincePrefix();
 
   const finalDigits = phoneInput.value.replace(/\D/g, '');
   assert.equal(finalDigits.length, 11);

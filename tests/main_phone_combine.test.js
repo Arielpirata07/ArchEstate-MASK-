@@ -34,6 +34,7 @@ function loadMain() {
   context.window.window = context.window;
   vm.createContext(context);
   vm.runInContext(fs.readFileSync('static/js/main.js', 'utf8'), context);
+  vm.runInContext(fs.readFileSync('static/js/forms.js', 'utf8'), context);
   return context;
 }
 
@@ -48,7 +49,7 @@ test('combineCountryAreaPhone con provincia no duplica el area (Fase 0 item 1)',
     ['+54 9 11 2345 6789', '+54 9 11 23456789'],
   ];
   for (const [input, expected] of cases) {
-    assert.equal(context.combineCountryAreaPhone('+54', '11', input), expected, `input: ${input}`);
+    assert.equal(context.window.combineCountryAreaPhone('+54', '11', input), expected, `input: ${input}`);
   }
 });
 
@@ -59,13 +60,13 @@ test('combineCountryAreaPhone sin provincia normaliza a +54 9... (Fase 0 item 1)
     ['+54 9 11 2345 6789', '+54 91123456789'],
   ];
   for (const [input, expected] of cases) {
-    assert.equal(context.combineCountryAreaPhone('+54', '', input), expected, `input: ${input}`);
+    assert.equal(context.window.combineCountryAreaPhone('+54', '', input), expected, `input: ${input}`);
   }
 });
 
 test('combineCountryAreaPhone respeta otras banderas sin tocar el numero', () => {
   assert.equal(
-    context.combineCountryAreaPhone('+52', '', '55 1234 5678'),
+    context.window.combineCountryAreaPhone('+52', '', '55 1234 5678'),
     '+52 55 1234 5678'
   );
 });

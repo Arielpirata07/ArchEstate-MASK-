@@ -81,6 +81,8 @@ function buildContext(fetchImpl) {
     fetch: fetchImpl,
     MutationObserver: class {},
     lucide: { createIcons() {} },
+    delegateActions() {},
+    createChipSelector: () => ({ select() {}, syncAge() {} }),
     t: (key) => key,
     escapeHtml: (v) => v,
   };
@@ -102,7 +104,7 @@ test('loadCoverage popula zonas y tilda las especialidades guardadas', async () 
   }));
   run('static/js/profile.js');
 
-  await context.loadCoverage();
+  await context.window.loadCoverage();
 
   const html = elements['coverage-zones-list'].innerHTML;
   assert.ok(html.includes('Nueva Córdoba'));
@@ -119,9 +121,9 @@ test('addCoverageZone agrega una zona nueva y evita duplicados (case-insensitive
   run('static/js/profile.js');
 
   elements['coverage-zone-input'].value = 'Nueva Córdoba';
-  context.addCoverageZone();
+  context.window.addCoverageZone();
   elements['coverage-zone-input'].value = 'nueva córdoba';
-  context.addCoverageZone();
+  context.window.addCoverageZone();
 
   const html = elements['coverage-zones-list'].innerHTML;
   const occurrences = (html.match(/Nueva Córdoba/g) || []).length;
@@ -133,11 +135,11 @@ test('removeCoverageZone saca la zona correcta de la lista', () => {
   run('static/js/profile.js');
 
   elements['coverage-zone-input'].value = 'Zona A';
-  context.addCoverageZone();
+  context.window.addCoverageZone();
   elements['coverage-zone-input'].value = 'Zona B';
-  context.addCoverageZone();
+  context.window.addCoverageZone();
 
-  context.removeCoverageZone(0);
+  context.window.removeCoverageZone(0);
 
   const html = elements['coverage-zones-list'].innerHTML;
   assert.ok(!html.includes('Zona A'));
@@ -153,10 +155,10 @@ test('saveCoverage envia las zonas actuales y las especialidades tildadas', asyn
   run('static/js/profile.js');
 
   elements['coverage-zone-input'].value = 'Nueva Córdoba';
-  context.addCoverageZone();
+  context.window.addCoverageZone();
   specialtyCheckboxes.find(cb => cb.value === 'terreno').checked = true;
 
-  await context.saveCoverage();
+  await context.window.saveCoverage();
 
   assert.deepEqual(sentBody, { zones: ['Nueva Córdoba'], specialties: ['terreno'] });
   assert.equal(elements['coverage-save-msg'].classList.contains('hidden'), false);
@@ -169,7 +171,7 @@ test('saveCoverage muestra el error del servidor si la validacion falla', async 
   }));
   run('static/js/profile.js');
 
-  await context.saveCoverage();
+  await context.window.saveCoverage();
 
   assert.equal(elements['coverage-save-error'].textContent, 'Demasiadas zonas o especialidades (máximo 20 cada una)');
   assert.equal(elements['coverage-save-error'].classList.contains('hidden'), false);
@@ -182,10 +184,10 @@ test('el contador de zonas se actualiza al agregar y sacar', () => {
   assert.equal(elements['coverage-zones-count'].textContent, '0/20');
 
   elements['coverage-zone-input'].value = 'Zona A';
-  context.addCoverageZone();
+  context.window.addCoverageZone();
   assert.equal(elements['coverage-zones-count'].textContent, '1/20');
 
-  context.removeCoverageZone(0);
+  context.window.removeCoverageZone(0);
   assert.equal(elements['coverage-zones-count'].textContent, '0/20');
 });
 
@@ -195,7 +197,7 @@ test('al llegar a 20 zonas se deshabilita agregar y se avisa el limite', () => {
 
   for (let i = 0; i < 20; i++) {
     elements['coverage-zone-input'].value = 'Zona ' + i;
-    context.addCoverageZone();
+    context.window.addCoverageZone();
   }
   assert.equal(elements['coverage-zones-count'].textContent, '20/20');
   assert.equal(elements['coverage-zone-add-btn'].disabled, true);
@@ -205,7 +207,7 @@ test('al llegar a 20 zonas se deshabilita agregar y se avisa el limite', () => {
   // deshabilitara el input) no debe sumar una 21a zona, y avisa el limite.
   elements['coverage-zone-input'].disabled = false;
   elements['coverage-zone-input'].value = 'Zona de mas';
-  context.addCoverageZone();
+  context.window.addCoverageZone();
   assert.equal(elements['coverage-zones-count'].textContent, '20/20');
   assert.equal(elements['coverage-zone-error'].classList.contains('hidden'), false);
 });
@@ -215,9 +217,9 @@ test('agregar una zona duplicada muestra un error inline en vez de fallar en sil
   run('static/js/profile.js');
 
   elements['coverage-zone-input'].value = 'Nueva Córdoba';
-  context.addCoverageZone();
+  context.window.addCoverageZone();
   elements['coverage-zone-input'].value = 'Nueva Córdoba';
-  context.addCoverageZone();
+  context.window.addCoverageZone();
 
   assert.equal(elements['coverage-zone-error'].classList.contains('hidden'), false);
   assert.equal(elements['coverage-zones-count'].textContent, '1/20');
@@ -230,7 +232,7 @@ test('loadCoverage muestra el aviso de fallback cuando configured es false', asy
   }));
   run('static/js/profile.js');
 
-  await context.loadCoverage();
+  await context.window.loadCoverage();
   assert.equal(elements['coverage-fallback-hint'].classList.contains('hidden'), false);
 });
 
@@ -241,7 +243,7 @@ test('loadCoverage oculta el aviso de fallback cuando configured es true', async
   }));
   run('static/js/profile.js');
 
-  await context.loadCoverage();
+  await context.window.loadCoverage();
   assert.equal(elements['coverage-fallback-hint'].classList.contains('hidden'), true);
 });
 
@@ -251,7 +253,7 @@ test('saveCoverage deshabilita el boton y cambia el label mientras esta en curso
   const { context, elements, run } = buildContext(() => pending);
   run('static/js/profile.js');
 
-  const savePromise = context.saveCoverage();
+  const savePromise = context.window.saveCoverage();
 
   // En este punto el fetch todavia no resolvio -- el boton debe estar
   // deshabilitado y mostrando el estado de "guardando".
@@ -270,7 +272,7 @@ test('guardar con exito oculta el aviso de fallback', async () => {
   run('static/js/profile.js');
 
   elements['coverage-fallback-hint'].classList.remove('hidden');
-  await context.saveCoverage();
+  await context.window.saveCoverage();
 
   assert.equal(elements['coverage-fallback-hint'].classList.contains('hidden'), true);
 });

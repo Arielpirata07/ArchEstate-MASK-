@@ -623,6 +623,7 @@ window.initCountrySelector = initCountrySelector;
 window.initZoneAutocomplete = initZoneAutocomplete;
 window.initArchitecturalStyleAutocomplete = initArchitecturalStyleAutocomplete;
 window.initHouseAreaValidation = initHouseAreaValidation;
+window.combineCountryAreaPhone = combineCountryAreaPhone;
 window.initDuplexAreaValidation = initDuplexAreaValidation;
 
 })();
