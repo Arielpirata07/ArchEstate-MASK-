@@ -8,6 +8,21 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ---
 
+## [v0.39.0] — 2026-10-15 — Frontend Fase 5 (Auditoría)
+
+### Añadido
+- **Módulos JS**: `main.js` (1587→393 líneas) partido en `toasts.js`, `modals.js`, `forms.js`, `budget.js`, `scroll.js` (cargan tras `main.js` en `base.html`); `shared/chips.js` elimina la duplicación user/edit_lead.
+- **IIFE por archivo** con `window.*` explícito como única API pública; verificado por script (42/42 declaraciones únicas, exports resueltos, sin referencias cruzadas rotas).
+- **Cero handlers inline**: 189 `onclick` + 48 `on*` + 54 generados por JS migrados a `delegateActions(map, event)` (`click`/`change`/`input`/`keydown`/`keyup`/`mouseover`) con `data-action`; CSP sin `unpkg.com`.
+- **Assets locales**: Lucide v0.468.0 self-hosted, hero `static/img/hero.jpg` (también `og:image`), sin preload redundante de fonts, `width/height` + `fetchpriority` en hero.
+- **Higiene**: `escapeHtml` único (el fallback muerto de `auth.js` eliminado), 20 `catch` vacíos con `console.error` (+ toast donde hay acción de usuario).
+
+### Corregido
+- Tests JS adaptados a módulos IIFE (stubs + `window.*`, carga de `forms.js`); indietro: `combineCountryAreaPhone` y callers de coverage/teléfono.
+- Suite: 624 pytest + 30 node verdes, coherencia 94/94.
+
+---
+
 ## [v0.38.0] — 2026-10-15 — i18n Fase 4 (Auditoría)
 
 ### Añadido
