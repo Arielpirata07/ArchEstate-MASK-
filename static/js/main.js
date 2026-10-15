@@ -49,6 +49,22 @@ function escapeHtml(str) {
 window.escapeHtml = escapeHtml;
 
 /**
+ * Delegación de clicks por data-action (FASE 5.9, reemplazo de onclick).
+ * Uso: delegateActions({ 'mi-accion': function(el, e) { ... } });
+ * En el HTML: <button data-action="mi-accion" data-id="123">.
+ * Funciona también con nodos agregados dinámicamente.
+ */
+function delegateActions(handlers) {
+    document.addEventListener('click', function(e) {
+        var el = e.target.closest ? e.target.closest('[data-action]') : null;
+        if (!el || !document.contains(el)) return;
+        var fn = handlers[el.dataset.action];
+        if (typeof fn === 'function') fn(el, e);
+    });
+}
+window.delegateActions = delegateActions;
+
+/**
  * Detecta la preferencia de movimiento reducido del sistema.
  */
 function prefersReducedMotion() {

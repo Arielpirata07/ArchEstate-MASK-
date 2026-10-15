@@ -155,7 +155,7 @@
                     {% set active_role = t('role.professional') %}
                 {% endif %}
                 <!-- Notifications bell -->
-                <button id="notif-bell" class="relative p-2 text-white/60 hover:text-gold transition-colors" aria-label="{{ t('nav.notifications') }}" onclick="toggleNotifications()">
+                <button id="notif-bell" class="relative p-2 text-white/60 hover:text-gold transition-colors" aria-label="{{ t('nav.notifications') }}" data-action="notif-toggle">
                     <i data-lucide="bell" class="w-4 h-4" aria-hidden="true"></i>
                     {% if unread_notifications > 0 %}
                     <span id="notif-badge" class="badge-pop absolute -top-0.5 -right-0.5 flex items-center justify-center w-4 h-4 text-[9px] font-bold text-white bg-rose-500 rounded-full">{{ unread_notifications }}</span>
@@ -242,7 +242,7 @@
     <div id="notif-dropdown" class="modal-anim modal-panel hidden fixed right-4 top-20 z-50 w-80 bg-white dark:!bg-[#1a2332] border border-gold/20 dark:border-gold-light/20 rounded-lg shadow-xl overflow-hidden" role="dialog" aria-label="{{ t('nav.notifications') }}">
         <div class="flex items-center justify-between px-4 py-3 border-b border-gold/20 dark:border-gold-light/20 bg-midnight-light">
             <h3 class="text-xs font-bold uppercase tracking-widest text-gold dark:text-gold-light">{{ t('nav.notifications') }}</h3>
-            <button onclick="markAllRead()" class="text-[9px] uppercase tracking-wider text-white/40 hover:text-gold dark:hover:text-gold-light transition-colors">{{ t('nav.mark_all_read') }}</button>
+            <button data-action="notif-mark-all" class="text-[9px] uppercase tracking-wider text-white/40 hover:text-gold dark:hover:text-gold-light transition-colors">{{ t('nav.mark_all_read') }}</button>
         </div>
         <div id="notif-list" class="max-h-80 overflow-y-auto">
             <div class="p-4 space-y-3">
@@ -377,7 +377,7 @@
                     '</div>' +
                     '</div>' +
                     '</div>' +
-                    (!n.is_read ? '<button onclick="markRead(' + n.id + ')" class="shrink-0 text-[9px] uppercase tracking-wider text-gold dark:text-gold-light hover:text-white dark:hover:text-white transition-colors">' + window.t('nav.read') + '</button>' : '') +
+                    (!n.is_read ? '<button data-action="notif-mark-read" data-id="' + n.id + '" class="shrink-0 text-[9px] uppercase tracking-wider text-gold dark:text-gold-light hover:text-white dark:hover:text-white transition-colors">' + window.t('nav.read') + '</button>' : '') +
                     '</div></div>';
                 });
                 list.innerHTML = html;
@@ -403,7 +403,7 @@
             body: JSON.stringify({notification_id: nid})
         }).then(function(r) { return r.json(); }).then(function(data) {
             if (data.success) loadNotifications();
-        }).catch(function() {});
+        }).catch(function(err) { console.error('markRead failed:', err); });
     }
 
     function markAllRead() {
@@ -414,8 +414,18 @@
                     var badge = document.getElementById('notif-badge');
                     if (badge) badge.remove();
                 }
-            }).catch(function() {});
+            }).catch(function(err) { console.error('markAllRead failed:', err); });
     }
+
+    /* Delegación data-action (FASE 5.9): reemplaza onclick inline.
+       main.js es defer → registrar tras DOMContentLoaded. */
+    window.addEventListener('DOMContentLoaded', function() {
+        delegateActions({
+            'notif-toggle': function() { toggleNotifications(); },
+            'notif-mark-all': function() { markAllRead(); },
+            'notif-mark-read': function(el) { markRead(el.dataset.id); }
+        });
+    });
 
     /* Close dropdown on click outside */
     document.addEventListener('click', function(e) {

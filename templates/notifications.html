@@ -12,12 +12,12 @@
             <p id="notif-page-subtitle" class="text-sm text-midnight/50 dark:text-white/50 mt-1">{{ t('notif.page_of', page=1, pages=1) }}</p>
         </div>
         <div class="flex items-center gap-2">
-            <button onclick="deleteReadNotifications()"
+            <button data-action="notif-delete-read"
                 class="btn-danger-ghost px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-rose-500 border border-rose-200 rounded flex items-center gap-1.5">
                 <i data-lucide="trash-2" class="w-3 h-3"></i>
                 {{ t('notif.delete_read') }}
             </button>
-            <button onclick="markAllReadNotifPage()"
+            <button data-action="notif-mark-all-page"
                 class="px-4 py-2 text-[10px] font-bold uppercase tracking-widest text-gold hover:text-midnight border border-gold/30 hover:border-gold rounded transition-colors flex items-center gap-1.5">
                 <i data-lucide="check-check" class="w-3 h-3"></i>
                 {{ t('nav.mark_all_read') }}
@@ -32,12 +32,12 @@
 
     <!-- Pagination -->
     <div id="notif-page-pagination" class="hidden flex items-center justify-between pt-4">
-        <button id="notif-page-prev" onclick="notifPage(currentNotifPage - 1)"
+        <button id="notif-page-prev" data-action="notif-prev"
             class="text-[10px] uppercase tracking-wider font-bold text-midnight/40 hover:text-gold dark:text-white/40 dark:hover:text-gold-light transition-colors">
             {{ t('notif.page_prev') }}
         </button>
         <span id="notif-page-info" class="text-xs text-midnight/40 dark:text-white/40"></span>
-        <button id="notif-page-next" onclick="notifPage(currentNotifPage + 1)"
+        <button id="notif-page-next" data-action="notif-next"
             class="text-[10px] uppercase tracking-wider font-bold text-midnight/40 hover:text-gold dark:text-white/40 dark:hover:text-gold-light transition-colors">
             {{ t('notif.page_next') }}
         </button>
@@ -100,12 +100,12 @@ function notifPage(page) {
                     '</div>' +
                     '</div>' +
                     '<div class="flex items-center gap-2 shrink-0">' +
-                    '<button onclick="markReadNotifPage(' + n.id + ')" class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded border transition-colors ' +
+                    '<button data-action="notif-mark-read-page" data-id="' + n.id + '" class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded border transition-colors ' +
                     (n.is_read
                         ? 'border-transparent text-midnight/20 dark:text-white/20 cursor-default'
                         : 'border-gold/30 text-gold hover:bg-gold hover:text-white') +
                     '">' + window.t('nav.read') + '</button>' +
-                    '<button onclick="deleteNotification(' + n.id + ')" class="p-1.5 text-midnight/30 hover:text-rose-500 transition-colors" title="' + window.t('notif.delete') + '">' +
+                    '<button data-action="notif-delete" data-id="' + n.id + '" class="p-1.5 text-midnight/30 hover:text-rose-500 transition-colors" title="' + window.t('notif.delete') + '">' +
                     '<i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>' +
                     '</div>' +
                     '</div></div>';
@@ -148,7 +148,7 @@ function markReadNotifPage(nid) {
         body: JSON.stringify({notification_id: nid})
     }).then(function(r) { return r.json(); }).then(function(data) {
         if (data.success) notifPage(currentNotifPage);
-    }).catch(function() {});
+    }).catch(function(err) { console.error('notif action failed:', err); });
 }
 
 function deleteNotification(nid) {
@@ -163,9 +163,9 @@ function deleteNotification(nid) {
                     .then(function(d) {
                         if (badge && d.unread > 0) badge.textContent = d.unread;
                         else if (badge) badge.remove();
-                    }).catch(function() {});
+                    }).catch(function(err) { console.error('notif action failed:', err); });
             }
-        }).catch(function() {});
+        }).catch(function(err) { console.error('notif action failed:', err); });
 }
 
 function markAllReadNotifPage() {
@@ -173,7 +173,7 @@ function markAllReadNotifPage() {
         .then(function(r) { return r.json(); })
         .then(function(data) {
             if (data.success) notifPage(1);
-        }).catch(function() {});
+        }).catch(function(err) { console.error('notif action failed:', err); });
 }
 
 function deleteReadNotifications() {
@@ -181,9 +181,21 @@ function deleteReadNotifications() {
         .then(function(r) { return r.json(); })
         .then(function(data) {
             if (data.success) notifPage(1);
-        }).catch(function() {});
+        }).catch(function(err) { console.error('notif action failed:', err); });
 }
 
 notifPage(1);
+
+/* Delegación data-action (FASE 5.9) — main.js es defer, registrar tras DOMContentLoaded */
+window.addEventListener('DOMContentLoaded', function() {
+    delegateActions({
+        'notif-delete-read': function() { deleteReadNotifications(); },
+        'notif-mark-all-page': function() { markAllReadNotifPage(); },
+        'notif-prev': function() { notifPage(currentNotifPage - 1); },
+        'notif-next': function() { notifPage(currentNotifPage + 1); },
+        'notif-mark-read-page': function(el) { markReadNotifPage(el.dataset.id); },
+        'notif-delete': function(el) { deleteNotification(el.dataset.id); }
+    });
+});
 </script>
 {% endblock %}

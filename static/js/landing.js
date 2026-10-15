@@ -338,3 +338,9 @@ function initNavbarShrink() {
         }
     });
 }
+
+/* Delegación data-action (FASE 5.9): reemplaza onclick inline */
+delegateActions({
+    'dismiss-alert': function() { dismissAlert(); },
+    'toggle-faq': function(el) { toggleFaq(el); }
+});
