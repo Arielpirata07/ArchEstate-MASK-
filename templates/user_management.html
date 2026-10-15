@@ -97,7 +97,7 @@
 <!-- ===== MODAL DE RESET DE CONTRASEÑA ===== -->
 <div id="resetModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="resetModalTitle">
     <!-- Overlay -->
-    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeModal()"></div>
+    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" data-action="um-close"></div>
 
     <!-- Panel -->
     <div class="absolute inset-0 flex overflow-y-auto p-4">
@@ -113,7 +113,7 @@
                             {{ t('um.user_label') }} <strong id="modal-username" class="text-midnight font-bold"></strong>
                         </p>
                     </div>
-                    <button onclick="closeModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('um.close') }}">
+                    <button data-action="um-close" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('um.close') }}">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>
@@ -171,11 +171,11 @@
 
                 <!-- Acciones -->
                 <div class="flex gap-3 pt-2">
-                    <button onclick="closeModal()"
+                    <button data-action="um-close"
                         class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-colors">
                         {{ t('um.cancel') }}
                     </button>
-                    <button id="confirmResetBtn" onclick="confirmReset()"
+                    <button id="confirmResetBtn" data-action="um-confirm-reset"
                         class="flex-1 py-3 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-colors flex items-center justify-center gap-2">
                         <i data-lucide="key-round" class="w-3 h-3"></i>
                         {{ t('um.reset') }}
@@ -189,7 +189,7 @@
 
 <!-- ===== MODAL DE DAR DE BAJA ===== -->
 <div id="disableModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="disableModalTitle">
-    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeDisableModal()"></div>
+    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" data-action="um-close-disable"></div>
     <div class="absolute inset-0 flex overflow-y-auto p-4">
         <div class="modal-panel bg-white rounded-lg shadow-2xl border-t-4 border-rose-500 overflow-hidden w-full max-w-md" style="margin:auto">
             <div class="px-8 pt-8 pb-4">
@@ -201,7 +201,7 @@
                             {{ t('um.user_label') }} <strong id="disable-username" class="text-midnight font-bold"></strong>
                         </p>
                     </div>
-                    <button onclick="closeDisableModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('um.close') }}">
+                    <button data-action="um-close-disable" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('um.close') }}">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>
@@ -219,11 +219,11 @@
                         class="w-full bg-paper-dark border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-2 transition-colors text-sm resize-none"></textarea>
                 </div>
                 <div class="flex gap-3 pt-2">
-                    <button onclick="closeDisableModal()"
+                    <button data-action="um-close-disable"
                         class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-colors">
                         {{ t('um.cancel') }}
                     </button>
-                    <button id="confirmDisableBtn" onclick="confirmDisable()"
+                    <button id="confirmDisableBtn" data-action="um-confirm-disable"
                         class="flex-1 py-3 bg-rose-600 dark:bg-rose-700 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-rose-700 dark:hover:bg-rose-800 transition-colors flex items-center justify-center gap-2">
                         <i data-lucide="user-x" class="w-3 h-3"></i>
                         {{ t('um.disable') }}
@@ -236,7 +236,7 @@
 
 <!-- ===== MODAL DE REACTIVAR ===== -->
 <div id="enableModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="enableModalTitle">
-    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" onclick="closeEnableModal()"></div>
+    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" data-action="um-close-enable"></div>
     <div class="absolute inset-0 flex overflow-y-auto p-4">
         <div class="modal-panel bg-white rounded-lg shadow-2xl border-t-4 border-emerald-500 overflow-hidden w-full max-w-md" style="margin:auto">
             <div class="px-8 pt-8 pb-4">
@@ -248,17 +248,17 @@
                             {{ t('um.user_label') }} <strong id="enable-username" class="text-midnight font-bold"></strong>
                         </p>
                     </div>
-                    <button onclick="closeEnableModal()" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('um.close') }}">
+                    <button data-action="um-close-enable" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('um.close') }}">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>
             </div>
             <div class="px-8 pb-8 pt-2 flex gap-3">
-                <button onclick="closeEnableModal()"
+                <button data-action="um-close-enable"
                     class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-colors">
                     {{ t('um.cancel') }}
                 </button>
-                <button id="confirmEnableBtn" onclick="confirmEnable()"
+                <button id="confirmEnableBtn" data-action="um-confirm-enable"
                     class="flex-1 py-3 bg-emerald-600 dark:bg-emerald-700 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-emerald-700 dark:hover:bg-emerald-800 transition-colors flex items-center justify-center gap-2">
                     <i data-lucide="user-check" class="w-3 h-3"></i>
                     {{ t('um.enable') }}

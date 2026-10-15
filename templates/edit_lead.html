@@ -146,28 +146,28 @@ window.__FORM_OPTIONS = {{ {
                             <div>
                                 <label for="edit-ambientes" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">{{ t('prof.pdf_rooms') }}</label>
                                 <div class="flex items-center gap-3">
-                                    <button type="button" onclick="stepEditNum('edit-ambientes',-1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-lg leading-none">-</button>
+                                    <button type="button" data-action="edit-step" data-field="edit-ambientes" data-delta="-1" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-lg leading-none">-</button>
                                     <input id="edit-ambientes" name="ambientes" type="number" min="0" max="20" value="{{ lead.ambientes if lead.ambientes else '' }}"
                                         class="w-12 text-center bg-transparent border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-1 text-sm font-semibold">
-                                    <button type="button" onclick="stepEditNum('edit-ambientes',1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-lg leading-none">+</button>
+                                    <button type="button" data-action="edit-step" data-field="edit-ambientes" data-delta="1" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-lg leading-none">+</button>
                                 </div>
                             </div>
                             <div>
                                 <label for="edit-bedrooms" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">{{ t('prof.pdf_bedrooms') }}</label>
                                 <div class="flex items-center gap-3">
-                                    <button type="button" onclick="stepEditNum('edit-bedrooms',-1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-lg leading-none">-</button>
+                                    <button type="button" data-action="edit-step" data-field="edit-bedrooms" data-delta="-1" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-lg leading-none">-</button>
                                     <input id="edit-bedrooms" name="bedrooms" type="number" min="0" max="20" value="{{ lead.bedrooms if lead.bedrooms else '' }}"
                                         class="w-12 text-center bg-transparent border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-1 text-sm font-semibold">
-                                    <button type="button" onclick="stepEditNum('edit-bedrooms',1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-lg leading-none">+</button>
+                                    <button type="button" data-action="edit-step" data-field="edit-bedrooms" data-delta="1" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-lg leading-none">+</button>
                                 </div>
                             </div>
                             <div>
                                 <label for="edit-bathrooms" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">{{ t('prof.pdf_bathrooms') }}</label>
                                 <div class="flex items-center gap-3">
-                                    <button type="button" onclick="stepEditNum('edit-bathrooms',-1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-lg leading-none">-</button>
+                                    <button type="button" data-action="edit-step" data-field="edit-bathrooms" data-delta="-1" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-lg leading-none">-</button>
                                     <input id="edit-bathrooms" name="bathrooms" type="number" min="0" max="20" value="{{ lead.bathrooms if lead.bathrooms else '' }}"
                                         class="w-12 text-center bg-transparent border-0 border-b-2 border-midnight/20 focus:border-gold focus:ring-0 py-1 text-sm font-semibold">
-                                    <button type="button" onclick="stepEditNum('edit-bathrooms',1)" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-lg leading-none">+</button>
+                                    <button type="button" data-action="edit-step" data-field="edit-bathrooms" data-delta="1" class="w-8 h-8 rounded-full border border-midnight/20 flex items-center justify-center text-midnight hover:border-gold hover:text-gold transition-colors text-lg leading-none">+</button>
                                 </div>
                             </div>
                         </div>
@@ -249,7 +249,7 @@ window.__FORM_OPTIONS = {{ {
                             <label for="edit-parking-chips" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">{{ t('prof.pdf_parking') }}</label>
                             <div class="flex flex-wrap gap-2" id="edit-parking-chips">
                                 {% for opt in form_options.get('parking', []) %}
-                                <button type="button" data-value="{{ opt.value }}" onclick="selectEditChip('parking','{{ opt.value }}')"
+                                <button type="button" data-action="edit-chip" data-group="parking" data-value="{{ opt.value }}"
                                     class="edit-parking-chip {% if (lead.parking or '') == opt.value %}border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-colors hover:border-gold">{{ opt.label }}</button>
                                 {% endfor %}
                             </div>
@@ -261,7 +261,7 @@ window.__FORM_OPTIONS = {{ {
                             {% set orient_short = {'': '', 'Norte': 'N', 'Sur': 'S', 'Este': 'E', 'Oeste': 'O', 'Noreste': 'NE', 'Noroeste': 'NO', 'Sureste': 'SE', 'Suroeste': 'SO'} %}
                             <div class="flex flex-wrap gap-2" id="edit-orientation-chips">
                                 {% for opt in form_options.get('orientation', []) %}
-                                <button type="button" data-value="{{ opt.value }}" onclick="selectEditChip('orientation','{{ opt.value }}')"
+                                <button type="button" data-action="edit-chip" data-group="orientation" data-value="{{ opt.value }}"
                                     class="edit-orientation-chip {% if (lead.orientation or '') == opt.value %}border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-colors hover:border-gold">{{ orient_short.get(opt.value, opt.label) }}</button>
                                 {% endfor %}
                             </div>
@@ -273,7 +273,7 @@ window.__FORM_OPTIONS = {{ {
                                 <label for="edit-condition-chips" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">{{ t('prof.pdf_condition') }}</label>
                                 <div class="space-y-2" id="edit-condition-chips">
                                     {% for opt in form_options.get('condition', []) %}
-                                    <button type="button" data-value="{{ opt.value }}" onclick="selectEditChip('condition','{{ opt.value }}')" class="edit-condition-chip {% if (lead.property_condition or '') == opt.value %}border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-colors hover:border-gold">{{ opt.label }}</button>
+                                    <button type="button" data-action="edit-chip" data-group="condition" data-value="{{ opt.value }}" class="edit-condition-chip {% if (lead.property_condition or '') == opt.value %}border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-colors hover:border-gold">{{ opt.label }}</button>
                                     {% endfor %}
                                 </div>
                                 <input type="hidden" id="edit-property-condition" name="property_condition" value="{{ lead.property_condition if lead.property_condition else '' }}">
@@ -282,7 +282,7 @@ window.__FORM_OPTIONS = {{ {
                                 <label for="edit-age-chips" class="block text-[10px] uppercase tracking-widest font-bold text-midnight/60 mb-2">{{ t('prof.pdf_age') }}</label>
                                 <div class="space-y-2" id="edit-age-chips">
                                     {% for opt in form_options.get('age', []) %}
-                                    <button type="button" data-value="{{ opt.value }}" onclick="selectEditChip('age','{{ opt.value }}')" class="edit-age-chip {% if (lead.property_age or '') == opt.value %}border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-colors hover:border-gold">{{ opt.label }}</button>
+                                    <button type="button" data-action="edit-chip" data-group="age" data-value="{{ opt.value }}" class="edit-age-chip {% if (lead.property_age or '') == opt.value %}border-midnight bg-midnight text-white{% else %}border-midnight/20 text-midnight{% endif %} w-full text-left px-3 py-2 rounded border-2 text-[10px] font-bold uppercase tracking-widest transition-colors hover:border-gold">{{ opt.label }}</button>
                                     {% endfor %}
                                 </div>
                                 <input type="hidden" id="edit-property-age" name="property_age" value="{{ lead.property_age if lead.property_age else '' }}">

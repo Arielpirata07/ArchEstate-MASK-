@@ -156,3 +156,9 @@ function submitEditLead() {
         if (window.lucide) lucide.createIcons();
     });
 }
+
+/* Delegación data-action (FASE 5.9): reemplaza onclick inline */
+delegateActions({
+    'edit-chip': function(el) { selectEditChip(el.dataset.group, el.dataset.value); },
+    'edit-step': function(el) { stepEditNum(el.dataset.field, parseInt(el.dataset.delta, 10)); }
+});

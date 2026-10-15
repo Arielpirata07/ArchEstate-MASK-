@@ -409,3 +409,13 @@ document.addEventListener('keydown', function(e) {
         closeEnableModal();
     }
 });
+
+/* Delegación data-action (FASE 5.9): reemplaza onclick inline */
+delegateActions({
+    'um-close': function() { closeModal(); },
+    'um-close-disable': function() { closeDisableModal(); },
+    'um-close-enable': function() { closeEnableModal(); },
+    'um-confirm-reset': function() { confirmReset(); },
+    'um-confirm-disable': function() { confirmDisable(); },
+    'um-confirm-enable': function() { confirmEnable(); }
+});
