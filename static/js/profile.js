@@ -1831,6 +1831,7 @@ delegateActions({ 'prof-hover': profHoverLink }, 'mouseout');
 /* API pública (usada por otros archivos/templates) */
 window.initSettingsPage = initSettingsPage;
 window.openPhoneVerifyModal = openPhoneVerifyModal;
+window.showProvinceSearchToggle = showProvinceSearchToggle;
 window.closePhoneVerifyModal = closePhoneVerifyModal;
 window.submitVerificationCode = submitVerificationCode;
 window.resendVerificationCode = resendVerificationCode;
