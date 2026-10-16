@@ -69,7 +69,7 @@ def update_user_phone():
 
 @phone_bp.route('/api/phone/send-code', methods=['POST'])
 @login_required
-@rate_limit.check_rate_limit(limit=100, window=60)
+@rate_limit.check_rate_limit(limit=5, window=60)
 def send_verification_code():
     lang = get_language()
     if 'user_id' not in session:
@@ -167,7 +167,7 @@ def send_verification_code():
 
 @phone_bp.route('/api/phone/verify', methods=['POST'])
 @login_required
-@rate_limit.check_rate_limit(limit=100, window=60)
+@rate_limit.check_rate_limit(limit=10, window=60)
 def verify_phone_code():
     lang = get_language()
     if 'user_id' not in session:

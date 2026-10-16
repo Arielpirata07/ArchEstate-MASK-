@@ -6,6 +6,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ## [Unreleased]
 
+### Corregido (Fase 2 — P1 robustez)
+- **OTP anti-abuso** (`routes/phone_bp.py`): `send-code` 100→5 req/min (frena
+  SMS-bombing), `verify` 100→10 req/min (el lockout de 5 intentos ya existía).
+- **Tests node en el repo**: `tests/package.json` (`commonjs`) — `node --test`
+  verde in-situ (30/30).
+- **Hilo de notificación con app context** (`routes/client_bp.py`): render de
+  emails e i18n con contexto explícito en vez de fallbacks.
+
+---
+
+## [v0.43.2] — 2026-10-16 — Fixes P0 concurrencia
+
 ### Corregido (Fase 1 — P0 concurrencia)
 - **Notificaciones fuera de la transacción** (`services/notifications.py`): el batch hace
   inserts + `commit` primero y envía SMTP/WhatsApp después — el lock de SQLite ya no

@@ -262,7 +262,17 @@ def submit_lead():
         try:
             if cursor.lastrowid:
                 import threading
-                threading.Thread(target=notify_lead_created, args=(cursor.lastrowid,), daemon=True).start()
+                from flask import current_app
+                # El hilo no hereda contexto: se le da app context explícito
+                # para render de emails e i18n en vez de depender de fallbacks.
+                app_obj = current_app._get_current_object()
+                lead_id = cursor.lastrowid
+
+                def _notify_in_context():
+                    with app_obj.app_context():
+                        notify_lead_created(lead_id)
+
+                threading.Thread(target=_notify_in_context, daemon=True).start()
         except Exception:
             logger.exception('No se pudo lanzar hilo de notify_lead_created')
 

@@ -70,16 +70,25 @@ class TestSendCode:
 
     def test_code_never_equals_zero_string(self, auth_client, db):
         """Fase 3.1: el código OTP nunca debe ser '000000' (colisión con 'no hay código')."""
+        import rate_limit
         uid = _user_id(auth_client, db)
-        for _ in range(20):
+        for i in range(20):
+            # El rate-limit (5/min) se resetea: este test cubre generación, no límites.
+            if i and i % 4 == 0:
+                with rate_limit._rate_lock:
+                    rate_limit._save_store({})
             auth_client.post('/api/phone/send-code', content_type='application/json')
             user = db.execute('SELECT verification_code FROM users WHERE id = ?', (uid,)).fetchone()
             assert user['verification_code'] != '000000'
 
     def test_code_is_in_range_1_to_999999(self, auth_client, db):
         """Fase 3.1: el código debe estar en el rango 1..999999."""
+        import rate_limit
         uid = _user_id(auth_client, db)
-        for _ in range(20):
+        for i in range(20):
+            if i and i % 4 == 0:
+                with rate_limit._rate_lock:
+                    rate_limit._save_store({})
             auth_client.post('/api/phone/send-code', content_type='application/json')
             user = db.execute('SELECT verification_code FROM users WHERE id = ?', (uid,)).fetchone()
             value = int(user['verification_code'])
@@ -505,6 +514,27 @@ class TestBruteForceProtection:
 
         row = db.execute("SELECT * FROM events WHERE event = 'otp_locked_out' ORDER BY id DESC LIMIT 1").fetchone()
         assert row is not None
+
+
+class TestOtpRateLimits:
+    """El rate-limit frena SMS-bombing (send) y adivinanza masiva (verify)."""
+
+    def test_send_code_rate_limited_after_5_per_minute(self, auth_client):
+        for _ in range(5):
+            resp = auth_client.post('/api/phone/send-code', content_type='application/json')
+            assert resp.status_code == 200
+        resp = auth_client.post('/api/phone/send-code', content_type='application/json')
+        assert resp.status_code == 429
+
+    def test_verify_rate_limited_after_10_per_minute(self, auth_client, db):
+        auth_client.post('/api/phone/send-code', content_type='application/json')
+        # 1 send + 9 verifies = 10 en el bucket; el siguiente cae por rate.
+        last = None
+        for _ in range(10):
+            last = auth_client.post('/api/phone/verify',
+                                    data=json.dumps({'code': '000000'}),
+                                    content_type='application/json')
+        assert last.status_code == 429
 
 
 class TestSendCodeFormatValid:
