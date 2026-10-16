@@ -6,6 +6,23 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ## [Unreleased]
 
+### Corregido (Fase 1 — P0 concurrencia)
+- **Notificaciones fuera de la transacción** (`services/notifications.py`): el batch hace
+  inserts + `commit` primero y envía SMTP/WhatsApp después — el lock de SQLite ya no
+  queda abierto durante I/O lento.
+- **Poda de `idempotency_keys`** (`routes/client_bp.py`): placeholders huérfanos >1h y
+  keys >30 días se eliminan en cada submit.
+- **Toggle atómico** (`routes/professional/tracking.py`): flip en una sola sentencia
+  (`UPDATE ... 1 - x ... RETURNING`), sin ventana leer-y-escribir.
+- **`restore_report` ante duplicado** (`routes/admin_bp.py`): violación del índice
+  único → 400 en vez de 500.
+- **Bulk-move transaccional** (`models/pipeline.py`): `move_lead_stage_batch()` en una
+  sola transacción all-or-nothing (ids inexistentes se ignoran).
+
+---
+
+## [v0.43.1] — 2026-10-16 — Idempotencia y dedup (concurrencia)
+
 ### Añadido
 - **Idempotencia en `POST /api/submit`**: header `X-Idempotency-Key` (o `idempotency_key` en body) con tabla `idempotency_keys`; reintentos con la misma key retornan el lead existente (`deduplicated: true`) sin insertar ni notificar de más. Incluye `lead_id` en la respuesta.
 - **Backstops únicos parciales**: `idx_lead_reports_pending_once` (un pending por profesional+lead) e `idx_notif_lead_created_once` (una notificación de creación por profesional+lead), con limpieza de duplicados históricos en la migración.

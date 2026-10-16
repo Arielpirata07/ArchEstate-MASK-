@@ -69,22 +69,19 @@ def toggle_lead_status(lead_id):
         argentina_tz = pytz.timezone('America/Argentina/Buenos_Aires')
         now = datetime.now(argentina_tz).strftime('%Y-%m-%d %H:%M:%S')
 
-        tracking = conn.execute(
-            'SELECT * FROM lead_tracking WHERE professional_id = ? AND lead_id = ?',
-            (professional_id, lead_id)
+        # Flip atómico en una sola sentencia: sin ventana leer-y-escribir,
+        # dos tabs del mismo profesional no pueden perderse un cambio.
+        # (status_type/timestamp_col validados arriba contra allowlist.)
+        timestamp_col = f'{status_type}_at'
+        updated = conn.execute(
+            f'UPDATE lead_tracking SET {status_type} = 1 - {status_type}, '
+            f'{timestamp_col} = CASE WHEN {status_type} = 0 THEN ? ELSE NULL END '
+            'WHERE professional_id = ? AND lead_id = ? '
+            f'RETURNING {status_type}',
+            (now, professional_id, lead_id)
         ).fetchone()
 
-        if tracking:
-            current_value = tracking[status_type]
-            new_value = 0 if current_value else 1
-            timestamp_col = f'{status_type}_at'
-            timestamp_value = now if new_value else None
-
-            conn.execute(
-                f'UPDATE lead_tracking SET {status_type} = ?, {timestamp_col} = ? WHERE professional_id = ? AND lead_id = ?',
-                (new_value, timestamp_value, professional_id, lead_id)
-            )
-        else:
+        if updated is None:
             seen_val = 1 if status_type == 'seen' else 0
             contacted_val = 1 if status_type == 'contacted' else 0
             seen_at = now if status_type == 'seen' else None
@@ -101,23 +98,21 @@ def toggle_lead_status(lead_id):
                 if not is_integrity_error(e):
                     raise
                 # Carrera: otro request concurrente insertó la fila primero
-                # (UNIQUE professional+lead). Se relee y se aplica el flip
-                # sobre el estado real en vez de devolver 500.
+                # (UNIQUE professional+lead). Se reintenta el flip atómico
+                # en vez de devolver 500.
                 conn.rollback()
-                tracking = conn.execute(
-                    'SELECT * FROM lead_tracking WHERE professional_id = ? AND lead_id = ?',
-                    (professional_id, lead_id)
+                updated = conn.execute(
+                    f'UPDATE lead_tracking SET {status_type} = 1 - {status_type}, '
+                    f'{timestamp_col} = CASE WHEN {status_type} = 0 THEN ? ELSE NULL END '
+                    'WHERE professional_id = ? AND lead_id = ? '
+                    f'RETURNING {status_type}',
+                    (now, professional_id, lead_id)
                 ).fetchone()
-                if not tracking:
+                if updated is None:
                     raise
-                current_value = tracking[status_type]
-                new_value = 0 if current_value else 1
-                timestamp_col = f'{status_type}_at'
-                timestamp_value = now if new_value else None
-                conn.execute(
-                    f'UPDATE lead_tracking SET {status_type} = ?, {timestamp_col} = ? WHERE professional_id = ? AND lead_id = ?',
-                    (new_value, timestamp_value, professional_id, lead_id)
-                )
+                new_value = updated[status_type]
+        else:
+            new_value = updated[status_type]
 
         conn.commit()
 

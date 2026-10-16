@@ -62,6 +62,53 @@ def get_pipeline_counts(professional_id, extra_where='', extra_params=()):
 
 
 
+def _move_lead_stage_conn(conn, professional_id, lead_id, to_stage, now_str):
+    '''Núcleo del move sobre una conexión ya abierta (sin commit/close).
+
+    Lo usan `move_lead_stage` (1 item) y `move_lead_stage_batch` (N items
+    en una sola transacción). Incluye el guard no-op misma-etapa.
+    '''
+    current = conn.execute(
+        'SELECT stage FROM lead_stages WHERE professional_id = ? AND lead_id = ?',
+        (professional_id, lead_id)
+    ).fetchone()
+    from_stage = current['stage'] if current else PIPELINE_DEFAULT_STAGE
+    if from_stage == to_stage:
+        # No-op idempotente: reintento o doble-click no genera
+        # historial basura ni toca lead_tracking.
+        return (from_stage, to_stage)
+    if current:
+        conn.execute(
+            'UPDATE lead_stages SET stage = ?, updated_at = ? WHERE professional_id = ? AND lead_id = ?',
+            (to_stage, now_str, professional_id, lead_id)
+        )
+    else:
+        conn.execute(
+            'INSERT INTO lead_stages (professional_id, lead_id, stage, updated_at) VALUES (?, ?, ?, ?)',
+            (professional_id, lead_id, to_stage, now_str)
+        )
+    conn.execute(
+        'INSERT INTO lead_stage_history (professional_id, lead_id, from_stage, to_stage, changed_at) VALUES (?, ?, ?, ?, ?)',
+        (professional_id, lead_id, from_stage, to_stage, now_str)
+    )
+    if PIPELINE_STAGES.index(to_stage) >= PIPELINE_STAGES.index(PIPELINE_CONTACTED_FROM):
+        existing = conn.execute(
+            'SELECT contacted FROM lead_tracking WHERE professional_id = ? AND lead_id = ?',
+            (professional_id, lead_id)
+        ).fetchone()
+        if existing:
+            conn.execute(
+                'UPDATE lead_tracking SET contacted = 1, contacted_at = ? WHERE professional_id = ? AND lead_id = ?',
+                (now_str, professional_id, lead_id)
+            )
+        else:
+            conn.execute(
+                'INSERT INTO lead_tracking (professional_id, lead_id, seen, contacted, seen_at, contacted_at) VALUES (?, ?, 0, 1, NULL, ?)',
+                (professional_id, lead_id, now_str)
+            )
+    return (from_stage, to_stage)
+
+
 def move_lead_stage(professional_id, lead_id, to_stage, now_str=None):
     '''Mueve un lead de etapa: upsert en lead_stages + fila en lead_stage_history.
 
@@ -75,50 +122,47 @@ def move_lead_stage(professional_id, lead_id, to_stage, now_str=None):
         now_str = _dt.now().strftime('%Y-%m-%d %H:%M:%S')
     conn = get_db_connection()
     try:
-        current = conn.execute(
-            'SELECT stage FROM lead_stages WHERE professional_id = ? AND lead_id = ?',
-            (professional_id, lead_id)
-        ).fetchone()
-        from_stage = current['stage'] if current else PIPELINE_DEFAULT_STAGE
-        if from_stage == to_stage:
-            # No-op idempotente: reintento o doble-click no genera
-            # historial basura ni toca lead_tracking.
-            return (from_stage, to_stage)
-        if current:
-            conn.execute(
-                'UPDATE lead_stages SET stage = ?, updated_at = ? WHERE professional_id = ? AND lead_id = ?',
-                (to_stage, now_str, professional_id, lead_id)
-            )
-        else:
-            conn.execute(
-                'INSERT INTO lead_stages (professional_id, lead_id, stage, updated_at) VALUES (?, ?, ?, ?)',
-                (professional_id, lead_id, to_stage, now_str)
-            )
-        conn.execute(
-            'INSERT INTO lead_stage_history (professional_id, lead_id, from_stage, to_stage, changed_at) VALUES (?, ?, ?, ?, ?)',
-            (professional_id, lead_id, from_stage, to_stage, now_str)
-        )
-        if PIPELINE_STAGES.index(to_stage) >= PIPELINE_STAGES.index(PIPELINE_CONTACTED_FROM):
-            existing = conn.execute(
-                'SELECT contacted FROM lead_tracking WHERE professional_id = ? AND lead_id = ?',
-                (professional_id, lead_id)
-            ).fetchone()
-            if existing:
-                conn.execute(
-                    'UPDATE lead_tracking SET contacted = 1, contacted_at = ? WHERE professional_id = ? AND lead_id = ?',
-                    (now_str, professional_id, lead_id)
-                )
-            else:
-                conn.execute(
-                    'INSERT INTO lead_tracking (professional_id, lead_id, seen, contacted, seen_at, contacted_at) VALUES (?, ?, 0, 1, NULL, ?)',
-                    (professional_id, lead_id, now_str)
-                )
+        result = _move_lead_stage_conn(conn, professional_id, lead_id, to_stage, now_str)
         conn.commit()
-        return (from_stage, to_stage)
+        return result
     except Exception:
         logger.exception('move_lead_stage failed for pro=%s lead=%s', professional_id, lead_id)
         conn.rollback()
         return None
+    finally:
+        conn.close()
+
+
+def move_lead_stage_batch(professional_id, lead_ids, to_stage, now_str=None):
+    '''Mueve varios leads en UNA transacción (all-or-nothing).
+
+    Los ids inexistentes se filtran antes (no abortan); cualquier error de
+    DB revierte todo. Retorna cantidad movida (0 ante error o etapa inválida).
+    '''
+    if to_stage not in PIPELINE_STAGES or not lead_ids:
+        return 0
+    if now_str is None:
+        from datetime import datetime as _dt
+        now_str = _dt.now().strftime('%Y-%m-%d %H:%M:%S')
+    conn = get_db_connection()
+    try:
+        placeholders = ','.join(['?'] * len(lead_ids))
+        rows = conn.execute(
+            f'SELECT id FROM leads WHERE id IN ({placeholders})', list(lead_ids)
+        ).fetchall()
+        existing = {r['id'] for r in rows}
+        moved = 0
+        for lid in lead_ids:
+            if lid not in existing:
+                continue
+            if _move_lead_stage_conn(conn, professional_id, lid, to_stage, now_str):
+                moved += 1
+        conn.commit()
+        return moved
+    except Exception:
+        logger.exception('move_lead_stage_batch failed for pro=%s', professional_id)
+        conn.rollback()
+        return 0
     finally:
         conn.close()
 

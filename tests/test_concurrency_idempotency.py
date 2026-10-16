@@ -216,3 +216,93 @@ class TestPipelineNoop:
             (user_id, lead_id)
         ).fetchone()['n']
         assert rows == 1
+
+
+def _make_lead(db, email='cb@test.com'):
+    cur = db.execute(
+        '''INSERT INTO leads (type, property_type, zone, province, budget, currency, phone, email, user_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+        ('comprar', 'departamento', 'Palermo', 'Buenos Aires', '200000', 'USD',
+         '+5491112345678', email, 1)
+    )
+    db.commit()
+    return cur.lastrowid
+
+
+def _make_admin(db):
+    user_id, username = _make_user(db, 'admin')
+    return user_id, username
+
+
+class TestToggleAtomic:
+    def test_double_toggle_flips_twice(self, client, db):
+        user_id, name = _make_pro(db)
+        _login(client, user_id, name, 'professional')
+        lead_id = _make_lead(db)
+        r1 = client.post(f'/api/lead/{lead_id}/toggle-status', json={'status': 'seen'})
+        r2 = client.post(f'/api/lead/{lead_id}/toggle-status', json={'status': 'seen'})
+        assert r1.get_json()['value'] == 1
+        assert r2.get_json()['value'] == 0
+        row = db.execute(
+            'SELECT seen FROM lead_tracking WHERE professional_id = ? AND lead_id = ?',
+            (user_id, lead_id)
+        ).fetchone()
+        assert row['seen'] == 0
+
+
+class TestBulkMoveAtomic:
+    def test_bulk_move_skips_missing_in_one_txn(self, client, db):
+        user_id, name = _make_pro(db)
+        _login(client, user_id, name, 'professional')
+        ids = [_make_lead(db, email=f'bulk{i}@test.com') for i in range(2)]
+        resp = client.post('/api/pipeline/leads/bulk-move', json={'ids': ids + [999999], 'stage': 'visit'})
+        data = resp.get_json()
+        assert resp.status_code == 200
+        assert data['moved'] == 2
+        n = db.execute(
+            'SELECT COUNT(*) AS n FROM lead_stages WHERE professional_id = ? AND stage = ?',
+            (user_id, 'visit')
+        ).fetchone()['n']
+        assert n == 2
+
+
+class TestRestoreReportConflict:
+    def test_restore_with_existing_pending_returns_400(self, client, db):
+        pro_id, _ = _make_pro(db)
+        admin_id, admin_name = _make_admin(db)
+        _login(client, admin_id, admin_name, 'admin')
+        lead_id = _make_lead(db)
+        db.execute(
+            'INSERT INTO lead_reports (lead_id, reported_by, reason, status) VALUES (?, ?, ?, ?)',
+            (lead_id, pro_id, 'telefono_inexistente', 'pending')
+        )
+        cur = db.execute(
+            'INSERT INTO lead_reports (lead_id, reported_by, reason, status) VALUES (?, ?, ?, ?)',
+            (lead_id, pro_id, 'telefono_inexistente', 'dismissed')
+        )
+        db.commit()
+        dismissed_id = cur.lastrowid
+        resp = client.post(f'/api/admin/report/{dismissed_id}/restore')
+        assert resp.status_code == 400
+
+
+class TestIdempotencyPrune:
+    def test_stale_null_placeholders_pruned_on_submit(self, client, db):
+        user_id, username = _make_user(db)
+        _login(client, user_id, username, 'client')
+        with client.session_transaction() as sess:
+            sess['email'] = f'{username}@test.com'
+        db.execute(
+            "INSERT INTO idempotency_keys (key, user_id, lead_id, created_at)"
+            " VALUES (?, ?, NULL, datetime('now', '-2 hours'))",
+            ('stale-key', user_id)
+        )
+        db.commit()
+        payload = dict(LEAD_PAYLOAD)
+        payload['idempotency_key'] = uuid.uuid4().hex
+        resp = client.post('/api/submit', json=payload)
+        assert resp.status_code == 200
+        gone = db.execute(
+            'SELECT COUNT(*) AS n FROM idempotency_keys WHERE key = ?', ('stale-key',)
+        ).fetchone()['n']
+        assert gone == 0

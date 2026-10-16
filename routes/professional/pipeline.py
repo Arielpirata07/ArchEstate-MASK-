@@ -223,11 +223,8 @@ def pipeline_bulk_move():
 
         argentina_tz = pytz.timezone('America/Argentina/Buenos_Aires')
         now = datetime.now(argentina_tz).strftime('%Y-%m-%d %H:%M:%S')
-        moved = 0
-        for lid in lead_ids:
-            if conn.execute('SELECT id FROM leads WHERE id = ?', (lid,)).fetchone():
-                if models.move_lead_stage(session['user_id'], lid, to_stage, now):
-                    moved += 1
+        # Una sola transacción all-or-nothing (ids inexistentes se ignoran).
+        moved = models.move_lead_stage_batch(session['user_id'], lead_ids, to_stage, now)
         return jsonify({'success': True, 'moved': moved, 'to_stage': to_stage})
     except Exception:
         logger.exception('Error en pipeline_bulk_move')

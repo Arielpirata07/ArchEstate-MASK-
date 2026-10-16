@@ -97,6 +97,15 @@ def submit_lead():
                 'INSERT OR IGNORE INTO idempotency_keys (key, user_id, lead_id) VALUES (?, ?, NULL)',
                 (idem_key, user_id)
             )
+            # Poda: placeholders huérfanos (validación fallida) >1h y keys >30d.
+            from datetime import datetime, timedelta, timezone
+            _now = datetime.now(timezone.utc)
+            conn.execute(
+                'DELETE FROM idempotency_keys WHERE created_at < ?'
+                ' OR (lead_id IS NULL AND created_at < ?)',
+                ((_now - timedelta(days=30)).strftime('%Y-%m-%d %H:%M:%S'),
+                 (_now - timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S'))
+            )
             conn.commit()
             existing = conn.execute(
                 'SELECT lead_id FROM idempotency_keys WHERE key = ? AND user_id = ?',

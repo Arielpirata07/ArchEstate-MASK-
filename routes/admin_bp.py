@@ -652,11 +652,19 @@ def restore_report(report_id):
         if report['status'] == 'pending':
             return jsonify({'error': t('admin.report_already_pending', lang)}), 400
 
-        conn.execute(
-            'UPDATE lead_reports SET status = ?, reviewed_by = NULL, reviewed_at = NULL WHERE id = ?',
-            ('pending', report_id)
-        )
-        conn.commit()
+        try:
+            conn.execute(
+                'UPDATE lead_reports SET status = ?, reviewed_by = NULL, reviewed_at = NULL WHERE id = ?',
+                ('pending', report_id)
+            )
+            conn.commit()
+        except Exception as e:
+            from services.database import is_integrity_error
+            conn.rollback()
+            if is_integrity_error(e):
+                # Ya existe otro pending del mismo par (índice único parcial).
+                return jsonify({'error': t('admin.report_already_pending', lang)}), 400
+            raise
         utils.log_action("Reporte Restaurado", f"Reporte #{report_id} restaurado a pendiente por {session.get('username')}", session)
 
         return jsonify({

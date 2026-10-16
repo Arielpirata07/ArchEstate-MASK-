@@ -154,6 +154,10 @@ def notify_lead_created(lead_id: int) -> list:
             assigned_pro_name = ap['name']
 
     notif_conn = models.get_db_connection()
+    # Fase 1 (DB, transacción corta): filtros + inserts + commit inmediato.
+    # Fase 2 (I/O lento, sin lock): envío de emails/WhatsApp. Así el lock de
+    # escritura de SQLite no queda abierto durante SMTP/WhatsApp.
+    pending = []
     try:
         for pro in professionals:
             is_assigned = assigned_user_id and pro['id'] == assigned_user_id
@@ -212,8 +216,24 @@ def notify_lead_created(lead_id: int) -> list:
                 # existe → no reenviar email/WhatsApp ni reloguear.
                 continue
 
-            # Route channel: email / whatsapp / ambos / auto
             channel = (prefs.get('preferred_channel') or 'email').strip().lower()
+            pending.append((pro, prefs, channel))
+            notified.append(pro['name'])
+            utils.log_action(
+                'Notificaci\u00f3n lead asignado',
+                f'Lead #{lead_id} -> {pro["name"]} (canal: {channel})',
+                None,
+                conn=notif_conn
+            )
+
+        notif_conn.commit()
+    finally:
+        notif_conn.close()
+
+    # Fase 2: envíos fuera de la transacción.
+    for pro, prefs, channel in pending:
+        try:
+            # Route channel: email / whatsapp / ambos / auto
             sent_email = False
             sent_whatsapp = False
 
@@ -229,18 +249,8 @@ def notify_lead_created(lead_id: int) -> list:
             # Fallback: if auto tried WhatsApp only and it failed, send email
             if channel == 'auto' and not sent_whatsapp and not sent_email:
                 _send_lead_email(pro, lead, lead_data, lead_id)
-
-            notified.append(pro['name'])
-            utils.log_action(
-                'Notificaci\u00f3n lead asignado',
-                f'Lead #{lead_id} -> {pro["name"]} (canal: {channel})',
-                None,
-                conn=notif_conn
-            )
-
-        notif_conn.commit()
-    finally:
-        notif_conn.close()
+        except Exception:
+            logger.exception('Envío de notificación falló para pro=%s lead=%s', pro.get('name'), lead_id)
 
     return notified
 
