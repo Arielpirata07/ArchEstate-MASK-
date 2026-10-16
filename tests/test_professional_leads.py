@@ -482,3 +482,57 @@ class TestOrgScopedLeads:
         by_id = {l['id']: l for l in data['leads']}
         assert by_id[lead_match]['matches_coverage'] is True
         assert by_id[lead_no_match]['matches_coverage'] is False
+
+
+class TestMatchSort:
+    def _login(self, client, pro_user_with_zone):
+        user_id, pro_name = pro_user_with_zone
+        with client.session_transaction() as sess:
+            sess['user_id'] = user_id
+            sess['username'] = pro_name
+            sess['role'] = 'professional'
+
+    def test_match_sort_orders_by_score_desc(self, client, pro_user_with_zone,
+                                             lead_buenos_aires, lead_caba):
+        self._login(client, pro_user_with_zone)
+        # La DB se comparte entre tests: paginar hasta hallar ambos leads.
+        seen = {}
+        page = 1
+        while page <= 20:
+            resp = client.get(f'/api/leads?my_leads=0&sort=match&per_page=100&page={page}')
+            assert resp.status_code == 200
+            data = resp.get_json()
+            for l in data['leads']:
+                assert 'match_score' in l
+                seen[l['id']] = l['match_score']
+            if lead_buenos_aires in seen and lead_caba in seen:
+                break
+            if page >= data['total_pages']:
+                break
+            page += 1
+        assert lead_buenos_aires in seen and lead_caba in seen
+        assert seen[lead_buenos_aires] >= seen[lead_caba]
+        # Orden global desc en la primera página (la más exigente).
+        first = client.get('/api/leads?my_leads=0&sort=match&per_page=100&page=1').get_json()['leads']
+        scores = [l['match_score'] for l in first]
+        assert scores == sorted(scores, reverse=True)
+
+    def test_match_sort_respects_pagination(self, client, pro_user_with_zone,
+                                            lead_buenos_aires, lead_caba):
+        self._login(client, pro_user_with_zone)
+        full = client.get('/api/leads?my_leads=0&sort=match&per_page=100').get_json()
+        full_ids = [l['id'] for l in full['leads']]
+        page1 = client.get('/api/leads?my_leads=0&sort=match&per_page=5&page=1').get_json()
+        page2 = client.get('/api/leads?my_leads=0&sort=match&per_page=5&page=2').get_json()
+        assert page1['total'] == full['total'] == page2['total']
+        ids1 = [l['id'] for l in page1['leads']]
+        ids2 = [l['id'] for l in page2['leads']]
+        assert ids1 == full_ids[:len(ids1)]
+        assert ids2 == full_ids[len(ids1):len(ids1) + len(ids2)]
+
+    def test_default_sort_unchanged(self, client, pro_user_with_zone,
+                                    lead_buenos_aires, lead_caba):
+        self._login(client, pro_user_with_zone)
+        resp = client.get('/api/leads?my_leads=0')
+        assert resp.status_code == 200
+        assert all('match_score' not in l for l in resp.get_json()['leads'])

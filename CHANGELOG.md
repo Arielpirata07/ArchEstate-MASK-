@@ -6,6 +6,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ## [Unreleased]
 
+### Añadido (Fase 5 — Priorización por match)
+- **`sort=match` en `GET /api/leads`** (`routes/professional/leads.py`): puntúa con
+  `score_lead_for_coverage`, ordena desc y pagina en memoria (tope 5000, default
+  intacto, "Todos" siempre disponible). Respuesta incluye `match_score` solo en
+  ese modo.
+- **Opción "Mejor match"** en el select de orden (`templates/professional.html`,
+  key `pro.sort_match` ES/EN) + 3 tests en `TestMatchSort`.
+
+---
+
+## [v0.45.0] — 2026-10-16 — Dedup real de leads
+
 ### Añadido (Fase 4 — Dedup real de leads)
 - **409 ante búsqueda duplicada** (`routes/client_bp.py`): mismo usuario + tipo +
   zona + teléfono en 90 días → `409 {duplicate, existing_lead_id}`. Nunca bloquea:

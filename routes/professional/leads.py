@@ -29,7 +29,7 @@ from decorators import login_required, professional_required
 from i18n import t, get_language
 from services.database import date_format_sql, now_sql
 from services.export_helpers import pdf_safe, pdf_val, _style_header_row, _apply_data_border
-from services.matching import lead_matches_coverage
+from services.matching import lead_matches_coverage, score_lead_for_coverage
 from utils import allowed_file, convert_to_argentina_time
 
 
@@ -184,7 +184,7 @@ def get_leads_api():
             query += ' AND currency = ?'
             params.append(currency_filter)
 
-        valid_sort_fields = ['id', 'type', 'zone', 'budget', 'timestamp', 'email']
+        valid_sort_fields = ['id', 'type', 'zone', 'budget', 'timestamp', 'email', 'match']
         if sort_by not in valid_sort_fields:
             sort_by = 'timestamp'
 
@@ -215,8 +215,15 @@ def get_leads_api():
         kpi_unseen = kpi_row['unseen'] or 0
         kpi_contacted = kpi_row['contacted'] or 0
 
-        query += f' ORDER BY {sort_by} {order}, id DESC LIMIT ? OFFSET ?'
-        params.extend([per_page, offset])
+        # sort=match: el score vive en Python (cobertura del profesional),
+        # así que se traen los filtrados (tope de seguridad), se puntúa,
+        # se ordena y se pagina en memoria. Default intacto: timestamp.
+        match_sort = (sort_by == 'match')
+        if match_sort:
+            query += ' ORDER BY id DESC LIMIT 5000'
+        else:
+            query += f' ORDER BY {sort_by} {order}, id DESC LIMIT ? OFFSET ?'
+            params.extend([per_page, offset])
 
         leads = conn.execute(query, params).fetchall()
 
@@ -235,7 +242,13 @@ def get_leads_api():
             lead_dict['phone_e164'] = phone_e164
             lead_dict['phone_is_mobile'] = bool(phone_e164 and utils.is_whatsapp_capable(phone_e164))
             lead_dict['matches_coverage'] = lead_matches_coverage(lead_dict, coverage, pro_province)
+            if match_sort:
+                lead_dict['match_score'] = score_lead_for_coverage(lead_dict, coverage, pro_province)
             leads_list.append(lead_dict)
+
+        if match_sort:
+            leads_list.sort(key=lambda l: (l['match_score'], l['id']), reverse=True)
+            leads_list = leads_list[offset:offset + per_page]
 
         professional_id = session['user_id']
         lead_ids = [lead['id'] for lead in leads_list]
