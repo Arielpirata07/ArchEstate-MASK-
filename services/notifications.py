@@ -229,7 +229,8 @@ def notify_lead_created(lead_id: int) -> list:
             utils.log_action(
                 'Notificaci\u00f3n lead asignado',
                 f'Lead #{lead_id} -> {pro["name"]} (canal: {channel})',
-                None
+                None,
+                conn=notif_conn
             )
 
         notif_conn.commit()
