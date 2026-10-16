@@ -83,7 +83,9 @@ def lead_detail(lead_id):
     phone_raw = lead_dict.get('phone') or ''
     lead_dict['phone_e164'] = utils.normalize_phone_to_e164(phone_raw)
     lead_dict['phone_is_mobile'] = bool(lead_dict['phone_e164'] and utils.is_whatsapp_capable(lead_dict['phone_e164']))
-    return render_template('lead_detail.html', lead=lead_dict)
+    from routes.professional.timeline import build_timeline
+    timeline = build_timeline(lead_id, get_language())
+    return render_template('lead_detail.html', lead=lead_dict, timeline=timeline)
 
 
 @professional_bp.route('/api/leads')

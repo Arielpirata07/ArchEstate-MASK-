@@ -6,7 +6,16 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ## [Unreleased]
 
-### Corregido (Fase 2 — P1 robustez)
+### Añadido (Fase 3 — Timeline unificado)
+- **Timeline por lead** (`models/timeline.py`, `routes/professional/timeline.py`):
+  `GET /api/leads/<id>/timeline` agrega creación, pipeline, tracking, versiones,
+  telemetría y reportes en una lista cronológica (solo lectura). Visible también
+  en `/profesional/lead/<id>` (sección Historial, server-render, sin JS nuevo).
+  Keys i18n `timeline.*` ES/EN + `tests/test_timeline.py` (5 tests).
+
+---
+
+## [v0.43.3] — 2026-10-16 — Fixes P1 robustez
 - **OTP anti-abuso** (`routes/phone_bp.py`): `send-code` 100→5 req/min (frena
   SMS-bombing), `verify` 100→10 req/min (el lockout de 5 intentos ya existía).
 - **Tests node en el repo**: `tests/package.json` (`commonjs`) — `node --test`

@@ -252,5 +252,25 @@
             {% endif %}
         </div>
     </div>
+
+    <!-- TIMELINE: historia unificada del lead (solo lectura) -->
+    <div class="bg-white rounded-lg border border-midnight/10 shadow-xl p-6 animate-on-scroll fade-in-up">
+        <h2 class="text-lg font-serif text-midnight mb-4">{{ t('timeline.title') }}</h2>
+        {% if timeline %}
+        <ol class="space-y-3">
+            {% for e in timeline %}
+            <li class="flex items-start gap-3 border-b border-midnight/5 pb-3 last:border-0 last:pb-0">
+                <span class="w-2 h-2 bg-gold rounded-full mt-1.5 flex-shrink-0"></span>
+                <div class="min-w-0">
+                    <p class="text-sm text-midnight">{{ e.label | safe }}</p>
+                    <p class="text-[11px] text-midnight/50 mt-0.5">{{ e.actor | safe }}{% if e.ts %} · {{ e.ts }}{% endif %}{% if e.detail %} · {{ e.detail | safe }}{% endif %}</p>
+                </div>
+            </li>
+            {% endfor %}
+        </ol>
+        {% else %}
+        <p class="text-sm text-midnight/50">{{ t('timeline.empty') }}</p>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}

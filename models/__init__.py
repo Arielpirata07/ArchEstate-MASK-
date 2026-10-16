@@ -12,6 +12,7 @@ from models.users import *
 from models.leads import *
 from models.professionals import *
 from models.pipeline import *
+from models.timeline import *
 from models.calendar import *
 from models.notifications import *
 from models.organizations import *
