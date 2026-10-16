@@ -213,18 +213,41 @@ function initUserForm() {
             // Estado de carga
             setLoading(submitBtn, true, t('action.processing'));
 
-            try {
-                const headers = { 'Content-Type': 'application/json' };
-                if (form.dataset.idemKey) headers['X-Idempotency-Key'] = form.dataset.idemKey;
+            var headers = { 'Content-Type': 'application/json' };
+            if (form.dataset.idemKey) headers['X-Idempotency-Key'] = form.dataset.idemKey;
+
+            async function postLead() {
                 const response = await fetch('/api/submit', {
                     method: 'POST',
                     headers: headers,
                     body: JSON.stringify(data)
                 });
+                return { response: response, result: await response.json() };
+            }
 
-                const result = await response.json();
+            try {
+                var out = await postLead();
 
-                if (response.ok) {
+                // Duplicado real: ofrecer Retomar (/mi-perfil) o Crear igual
+                // (reintento con la MISMA idempotency key + allow_duplicate).
+                if (out.response.status === 409 && out.result.duplicate) {
+                    form.dataset.submitting = '0';
+                    setLoading(submitBtn, false);
+                    if (window.lucide) lucide.createIcons();
+                    var createAnyway = (typeof showConfirm === 'function')
+                        ? await showConfirm((out.result.error || t('client.duplicate_lead')) + ' ' + t('client.duplicate_confirm'))
+                        : false;
+                    if (!createAnyway) {
+                        window.location.href = '/mi-perfil';
+                        return;
+                    }
+                    data.allow_duplicate = true;
+                    form.dataset.submitting = '1';
+                    setLoading(submitBtn, true, t('action.processing'));
+                    out = await postLead();
+                }
+
+                if (out.response.ok) {
                     sessionStorage.setItem('submit_success', 'true');
                     setTimeout(() => {
                         window.location.href = "/";
@@ -233,7 +256,7 @@ function initUserForm() {
                     form.dataset.submitting = '0';
                     setLoading(submitBtn, false);
                     if (window.lucide) lucide.createIcons();
-                    showToast(result.message, 'error');
+                    showToast(out.result.message, 'error');
                 }
             } catch (error) {
                 form.dataset.submitting = '0';

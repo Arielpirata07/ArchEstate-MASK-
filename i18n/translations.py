@@ -759,6 +759,8 @@ TRANSLATIONS = {
         'client.built_area_exceeds_land': 'Los metros construidos no pueden ser mayores que los metros de terreno.',
         'client.lead_submitted': 'Solicitud enviada con éxito. Los profesionales se contactarán contigo.',
         'client.lead_error': 'Error al procesar la solicitud.',
+        'client.duplicate_lead': 'Ya tenés una solicitud similar en curso.',
+        'client.duplicate_confirm': '¿Querés crearla igual o ver tus solicitudes? Aceptar = crear igual, Cancelar = ver mis solicitudes.',
 
         # === PROFESSIONAL ===
         'prof.access_denied': 'Acceso denegado',
@@ -2212,6 +2214,8 @@ TRANSLATIONS = {
         'client.built_area_exceeds_land': 'Built area cannot exceed land area.',
         'client.lead_submitted': 'Request submitted successfully. Professionals will contact you.',
         'client.lead_error': 'Error processing request.',
+        'client.duplicate_lead': 'You already have a similar active request.',
+        'client.duplicate_confirm': 'Create it anyway or view your requests? Accept = create anyway, Cancel = view my requests.',
 
         # === PROFESSIONAL ===
         'prof.access_denied': 'Access denied',

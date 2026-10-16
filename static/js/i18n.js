@@ -558,6 +558,9 @@ window.I18N = {
         'profile.coverage_save': 'Guardar cobertura',
         'profile.coverage_reset': 'Reiniciar cobertura',
         'profile.coverage_reset_confirm': '¿Reiniciar tu cobertura? Se borrarán zonas y especialidades.',
+        // === CLIENT ===
+        'client.duplicate_lead': 'Ya tenés una solicitud similar en curso.',
+        'client.duplicate_confirm': '¿Querés crearla igual o ver tus solicitudes? Aceptar = crear igual, Cancelar = ver mis solicitudes.',
         // === PIPELINE ===
         'pipeline.title': 'Pipeline',
         'pipeline.toggle_list': 'Lista',
@@ -1181,6 +1184,9 @@ window.I18N = {
         'profile.coverage_save': 'Save coverage',
         'profile.coverage_reset': 'Reset coverage',
         'profile.coverage_reset_confirm': 'Reset your coverage? Zones and specialties will be cleared.',
+        // === CLIENT ===
+        'client.duplicate_lead': 'You already have a similar active request.',
+        'client.duplicate_confirm': 'Create it anyway or view your requests? Accept = create anyway, Cancel = view my requests.',
         // === PIPELINE ===
         'pipeline.title': 'Pipeline',
         'pipeline.toggle_list': 'List',

@@ -105,12 +105,17 @@ class TestSubmitIdempotency:
         assert n == 1
 
     def test_different_keys_create_two_leads(self, client, db):
+        # Distintas búsquedas (zona distinta) con distintas keys → 2 leads.
+        # Misma búsqueda → 409 por dedup (ver TestLeadDedup).
         user_id, username = _make_user(db)
         _login(client, user_id, username, 'client')
         with client.session_transaction() as sess:
             sess['email'] = f'{username}@test.com'
-        client.post('/api/submit', json=self._payload(uuid.uuid4().hex))
-        client.post('/api/submit', json=self._payload(uuid.uuid4().hex))
+        data1 = self._payload(uuid.uuid4().hex)
+        data2 = self._payload(uuid.uuid4().hex)
+        data2['zone'] = 'Recoleta'
+        client.post('/api/submit', json=data1)
+        client.post('/api/submit', json=data2)
         n = db.execute('SELECT COUNT(*) AS n FROM leads WHERE user_id = ?', (user_id,)).fetchone()['n']
         assert n == 2
 
@@ -306,3 +311,57 @@ class TestIdempotencyPrune:
             'SELECT COUNT(*) AS n FROM idempotency_keys WHERE key = ?', ('stale-key',)
         ).fetchone()['n']
         assert gone == 0
+
+
+def _submit_payload(key=None, **overrides):
+    data = dict(LEAD_PAYLOAD)
+    if key:
+        data['idempotency_key'] = key
+    data.update(overrides)
+    return data
+
+
+def _login_with_email(client, db):
+    user_id, username = _make_user(db)
+    _login(client, user_id, username, 'client')
+    with client.session_transaction() as sess:
+        sess['email'] = f'{username}@test.com'
+    return user_id
+
+
+class TestLeadDedup:
+    def test_same_search_twice_returns_409(self, client, db):
+        user_id = _login_with_email(client, db)
+        r1 = client.post('/api/submit', json=_submit_payload(uuid.uuid4().hex))
+        assert r1.status_code == 200
+        lead_id = r1.get_json()['lead_id']
+        r2 = client.post('/api/submit', json=_submit_payload(uuid.uuid4().hex))
+        assert r2.status_code == 409
+        data = r2.get_json()
+        assert data['duplicate'] is True
+        assert data['existing_lead_id'] == lead_id
+        n = db.execute('SELECT COUNT(*) AS n FROM leads WHERE user_id = ?', (user_id,)).fetchone()['n']
+        assert n == 1
+
+    def test_allow_duplicate_creates_second_lead(self, client, db):
+        user_id = _login_with_email(client, db)
+        client.post('/api/submit', json=_submit_payload(uuid.uuid4().hex))
+        r2 = client.post('/api/submit', json=_submit_payload(uuid.uuid4().hex, allow_duplicate=True))
+        assert r2.status_code == 200
+        n = db.execute('SELECT COUNT(*) AS n FROM leads WHERE user_id = ?', (user_id,)).fetchone()['n']
+        assert n == 2
+
+    def test_different_zone_is_not_duplicate(self, client, db):
+        _login_with_email(client, db)
+        client.post('/api/submit', json=_submit_payload(uuid.uuid4().hex))
+        r2 = client.post('/api/submit', json=_submit_payload(uuid.uuid4().hex, zone='Recoleta'))
+        assert r2.status_code == 200
+
+    def test_old_lead_is_not_duplicate(self, client, db):
+        user_id = _login_with_email(client, db)
+        r1 = client.post('/api/submit', json=_submit_payload(uuid.uuid4().hex))
+        lead_id = r1.get_json()['lead_id']
+        db.execute("UPDATE leads SET timestamp = datetime('now', '-100 days') WHERE id = ?", (lead_id,))
+        db.commit()
+        r2 = client.post('/api/submit', json=_submit_payload(uuid.uuid4().hex))
+        assert r2.status_code == 200

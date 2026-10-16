@@ -6,6 +6,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ## [Unreleased]
 
+### Añadido (Fase 4 — Dedup real de leads)
+- **409 ante búsqueda duplicada** (`routes/client_bp.py`): mismo usuario + tipo +
+  zona + teléfono en 90 días → `409 {duplicate, existing_lead_id}`. Nunca bloquea:
+  `allow_duplicate: true` crea igual (misma idempotency key).
+- **Flujo Retomar/Crear igual** (`static/js/forms.js`): ante 409, `showConfirm` —
+  Cancelar va a `/mi-perfil`, Aceptar reintenta con `allow_duplicate`.
+- Keys `client.duplicate_*` ES/EN (py + js) + 4 tests en `TestLeadDedup`.
+
+---
+
+## [v0.44.0] — 2026-10-16 — Timeline unificado por lead
+
 ### Añadido (Fase 3 — Timeline unificado)
 - **Timeline por lead** (`models/timeline.py`, `routes/professional/timeline.py`):
   `GET /api/leads/<id>/timeline` agrega creación, pipeline, tracking, versiones,

@@ -190,6 +190,23 @@ def submit_lead():
         if country and country not in valid_countries:
             return _reject(t('client.invalid_country', lang))
 
+        # Dedup real: misma búsqueda (usuario + tipo + zona + teléfono) en
+        # 90 días → 409 con el lead existente. Nunca bloquea: el cliente
+        # puede reintentar con allow_duplicate (misma idempotency key).
+        if not data.get('allow_duplicate'):
+            dup = conn.execute(
+                "SELECT id FROM leads WHERE user_id = ? AND type = ? AND zone = ? AND phone = ?"
+                " AND timestamp > datetime('now', '-90 days') ORDER BY id DESC LIMIT 1",
+                (user_id, lead_type, zone, data.get('phone'))
+            ).fetchone()
+            if dup:
+                return jsonify({
+                    "success": False,
+                    "error": t('client.duplicate_lead', lang),
+                    "duplicate": True,
+                    "existing_lead_id": dup['id']
+                }), 409
+
         cursor = conn.execute('''
             INSERT INTO leads (
                 type, property_type, zone, province, budget, currency,
