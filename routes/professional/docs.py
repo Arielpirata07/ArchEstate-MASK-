@@ -68,11 +68,20 @@ def report_lead(lead_id):
         if existing:
             return jsonify({'error': t('prof.already_reported', lang)}), 400
 
-        conn.execute(
-            'INSERT INTO lead_reports (lead_id, reported_by, reason, notes, status) VALUES (?, ?, ?, ?, ?)',
-            (lead_id, session['user_id'], 'telefono_inexistente', notes, 'pending')
-        )
-        conn.commit()
+        try:
+            conn.execute(
+                'INSERT INTO lead_reports (lead_id, reported_by, reason, notes, status) VALUES (?, ?, ?, ?, ?)',
+                (lead_id, session['user_id'], 'telefono_inexistente', notes, 'pending')
+            )
+            conn.commit()
+        except Exception as e:
+            from services.database import is_integrity_error
+            conn.rollback()
+            if is_integrity_error(e):
+                # Carrera: otro request concurrente insertó el pending
+                # primero (el índice único parcial lo rechazó).
+                return jsonify({'error': t('prof.already_reported', lang)}), 400
+            raise
 
         utils.log_action(
             "Reporte de Lead",

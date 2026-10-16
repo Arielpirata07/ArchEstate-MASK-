@@ -6,6 +6,21 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ## [Unreleased]
 
+### Añadido
+- **Idempotencia en `POST /api/submit`**: header `X-Idempotency-Key` (o `idempotency_key` en body) con tabla `idempotency_keys`; reintentos con la misma key retornan el lead existente (`deduplicated: true`) sin insertar ni notificar de más. Incluye `lead_id` en la respuesta.
+- **Backstops únicos parciales**: `idx_lead_reports_pending_once` (un pending por profesional+lead) e `idx_notif_lead_created_once` (una notificación de creación por profesional+lead), con limpieza de duplicados históricos en la migración.
+
+### Corregido
+- **Doble-submit frontend**: guard `submitting` + key UUID por formulario en `forms.js` (doble click / Enter repetido).
+- **`auto_assign_lead` atómico**: `UPDATE ... WHERE assigned_to IS NULL`; el perdedor de una carrera relee al ganador.
+- **`notify_lead_created` idempotente**: `INSERT OR IGNORE` + solo envía email/WhatsApp si el insert ganó; segunda ejecución no duplica ni reenvía.
+- **`notify_lead_status_change` con dedup de ventana (5 min)** por mismo estado: cubre admin y cliente sin suprimir `visto`→`contactado` legítimos.
+- **`report_lead` ante carrera**: violación del índice único → 400 `already_reported` en vez de 500.
+- **`toggle-status` ante carrera**: INSERT en conflicto → relee y aplica el flip (sin 500).
+- **`move_lead_stage` no-op**: mismo origen y destino no escribe historial ni toca tracking.
+- **Calendario**: guard `calSaving` en `saveCalEvent` (doble click no duplica eventos).
+- **Test de teardown**: robusto al contexto ambiente del plugin pytest (verifica cierre real).
+
 ---
 
 ## [v0.43.0] — 2026-10-15 — Testing Fase 6 (Auditoría)

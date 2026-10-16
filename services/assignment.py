@@ -69,10 +69,15 @@ def auto_assign_lead(lead_id: int) -> int | None:
                 best_pro = pro
 
         if best_pro:
-            conn.execute(
-                'UPDATE leads SET assigned_to = ? WHERE id = ?',
+            # UPDATE condicional atómico: si dos workers concurrentes
+            # asignan el mismo lead, solo uno gana; el otro relee al ganador.
+            claimed = conn.execute(
+                'UPDATE leads SET assigned_to = ? WHERE id = ? AND assigned_to IS NULL',
                 (best_pro['user_id'], lead_id)
             )
+            if claimed.rowcount == 0:
+                row = conn.execute('SELECT assigned_to FROM leads WHERE id = ?', (lead_id,)).fetchone()
+                return row['assigned_to'] if row else None
             conn.commit()
             utils.log_action(
                 'Asignacion automatica lead',

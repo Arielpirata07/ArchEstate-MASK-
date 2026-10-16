@@ -388,4 +388,27 @@ def create_tables(cursor):
         )
     ''')
 
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS idempotency_keys (
+            key TEXT PRIMARY KEY,
+            user_id INTEGER NOT NULL REFERENCES users(id),
+            lead_id INTEGER REFERENCES leads(id),
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
+    # Un solo reporte 'pending' por profesional y lead: backstop contra
+    # doble-click / doble sesión (el check previo en la ruta no es atómico).
+    cursor.execute('''
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_lead_reports_pending_once
+        ON lead_reports(lead_id, reported_by) WHERE status = 'pending'
+    ''')
+
+    # Una sola notificación de creación por profesional y lead: backstop
+    # contra doble ejecución de notify_lead_created (reintento / doble hilo).
+    cursor.execute('''
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_notif_lead_created_once
+        ON notifications(user_id, lead_id) WHERE type IN ('lead_new', 'lead_assigned')
+    ''')
+
 

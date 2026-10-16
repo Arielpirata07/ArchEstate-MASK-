@@ -191,7 +191,7 @@ def notify_lead_created(lead_id: int) -> list:
                     continue
 
             if is_assigned:
-                _create_notification(pro['id'], lead_id,
+                inserted = _create_notification(pro['id'], lead_id,
                     title=t('notif.lead_assigned_title', lang, type=lead["type"], zone=lead["zone"]),
                     body=t('notif.lead_assigned_body', lang, property_type=lead["property_type"], currency=lead.get("currency", ""), budget=lead.get("budget", "")),
                     actor_id=assigner_user_id,
@@ -199,13 +199,18 @@ def notify_lead_created(lead_id: int) -> list:
                     conn=notif_conn
                 )
             else:
-                _create_notification(pro['id'], lead_id,
+                inserted = _create_notification(pro['id'], lead_id,
                     title=t('notif.new_lead_title', lang, type=lead["type"], zone=lead["zone"]),
                     body=t('notif.new_lead_body', lang, property_type=lead["property_type"], currency=lead.get("currency", ""), budget=lead.get("budget", "")),
                     actor_id=assigner_user_id,
                     notif_type='lead_new',
                     conn=notif_conn
                 )
+
+            if not inserted:
+                # Reintento o ejecución concurrente: la notificación ya
+                # existe → no reenviar email/WhatsApp ni reloguear.
+                continue
 
             # Route channel: email / whatsapp / ambos / auto
             channel = (prefs.get('preferred_channel') or 'email').strip().lower()
@@ -313,30 +318,36 @@ def _send_client_status_email(client_user_id: int, lead_id: int, subject: str, b
     sender.send(user['email'], subject, html)
 
 
-def _create_notification(user_id: int, lead_id: int, title: str, body: str = '', actor_id: int = 0, notif_type: str = 'lead', conn=None) -> None:
+def _create_notification(user_id: int, lead_id: int, title: str, body: str = '', actor_id: int = 0, notif_type: str = 'lead', conn=None) -> bool:
     """Inserta una notificación en la tabla notifications.
 
     Si se pasa conn, reutiliza esa conexión sin commit/close (batch del llamador).
+    Usa INSERT OR IGNORE: los índices únicos parciales (creación por lead,
+    reporte pending) convierten reintentos concurrentes en no-ops.
+    Retorna True si se insertó, False si ya existía o falló.
     """
     if conn is not None:
         try:
-            conn.execute(
-                'INSERT INTO notifications (user_id, lead_id, title, body, actor_id, type) VALUES (?, ?, ?, ?, ?, ?)',
+            cur = conn.execute(
+                'INSERT OR IGNORE INTO notifications (user_id, lead_id, title, body, actor_id, type) VALUES (?, ?, ?, ?, ?, ?)',
                 (user_id, lead_id, title[:255], body[:500], actor_id if actor_id else None, notif_type)
             )
+            return cur.rowcount > 0
         except Exception:
             logger.exception('Error creating notification for user_id=%s', user_id)
-        return
+            return False
     conn = None
     try:
         conn = models.get_db_connection()
-        conn.execute(
-            'INSERT INTO notifications (user_id, lead_id, title, body, actor_id, type) VALUES (?, ?, ?, ?, ?, ?)',
+        cur = conn.execute(
+            'INSERT OR IGNORE INTO notifications (user_id, lead_id, title, body, actor_id, type) VALUES (?, ?, ?, ?, ?, ?)',
             (user_id, lead_id, title[:255], body[:500], actor_id if actor_id else None, notif_type)
         )
         conn.commit()
+        return cur.rowcount > 0
     except Exception:
         logger.exception('Error creating notification for user_id=%s', user_id)
+        return False
     finally:
         if conn:
             conn.close()
@@ -374,6 +385,29 @@ def notify_lead_status_change(lead_id: int, professional_id: int, new_status: st
             conn.close()
 
     status_label = t('notif.status_seen', lang) if new_status == 'seen' else t('notif.status_contacted', lang)
+    pro_name = user.get('username', 'un profesional')
+
+    # Dedup de ventana ANTES de notificar a nadie: doble-click / doble
+    # sesión del mismo cambio no spamea ni al admin ni al cliente. Solo
+    # ignora el MISMO estado reciente, así 'visto' seguido de
+    # 'contactado' sí notifica dos veces.
+    if lead_owner_id and lead_owner_id != professional_id:
+        _dup_title_key = 'notif.client_status_contacted_title' if new_status == 'contacted' else 'notif.client_status_seen_title'
+        _dup_title = t(_dup_title_key, lang, lead_id=lead_id)
+        _dup_conn = None
+        try:
+            _dup_conn = models.get_db_connection()
+            recent = _dup_conn.execute(
+                "SELECT 1 FROM notifications WHERE user_id = ? AND lead_id = ? AND type = 'lead_status'"
+                ' AND actor_id = ? AND title = ? AND created_at > datetime(\'now\', \'-5 minutes\') LIMIT 1',
+                (lead_owner_id, lead_id, professional_id, _dup_title[:255])
+            ).fetchone()
+        finally:
+            if _dup_conn:
+                _dup_conn.close()
+        if recent:
+            logger.info('notify_lead_status_change deduplicado: lead=%s actor=%s status=%s', lead_id, professional_id, new_status)
+            return
 
     # --- Notificar al admin (como antes) ---
     subject = t('notif.status_change_subject', lang, lead_id=lead_id, status=status_label, username=user.get("username", "profesional"))
@@ -394,7 +428,6 @@ def notify_lead_status_change(lead_id: int, professional_id: int, new_status: st
 
     # --- Notificar al cliente (dueño del lead) ---
     if lead_owner_id and lead_owner_id != professional_id:
-        pro_name = user.get('username', 'un profesional')
         client_title_key = 'notif.client_status_contacted_title' if new_status == 'contacted' else 'notif.client_status_seen_title'
         client_title = t(client_title_key, lang, lead_id=lead_id)
         client_body = t('notif.client_status_body', lang,

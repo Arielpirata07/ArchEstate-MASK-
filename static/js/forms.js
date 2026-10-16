@@ -150,8 +150,18 @@ function initUserForm() {
     if (form) {
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
+            // Guard anti-doble-submit: misma sesión, doble click o Enter
+            // repetido. El backend además deduplica por idempotency key.
+            if (form.dataset.submitting === '1') return;
+            form.dataset.submitting = '1';
+            // Una key por intento de formulario: los reintentos tras error
+            // reutilizan la misma key para que el backend no duplique el lead.
+            if (!form.dataset.idemKey && window.crypto && crypto.randomUUID) {
+                form.dataset.idemKey = crypto.randomUUID();
+            }
             const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
+            if (form.dataset.idemKey) data.idempotency_key = form.dataset.idemKey;
 
             // Recolectar amenities seleccionadas
             const amenitiesCheckboxes = document.querySelectorAll('input[name="amenities"]:checked');
@@ -174,6 +184,7 @@ function initUserForm() {
             if (data.property_type === 'casa' && landArea > 0 && builtArea > 0) {
                 if (builtArea > landArea * 0.8) {
                     showToast(t('validator.built_area_exceeds'), 'error');
+                    form.dataset.submitting = '0';
                     return;
                 }
             }
@@ -185,6 +196,7 @@ function initUserForm() {
                 setLoading(submitBtn, false);
                 if (window.lucide) lucide.createIcons();
                 showToast(t('validator.email_empty_or_invalid'), 'error');
+                form.dataset.submitting = '0';
                 return;
             }
 
@@ -194,6 +206,7 @@ function initUserForm() {
                 setLoading(submitBtn, false);
                 if (window.lucide) lucide.createIcons();
                 showToast(budgetValidation.message, 'error');
+                form.dataset.submitting = '0';
                 return;
             }
 
@@ -201,9 +214,11 @@ function initUserForm() {
             setLoading(submitBtn, true, t('action.processing'));
 
             try {
+                const headers = { 'Content-Type': 'application/json' };
+                if (form.dataset.idemKey) headers['X-Idempotency-Key'] = form.dataset.idemKey;
                 const response = await fetch('/api/submit', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: headers,
                     body: JSON.stringify(data)
                 });
 
@@ -215,11 +230,13 @@ function initUserForm() {
                         window.location.href = "/";
                     }, 1500);
                 } else {
+                    form.dataset.submitting = '0';
                     setLoading(submitBtn, false);
                     if (window.lucide) lucide.createIcons();
                     showToast(result.message, 'error');
                 }
             } catch (error) {
+                form.dataset.submitting = '0';
                 setLoading(submitBtn, false);
                 if (window.lucide) lucide.createIcons();
                 console.error("Error al enviar el formulario:", error);

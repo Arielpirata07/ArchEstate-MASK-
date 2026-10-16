@@ -245,6 +245,43 @@ def apply_migrations(cursor):
         WHERE p.org_id IS NOT NULL
     ''')
 
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS idempotency_keys (
+            key TEXT PRIMARY KEY,
+            user_id INTEGER NOT NULL REFERENCES users(id),
+            lead_id INTEGER REFERENCES leads(id),
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
+    # Backstops de concurrencia (toleran datos preexistentes duplicados):
+    # - un solo reporte 'pending' por profesional y lead
+    # - una sola notificación de creación por profesional y lead
+    # Limpieza previa: sin esto el índice único fallaría en DBs con
+    # duplicados históricos (doble-clicks anteriores a este fix).
+    cursor.execute('''
+        UPDATE lead_reports SET status = 'dismissed', reviewed_by = 'migration-dedup'
+        WHERE status = 'pending' AND id NOT IN (
+            SELECT MIN(id) FROM lead_reports WHERE status = 'pending'
+            GROUP BY lead_id, reported_by
+        )
+    ''')
+    cursor.execute('''
+        DELETE FROM notifications WHERE id NOT IN (
+            SELECT MIN(id) FROM notifications
+            WHERE type IN ('lead_new', 'lead_assigned')
+            GROUP BY user_id, lead_id, type
+        ) AND type IN ('lead_new', 'lead_assigned')
+    ''')
+    cursor.execute('''
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_lead_reports_pending_once
+        ON lead_reports(lead_id, reported_by) WHERE status = 'pending'
+    ''')
+    cursor.execute('''
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_notif_lead_created_once
+        ON notifications(user_id, lead_id) WHERE type IN ('lead_new', 'lead_assigned')
+    ''')
+
     # Índices al final: algunos referencian columnas creadas por migraciones.
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_org_members_org ON org_members(org_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_org_members_user ON org_members(user_id)')

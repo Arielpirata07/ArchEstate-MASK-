@@ -80,6 +80,10 @@ def move_lead_stage(professional_id, lead_id, to_stage, now_str=None):
             (professional_id, lead_id)
         ).fetchone()
         from_stage = current['stage'] if current else PIPELINE_DEFAULT_STAGE
+        if from_stage == to_stage:
+            # No-op idempotente: reintento o doble-click no genera
+            # historial basura ni toca lead_tracking.
+            return (from_stage, to_stage)
         if current:
             conn.execute(
                 'UPDATE lead_stages SET stage = ?, updated_at = ? WHERE professional_id = ? AND lead_id = ?',

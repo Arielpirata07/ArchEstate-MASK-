@@ -70,11 +70,19 @@ class TestRequestScopedConnection:
             assert a._real is b._real
 
     def test_teardown_closes_shared_connection(self, app):
-        with app.test_request_context('/'):
+        # Nota: se usa app_context explícito (no test_request_context)
+        # porque el entorno pytest deja un contexto ambiente pusheado y
+        # test_request_context reutilizaría su `g` en vez de uno fresco.
+        import sqlite3
+        with app.app_context():
             from models import get_db_connection
-            get_db_connection()
+            conn = get_db_connection()
             assert g._shared_db_conn is not None
-        with app.test_request_context('/'):
+            real = conn._real
+        # El teardown debe haber cerrado la conexión real.
+        with pytest.raises(sqlite3.ProgrammingError):
+            real._conn.execute('SELECT 1')
+        with app.app_context():
             assert getattr(g, '_shared_db_conn', None) is None
 
     def test_explicit_close_is_noop_inside_request(self, app, db):

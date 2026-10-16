@@ -75,6 +75,12 @@ def submit_lead():
             "error": t('client.auth_required', lang)
         }), 401
 
+    # Clave de idempotencia: el frontend genera un UUID por formulario y lo
+    # reenvía en reintentos. Mismo (key, user) → no se inserta otro lead.
+    idem_key = (request.headers.get('X-Idempotency-Key') or data.get('idempotency_key') or '').strip()[:64]
+    if idem_key and not all(c.isalnum() or c in ('-', '_') for c in idem_key):
+        idem_key = ''
+
     conn = None
     try:
         conn = models.get_db_connection()
@@ -82,6 +88,27 @@ def submit_lead():
 
         if not user:
             return jsonify({"success": False, "error": t('client.invalid_session', lang)}), 401
+
+        if idem_key:
+            # INSERT OR IGNORE es atómico: si dos requests concurrentes traen
+            # la misma key, solo uno gana; el otro ve lead_id NULL o existente
+            # y retorna éxito sin insertar un lead duplicado.
+            conn.execute(
+                'INSERT OR IGNORE INTO idempotency_keys (key, user_id, lead_id) VALUES (?, ?, NULL)',
+                (idem_key, user_id)
+            )
+            conn.commit()
+            existing = conn.execute(
+                'SELECT lead_id FROM idempotency_keys WHERE key = ? AND user_id = ?',
+                (idem_key, user_id)
+            ).fetchone()
+            if existing and existing['lead_id']:
+                return jsonify({
+                    "success": True,
+                    "message": t('client.lead_submitted', lang),
+                    "lead_id": existing['lead_id'],
+                    "deduplicated": True
+                })
 
         email = session.get('email') or data.get('email', '')
         is_valid, error = validators.validate_email(email)
@@ -197,6 +224,31 @@ def submit_lead():
         ))
         conn.commit()
 
+        if idem_key:
+            # Solo el primer request que complete marca la key (UPDATE
+            # condicional atómico). Si otro request concurrente con la misma
+            # key terminó antes, se elimina el lead duplicado recién creado
+            # y se retorna el lead ganador sin notificar de nuevo.
+            claimed = conn.execute(
+                'UPDATE idempotency_keys SET lead_id = ? WHERE key = ? AND user_id = ? AND lead_id IS NULL',
+                (cursor.lastrowid, idem_key, user_id)
+            )
+            if claimed.rowcount == 0:
+                dup_id = cursor.lastrowid
+                conn.execute('DELETE FROM leads WHERE id = ?', (dup_id,))
+                conn.commit()
+                winner = conn.execute(
+                    'SELECT lead_id FROM idempotency_keys WHERE key = ? AND user_id = ?',
+                    (idem_key, user_id)
+                ).fetchone()
+                return jsonify({
+                    "success": True,
+                    "message": t('client.lead_submitted', lang),
+                    "lead_id": winner['lead_id'] if winner else None,
+                    "deduplicated": True
+                })
+            conn.commit()
+
         from services.notifications import notify_lead_created
         try:
             if cursor.lastrowid:
@@ -207,7 +259,8 @@ def submit_lead():
 
         return jsonify({
             "success": True,
-            "message": t('client.lead_submitted', lang)
+            "message": t('client.lead_submitted', lang),
+            "lead_id": cursor.lastrowid
         })
 
     except Exception as e:

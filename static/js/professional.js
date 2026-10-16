@@ -2526,6 +2526,7 @@ function toggleCalAllDay() {
 }
 
 var calLeadSearchTimer = null;
+var calSaving = false;
 
 async function searchCalLeads() {
     var input = document.getElementById('cal-lead-search');
@@ -2550,6 +2551,7 @@ async function searchCalLeads() {
 }
 
 async function saveCalEvent() {
+    if (calSaving) return;
     var errBox = document.getElementById('calModalError');
     var id = document.getElementById('cal-id').value;
     var payload = {
@@ -2573,6 +2575,7 @@ async function saveCalEvent() {
         errBox.classList.remove('hidden');
         return;
     }
+    calSaving = true;
     try {
         var res = await fetch(id ? '/api/calendar/events/' + id : '/api/calendar/events', {
             method: id ? 'PUT' : 'POST',
@@ -2591,6 +2594,8 @@ async function saveCalEvent() {
     } catch (err) {
         errBox.textContent = t('error.connection');
         errBox.classList.remove('hidden');
+    } finally {
+        calSaving = false;
     }
 }
 

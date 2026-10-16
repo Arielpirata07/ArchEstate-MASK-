@@ -90,11 +90,34 @@ def toggle_lead_status(lead_id):
             seen_at = now if status_type == 'seen' else None
             contacted_at = now if status_type == 'contacted' else None
 
-            conn.execute(
-                'INSERT INTO lead_tracking (professional_id, lead_id, seen, contacted, seen_at, contacted_at) VALUES (?, ?, ?, ?, ?, ?)',
-                (professional_id, lead_id, seen_val, contacted_val, seen_at, contacted_at)
-            )
-            new_value = 1
+            try:
+                conn.execute(
+                    'INSERT INTO lead_tracking (professional_id, lead_id, seen, contacted, seen_at, contacted_at) VALUES (?, ?, ?, ?, ?, ?)',
+                    (professional_id, lead_id, seen_val, contacted_val, seen_at, contacted_at)
+                )
+                new_value = 1
+            except Exception as e:
+                from services.database import is_integrity_error
+                if not is_integrity_error(e):
+                    raise
+                # Carrera: otro request concurrente insertó la fila primero
+                # (UNIQUE professional+lead). Se relee y se aplica el flip
+                # sobre el estado real en vez de devolver 500.
+                conn.rollback()
+                tracking = conn.execute(
+                    'SELECT * FROM lead_tracking WHERE professional_id = ? AND lead_id = ?',
+                    (professional_id, lead_id)
+                ).fetchone()
+                if not tracking:
+                    raise
+                current_value = tracking[status_type]
+                new_value = 0 if current_value else 1
+                timestamp_col = f'{status_type}_at'
+                timestamp_value = now if new_value else None
+                conn.execute(
+                    f'UPDATE lead_tracking SET {status_type} = ?, {timestamp_col} = ? WHERE professional_id = ? AND lead_id = ?',
+                    (new_value, timestamp_value, professional_id, lead_id)
+                )
 
         conn.commit()
 
