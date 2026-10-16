@@ -948,6 +948,7 @@ git tag -l --sort=-v:refname | head -10     # Ver tags nuevos
 | `v0.40.0` | Auditoría F1 | Seguridad (leak, atomicidad, confirm, FK) | 624 + 30 node |
 | `v0.41.0` | Auditoría F2 | Performance (batch, conn scoped, índices) | 624 + 30 node |
 | `v0.42.0` | Auditoría F3 | Calidad (splits, dotenv, sin pass) | 624 + 30 node |
+| `v0.43.0` | Auditoría F6 | Testing (103 tests, scan XSS) | 727 + 30 node |
 | (sin tag) | Prerequisito | Deploy + fixes de bugs conocidos | 543 |
 | `v0.34.0` | Fase 1 | Pipeline Kanban (Jira-style) | +12 |
 | `v0.35.0` | Fase 2 | Dashboard Ejecutivo | +10 |

@@ -8,6 +8,19 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ---
 
+## [v0.43.0] — 2026-10-15 — Testing Fase 6 (Auditoría)
+
+### Añadido
+- **103 tests nuevos**: `test_admin_bp` (21: approval, leads, reports, usuarios, notificaciones), `test_errors` (24: handlers 400–504 HTML+JSON), `test_security` (30: scan XSS + atomicidad), `test_export_helpers` (9), `test_matching` (11), `test_middleware` (8: remember, conn scoped, idioma).
+- **Scan XSS como test**: campos controlados por usuario deben interpolarse con `escapeHtml`/`escapePipelineHtml` (detectó y corrigió `data-label` del panorama).
+- `verify_coherence.py` sigue al split (lee `db_schema.py` + subpaquetes de rutas).
+- Suite: **727 pytest** + 30 node verdes, coherencia 94/94.
+
+### Corregido
+- **Deadlock SQLite del batch F2**: `log_action` reutiliza `notif_conn` (writes sin commit bloqueaban su propia conexión).
+
+---
+
 ## [v0.42.0] — 2026-10-15 — Calidad Fase 3 (Auditoría)
 
 ### Cambiado

@@ -14,7 +14,12 @@ ROUTES_DIR = os.path.join(PROJECT_ROOT, 'routes')
 ROUTES_PROFILE = os.path.join(ROUTES_DIR, 'profile_bp.py')
 FACTORY_FILE = os.path.join(PROJECT_ROOT, 'factory.py')
 APP_SETUP_FILE = os.path.join(PROJECT_ROOT, 'app_setup.py')
+DB_SCHEMA_FILE = os.path.join(PROJECT_ROOT, 'db_schema.py')
 BLUEPRINT_FILES = [os.path.join(ROUTES_DIR, f) for f in os.listdir(ROUTES_DIR) if f.endswith('.py') and f != '__init__.py']
+for _sub in ('professional', 'profile'):
+    _subdir = os.path.join(ROUTES_DIR, _sub)
+    if os.path.isdir(_subdir):
+        BLUEPRINT_FILES += [os.path.join(_subdir, f) for f in os.listdir(_subdir) if f.endswith('.py')]
 ALL_ROUTE_FILES = BLUEPRINT_FILES
 
 passed = 0
@@ -126,8 +131,10 @@ check(f'All routes registered ({total_routes} endpoints)', duplicate_count == 0,
       f'{duplicate_count} duplicates' if duplicate_count else '')
 
 # ===== 4. Database Schema Consistency =====
-print('\n[4] Database Schema Consistency (app_setup.py)')
+print('\n[4] Database Schema Consistency (app_setup.py + db_schema.py)')
 setup_content = read_file(APP_SETUP_FILE)
+if os.path.exists(DB_SCHEMA_FILE):
+    setup_content += read_file(DB_SCHEMA_FILE)
 
 tables = ['users', 'leads', 'professionals', 'audit_log']
 for table in tables:
