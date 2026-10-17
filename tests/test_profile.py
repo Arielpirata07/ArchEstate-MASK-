@@ -89,6 +89,21 @@ class TestUserLeadsTracking:
         assert lead['seen_count'] == 0
         assert lead['contacted_count'] == 0
 
+    def test_leads_response_includes_sla_commitment(self, auth_client, db):
+        """Fase 3: el listado incluye el compromiso de respuesta del cliente."""
+        with auth_client.session_transaction() as sess:
+            user_id = sess['user_id']
+
+        self._create_lead(db, user_id)
+        resp = auth_client.get('/api/profile/leads')
+        data = json.loads(resp.data)
+        assert data['success'] is True
+        c = data['sla_commitment']
+        assert set(c.keys()) == {'available', 'hours', 'sample'}
+        assert isinstance(c['available'], bool)
+        assert isinstance(c['hours'], int)
+        assert isinstance(c['sample'], int)
+
     def test_leads_tracking_counts_mixed(self, auth_client, db):
         """Mezcla: un profesional vio, otro contactó, otro sin acción."""
         with auth_client.session_transaction() as sess:

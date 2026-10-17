@@ -76,7 +76,23 @@ def api_get_user_leads():
     for lead in leads:
         if lead.get('timestamp'):
             lead['timestamp'] = utils.convert_to_argentina_time(lead['timestamp'])
-    return jsonify({'success': True, 'leads': leads})
+
+    # Fase 3: compromiso de respuesta (mediana de horas habiles hasta el
+    # primer contacto) para comunicarle al cliente. Nunca rompe la lista:
+    # si falla, se devuelve el compromiso generico (available=False).
+    commitment = {'available': False, 'hours': 0, 'sample': 0}
+    conn = None
+    try:
+        from services.sla import get_response_commitment
+        conn = models.get_db_connection()
+        commitment = get_response_commitment(conn)
+    except Exception:
+        logger.exception('get_response_commitment fallo')
+    finally:
+        if conn:
+            conn.close()
+
+    return jsonify({'success': True, 'leads': leads, 'sla_commitment': commitment})
 
 
 @profile_bp.route('/api/profile/lead/<int:lead_id>', methods=['GET'])

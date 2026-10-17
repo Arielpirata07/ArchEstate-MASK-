@@ -8,7 +8,9 @@ from services.sla import (
     SLA_SOURCES,
     business_hours_between,
     compute_sla_kpis,
+    get_response_commitment,
     record_first_contact,
+    _commitment_from,
     _parse_ts,
 )
 
@@ -197,3 +199,44 @@ class TestComputeSlaKpis:
         after = compute_sla_kpis(db, days=30)
         assert after['unassigned'] == base['unassigned'] + 1
         assert after['pending'] == base['pending']
+
+
+class TestGetResponseCommitment:
+    '''Compromiso de respuesta que se le comunica al cliente (Fase 3).'''
+
+    def test_empty_sample_not_available(self):
+        c = _commitment_from([])
+        assert c['available'] is False
+        assert c['hours'] == 0
+        assert c['sample'] == 0
+
+    def test_below_min_sample_not_available(self):
+        c = _commitment_from([3.0, 3.0, 3.0, 3.0], min_sample=5)
+        assert c['available'] is False
+
+    def test_available_with_enough_low_sample(self):
+        c = _commitment_from([6.0] * 5)
+        assert c['available'] is True
+        assert c['hours'] == 6
+        assert c['sample'] == 5
+
+    def test_median_rounded(self):
+        c = _commitment_from([2.0, 3.0, 4.0, 5.0, 6.0])
+        assert c['available'] is True
+        assert c['hours'] == 4
+
+    def test_too_slow_not_available(self):
+        c = _commitment_from([60.0] * 10, max_display=48)
+        assert c['available'] is False
+        assert c['hours'] == 0
+
+    def test_zero_median_not_available(self):
+        c = _commitment_from([0.0] * 10)
+        assert c['available'] is False
+
+    def test_get_response_commitment_shape(self, db):
+        c = get_response_commitment(db)
+        assert set(c.keys()) == {'available', 'hours', 'sample'}
+        assert isinstance(c['available'], bool)
+        assert isinstance(c['hours'], int)
+        assert isinstance(c['sample'], int)

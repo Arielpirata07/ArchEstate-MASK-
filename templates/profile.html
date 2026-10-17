@@ -542,6 +542,11 @@
                 <div class="settings-card hover-lift">
                     <h2 class="text-xl font-serif italic mb-6" style="color:var(--text-primary)">{{ t('profile.my_leads') }}</h2>
 
+                    <div id="sla-commitment" class="hidden mb-6 items-start gap-3 rounded-lg border px-4 py-3" style="border-color:var(--border);background:var(--bg-secondary)">
+                        <i data-lucide="clock" class="w-4 h-4 mt-0.5 shrink-0" style="color:var(--accent)"></i>
+                        <p id="sla-commitment-text" class="text-[12px] hint-text"></p>
+                    </div>
+
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse profile-leads-table" id="leads-table">
                             <thead>

@@ -27,9 +27,6 @@ BUSINESS_END = time(18, 0)
 # Fuentes de primer contacto, en orden de prioridad de reporting (no temporal).
 SLA_SOURCES = ('stage', 'reveal', 'wa_link', 'call', 'sms')
 
-# Etapas de pipeline que implican contacto (>= 'contacted').
-# Se importa en caliente para evitar circular imports con models.pipeline.
-
 
 def business_hours_between(start, end):
     '''Horas hábiles transcurridas entre dos datetimes (lun–vie 09:00–18:00).
@@ -166,8 +163,12 @@ def compute_sla_kpis(conn, days=30, threshold_hours=24.0):
         f"WHERE timestamp >= datetime('now', '{since}')"
     ).fetchall()
 
+    # Solo contactos de leads dentro de la ventana (la mediana/P90 deben ser
+    # consistentes con `met`/`breached`, que ya están en ventana).
     contact_rows = conn.execute(
-        'SELECT lead_id, business_hours_elapsed FROM lead_first_contact'
+        'SELECT lfc.lead_id, lfc.business_hours_elapsed FROM lead_first_contact lfc '
+        'JOIN leads l ON l.id = lfc.lead_id '
+        f"WHERE l.timestamp >= datetime('now', '{since}')"
     ).fetchall()
     contact_by_lead = {}
     for r in contact_rows:
@@ -258,4 +259,37 @@ def compute_sla_kpis(conn, days=30, threshold_hours=24.0):
             }
             for r in by_zone
         ],
+    }
+
+
+def get_response_commitment(conn, days=90, min_sample=5, max_display=48):
+    '''Compromiso de respuesta que se le comunica al cliente (Fase 3).
+
+    Devuelve la mediana de horas habiles hasta el primer contacto de los
+    ultimos `days` dias, redondeada, pero SOLO si hay muestra suficiente
+    (`min_sample`) y el valor es razonable (`<= max_display`). Si no, la UI
+    debe mostrar un mensaje generico ("a la brevedad") en vez de un numero
+    que pueda sonar mal.
+
+    `available=False` → usar el texto generico.
+    '''
+    since = f"-{int(days)} days"
+    rows = conn.execute(
+        'SELECT lfc.business_hours_elapsed FROM lead_first_contact lfc '
+        'JOIN leads l ON l.id = lfc.lead_id '
+        f"WHERE l.timestamp >= datetime('now', '{since}')"
+    ).fetchall()
+    hours = [float(r['business_hours_elapsed']) for r in rows]
+    return _commitment_from(hours, min_sample, max_display)
+
+
+def _commitment_from(hours, min_sample=5, max_display=48):
+    '''Decide el compromiso a mostrar a partir de una lista de horas (pura).'''
+    sample = len(hours)
+    median = _percentile(sorted(hours), 50) if hours else 0.0
+    available = sample >= min_sample and 0 < median <= max_display
+    return {
+        'available': bool(available),
+        'hours': int(round(median)) if available else 0,
+        'sample': sample,
     }

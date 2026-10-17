@@ -913,6 +913,8 @@ TRANSLATIONS = {
         'sla.sin_asignar': 'Sin asignar',
         'sla.profesional': 'Profesional',
         'sla.zona': 'Zona',
+        'sla.client_commitment': 'Nuestros profesionales suelen contactarte en ~{hours} horas hábiles.',
+        'sla.client_commitment_generic': 'Nuestros profesionales te contactarán a la brevedad.',
 
         # === ORGANIZATIONS ===
         'org.name_required': 'El nombre es obligatorio.',
@@ -2387,6 +2389,8 @@ TRANSLATIONS = {
         'sla.sin_asignar': 'Unassigned',
         'sla.profesional': 'Professional',
         'sla.zona': 'Zone',
+        'sla.client_commitment': 'Our professionals usually contact you within ~{hours} business hours.',
+        'sla.client_commitment_generic': 'Our professionals will contact you shortly.',
 
         # === ORGANIZATIONS ===
         'org.name_required': 'Name is required.',

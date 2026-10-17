@@ -6,6 +6,28 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ## [Unreleased]
 
+### Añadido (Fase 3 — Compromiso de respuesta comunicado al cliente)
+- **`services/sla.py`**: `get_response_commitment()` (mediana de horas hábiles
+  hasta el primer contacto en 90 días) con decisión pura `_commitment_from()`:
+  solo muestra un número si hay muestra suficiente (`>=5`) y es razonable
+  (`<=48 h`); caso contrario devuelve `available=False` para usar el texto
+  genérico. Nunca expone un valor que pueda sonar mal.
+- **`GET /api/profile/leads`** ahora incluye `sla_commitment` (`available`,
+  `hours`, `sample`) sin romper la lista si el cálculo falla.
+- **Banner en el panel "Mis Solicitudes"** (`templates/profile.html` +
+  `renderSlaCommitment()` en `static/js/profile.js`): "Nuestros profesionales
+  suelen contactarte en ~X horas hábiles" o el texto genérico.
+- i18n `sla.client_commitment` / `sla.client_commitment_generic` ES/EN en
+  `translations.py` e `i18n.js`.
+- 7 tests puros en `TestGetResponseCommitment` + 1 en `test_profile.py`.
+
+### Arreglado (Fase 3 — consistencia de la mediana/P90 del KPI)
+- `compute_sla_kpis()` calculaba median y P90 sobre **todos** los contactos
+  históricos, mientras `met`/`breached` sí estaban acotados a la ventana: los
+  tres percentiles podían no corresponder al mismo conjunto. Ahora la query de
+  contactos se une a `leads` y filtra por ventana (además baja la carga al no
+  traer contactos fuera de rango).
+
 ### Arreglado (Fase 2.1 — KPI de SLA: pendientes vs incumplidos)
 - **`compute_sla_kpis()`** ahora clasifica cada lead de la ventana en
   `contacted` (con contacto), `pending` (asignado, sin contacto, **en plazo**),

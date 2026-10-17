@@ -1009,6 +1009,20 @@ function loadUserActivity() {
 // ============================================================
 // LEADS
 // ============================================================
+function renderSlaCommitment(c) {
+    const box = document.getElementById('sla-commitment');
+    const text = document.getElementById('sla-commitment-text');
+    if (!box || !text) return;
+    if (c && c.available && c.hours > 0) {
+        text.textContent = t('sla.client_commitment', { hours: c.hours });
+    } else {
+        text.textContent = t('sla.client_commitment_generic');
+    }
+    box.classList.remove('hidden');
+    box.classList.add('flex');
+    if (window.lucide) lucide.createIcons();
+}
+
 function loadUserLeads() {
     const tbody = document.getElementById('leads-tbody');
     if (!tbody) return;
@@ -1016,6 +1030,7 @@ function loadUserLeads() {
     fetch('/api/profile/leads')
     .then(r => r.json())
     .then(data => {
+        renderSlaCommitment(data.sla_commitment);
         if (!data.success || !data.leads || data.leads.length === 0) {
             tbody.innerHTML = '';
             const noMsg = document.getElementById('no-leads-msg');
