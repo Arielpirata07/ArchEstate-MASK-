@@ -6,6 +6,16 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ## [Unreleased]
 
+### Añadido (Fase 2 — Panel SLA en el dashboard admin)
+- **Pestaña "SLA de contacto"** en `templates/admin.html` (`#panel-sla`): tarjetas de
+  cumplimiento, mediana, P90, contactados, incumplidos y sin asignar, más tablas
+  de desglose por profesional y por zona. Selector de período 7/30/90 días.
+- **`static/js/admin.js`**: `loadSla()` / `renderSla()` consumen `GET /api/admin/sla`,
+  con estado activo del período y escape HTML en nombres de usuario/zona.
+- **i18n**: claves `sla.*` y `admin.sla` en `i18n/translations.py` (ES/EN) y
+  `static/js/i18n.js` (ES/EN); paridad verificada por `TestJsI18nParity`.
+- 1 test nuevo (render del panel en `/admin`).
+
 ### Añadido (Fase 1 — KPI de cumplimiento + endpoint admin)
 - **`compute_sla_kpis()`** (`services/sla.py`): cumplimiento (%), mediana y p90
   de horas hábiles hasta el primer contacto, con desglose por profesional y por

@@ -214,3 +214,11 @@ class TestAdminSla:
     def test_invalid_days_falls_back(self, admin_client):
         resp = admin_client.get('/api/admin/sla?days=999')
         assert resp.get_json()['sla']['days'] == 30
+
+    def test_panel_renders_in_admin_view(self, admin_client):
+        resp = admin_client.get('/admin')
+        assert resp.status_code == 200
+        html = resp.data.decode()
+        assert 'panel-sla' in html
+        assert 'sla-cards' in html
+        assert 'adm-sla-period' in html

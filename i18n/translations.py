@@ -898,6 +898,21 @@ TRANSLATIONS = {
         'admin.send': 'Enviar',
         'admin.save': 'Guardar',
 
+        # === SLA DE PRIMER CONTACTO ===
+        'admin.sla': 'SLA de contacto',
+        'sla.help': 'Tiempo hasta el primer contacto de un lead por un profesional (horas hábiles, lun–vie 09:00–18:00). Meta: {threshold} h.',
+        'sla.by_professional': 'Cumplimiento por profesional',
+        'sla.by_zone': 'Cumplimiento por zona',
+        'sla.compliance': 'Cumplimiento',
+        'sla.median': 'Mediana',
+        'sla.p90': 'P90',
+        'sla.contactados': 'Contactados',
+        'sla.cumplidos': 'Cumplidos',
+        'sla.incumplidos': 'Incumplidos',
+        'sla.sin_asignar': 'Sin asignar',
+        'sla.profesional': 'Profesional',
+        'sla.zona': 'Zona',
+
         # === ORGANIZATIONS ===
         'org.name_required': 'El nombre es obligatorio.',
         'org.created': 'Organización creada correctamente.',
@@ -2355,6 +2370,21 @@ TRANSLATIONS = {
         'admin.cancel': 'Cancel',
         'admin.send': 'Send',
         'admin.save': 'Save',
+
+        # === FIRST-CONTACT SLA ===
+        'admin.sla': 'Contact SLA',
+        'sla.help': 'Time until a professional first contacts a lead (business hours, Mon–Fri 09:00–18:00). Target: {threshold} h.',
+        'sla.by_professional': 'Compliance by professional',
+        'sla.by_zone': 'Compliance by zone',
+        'sla.compliance': 'Compliance',
+        'sla.median': 'Median',
+        'sla.p90': 'P90',
+        'sla.contactados': 'Contacted',
+        'sla.cumplidos': 'Met',
+        'sla.incumplidos': 'Breached',
+        'sla.sin_asignar': 'Unassigned',
+        'sla.profesional': 'Professional',
+        'sla.zona': 'Zone',
 
         # === ORGANIZATIONS ===
         'org.name_required': 'Name is required.',

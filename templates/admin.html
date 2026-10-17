@@ -48,6 +48,10 @@
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4"></i> {{ t('admin.notifications') }}</span>
             </button>
+            <button data-action="adm-tab" data-tab="sla" id="tab-sla"
+                class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-paper-dark text-midnight hover:bg-gold hover:text-white">
+                <span class="flex items-center gap-2"><i data-lucide="timer" class="w-4 h-4"></i> {{ t('admin.sla') }}</span>
+            </button>
             <a href="{{ url_for('admin.user_management_view') }}"
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2"><i data-lucide="users" class="w-4 h-4"></i> {{ t('admin.users') }}</span>
@@ -895,6 +899,35 @@
             <button id="notif-log-prev" data-action="adm-notif-page" data-dir="-" class="text-[10px] uppercase tracking-wider font-bold text-midnight/40 hover:text-gold transition-colors">{{ t('notif.page_prev') }}</button>
             <span id="notif-log-page-info" class="text-[10px] text-midnight/40 dark:text-white/40"></span>
             <button id="notif-log-next" data-action="adm-notif-page" data-dir="+" class="text-[10px] uppercase tracking-wider font-bold text-midnight/40 hover:text-gold transition-colors">{{ t('notif.page_next') }}</button>
+        </div>
+    </div>
+
+    <!-- ===== TAB: SLA DE PRIMER CONTACTO ===== -->
+    <div id="panel-sla" class="hidden space-y-6">
+        <div class="flex items-center justify-between">
+            <p class="text-[11px] text-midnight/50 italic max-w-xl">{{ t('sla.help', threshold=24) }}</p>
+            <div class="flex gap-1" id="sla-period-btns">
+                <button data-action="adm-sla-period" data-days="7"  class="px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">7d</button>
+                <button data-action="adm-sla-period" data-days="30" class="px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-midnight text-white">30d</button>
+                <button data-action="adm-sla-period" data-days="90" class="px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">90d</button>
+            </div>
+        </div>
+
+        <div id="sla-cards" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3"></div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="text-[11px] font-extrabold uppercase tracking-widest text-gold mb-2">{{ t('sla.by_professional') }}</h3>
+                <div class="overflow-x-auto">
+                    <table id="sla-pro-table" class="w-full text-left"></table>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-[11px] font-extrabold uppercase tracking-widest text-gold mb-2">{{ t('sla.by_zone') }}</h3>
+                <div class="overflow-x-auto">
+                    <table id="sla-zone-table" class="w-full text-left"></table>
+                </div>
+            </div>
         </div>
     </div>
 </div>

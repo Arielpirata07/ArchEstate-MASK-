@@ -275,6 +275,17 @@ window.I18N = {
         'chart.months': 'meses',
         'chart.no_data': 'Sin datos',
 
+        // === SLA DE PRIMER CONTACTO ===
+        'sla.compliance': 'Cumplimiento',
+        'sla.median': 'Mediana',
+        'sla.p90': 'P90',
+        'sla.contactados': 'Contactados',
+        'sla.cumplidos': 'Cumplidos',
+        'sla.incumplidos': 'Incumplidos',
+        'sla.sin_asignar': 'Sin asignar',
+        'sla.profesional': 'Profesional',
+        'sla.zona': 'Zona',
+
         // === STATS ===
         'stats.new_this_month': 'Nuevo este mes',
         'stats.requests_total': 'solicitudes en total',
@@ -904,6 +915,17 @@ window.I18N = {
         'chart.zones': 'zones',
         'chart.months': 'months',
         'chart.no_data': 'No data',
+
+        // === FIRST-CONTACT SLA ===
+        'sla.compliance': 'Compliance',
+        'sla.median': 'Median',
+        'sla.p90': 'P90',
+        'sla.contactados': 'Contacted',
+        'sla.cumplidos': 'Met',
+        'sla.incumplidos': 'Breached',
+        'sla.sin_asignar': 'Unassigned',
+        'sla.profesional': 'Professional',
+        'sla.zona': 'Zone',
 
         // === STATS ===
         'stats.new_this_month': 'New this month',

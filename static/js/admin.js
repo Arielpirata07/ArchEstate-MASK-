@@ -11,6 +11,7 @@ function showTab(tab) {
     document.getElementById('panel-phone-area-codes').classList.add('hidden');
     document.getElementById('panel-organizations').classList.add('hidden');
     document.getElementById('panel-notifications').classList.add('hidden');
+    document.getElementById('panel-sla').classList.add('hidden');
     document.getElementById('panel-' + tab).classList.remove('hidden');
     const activePanel = document.getElementById('panel-' + tab);
     activePanel.classList.remove('panel-enter');
@@ -40,6 +41,9 @@ function showTab(tab) {
     if (tab === 'notifications') {
         loadAdminNotifPrefs();
         loadNotificationLog(1);
+    }
+    if (tab === 'sla') {
+        loadSla();
     }
 }
 
@@ -306,6 +310,73 @@ function renderMonthChart() {
             animation: chartAnim()
         }
     });
+}
+
+// ================================================================
+// SLA DE PRIMER CONTACTO (Fase 2)
+// ================================================================
+let slaState = { days: 30, threshold: 24 };
+
+async function loadSla(days) {
+    if (days) slaState.days = days;
+    const cards = document.getElementById('sla-cards');
+    const proT  = document.getElementById('sla-pro-table');
+    const zoneT = document.getElementById('sla-zone-table');
+    document.querySelectorAll('#sla-period-btns [data-days]').forEach(btn => {
+        const active = parseInt(btn.dataset.days, 10) === slaState.days;
+        btn.className = 'px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest transition-all '
+            + (active ? 'bg-midnight text-white' : 'bg-paper-dark text-midnight hover:bg-gold hover:text-white');
+    });
+    if (!cards) return;
+    cards.innerHTML = '<p class="text-[11px] text-midnight/50 italic">' + t('admin.loading') + '</p>';
+    try {
+        const res = await fetch('/api/admin/sla?days=' + slaState.days + '&threshold=' + slaState.threshold);
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || 'sla');
+        renderSla(data.sla, cards, proT, zoneT);
+    } catch (e) {
+        cards.innerHTML = '<p class="text-[11px] text-rose-500 italic">' + t('error.load') + '</p>';
+    }
+}
+
+function renderSla(s, cards, proT, zoneT) {
+    const complianceCls = s.compliance_pct >= 80 ? 'text-emerald-600'
+                        : s.compliance_pct >= 50 ? 'text-gold' : 'text-rose-500';
+    cards.innerHTML = [
+        slaCard(t('sla.compliance'), s.compliance_pct + '%', complianceCls),
+        slaCard(t('sla.median'), s.median_hours + 'h', 'text-midnight'),
+        slaCard(t('sla.p90'), s.p90_hours + 'h', 'text-midnight'),
+        slaCard(t('sla.contactados'), s.contacted, 'text-midnight'),
+        slaCard(t('sla.incumplidos'), s.breached, s.breached > 0 ? 'text-rose-500' : 'text-midnight'),
+        slaCard(t('sla.sin_asignar'), s.unassigned, 'text-midnight/50'),
+    ].join('');
+
+    if (proT) {
+        proT.innerHTML = '<thead><tr class="table-header-border">'
+            + '<th>' + t('sla.profesional') + '</th><th>' + t('sla.contactados') + '</th><th>' + t('sla.cumplidos') + '</th><th>' + t('sla.compliance') + '</th>'
+            + '</tr></thead><tbody>'
+            + (s.by_professional.length
+                ? s.by_professional.map(p => '<tr><td>' + escapeHtml(p.username || '—')
+                    + '</td><td>' + p.contacted + '</td><td>' + p.met + '</td><td>' + p.compliance_pct + '%</td></tr>').join('')
+                : '<tr><td colspan="4" class="text-[11px] italic text-midnight/50">' + t('chart.no_data') + '</td></tr>')
+            + '</tbody>';
+    }
+    if (zoneT) {
+        zoneT.innerHTML = '<thead><tr class="table-header-border">'
+            + '<th>' + t('sla.zona') + '</th><th>' + t('sla.contactados') + '</th><th>' + t('sla.cumplidos') + '</th><th>' + t('sla.compliance') + '</th>'
+            + '</tr></thead><tbody>'
+            + (s.by_zone.length
+                ? s.by_zone.map(z => '<tr><td>' + escapeHtml(z.zone)
+                    + '</td><td>' + z.contacted + '</td><td>' + z.met + '</td><td>' + z.compliance_pct + '%</td></tr>').join('')
+                : '<tr><td colspan="4" class="text-[11px] italic text-midnight/50">' + t('chart.no_data') + '</td></tr>')
+            + '</tbody>';
+    }
+}
+
+function slaCard(label, value, cls) {
+    return '<div class="rounded-lg border border-midnight/10 bg-white p-4">'
+        + '<div class="text-[10px] font-bold uppercase tracking-widest text-midnight/50">' + label + '</div>'
+        + '<div class="mt-1 text-2xl font-serif ' + cls + '">' + value + '</div></div>';
 }
 
 // ---- Init principal ----
@@ -2542,6 +2613,7 @@ function removeOrgMember(orgId, userId) {
 /* Delegación data-action (FASE 5.9): reemplaza onclick inline */
 delegateActions({
     'adm-period': function(el) { setPeriod(parseInt(el.dataset.period, 10)); },
+    'adm-sla-period': function(el) { loadSla(parseInt(el.dataset.days, 10)); },
     'adm-close-org': function() { closeOrgModal(); },
     'adm-close-notify': function() { closeNotifyModal(); },
     'adm-close-deactivate': function() { closeDeactivateModal(); },
