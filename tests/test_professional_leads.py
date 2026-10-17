@@ -536,3 +536,29 @@ class TestMatchSort:
         resp = client.get('/api/leads?my_leads=0')
         assert resp.status_code == 200
         assert all('match_score' not in l for l in resp.get_json()['leads'])
+
+    def test_match_includes_sla_status(self, client, pro_user_with_zone,
+                                       lead_buenos_aires, lead_caba):
+        '''Fase 3: sort=match expone sla_status en cada lead.'''
+        self._login(client, pro_user_with_zone)
+        resp = client.get('/api/leads?my_leads=0&sort=match&per_page=100&page=1')
+        assert resp.status_code == 200
+        leads = resp.get_json()['leads']
+        assert leads
+        for l in leads:
+            assert l['sla_status'] in ('contacted', 'pending', 'at_risk', 'breached')
+
+    def test_match_ordered_by_score_then_urgency(self, client, pro_user_with_zone,
+                                                  lead_buenos_aires, lead_caba):
+        '''Fase 3: orden = match_score desc, luego urgencia SLA, luego id.'''
+        from services.sla import SLA_RANK
+        self._login(client, pro_user_with_zone)
+        leads = client.get('/api/leads?my_leads=0&sort=match&per_page=100&page=1').get_json()['leads']
+        keys = [(l['match_score'], SLA_RANK[l['sla_status']], l['id']) for l in leads]
+        assert keys == sorted(keys, reverse=True)
+
+    def test_default_sort_has_no_sla_status(self, client, pro_user_with_zone,
+                                            lead_buenos_aires, lead_caba):
+        self._login(client, pro_user_with_zone)
+        resp = client.get('/api/leads?my_leads=0')
+        assert all('sla_status' not in l for l in resp.get_json()['leads'])

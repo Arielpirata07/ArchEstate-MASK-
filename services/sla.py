@@ -27,6 +27,14 @@ BUSINESS_END = time(18, 0)
 # Fuentes de primer contacto, en orden de prioridad de reporting (no temporal).
 SLA_SOURCES = ('stage', 'reveal', 'wa_link', 'call', 'sms')
 
+# Umbral por defecto (horas hábiles) y punto de "en riesgo" (segunda mitad del
+# plazo). Los usan el KPI y el orden `sort=match` consciente del SLA (Fase 3).
+DEFAULT_THRESHOLD_HOURS = 24.0
+AT_RISK_FRACTION = 0.5
+# Rank de urgencia para ordenar leads (mayor = más urgente). 'contacted' queda
+# al fondo: así no se re-empujan los leads ya contactados.
+SLA_RANK = {'contacted': 0, 'pending': 1, 'at_risk': 2, 'breached': 3}
+
 
 def business_hours_between(start, end):
     '''Horas hábiles transcurridas entre dos datetimes (lun–vie 09:00–18:00).
@@ -53,6 +61,29 @@ def business_hours_between(start, end):
         day += timedelta(days=1)
 
     return total.total_seconds() / 3600.0
+
+
+def classify_sla_status(created, is_contacted, now=None, threshold_hours=DEFAULT_THRESHOLD_HOURS):
+    '''Estado SLA de un lead, para ordenar/etiquetar (Fase 3, `sort=match`).
+
+    - 'contacted' → ya tiene primer contacto (no se re-empuja).
+    - 'breached'  → sin contacto y ya superó el umbral (más urgente).
+    - 'at_risk'   → sin contacto y en la segunda mitad del plazo.
+    - 'pending'   → sin contacto y todavía con margen.
+
+    El orden de urgencia está en `SLA_RANK`.
+    '''
+    if is_contacted:
+        return 'contacted'
+    now = now or datetime.now()
+    if created is None:
+        return 'pending'
+    elapsed = business_hours_between(created, now)
+    if elapsed > threshold_hours:
+        return 'breached'
+    if elapsed > threshold_hours * AT_RISK_FRACTION:
+        return 'at_risk'
+    return 'pending'
 
 
 def _parse_ts(value):
@@ -140,7 +171,7 @@ def _percentile(values, pct):
     return float(values[f] + (values[c] - values[f]) * (k - f))
 
 
-def compute_sla_kpis(conn, days=30, threshold_hours=24.0):
+def compute_sla_kpis(conn, days=30, threshold_hours=DEFAULT_THRESHOLD_HOURS):
     '''KPIs de cumplimiento del SLA de primer contacto.
 
     - Ventana: `days` días hacia atrás desde ahora (creación del lead).

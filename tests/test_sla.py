@@ -6,7 +6,9 @@ import pytest
 
 from services.sla import (
     SLA_SOURCES,
+    SLA_RANK,
     business_hours_between,
+    classify_sla_status,
     compute_sla_kpis,
     get_response_commitment,
     record_first_contact,
@@ -59,10 +61,38 @@ class TestBusinessHoursBetween:
         assert business_hours_between(a, b) == 18.0
 
 
+class TestClassifySlaStatus:
+    '''Estado SLA para ordenar en sort=match (Fase 3).'''
+
+    def test_contacted_wins(self):
+        old = datetime(2026, 1, 5, 9, 0)
+        assert classify_sla_status(old, True) == 'contacted'
+
+    def test_fresh_is_pending(self):
+        created = datetime(2026, 1, 5, 9, 0)   # lunes 09:00
+        now = datetime(2026, 1, 5, 12, 0)      # 3h hábiles
+        assert classify_sla_status(created, False, now=now) == 'pending'
+
+    def test_second_half_is_at_risk(self):
+        created = datetime(2026, 1, 5, 9, 0)   # lunes 09:00
+        now = datetime(2026, 1, 6, 13, 0)      # martes: 9 + 4 = 13h
+        assert classify_sla_status(created, False, now=now) == 'at_risk'
+
+    def test_over_threshold_is_breached(self):
+        created = datetime(2026, 1, 5, 9, 0)   # lunes 09:00
+        now = datetime(2026, 1, 8, 10, 0)      # jueves: 9*3 + 1 = 28h
+        assert classify_sla_status(created, False, now=now) == 'breached'
+
+    def test_none_created_is_pending(self):
+        assert classify_sla_status(None, False, now=datetime(2026, 1, 5, 12, 0)) == 'pending'
+
+    def test_rank_orders_by_urgency(self):
+        assert SLA_RANK['breached'] > SLA_RANK['at_risk'] > SLA_RANK['pending'] > SLA_RANK['contacted']
+
+
 class TestParseTs:
     def test_parses_datetime_string(self):
         assert _parse_ts('2026-01-05 10:00:00') == datetime(2026, 1, 5, 10, 0)
-
     def test_parses_date_only(self):
         assert _parse_ts('2026-01-05') == datetime(2026, 1, 5, 0, 0)
 

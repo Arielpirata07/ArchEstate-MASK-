@@ -6,6 +6,24 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ## [Unreleased]
 
+## [v0.48.2] — 2026-10-17 — SLA en el orden `sort=match`
+
+### Añadido (Fase 3 — Priorización por SLA)
+- **`sort=match` consciente del SLA** (`routes/professional/leads.py`): el orden
+  pasa a ser `match_score` desc → urgencia SLA → id. Dentro del mismo score, los
+  leads sin primer contacto en riesgo (`breached` > `at_risk`) suben, y los ya
+  contactados (`lead_first_contact` o `tracking.contacted` propio) se hunden:
+  **no se re-empujan**. El `match_score` sigue siendo la clave primaria (nunca
+  deja de ser descendente), así que "mejor match" conserva su significado.
+- Cada lead en modo match expone `sla_status`
+  (`contacted` | `pending` | `at_risk` | `breached`) junto a `match_score`.
+- **`services/sla.py`**: `classify_sla_status()` (puro) + constantes
+  `DEFAULT_THRESHOLD_HOURS`, `AT_RISK_FRACTION` y `SLA_RANK`. `at_risk` = segunda
+  mitad del plazo (12–24 h hábiles).
+- Sin notificaciones ni cambios de UI → se mantiene "cero fricción" para el
+  profesional (solo cambia el orden del listado cuando elige "Mejor match").
+- 6 tests en `TestClassifySlaStatus` + 3 en `TestMatchSort`.
+
 ## [v0.48.1] — 2026-10-17 — SLA: línea base con datos backfilleados
 
 ### Añadido (Fase 3 — Línea base)
