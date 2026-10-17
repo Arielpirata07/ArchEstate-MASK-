@@ -748,6 +748,7 @@ flask, werkzeug, openpyxl, pytz, fpdf, phonenumbers, freezegun, twilio, gunicorn
 | `v0.47.2` | `02aadd1` | feat(sla): fase 2, panel de cumplimiento en admin |
 | `v0.47.3` | `268c1cb` | fix(sla): separar pendientes, incumplidos y sin asignar en el kpi |
 | `v0.48.0` | `0706197` | feat(sla): fase 3, compromiso de respuesta comunicado al cliente |
+| `v0.48.1` | `bef8110` | feat(sla): fase 3, linea base con datos backfilleados |
 
 > **Nota:** `v0.11.4` y `v0.25.0`–`v0.25.4` no tienen commit asociado en `main` (huecos de numeración histórica). `v0.11.3`/`v0.11.4` apuntaban originalmente a la rama `arreglo-version-antigua`; `v0.11.4` fue eliminado y `v0.11.3` re-apuntado al merge de `main`.
 
