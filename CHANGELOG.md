@@ -6,6 +6,22 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ## [Unreleased]
 
+## [v0.48.1] — 2026-10-17 — SLA: línea base con datos backfilleados
+
+### Añadido (Fase 3 — Línea base)
+- **Ventana histórica completa** en `compute_sla_kpis()`: `days=None` agrega
+  **todo** el histórico (sin filtro de fecha) → la línea base construida a partir
+  de los datos backfilleados en `lead_first_contact` (responde "¿cuál es el
+  cumplimiento actual?").
+- **`GET /api/admin/sla?days=all`** (`routes/admin_bp.py`) → `days=None`; un
+  `days` no numérico o fuera de 7/30/90 cae a 30.
+- **Botón «Línea base»** en el panel SLA (`templates/admin.html` +
+  `static/js/admin.js`): el período pasa a manejarse como string para admitir
+  `all` (`data-days="all"` → `loadSla('all')`).
+- i18n `sla.period_all` / `sla.period_all_hint` ES/EN (`translations.py`).
+- 2 tests en `TestComputeSlaKpis` (ventana all-time + lead antiguo que solo
+  aparece en la línea base) + 2 en `TestAdminSla` (`?days=all`, `days=abc`).
+
 ## [v0.48.0] — 2026-10-17 — SLA: compromiso de respuesta al cliente
 
 ### Añadido (Fase 3 — Compromiso de respuesta comunicado al cliente)

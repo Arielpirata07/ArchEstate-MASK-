@@ -244,9 +244,16 @@ def admin_sla():
     lang = get_language()
     conn = None
     try:
-        days = request.args.get('days', 30, type=int)
-        if days not in (7, 30, 90):
-            days = 30
+        days = request.args.get('days', '30')
+        if days == 'all':
+            days = None  # línea base: todo el histórico backfilleado
+        else:
+            try:
+                days = int(days)
+            except (TypeError, ValueError):
+                days = 30
+            if days not in (7, 30, 90):
+                days = 30
         threshold = request.args.get('threshold', 24.0, type=float)
         if threshold <= 0:
             threshold = 24.0

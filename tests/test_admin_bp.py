@@ -215,6 +215,22 @@ class TestAdminSla:
         resp = admin_client.get('/api/admin/sla?days=999')
         assert resp.get_json()['sla']['days'] == 30
 
+    def test_days_all_returns_baseline(self, admin_client, db):
+        '''`?days=all` → línea base con todo el histórico (days=None).'''
+        self._mk(db, elapsed=3.0)
+        resp = admin_client.get('/api/admin/sla?days=all')
+        data = resp.get_json()
+        assert resp.status_code == 200
+        assert data['success'] is True
+        sla = data['sla']
+        assert sla['days'] is None
+        assert 'compliance_pct' in sla
+        assert sla['contacted'] >= 1
+
+    def test_days_non_numeric_falls_back(self, admin_client):
+        resp = admin_client.get('/api/admin/sla?days=abc')
+        assert resp.get_json()['sla']['days'] == 30
+
     def test_panel_renders_in_admin_view(self, admin_client):
         resp = admin_client.get('/admin')
         assert resp.status_code == 200
@@ -222,3 +238,4 @@ class TestAdminSla:
         assert 'panel-sla' in html
         assert 'sla-cards' in html
         assert 'adm-sla-period' in html
+        assert 'data-days="all"' in html

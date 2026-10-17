@@ -315,22 +315,22 @@ function renderMonthChart() {
 // ================================================================
 // SLA DE PRIMER CONTACTO (Fase 2)
 // ================================================================
-let slaState = { days: 30, threshold: 24 };
+let slaState = { days: '30', threshold: 24 };
 
 async function loadSla(days) {
-    if (days) slaState.days = days;
+    if (days) slaState.days = String(days);
     const cards = document.getElementById('sla-cards');
     const proT  = document.getElementById('sla-pro-table');
     const zoneT = document.getElementById('sla-zone-table');
     document.querySelectorAll('#sla-period-btns [data-days]').forEach(btn => {
-        const active = parseInt(btn.dataset.days, 10) === slaState.days;
+        const active = btn.dataset.days === slaState.days;
         btn.className = 'px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest transition-all '
             + (active ? 'bg-midnight text-white' : 'bg-paper-dark text-midnight hover:bg-gold hover:text-white');
     });
     if (!cards) return;
     cards.innerHTML = '<p class="text-[11px] text-midnight/50 italic">' + t('admin.loading') + '</p>';
     try {
-        const res = await fetch('/api/admin/sla?days=' + slaState.days + '&threshold=' + slaState.threshold);
+        const res = await fetch('/api/admin/sla?days=' + encodeURIComponent(slaState.days) + '&threshold=' + slaState.threshold);
         const data = await res.json();
         if (!data.success) throw new Error(data.error || 'sla');
         renderSla(data.sla, cards, proT, zoneT);
@@ -2613,7 +2613,7 @@ function removeOrgMember(orgId, userId) {
 /* Delegación data-action (FASE 5.9): reemplaza onclick inline */
 delegateActions({
     'adm-period': function(el) { setPeriod(parseInt(el.dataset.period, 10)); },
-    'adm-sla-period': function(el) { loadSla(parseInt(el.dataset.days, 10)); },
+    'adm-sla-period': function(el) { loadSla(el.dataset.days); },
     'adm-close-org': function() { closeOrgModal(); },
     'adm-close-notify': function() { closeNotifyModal(); },
     'adm-close-deactivate': function() { closeDeactivateModal(); },

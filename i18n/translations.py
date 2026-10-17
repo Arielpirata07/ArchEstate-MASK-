@@ -901,6 +901,8 @@ TRANSLATIONS = {
         # === SLA DE PRIMER CONTACTO ===
         'admin.sla': 'SLA de contacto',
         'sla.help': 'Tiempo hasta el primer contacto de un lead por un profesional (horas hábiles, lun–vie 09:00–18:00). Meta: {threshold} h.',
+        'sla.period_all': 'Línea base',
+        'sla.period_all_hint': 'Todo el histórico (datos backfilleados)',
         'sla.by_professional': 'Cumplimiento por profesional',
         'sla.by_zone': 'Cumplimiento por zona',
         'sla.compliance': 'Cumplimiento',
@@ -2377,6 +2379,8 @@ TRANSLATIONS = {
         # === FIRST-CONTACT SLA ===
         'admin.sla': 'Contact SLA',
         'sla.help': 'Time until a professional first contacts a lead (business hours, Mon–Fri 09:00–18:00). Target: {threshold} h.',
+        'sla.period_all': 'Baseline',
+        'sla.period_all_hint': 'Full history (backfilled data)',
         'sla.by_professional': 'Compliance by professional',
         'sla.by_zone': 'Compliance by zone',
         'sla.compliance': 'Compliance',

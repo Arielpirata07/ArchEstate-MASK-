@@ -200,6 +200,27 @@ class TestComputeSlaKpis:
         assert after['unassigned'] == base['unassigned'] + 1
         assert after['pending'] == base['pending']
 
+    def test_all_time_baseline_window(self, db):
+        '''days=None → línea base (todo el histórico backfilleado).'''
+        base = compute_sla_kpis(db, days=30)
+        all_time = compute_sla_kpis(db, days=None)
+        assert all_time['days'] is None
+        assert set(all_time.keys()) == set(base.keys())
+        assert all_time['total_leads'] >= base['total_leads']
+        assert all_time['contacted'] >= base['contacted']
+        assert all_time['unassigned'] >= base['unassigned']
+
+    def test_old_lead_only_in_baseline(self, db):
+        '''Un lead fuera de la ventana de 30d aparece solo en la línea base.'''
+        base30 = compute_sla_kpis(db, days=30)
+        base_all = compute_sla_kpis(db, days=None)
+        old = (datetime.now() - timedelta(days=400)).strftime('%Y-%m-%d %H:%M:%S')
+        self._mk_lead(db, old, assigned_to=self._user(db))
+        after30 = compute_sla_kpis(db, days=30)
+        after_all = compute_sla_kpis(db, days=None)
+        assert after30['total_leads'] == base30['total_leads']
+        assert after_all['total_leads'] == base_all['total_leads'] + 1
+
 
 class TestGetResponseCommitment:
     '''Compromiso de respuesta que se le comunica al cliente (Fase 3).'''

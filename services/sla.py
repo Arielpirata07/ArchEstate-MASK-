@@ -144,6 +144,7 @@ def compute_sla_kpis(conn, days=30, threshold_hours=24.0):
     '''KPIs de cumplimiento del SLA de primer contacto.
 
     - Ventana: `days` días hacia atrás desde ahora (creación del lead).
+      `days=None` → todo el histórico (línea base con los datos backfilleados).
     - `contacted`: leads con fila en `lead_first_contact`.
       - `met`: contactados dentro de `threshold_hours` (cumplidos).
       - `contacted_late`: contactados fuera de plazo.
@@ -155,20 +156,24 @@ def compute_sla_kpis(conn, days=30, threshold_hours=24.0):
     '''
     from datetime import datetime
 
-    since = f"-{int(days)} days"
     now = datetime.now()
+    if days is None:
+        lead_where = ''
+        contact_where = ''
+    else:
+        window = f"datetime('now', '-{int(days)} days')"
+        lead_where = f'WHERE timestamp >= {window}'
+        contact_where = f'WHERE l.timestamp >= {window} '
 
     lead_rows = conn.execute(
-        f"SELECT id, timestamp, assigned_to FROM leads "
-        f"WHERE timestamp >= datetime('now', '{since}')"
+        f'SELECT id, timestamp, assigned_to FROM leads {lead_where}'
     ).fetchall()
 
     # Solo contactos de leads dentro de la ventana (la mediana/P90 deben ser
     # consistentes con `met`/`breached`, que ya están en ventana).
     contact_rows = conn.execute(
         'SELECT lfc.lead_id, lfc.business_hours_elapsed FROM lead_first_contact lfc '
-        'JOIN leads l ON l.id = lfc.lead_id '
-        f"WHERE l.timestamp >= datetime('now', '{since}')"
+        'JOIN leads l ON l.id = lfc.lead_id ' + contact_where
     ).fetchall()
     contact_by_lead = {}
     for r in contact_rows:
@@ -211,8 +216,7 @@ def compute_sla_kpis(conn, days=30, threshold_hours=24.0):
         'SUM(CASE WHEN lfc.business_hours_elapsed <= ? THEN 1 ELSE 0 END) AS met '
         'FROM lead_first_contact lfc '
         'JOIN leads l ON l.id = lfc.lead_id '
-        'LEFT JOIN users u ON u.id = lfc.professional_id '
-        f"WHERE l.timestamp >= datetime('now', '{since}') "
+        'LEFT JOIN users u ON u.id = lfc.professional_id ' + contact_where +
         'GROUP BY lfc.professional_id, u.username '
         'ORDER BY met DESC',
         (threshold_hours,)
@@ -222,14 +226,13 @@ def compute_sla_kpis(conn, days=30, threshold_hours=24.0):
         'SELECT l.zone, COUNT(*) AS contacted, '
         'SUM(CASE WHEN lfc.business_hours_elapsed <= ? THEN 1 ELSE 0 END) AS met '
         'FROM lead_first_contact lfc '
-        'JOIN leads l ON l.id = lfc.lead_id '
-        f"WHERE l.timestamp >= datetime('now', '{since}') "
+        'JOIN leads l ON l.id = lfc.lead_id ' + contact_where +
         'GROUP BY l.zone ORDER BY contacted DESC',
         (threshold_hours,)
     ).fetchall()
 
     return {
-        'days': int(days),
+        'days': int(days) if days is not None else None,
         'threshold_hours': threshold_hours,
         'total_leads': total,
         'contacted': contacted,
