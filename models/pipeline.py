@@ -124,13 +124,23 @@ def move_lead_stage(professional_id, lead_id, to_stage, now_str=None):
     try:
         result = _move_lead_stage_conn(conn, professional_id, lead_id, to_stage, now_str)
         conn.commit()
-        return result
     except Exception:
         logger.exception('move_lead_stage failed for pro=%s lead=%s', professional_id, lead_id)
         conn.rollback()
         return None
     finally:
         conn.close()
+
+    # SLA: marcar primer contacto fuera de la transaccion critica (post-commit),
+    # con su propia conexion. No sostiene el write-lock del request.
+    if result and PIPELINE_STAGES.index(to_stage) >= PIPELINE_STAGES.index(PIPELINE_CONTACTED_FROM):
+        try:
+            from services.sla import record_first_contact
+            record_first_contact(lead_id, professional_id, 'stage')
+        except Exception:
+            logger.warning('record_first_contact (stage) fallo para lead=%s', lead_id)
+
+    return result
 
 
 def move_lead_stage_batch(professional_id, lead_ids, to_stage, now_str=None):
@@ -158,13 +168,24 @@ def move_lead_stage_batch(professional_id, lead_ids, to_stage, now_str=None):
             if _move_lead_stage_conn(conn, professional_id, lid, to_stage, now_str):
                 moved += 1
         conn.commit()
-        return moved
     except Exception:
         logger.exception('move_lead_stage_batch failed for pro=%s', professional_id)
         conn.rollback()
         return 0
     finally:
         conn.close()
+
+    # SLA: marcar primer contacto post-commit, fuera del txn (propia conexion).
+    if moved and PIPELINE_STAGES.index(to_stage) >= PIPELINE_STAGES.index(PIPELINE_CONTACTED_FROM):
+        try:
+            from services.sla import record_first_contact
+            for lid in lead_ids:
+                if lid in existing:
+                    record_first_contact(lid, professional_id, 'stage')
+        except Exception:
+            logger.warning('record_first_contact (batch) fallo para pro=%s', professional_id)
+
+    return moved
 
 
 

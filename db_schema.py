@@ -180,6 +180,24 @@ def create_tables(cursor):
             FOREIGN KEY (lead_id) REFERENCES leads(id)
         )
     ''')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_lead_stage_history_lead ON lead_stage_history(lead_id)')
+
+
+    # SLA de primer contacto (plan SLA Fase 0). PK = lead_id → idempotente:
+    # la primera señal (reveal / link WA / move a contacted) gana y las demás
+    # se ignoran. business_hours_elapsed ya viene calculado (lun–vie 09–18).
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS lead_first_contact (
+            lead_id INTEGER PRIMARY KEY REFERENCES leads(id),
+            professional_id INTEGER DEFAULT NULL REFERENCES users(id),
+            contact_at DATETIME NOT NULL,
+            source TEXT NOT NULL,
+            business_hours_elapsed REAL NOT NULL DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_lead_first_contact_at ON lead_first_contact(contact_at)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_lead_first_contact_pro ON lead_first_contact(professional_id)')
 
 
     cursor.execute('''

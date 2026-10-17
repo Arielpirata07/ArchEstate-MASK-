@@ -4,6 +4,67 @@ import utils
 logger = logging.getLogger(__name__)
 
 
+def _backfill_first_contact(cursor):
+    """Backfill de lead_first_contact desde fuentes existentes (idempotente).
+
+    Por cada lead sin fila en lead_first_contact, registra la primera senal
+    disponible entre lead_tracking.contacted_at y events (phone_revealed /
+    wa_link_generated). INSERT OR IGNORE: no toca leads ya presentes ni los
+    que no tienen ninguna senal (quedan 'unassigned' y no sesgan el KPI).
+    """
+    from services.sla import business_hours_between, _parse_ts
+
+    cursor.execute('SELECT id, timestamp FROM leads')
+    leads = cursor.fetchall()
+    for lead in leads:
+        lead_id = lead['id'] if isinstance(lead, dict) else lead[0]
+        created = _parse_ts(lead['timestamp'] if isinstance(lead, dict) else lead[1])
+
+        best_at = None
+        best_source = None
+
+        row = cursor.execute(
+            'SELECT professional_id, contacted_at FROM lead_tracking '
+            'WHERE lead_id = ? AND contacted_at IS NOT NULL '
+            'ORDER BY contacted_at ASC LIMIT 1', (lead_id,)
+        ).fetchone()
+        if row:
+            at = _parse_ts(row['contacted_at'] if isinstance(row, dict) else row[1])
+            if at:
+                best_at, best_source = at, 'stage'
+
+        for evt, src in (('phone_revealed', 'reveal'), ('wa_link_generated', 'wa_link')):
+            row = cursor.execute(
+                'SELECT user_id, ts FROM events '
+                'WHERE lead_id = ? AND event = ? AND ts IS NOT NULL '
+                'ORDER BY ts ASC LIMIT 1', (lead_id, evt)
+            ).fetchone()
+            if row:
+                at = _parse_ts(row[1] if not isinstance(row, dict) else row['ts'])
+                if at and (best_at is None or at < best_at):
+                    best_at, best_source = at, src
+
+        if best_at is None:
+            continue
+
+        professional_id = None
+        row = cursor.execute(
+            'SELECT professional_id FROM lead_tracking WHERE lead_id = ? '
+            'ORDER BY (contacted_at IS NULL), contacted_at ASC LIMIT 1', (lead_id,)
+        ).fetchone()
+        if row:
+            professional_id = row['professional_id'] if isinstance(row, dict) else row[0]
+
+        elapsed = business_hours_between(created, best_at) if created else 0.0
+        cursor.execute(
+            'INSERT OR IGNORE INTO lead_first_contact '
+            '(lead_id, professional_id, contact_at, source, business_hours_elapsed) '
+            'VALUES (?, ?, ?, ?, ?)',
+            (lead_id, professional_id, best_at.strftime('%Y-%m-%d %H:%M:%S'),
+             best_source, round(elapsed, 4))
+        )
+
+
 def apply_migrations(cursor):
     """Versiones, ALTERs, backfills (idempotentes)."""
     row = cursor.execute('SELECT MAX(version) FROM schema_version').fetchone()
@@ -27,6 +88,11 @@ def apply_migrations(cursor):
 
     if current_ver < 6:
         cursor.execute('INSERT OR IGNORE INTO schema_version (version) VALUES (6)')
+
+    if current_ver < 7:
+        # Fase 0 SLA: backfill del primer contacto (solo una vez)
+        _backfill_first_contact(cursor)
+        cursor.execute('INSERT OR IGNORE INTO schema_version (version) VALUES (7)')
 
 
     cursor.execute('PRAGMA table_info(users)')

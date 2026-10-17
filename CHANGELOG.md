@@ -6,6 +6,21 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ## [Unreleased]
 
+### Añadido (Fase 0 — SLA de primer contacto: instrumentación)
+- **Tabla `lead_first_contact`** (`db_schema.py` + migración v7): PK `lead_id`
+  (idempotente), `professional_id`, `contact_at`, `source`, y
+  `business_hours_elapsed` precalculado. Índices en `contact_at` y `professional_id`.
+- **`services/sla.py`**: `record_first_contact()` idempotente (gana la primera
+  señal) y `business_hours_between()` puro (lun–vie 09:00–18:00, tz del servidor).
+- **Marcaje en 4 fuentes**, siempre post-commit con conexión propia (fuera de la
+  transacción crítica): move a etapa `contacted`+ (`models/pipeline.py`), toggle
+  a contacted (`routes/professional/tracking.py`), reveal de teléfono y link de
+  WhatsApp (`routes/lead_bp.py`), y click en llamar/SMS (`whatsapp_event`).
+- **Backfill** (`_backfill_first_contact` en `db_migrations.py`, versión 7):
+  registra la primera señal histórica por lead desde `lead_tracking.contacted_at`
+  y `events`. Leads sin señal quedan `unassigned` y no sesgan el KPI.
+- 17 tests en `tests/test_sla.py` (horas hábiles, marcaje idempotente, backfill).
+
 ### Arreglado (Revisión total de sistema)
 - **Webhook WhatsApp exento de CSRF real** (`factory.py`): `WTF_CSRF_EXEMPT_LIST`
   no existe en Flask-WTF, el webhook rechazaba en producción (en tests CSRF va

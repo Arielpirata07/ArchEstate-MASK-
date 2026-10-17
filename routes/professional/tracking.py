@@ -118,6 +118,12 @@ def toggle_lead_status(lead_id):
         conn.commit()
 
         if new_value:
+            if status_type == 'contacted':
+                try:
+                    from services.sla import record_first_contact
+                    record_first_contact(lead_id, professional_id, 'stage')
+                except Exception:
+                    logger.warning('record_first_contact (toggle) fallo para lead=%s', lead_id)
             from services.notifications import notify_lead_status_change
             try:
                 notify_lead_status_change(lead_id, professional_id, status_type)

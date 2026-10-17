@@ -113,6 +113,11 @@ def redirect_whatsapp(lead_id):
             ip=ip,
             conn=conn
         )
+        try:
+            from services.sla import record_first_contact
+            record_first_contact(lead_id, user_id, 'wa_link')
+        except Exception:
+            logger.warning('record_first_contact (wa_link) fallo para lead=%s', lead_id)
 
         return redirect(wa_url, code=302)
     finally:
@@ -161,6 +166,11 @@ def reveal_phone(lead_id):
             props={'phone_hash': utils.hash_phone_digits(phone_to_return or '')},
             conn=conn
         )
+        try:
+            from services.sla import record_first_contact
+            record_first_contact(lead_id, user_id, 'reveal')
+        except Exception:
+            logger.warning('record_first_contact (reveal) fallo para lead=%s', lead_id)
         return jsonify({"success": True, "phone": phone_to_return})
     finally:
         if conn:
@@ -193,4 +203,19 @@ def whatsapp_event(lead_id):
         user_id=user_id, lead_id=lead_id, event=event,
         props=props if isinstance(props, dict) else {}, ip=ip
     )
+
+    # SLA: senales de intencion de contacto (click en llamar / SMS).
+    sla_source = {
+        'tel_clicked': 'call',
+        'phone_button_clicked': 'call',
+        'sms_button_clicked': 'sms',
+        'sms_fallback_used': 'sms',
+    }.get(event)
+    if sla_source:
+        try:
+            from services.sla import record_first_contact
+            record_first_contact(lead_id, user_id, sla_source)
+        except Exception:
+            logger.warning('record_first_contact (%s) fallo para lead=%s', sla_source, lead_id)
+
     return jsonify({"success": True})
