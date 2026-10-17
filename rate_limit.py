@@ -98,9 +98,14 @@ def check_rate_limit(limit=10, window=60):
                     _save_store(store)
                     accept = request.headers.get('Accept', '')
                     if 'application/json' in accept or request.is_json:
+                        try:
+                            from i18n import t, get_language
+                            error_msg = t('error.rate_limited', get_language())
+                        except Exception:
+                            error_msg = 'Demasiadas solicitudes. Espera unos minutos antes de intentar nuevamente.'
                         return jsonify({
                             "success": False,
-                            "error": "Demasiadas solicitudes. Espera unos minutos antes de intentar nuevamente.",
+                            "error": error_msg,
                             "retry_after": int(window - (current_time - (requests[0] if requests else current_time)))
                         }), 429
                     else:

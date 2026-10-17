@@ -276,6 +276,7 @@ def forgot_password():
 
 
 @auth_bp.route('/reset-password/<token>', methods=['GET', 'POST'])
+@rate_limit.check_rate_limit(limit=10, window=60)
 def reset_password(token):
     lang = get_language()
     user_id = models.validate_password_reset_token(token)

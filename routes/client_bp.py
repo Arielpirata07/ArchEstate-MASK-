@@ -275,6 +275,31 @@ def submit_lead():
                 })
             conn.commit()
 
+        # Cierre de carrera del dedup: si otro request concurrente insertó la
+        # misma búsqueda primero (el SELECT previo no lo vio), se elimina el
+        # duplicado y se responde 409 con el ganador, sin notificar de más.
+        if not data.get('allow_duplicate'):
+            winner = conn.execute(
+                "SELECT MIN(id) AS id FROM leads WHERE user_id = ? AND type = ? AND zone = ? AND phone = ?"
+                " AND timestamp > datetime('now', '-90 days')",
+                (user_id, lead_type, zone, data.get('phone'))
+            ).fetchone()
+            if winner and winner['id'] and winner['id'] != cursor.lastrowid:
+                dup_id = cursor.lastrowid
+                conn.execute('DELETE FROM leads WHERE id = ?', (dup_id,))
+                if idem_key:
+                    conn.execute(
+                        'UPDATE idempotency_keys SET lead_id = ? WHERE key = ? AND user_id = ?',
+                        (winner['id'], idem_key, user_id)
+                    )
+                conn.commit()
+                return jsonify({
+                    "success": False,
+                    "error": t('client.duplicate_lead', lang),
+                    "duplicate": True,
+                    "existing_lead_id": winner['id']
+                }), 409
+
         from services.notifications import notify_lead_created
         try:
             if cursor.lastrowid:

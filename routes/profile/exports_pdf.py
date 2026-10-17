@@ -51,6 +51,7 @@ from routes.profile.exports import _build_export_stats, _query_monthly_contacts
 
 @profile_bp.route('/api/profile/professional/export/pdf')
 @decorators.professional_required
+@rate_limit.check_rate_limit(limit=20, window=60)
 def profile_export_history_pdf():
     try:
         lang = get_language()

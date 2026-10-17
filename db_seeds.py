@@ -189,20 +189,6 @@ def seed_all(cursor):
         )
 
 
-    cursor.execute('''
-        CREATE TABLE IF NOT EXISTS phone_area_codes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            code TEXT NOT NULL,
-            city TEXT NOT NULL,
-            province TEXT NOT NULL DEFAULT '',
-            country TEXT NOT NULL DEFAULT 'Argentina',
-            country_code TEXT NOT NULL DEFAULT '+54',
-            sort_order INTEGER DEFAULT 0,
-            is_active INTEGER NOT NULL DEFAULT 1,
-            UNIQUE(code, country_code)
-        )
-    ''')
-
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_phone_area_country ON phone_area_codes(country_code)')
 
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_phone_area_code ON phone_area_codes(code)')
@@ -388,6 +374,11 @@ def seed_all(cursor):
                 logger.info('Admin user created with password from ADMIN_INITIAL_PASSWORD env')
         else:
             admin_password = 'admin123'
-        cursor.execute('INSERT INTO users (username, email, hash, role) VALUES (?, ?, ?, ?)',
-                      ('admin', 'admin@archestate.local', generate_password_hash(admin_password), 'admin'))
+        try:
+            cursor.execute('INSERT INTO users (username, email, hash, role) VALUES (?, ?, ?, ?)',
+                          ('admin', 'admin@archestate.local', generate_password_hash(admin_password), 'admin'))
+        except Exception:
+            # Carrera de boot multi-worker: otro worker creó el admin primero
+            # (username es UNIQUE). No es error.
+            logger.info('Admin ya creado por otro worker, se omite seed')
 

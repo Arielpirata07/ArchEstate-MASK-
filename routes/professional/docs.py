@@ -37,6 +37,7 @@ from routes.professional import professional_bp
 
 @professional_bp.route('/api/lead/<int:lead_id>/report', methods=['POST'])
 @professional_required
+@rate_limit.check_rate_limit(limit=20, window=60)
 def report_lead(lead_id):
     lang = get_language()
     conn = None
@@ -219,6 +220,10 @@ def download_own_doc():
 
         directory = current_app.config['UPLOAD_FOLDER']
         filename = user['doc_path']
+
+        if not filename or os.path.basename(filename) != filename or '..' in filename:
+            flash(t('prof.file_not_found_server', lang, filename=''), 'error')
+            return redirect(url_for('professional.professional_view'))
 
         if not os.path.exists(os.path.join(directory, filename)):
             flash(t('prof.file_not_found_server', lang, filename=filename), 'error')

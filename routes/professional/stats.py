@@ -144,6 +144,7 @@ def get_leads_stats():
 
 @professional_bp.route('/api/leads/stats/export')
 @professional_required
+@rate_limit.check_rate_limit(limit=20, window=60)
 def export_stats_csv():
     lang = get_language()
     conn = None
@@ -224,6 +225,7 @@ def export_stats_csv():
 
 @professional_bp.route('/api/leads/stats/export/xlsx')
 @professional_required
+@rate_limit.check_rate_limit(limit=20, window=60)
 def export_stats_xlsx():
     lang = get_language()
     conn = None

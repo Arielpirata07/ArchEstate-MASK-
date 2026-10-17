@@ -93,6 +93,7 @@ def calendar_list_events():
 
 @professional_bp.route('/api/calendar/events', methods=['POST'])
 @professional_required
+@rate_limit.check_rate_limit(limit=60, window=60)
 def calendar_create_event():
     lang = get_language()
     conn = None
@@ -143,6 +144,7 @@ def calendar_create_event():
 
 @professional_bp.route('/api/calendar/events/<int:event_id>', methods=['PUT'])
 @professional_required
+@rate_limit.check_rate_limit(limit=60, window=60)
 def calendar_update_event(event_id):
     lang = get_language()
     conn = None
@@ -193,6 +195,7 @@ def calendar_update_event(event_id):
 
 @professional_bp.route('/api/calendar/events/<int:event_id>', methods=['DELETE'])
 @professional_required
+@rate_limit.check_rate_limit(limit=60, window=60)
 def calendar_delete_event(event_id):
     lang = get_language()
     conn = None
@@ -214,6 +217,7 @@ def calendar_delete_event(event_id):
 
 @professional_bp.route('/api/calendar/events/<int:event_id>/move', methods=['POST'])
 @professional_required
+@rate_limit.check_rate_limit(limit=60, window=60)
 def calendar_move_event(event_id):
     lang = get_language()
     conn = None
@@ -245,6 +249,7 @@ def calendar_move_event(event_id):
 
 @professional_bp.route('/api/calendar/events/<int:event_id>/complete', methods=['POST'])
 @professional_required
+@rate_limit.check_rate_limit(limit=60, window=60)
 def calendar_complete_event(event_id):
     lang = get_language()
     conn = None

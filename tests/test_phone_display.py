@@ -1,3 +1,5 @@
+import uuid
+
 import pytest
 
 
@@ -6,7 +8,7 @@ class TestProfilePhoneUpdate:
 
     def _update_phone(self, auth_client, phone):
         return auth_client.put('/api/profile/user', json={
-            'email': 'test@example.com',
+            'email': f'ph_{uuid.uuid4().hex[:8]}@example.com',
             'phone': phone,
             'first_name': '',
             'last_name': '',

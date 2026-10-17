@@ -1287,8 +1287,14 @@ function deleteLead(reportId, leadId) {
     });
 }
 
+var dismissReportPending = false;
 function dismissReport(reportId) {
-    fetch(`/api/admin/report/${reportId}/dismiss`, { method: 'POST' })
+    if (dismissReportPending) return;
+    var promise = typeof showConfirm === 'function' ? showConfirm(t('confirm.dismiss_report')) : Promise.resolve(true);
+    promise.then(function (ok) {
+        if (!ok) return;
+        dismissReportPending = true;
+        fetch(`/api/admin/report/${reportId}/dismiss`, { method: 'POST' })
         .then(r => r.json())
         .then(data => {
             if (data.success) {
@@ -1300,7 +1306,9 @@ function dismissReport(reportId) {
         })
         .catch(() => {
             if (typeof showToast === 'function') showToast(t('error.connection'), 'error');
-        });
+        })
+        .finally(() => { dismissReportPending = false; });
+    });
 }
 
 function restoreReport(reportId) {

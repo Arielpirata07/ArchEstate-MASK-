@@ -43,7 +43,6 @@ def create_app():
     register_middleware(app)
 
     csrf.init_app(app)
-    app.config['WTF_CSRF_EXEMPT_LIST'] = ['whatsapp.whatsapp_webhook']
 
     @app.context_processor
     def inject_csrf_token():
@@ -75,14 +74,17 @@ def create_app():
 
     @app.route('/health')
     def health():
+        conn = None
         try:
             from models import get_db_connection
             conn = get_db_connection()
             conn.execute('SELECT 1').fetchone()
-            conn.close()
             return jsonify({'status': 'ok', 'db': 'connected'})
         except Exception:
             return jsonify({'status': 'error', 'db': 'disconnected'}), 503
+        finally:
+            if conn:
+                conn.close()
 
     from routes.auth_bp import auth_bp
     from routes.public_bp import public_bp
@@ -109,5 +111,9 @@ def create_app():
     app.register_blueprint(whatsapp_bp)
     app.register_blueprint(profile_bp)
     app.register_blueprint(organizations_bp)
+
+    # El webhook lo llama Twilio (server-to-server, firma propia): exento de
+    # CSRF. WTF_CSRF_EXEMPT_LIST no existe en Flask-WTF, se usa exempt().
+    csrf.exempt(whatsapp_bp)
 
     return app

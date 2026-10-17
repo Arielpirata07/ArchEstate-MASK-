@@ -38,6 +38,7 @@ from routes.professional.helpers import _get_approved_professional, _get_pro_geo
 
 @professional_bp.route('/api/leads/export')
 @professional_required
+@rate_limit.check_rate_limit(limit=20, window=60)
 def export_leads_csv():
     conn = None
     leads = []
@@ -91,6 +92,7 @@ def export_leads_csv():
 
 @professional_bp.route('/api/leads/export/xlsx')
 @professional_required
+@rate_limit.check_rate_limit(limit=20, window=60)
 def export_leads_xlsx():
     conn = None
     leads = []

@@ -137,12 +137,16 @@ def add_org_member(org_id):
     role = (data.get('role') or 'member').strip()
     if not user_id:
         return jsonify({'success': False, 'error': t('org.member_required', lang)}), 400
+    try:
+        user_id = int(user_id)
+    except (ValueError, TypeError):
+        return jsonify({'success': False, 'error': t('org.member_required', lang)}), 400
     if role not in models.ORG_ROLES:
         return jsonify({'success': False, 'error': t('org.invalid_role', lang)}), 400
     if not models.get_organization_by_id(org_id):
         return jsonify({'success': False, 'error': t('org.not_found', lang)}), 404
     try:
-        ok = models.add_org_member(org_id, int(user_id), role)
+        ok = models.add_org_member(org_id, user_id, role)
         if not ok:
             return jsonify({'success': False, 'error': t('org.invalid_org', lang)}), 400
         return jsonify({'success': True, 'message': t('org.member_added', lang)})

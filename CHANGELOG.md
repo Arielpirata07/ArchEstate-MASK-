@@ -6,6 +6,38 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ## [Unreleased]
 
+### Arreglado (Revisión total de sistema)
+- **Webhook WhatsApp exento de CSRF real** (`factory.py`): `WTF_CSRF_EXEMPT_LIST`
+  no existe en Flask-WTF, el webhook rechazaba en producción (en tests CSRF va
+  apagado). Ahora usa `csrf.exempt(whatsapp_bp)`.
+- **IDOR en lead por ID** — decoradores `admin_required`/`professional_required`
+  responden JSON 401/403 cuando se pide JSON (antes siempre redirect 302),
+  para que los clientes API no caigan en loops de login.
+- **Path traversal en descarga de docs** (`routes/admin_bp.py`,
+  `routes/professional/docs.py`): validación de `basename` sin `..` en
+  `doc_path`.
+- **Dedup con cierre de carrera** (`routes/client_bp.py`): si dos requests
+  concurrentes insertan la misma búsqueda, el perdedor se borra y responde 409
+  con el `existing_lead_id` ganador, sin notificar de más.
+- **Email duplicado en perfil** (`routes/profile/core.py`): `PUT /api/profile/user`
+  con email de otra cuenta → 409 `profile.email_taken` (antes 500 o duplicado).
+- **Rate limits** en endpoints mutantes sin protección: report lead, toggle
+  status, pipeline move/bulk-move, calendario CRUD/move/complete, exports
+  CSV/XLSX/PDF, whatsapp-event, contact-admin, reset-password. 429 ahora
+  i18n-keyed (`error.rate_limited`).
+- **`/health`** cierra la conexión en `finally` (antes podía filtrar).
+- **Aviso de fallback de cobertura** y seeds: `phone_area_codes` definido en
+  `db_schema.py` (antes solo en seeds); admin seed tolera carrera multi-worker.
+- **Frontend**: approve/reject pisaba la columna de org (`main.js`, celda 5);
+  XSS/attribute-breakout en `sms:` link y `o.icon` (`professional.js`,
+  `form-options.js`); campos de budget sin null-check (`budget.js`); duplicados
+  `data-period` (`admin.html`); escape de IP/fecha en sesiones y actividad
+  (`profile.js`); confirmación antes de descartar reporte (`admin.js`).
+- **i18n**: keys faltantes `org.remove_member`, `user.search_city`,
+  `admin.loading`, `dashboard.call_clicks` (con `{count}`), `error.rate_limited`;
+  español hardcoded en `admin.html`/`profile.html` movido a keys; gate de
+  paridad `TestJsI18nParity` valida que toda key usada en JS exista en `i18n.js`.
+
 ### Añadido (Fase 5 — Priorización por match)
 - **`sort=match` en `GET /api/leads`** (`routes/professional/leads.py`): puntúa con
   `score_lead_for_coverage`, ordena desc y pagina en memoria (tope 5000, default

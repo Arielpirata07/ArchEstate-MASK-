@@ -209,7 +209,7 @@ async function updateProStatus(proId, status, btn) {
                     statusCell.innerHTML = label;
                 }
 
-                const actionCell = row.cells[3];
+                const actionCell = row.cells[5];
                 if (actionCell) {
                     actionCell.innerHTML = '<span class="text-[10px] text-midnight/20 font-bold uppercase tracking-widest animate-pulse">' + t('status.processed') + '</span>';
                 }

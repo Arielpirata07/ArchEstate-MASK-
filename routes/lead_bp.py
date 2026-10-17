@@ -169,6 +169,7 @@ def reveal_phone(lead_id):
 
 @lead_bp.route('/<int:lead_id>/whatsapp-event', methods=['POST'])
 @professional_required
+@rate_limit.check_rate_limit(limit=100, window=60)
 def whatsapp_event(lead_id):
     """
     Endpoint de telemetría: registra clicks/éxitos/fallos del botón WhatsApp

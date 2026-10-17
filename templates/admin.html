@@ -64,11 +64,11 @@
             <div class="flex items-center gap-2">
                 <span class="text-[10px] uppercase tracking-widest font-bold text-midnight/60">{{ t('admin.period') }}</span>
                 <div class="flex gap-1" id="period-btns">
-                    <button data-action="adm-period" data-period="7"   data-period="7"   class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-midnight text-white">7d</button>
-                    <button data-action="adm-period" data-period="30"  data-period="30"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">30d</button>
-                    <button data-action="adm-period" data-period="90"  data-period="90"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">90d</button>
-                    <button data-action="adm-period" data-period="365" data-period="365" class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">1a</button>
-                    <button data-action="adm-period" data-period="0"   data-period="0"   class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">Siempre</button>
+                    <button data-action="adm-period" data-period="7"   class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-midnight text-white">7d</button>
+                    <button data-action="adm-period" data-period="30"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">30d</button>
+                    <button data-action="adm-period" data-period="90"  class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">90d</button>
+                    <button data-action="adm-period" data-period="365" class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">1a</button>
+                    <button data-action="adm-period" data-period="0"   class="period-btn px-3 py-1 rounded text-[10px] font-bold uppercase tracking-widest bg-paper-dark text-midnight hover:bg-gold hover:text-white transition-colors">Siempre</button>
                 </div>
             </div>
             <button id="refresh-btn" data-action="adm-refresh"
@@ -641,7 +641,7 @@
 
         <div class="sticky top-0 z-30 bg-white py-3 space-y-3">
             <div class="relative w-full">
-                <label for="fo-search" class="sr-only">Buscar opciones de formulario</label>
+                <label for="fo-search" class="sr-only">{{ t('admin.search_option_placeholder') }}</label>
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <i data-lucide="search" class="w-3 h-3 text-midnight/30"></i>
                 </div>

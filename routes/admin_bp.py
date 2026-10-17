@@ -696,6 +696,11 @@ def download_professional_doc(user_id):
         directory = current_app.config['UPLOAD_FOLDER']
         filename = user['doc_path']
 
+        # doc_path lo genera el servidor, pero se valida igual: sin
+        # separadores ni parent-refs (defensa en profundidad).
+        if not filename or os.path.basename(filename) != filename or '..' in filename:
+            return t('admin.file_not_found', lang, filename=''), 404
+
         if not os.path.exists(os.path.join(directory, filename)):
             return t('admin.file_not_found', lang, filename=filename), 404
 

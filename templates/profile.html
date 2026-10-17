@@ -131,12 +131,12 @@
                                     <div class="flex-shrink-0" id="province-search-wrap">
                                         <button type="button" id="province-search-toggle" data-action="prof-toggle-province" data-target="profile-province"
                                             class="hidden items-center justify-between gap-2 px-1 py-2 border-0 border-b-2 border-midnight/20 hover:border-gold focus:border-gold transition-colors text-sm text-midnight bg-transparent w-28"
-                                            aria-label="Buscar ciudad" aria-expanded="false" title="Buscar ciudad">
-                                            <span id="province-search-label" class="truncate text-midnight/70">Buscar ciudad</span>
+                                            aria-label="{{ t('user.search_city') }}" aria-expanded="false" title="{{ t('user.search_city') }}">
+                                            <span id="province-search-label" class="truncate text-midnight/70">{{ t('user.search_city') }}</span>
                                             <i data-lucide="search" class="w-3.5 h-3.5 flex-shrink-0 text-midnight/40"></i>
                                         </button>
                                         <div id="province-search-wrapper" class="hidden absolute right-0 top-9 z-20 w-96">
-                                            <input id="province-search" type="text" placeholder="Buscar ciudad..."
+                                            <input id="province-search" type="text" placeholder="{{ t('user.search_city') }}..."
                                                 data-action="prof-in-province" data-target="profile-province"
                                                 data-action="prof-key-province" data-target="profile-province"
                                                 class="px-3 py-2 text-sm bg-white text-midnight border border-midnight/20 rounded shadow focus:border-gold focus:outline-none w-full">

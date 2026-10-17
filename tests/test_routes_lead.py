@@ -178,7 +178,8 @@ class TestWhatsappEvent:
         resp = client.post('/api/lead/1/whatsapp-event',
                            data=json.dumps({'event': 'wa_button_clicked', 'props': {}}),
                            content_type='application/json')
-        assert resp.status_code in (302, 403)
+        # JSON callers reciben 401-JSON (decoradores), no JSON → 302.
+        assert resp.status_code in (302, 401, 403)
 
 
 class TestReportLead:

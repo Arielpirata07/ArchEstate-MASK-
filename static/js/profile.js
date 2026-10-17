@@ -665,7 +665,7 @@ function provinceSelectCity(selectId, value) {
             label.textContent = opt.textContent;
             label.classList.remove('text-midnight/70');
         } else {
-            label.textContent = 'Buscar ciudad';
+            label.textContent = t('user.search_city');
             label.classList.add('text-midnight/70');
         }
     }
@@ -948,9 +948,9 @@ function loadUserSessions() {
             const ua = s.user_agent ? s.user_agent.substring(0, 60) : '-';
             html += `<tr>
                 <td>${i + 1}</td>
-                <td class="font-mono text-[10px]">${s.ip_address || '-'}</td>
+                <td class="font-mono text-[10px]">${escapeHtml(s.ip_address || '-')}</td>
                 <td class="text-[11px]">${escapeHtml(ua)}</td>
-                <td class="text-[11px]">${s.last_active || s.created_at || '-'}</td>
+                <td class="text-[11px]">${escapeHtml(s.last_active || s.created_at || '-')}</td>
                 <td><button data-action="prof-terminate-session" data-id="${s.id}" class="text-[9px] uppercase tracking-widest font-bold hover:text-rose-500 transition-colors" style="color:var(--text-secondary)">${t('action.close')}</button></td>
             </tr>`;
         });
@@ -995,7 +995,7 @@ function loadUserActivity() {
             html += `<div class="activity-item">
                 <div class="activity-dot"></div>
                 <div class="activity-action">${escapeHtml(entry.action)}</div>
-                <div class="activity-time">${entry.target ? escapeHtml(entry.target) + ' · ' : ''}${entry.timestamp || ''}</div>
+                <div class="activity-time">${entry.target ? escapeHtml(entry.target) + ' · ' : ''}${escapeHtml(entry.timestamp || '')}</div>
             </div>`;
         });
         html += '</div>';

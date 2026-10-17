@@ -110,6 +110,7 @@ def _build_export_stats(leads):
 
 @profile_bp.route('/api/profile/professional/export/xlsx')
 @decorators.professional_required
+@rate_limit.check_rate_limit(limit=20, window=60)
 def profile_export_history_xlsx():
     try:
         lang = get_language()

@@ -11,7 +11,7 @@ DATABASE = os.path.join(os.path.dirname(__file__), 'database.db')
 
 DATABASE_URL = os.environ.get('DATABASE_URL', '')
 SECRET_KEY = os.environ.get('SECRET_KEY')
-SITE_URL = os.environ.get('SITE_URL', '')
+SITE_URL = os.environ.get('SITE_URL', 'http://localhost:5000')
 
 if not SECRET_KEY:
     raise ValueError("SECRET_KEY must be set in .env file")

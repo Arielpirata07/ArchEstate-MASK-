@@ -729,7 +729,7 @@ function renderLeads(leads) {
                 <td class="px-4 py-3">
                     <div class="budget-display">
                         <span class="budget-currency-tag">${sym}</span>
-                        <span class="budget-amount" title="${escapeHtml(lead.budget)}">${formatBudget(escapeHtml(lead.budget))}</span>
+                        <span class="budget-amount" title="${escapeHtml(lead.budget)}">${escapeHtml(formatBudget(lead.budget))}</span>
                     </div>
                     ${specLine}
                     ${extrasLine}
@@ -752,7 +752,7 @@ function renderLeads(leads) {
                                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9L3 21"/><path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1Zm0 0a5 5 0 0 0 5 5m0 0a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1v1a.5.5 0 0 0 1 0v-1a.5.5 0 0 0-1 0Z"/><path d="M17 8a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2"/><path d="M12 12h.01"/></svg> WhatsApp
                                    </a>`
                                 : (lead.phone_format_valid == 1
-                                    ? `<a href="sms:${lead.phone_e164 || lead.phone}?&body=${encodeURIComponent('Hola, te contacto desde ArchEstate.')}"
+                                    ? `<a href="sms:${escapeHtml(lead.phone_e164 || lead.phone)}?&body=${encodeURIComponent('Hola, te contacto desde ArchEstate.')}"
                                          data-sms-link
                                          data-lead-id="${lead.id}"
                                          class="contact-btn contact-btn-sms inline-flex items-center gap-1.5 px-3 py-2 rounded text-[10px] font-bold uppercase tracking-widest transition-all"

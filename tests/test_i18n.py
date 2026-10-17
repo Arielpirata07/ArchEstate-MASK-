@@ -188,6 +188,36 @@ class TestNoHardcodedSpanish:
         assert not offenders, 'Español hardcoded sin t():\n' + '\n'.join(offenders)
 
 
+class TestJsI18nParity:
+    '''Toda key usada vía t() en static/js debe existir en static/js/i18n.js.
+
+    Sin esto, t() devuelve la key cruda y la UI muestra "org.remove_member".
+    Las keys dinámicas (t('org.role_' + r)) se validan por prefijo.
+    '''
+
+    def _collect(self):
+        import pathlib
+        import re
+        root = pathlib.Path(__file__).resolve().parent.parent
+        used = set()
+        for path in sorted((root / 'static' / 'js').rglob('*.js')):
+            if path.name == 'i18n.js':
+                continue
+            used |= set(re.findall(r'''\bt\(\s*['"]([\w.]+)['"]''', path.read_text(encoding='utf-8')))
+        i18n_src = (root / 'static' / 'js' / 'i18n.js').read_text(encoding='utf-8')
+        defined = set(re.findall(r'''['"]([\w.]+)['"]\s*:''', i18n_src))
+        return used, defined
+
+    def test_js_keys_exist_in_i18n_js(self):
+        used, defined = self._collect()
+        assert used, 'no se detectaron keys t() en static/js'
+        missing = sorted(
+            u for u in used
+            if u not in defined and not any(d.startswith(u) for d in defined)
+        )
+        assert not missing, f'keys usadas en JS sin entrada en i18n.js:\n' + '\n'.join(missing)
+
+
 class TestFase4Keys:
     def test_new_keys_present_both_langs(self):
         for key in ('otp.digit_label', 'user.budget_min_aria', 'admin.export_png',

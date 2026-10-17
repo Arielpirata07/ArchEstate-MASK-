@@ -161,6 +161,7 @@ def pipeline_leads():
 
 @professional_bp.route('/api/pipeline/lead/<int:lead_id>/move', methods=['POST'])
 @professional_required
+@rate_limit.check_rate_limit(limit=60, window=60)
 def pipeline_move_lead(lead_id):
     lang = get_language()
     conn = None
@@ -200,6 +201,7 @@ def pipeline_move_lead(lead_id):
 
 @professional_bp.route('/api/pipeline/leads/bulk-move', methods=['POST'])
 @professional_required
+@rate_limit.check_rate_limit(limit=60, window=60)
 def pipeline_bulk_move():
     lang = get_language()
     conn = None

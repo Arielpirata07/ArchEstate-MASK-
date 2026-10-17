@@ -68,8 +68,10 @@ function initBudgetPopup() {
     const hiddenCurrency = document.getElementById('currency-hidden');
     const sliderFill = document.getElementById('budget-slider-fill');
     const unlimitedCheckbox = document.getElementById('budget-unlimited');
+    const minInput = document.getElementById('budget-min-input');
+    const maxInput = document.getElementById('budget-max-input');
 
-    if (!trigger || !popup || !minSlider || !maxSlider || !currencySelect || !hiddenBudget || !hiddenCurrency || !sliderFill || !unlimitedCheckbox) return;
+    if (!trigger || !popup || !minSlider || !maxSlider || !currencySelect || !hiddenBudget || !hiddenCurrency || !sliderFill || !unlimitedCheckbox || !minInput || !maxInput) return;
 
     var CURRENCY_CONFIG = {
         ARG: { max: 10000000000, step: 10000000, label: 'ARS ($)' },

@@ -570,9 +570,10 @@ class TestProfilePhoneUpdate:
         )
         db.commit()
 
+        user_email = db.execute('SELECT email FROM users WHERE id = ?', (uid,)).fetchone()['email']
         resp = auth_client.put('/api/profile/user',
                                data=json.dumps({
-                                   'email': 'test@example.com',
+                                   'email': user_email,
                                    'phone': '+5491144440000',
                                    'first_name': '', 'last_name': '', 'bio': '',
                                }),
@@ -589,6 +590,7 @@ class TestProfilePhoneUpdate:
         assert user['phone_number_type'] in ('mobile', 'fixed_or_mobile')
 
     def test_preserves_verification_when_phone_unchanged_via_profile(self, auth_client, db):
+        import uuid
         uid = _user_id(auth_client, db)
         db.execute(
             'UPDATE users SET phone = ?, phone_e164 = ?, phone_verified = 1 WHERE id = ?',
@@ -598,7 +600,7 @@ class TestProfilePhoneUpdate:
 
         resp = auth_client.put('/api/profile/user',
                                data=json.dumps({
-                                   'email': 'test@example.com',
+                                   'email': f'pres_{uuid.uuid4().hex[:8]}@example.com',
                                    'phone': '+5491144445555',
                                    'first_name': '', 'last_name': '', 'bio': '',
                                }),
@@ -609,13 +611,14 @@ class TestProfilePhoneUpdate:
         assert user['phone_verified'] == 1
 
     def test_updates_phone_e164_even_when_unchanged(self, auth_client, db):
+        import uuid
         uid = _user_id(auth_client, db)
         db.execute("UPDATE users SET phone_e164 = '' WHERE id = ?", (uid,))
         db.commit()
 
         resp = auth_client.put('/api/profile/user',
                                data=json.dumps({
-                                   'email': 'test@example.com',
+                                   'email': f'e164_{uuid.uuid4().hex[:8]}@example.com',
                                    'phone': '+5491144445555',
                                    'first_name': '', 'last_name': '', 'bio': '',
                                }),
@@ -625,3 +628,29 @@ class TestProfilePhoneUpdate:
         user = db.execute('SELECT phone_e164, phone_number_type FROM users WHERE id = ?', (uid,)).fetchone()
         assert user['phone_e164'] == '+5491144445555'
         assert user['phone_number_type'] in ('mobile', 'fixed_or_mobile')
+
+
+class TestProfileEmailTaken:
+    """PUT /api/profile/user con email de OTRO usuario → 409, no 500 ni dup."""
+
+    def test_duplicate_email_returns_409(self, auth_client, db):
+        import uuid
+        from werkzeug.security import generate_password_hash
+        other_email = f'taken_{uuid.uuid4().hex[:8]}@example.com'
+        db.execute(
+            'INSERT INTO users (username, email, hash, role, phone, phone_format_valid) VALUES (?, ?, ?, ?, ?, 1)',
+            (f'taken_{uuid.uuid4().hex[:8]}', other_email, generate_password_hash('x'), 'client', '+5491199999999')
+        )
+        db.commit()
+        resp = auth_client.put('/api/profile/user',
+                               data=json.dumps({'email': other_email}),
+                               content_type='application/json')
+        assert resp.status_code == 409
+
+    def test_own_email_keeps_working(self, auth_client, db):
+        uid = _user_id(auth_client, db)
+        user = db.execute('SELECT email FROM users WHERE id = ?', (uid,)).fetchone()
+        resp = auth_client.put('/api/profile/user',
+                               data=json.dumps({'email': user['email']}),
+                               content_type='application/json')
+        assert resp.status_code == 200

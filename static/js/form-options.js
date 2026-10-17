@@ -19,7 +19,7 @@ function foRenderPropertyTypeButtons(containerId, onSelect) {
     if (!container) return;
     var options = foGetPropertyTypes();
     container.innerHTML = options.map(function(o) {
-        var iconHtml = o.icon ? '<i data-lucide="' + o.icon + '" class="w-4 h-4 inline mr-2"></i>' : '';
+        var iconHtml = o.icon ? '<i data-lucide="' + escapeHtml(o.icon) + '" class="w-4 h-4 inline mr-2"></i>' : '';
         return '<button type="button" data-value="' + escapeHtml(o.value) + '" ' +
             'class="prop-type-btn flex-1 min-w-[120px] py-3 px-4 rounded border-2 border-midnight/20 bg-white text-midnight font-semibold transition-all hover:border-gold">' +
             iconHtml + escapeHtml(o.label) + '</button>';
@@ -37,7 +37,7 @@ function foRenderChips(containerId, options, chipClass, onSelect) {
     var container = document.getElementById(containerId);
     if (!container) return;
     container.innerHTML = options.map(function(o) {
-        var iconHtml = o.icon ? '<i data-lucide="' + o.icon + '" class="w-3 h-3"></i> ' : '';
+        var iconHtml = o.icon ? '<i data-lucide="' + escapeHtml(o.icon) + '" class="w-3 h-3"></i> ' : '';
         return '<button type="button" data-value="' + escapeHtml(o.value) + '" ' +
             'class="' + chipClass + ' flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold border border-midnight/10 transition-all">' +
             iconHtml + escapeHtml(o.label) + '</button>';

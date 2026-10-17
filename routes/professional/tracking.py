@@ -38,6 +38,7 @@ from routes.professional.helpers import _get_approved_professional, _get_pro_geo
 
 @professional_bp.route('/api/lead/<int:lead_id>/toggle-status', methods=['POST'])
 @professional_required
+@rate_limit.check_rate_limit(limit=60, window=60)
 def toggle_lead_status(lead_id):
     lang = get_language()
     conn = None

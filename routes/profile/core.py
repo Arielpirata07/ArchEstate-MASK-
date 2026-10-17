@@ -168,6 +168,11 @@ def api_update_user():
         if not is_valid:
             return jsonify({'error': error}), 400
 
+    if email:
+        taken = models.get_user_by_email(email)
+        if taken and taken['id'] != user_id:
+            return jsonify({'error': t('profile.email_taken', lang)}), 409
+
     if not models.update_user_account(user_id, email, phone, {
         'first_name': first_name,
         'last_name': last_name,
@@ -175,8 +180,10 @@ def api_update_user():
     }):
         return jsonify({'error': t('admin.internal_error_short', lang)}), 500
 
-    session['email'] = email
-    session['phone'] = phone
+    if email:
+        session['email'] = email
+    if phone:
+        session['phone'] = phone
 
     utils.log_action('Actualizacion de Perfil', f'Usuario: {session["username"]}', session)
 

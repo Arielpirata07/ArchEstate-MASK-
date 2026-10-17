@@ -11,22 +11,22 @@ def apply_migrations(cursor):
     current_ver = row[0] if row and row[0] else 0
 
     if current_ver < 1:
-        cursor.execute('INSERT INTO schema_version (version) VALUES (1)')
+        cursor.execute('INSERT OR IGNORE INTO schema_version (version) VALUES (1)')
 
     if current_ver < 2:
-        cursor.execute('INSERT INTO schema_version (version) VALUES (2)')
+        cursor.execute('INSERT OR IGNORE INTO schema_version (version) VALUES (2)')
 
     if current_ver < 3:
-        cursor.execute('INSERT INTO schema_version (version) VALUES (3)')
+        cursor.execute('INSERT OR IGNORE INTO schema_version (version) VALUES (3)')
 
     if current_ver < 4:
-        cursor.execute('INSERT INTO schema_version (version) VALUES (4)')
+        cursor.execute('INSERT OR IGNORE INTO schema_version (version) VALUES (4)')
 
     if current_ver < 5:
-        cursor.execute('INSERT INTO schema_version (version) VALUES (5)')
+        cursor.execute('INSERT OR IGNORE INTO schema_version (version) VALUES (5)')
 
     if current_ver < 6:
-        cursor.execute('INSERT INTO schema_version (version) VALUES (6)')
+        cursor.execute('INSERT OR IGNORE INTO schema_version (version) VALUES (6)')
 
 
     cursor.execute('PRAGMA table_info(users)')
@@ -266,11 +266,13 @@ def apply_migrations(cursor):
             GROUP BY lead_id, reported_by
         )
     ''')
+    # Alineado con idx_notif_lead_created_once (user_id, lead_id): un par con
+    # ambos tipos (lead_new + lead_assigned) también violaría el índice.
     cursor.execute('''
         DELETE FROM notifications WHERE id NOT IN (
             SELECT MIN(id) FROM notifications
             WHERE type IN ('lead_new', 'lead_assigned')
-            GROUP BY user_id, lead_id, type
+            GROUP BY user_id, lead_id
         ) AND type IN ('lead_new', 'lead_assigned')
     ''')
     cursor.execute('''
@@ -326,4 +328,10 @@ def apply_migrations(cursor):
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_users_phone_e164 ON users(phone_e164)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_lead_versions_lead_id ON lead_versions(lead_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_leads_province_zone ON leads(province, zone)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_leads_email ON leads(email)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_cal_events_lead ON calendar_events(lead_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_notifications_lead ON notifications(lead_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_remember_tokens_user ON remember_tokens(user_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_consent_log_user ON consent_log(user_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_lead_versions_creator ON lead_versions(created_by)')
 

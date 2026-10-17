@@ -389,6 +389,22 @@ def create_tables(cursor):
     ''')
 
     cursor.execute('''
+        CREATE TABLE IF NOT EXISTS phone_area_codes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            code TEXT NOT NULL,
+            city TEXT NOT NULL,
+            province TEXT NOT NULL DEFAULT '',
+            country TEXT NOT NULL DEFAULT 'Argentina',
+            country_code TEXT NOT NULL DEFAULT '+54',
+            sort_order INTEGER DEFAULT 0,
+            is_active INTEGER NOT NULL DEFAULT 1,
+            UNIQUE(code, country_code)
+        )
+    ''')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_phone_area_country ON phone_area_codes(country_code)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_phone_area_code ON phone_area_codes(code)')
+
+    cursor.execute('''
         CREATE TABLE IF NOT EXISTS idempotency_keys (
             key TEXT PRIMARY KEY,
             user_id INTEGER NOT NULL REFERENCES users(id),

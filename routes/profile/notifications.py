@@ -213,11 +213,12 @@ def get_notification_channel():
 
 @profile_bp.route('/api/profile/contact-admin', methods=['POST'])
 @decorators.login_required
+@rate_limit.check_rate_limit(limit=10, window=60)
 def contact_admin():
     lang = get_language()
     data = request.json or {}
-    subject = (data.get('subject') or '').strip()
-    message = (data.get('message') or '').strip()
+    subject = (data.get('subject') or '').strip()[:200]
+    message = (data.get('message') or '').strip()[:2000]
 
     if not subject or not message:
         return jsonify({"success": False, "error": t('profile.contact_admin_required', lang)}), 400
