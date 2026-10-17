@@ -6,9 +6,23 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ## [Unreleased]
 
+### Arreglado (Fase 2.1 — KPI de SLA: pendientes vs incumplidos)
+- **`compute_sla_kpis()`** ahora clasifica cada lead de la ventana en
+  `contacted` (con contacto), `pending` (asignado, sin contacto, **en plazo**),
+  `breached` (contactados tarde **+** asignados sin contacto ya vencidos) y
+  `unassigned` (sin profesional asignado o asignado inactivo). El `%` de
+  cumplimiento pasa a `met / (met + breached)`, que es la definición correcta
+  (antes `unassigned` absorbía también los pendientes y los vencidos sin
+  contacto, inflando la tarjeta "Sin asignar").
+- La tarjeta "Contactados" del panel se reemplaza por **"Pendientes"** (la
+  información de contactados sigue en las tablas de desglose).
+- 6 tests en `TestComputeSlaKpis` (deltas sobre la DB compartida: pending,
+  breached por antigüedad, met/breached según `business_hours_elapsed`, y
+  profesional inactivo → unassigned).
+
 ### Añadido (Fase 2 — Panel SLA en el dashboard admin)
 - **Pestaña "SLA de contacto"** en `templates/admin.html` (`#panel-sla`): tarjetas de
-  cumplimiento, mediana, P90, contactados, incumplidos y sin asignar, más tablas
+  cumplimiento, mediana, P90, pendientes, incumplidos y sin asignar, más tablas
   de desglose por profesional y por zona. Selector de período 7/30/90 días.
 - **`static/js/admin.js`**: `loadSla()` / `renderSla()` consumen `GET /api/admin/sla`,
   con estado activo del período y escape HTML en nombres de usuario/zona.

@@ -147,41 +147,62 @@ def compute_sla_kpis(conn, days=30, threshold_hours=24.0):
     '''KPIs de cumplimiento del SLA de primer contacto.
 
     - Ventana: `days` días hacia atrás desde ahora (creación del lead).
-    - Cumplido: primer contacto con `business_hours_elapsed <= threshold_hours`.
+    - `contacted`: leads con fila en `lead_first_contact`.
+      - `met`: contactados dentro de `threshold_hours` (cumplidos).
+      - `contacted_late`: contactados fuera de plazo.
+    - `pending`: asignados, sin contacto y todavía dentro de plazo.
+    - `breached`: incumplidos = contactados tarde + asignados sin contacto ya vencidos.
+    - `unassigned`: sin profesional asignado (o asignado inactivo) → fuera del KPI.
+    - `% cumplimiento` = met / (met + breached).
     - Desglose por profesional (quien hizo el primer contacto) y por zona.
-    - Leads sin señal ('unassigned') no entran al % de cumplimiento.
     '''
+    from datetime import datetime
+
     since = f"-{int(days)} days"
+    now = datetime.now()
 
-    base = conn.execute(
-        f"SELECT COUNT(*) FROM leads WHERE timestamp >= datetime('now', '{since}')"
-    ).fetchone()[0]
-
-    contacted = conn.execute(
-        'SELECT COUNT(*) FROM lead_first_contact lfc '
-        'JOIN leads l ON l.id = lfc.lead_id '
-        f"WHERE l.timestamp >= datetime('now', '{since}')"
-    ).fetchone()[0]
-
-    met = conn.execute(
-        'SELECT COUNT(*) FROM lead_first_contact lfc '
-        'JOIN leads l ON l.id = lfc.lead_id '
-        f"WHERE l.timestamp >= datetime('now', '{since}') "
-        'AND lfc.business_hours_elapsed <= ?',
-        (threshold_hours,)
-    ).fetchone()[0]
-
-    breached = contacted - met
-
-    elapsed_rows = conn.execute(
-        'SELECT lfc.business_hours_elapsed FROM lead_first_contact lfc '
-        'JOIN leads l ON l.id = lfc.lead_id '
-        f"WHERE l.timestamp >= datetime('now', '{since}') "
-        'ORDER BY lfc.business_hours_elapsed ASC'
+    lead_rows = conn.execute(
+        f"SELECT id, timestamp, assigned_to FROM leads "
+        f"WHERE timestamp >= datetime('now', '{since}')"
     ).fetchall()
-    elapsed = [float(r['business_hours_elapsed']) for r in elapsed_rows]
 
-    compliance = (met / contacted * 100.0) if contacted else 0.0
+    contact_rows = conn.execute(
+        'SELECT lead_id, business_hours_elapsed FROM lead_first_contact'
+    ).fetchall()
+    contact_by_lead = {}
+    for r in contact_rows:
+        contact_by_lead[r['lead_id']] = float(r['business_hours_elapsed'])
+
+    inactive_rows = conn.execute('SELECT id FROM users WHERE is_active = 0').fetchall()
+    inactive = {r['id'] for r in inactive_rows}
+
+    total = len(lead_rows)
+    contacted = met = contacted_late = pending = pending_late = unassigned = 0
+
+    for lead in lead_rows:
+        lid = lead['id']
+        if lid in contact_by_lead:
+            contacted += 1
+            if contact_by_lead[lid] <= threshold_hours:
+                met += 1
+            else:
+                contacted_late += 1
+            continue
+        assigned = lead['assigned_to']
+        if not assigned or assigned in inactive:
+            unassigned += 1
+            continue
+        created = _parse_ts(lead['timestamp'])
+        elapsed = business_hours_between(created, now) if created else 0.0
+        if elapsed <= threshold_hours:
+            pending += 1
+        else:
+            pending_late += 1
+
+    breached = contacted_late + pending_late
+    compliance = (met / (met + breached) * 100.0) if (met + breached) else 0.0
+
+    elapsed = sorted(contact_by_lead.values())
 
     by_pro = conn.execute(
         'SELECT lfc.professional_id, u.username, '
@@ -206,14 +227,13 @@ def compute_sla_kpis(conn, days=30, threshold_hours=24.0):
         (threshold_hours,)
     ).fetchall()
 
-    unassigned = base - contacted
-
     return {
         'days': int(days),
         'threshold_hours': threshold_hours,
-        'total_leads': base,
+        'total_leads': total,
         'contacted': contacted,
         'unassigned': unassigned,
+        'pending': pending,
         'met': met,
         'breached': breached,
         'compliance_pct': round(compliance, 1),

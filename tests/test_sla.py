@@ -1,11 +1,13 @@
 """Fase 0 SLA — tests del helper de primer contacto y del calculo de horas habiles."""
-from datetime import datetime
+import uuid
+from datetime import datetime, timedelta
 
 import pytest
 
 from services.sla import (
     SLA_SOURCES,
     business_hours_between,
+    compute_sla_kpis,
     record_first_contact,
     _parse_ts,
 )
@@ -117,3 +119,81 @@ class TestRecordFirstContact:
         for src in SLA_SOURCES:
             lead_id = self._mk_lead(db)
             assert record_first_contact(lead_id, 1, src) is True
+
+
+class TestComputeSlaKpis:
+    '''Separacion pending / breached / unassigned del KPI (Fase 1).'''
+
+    def _now(self):
+        return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+    def _mk_lead(self, db, ts, assigned_to=None):
+        cur = db.execute(
+            'INSERT INTO leads (type, zone, budget, phone, email, timestamp, assigned_to) '
+            "VALUES ('compra', 'CABA', '100000', '+5491100000000', 'kpi@a.com', ?, ?)",
+            (ts, assigned_to)
+        )
+        db.commit()
+        return cur.lastrowid
+
+    def _user(self, db, active=1):
+        unique = uuid.uuid4().hex[:8]
+        cur = db.execute(
+            "INSERT INTO users (username, email, hash, role, phone, is_active) "
+            "VALUES (?, ?, 'x', 'professional', '+5491100000000', ?)",
+            (f'kpi_{unique}', f'kpi_{unique}@test.com', active)
+        )
+        db.commit()
+        return cur.lastrowid
+
+    def _contact(self, db, lead_id, pro_id, elapsed):
+        db.execute(
+            'INSERT INTO lead_first_contact (lead_id, professional_id, contact_at, source, business_hours_elapsed) '
+            "VALUES (?, ?, datetime('now'), 'stage', ?)",
+            (lead_id, pro_id, elapsed)
+        )
+        db.commit()
+
+    def test_unassigned_counted_separately(self, db):
+        base = compute_sla_kpis(db, days=30)
+        self._mk_lead(db, self._now(), assigned_to=None)
+        after = compute_sla_kpis(db, days=30)
+        assert after['unassigned'] == base['unassigned'] + 1
+        assert after['pending'] == base['pending']
+
+    def test_assigned_recent_is_pending(self, db):
+        base = compute_sla_kpis(db, days=30)
+        self._mk_lead(db, self._now(), assigned_to=self._user(db))
+        after = compute_sla_kpis(db, days=30)
+        assert after['pending'] == base['pending'] + 1
+        assert after['unassigned'] == base['unassigned']
+
+    def test_assigned_old_without_contact_is_breached(self, db):
+        base = compute_sla_kpis(db, days=30)
+        past = (datetime.now() - timedelta(days=5)).strftime('%Y-%m-%d %H:%M:%S')
+        self._mk_lead(db, past, assigned_to=self._user(db))
+        after = compute_sla_kpis(db, days=30)
+        assert after['breached'] == base['breached'] + 1
+        assert after['pending'] == base['pending']
+
+    def test_contacted_within_threshold_is_met(self, db):
+        base = compute_sla_kpis(db, days=30)
+        lid = self._mk_lead(db, self._now())
+        self._contact(db, lid, self._user(db), 3.0)
+        after = compute_sla_kpis(db, days=30)
+        assert after['met'] == base['met'] + 1
+        assert after['breached'] == base['breached']
+
+    def test_contacted_late_is_breached(self, db):
+        base = compute_sla_kpis(db, days=30)
+        lid = self._mk_lead(db, self._now())
+        self._contact(db, lid, self._user(db), 30.0)
+        after = compute_sla_kpis(db, days=30)
+        assert after['breached'] == base['breached'] + 1
+
+    def test_inactive_professional_lead_is_unassigned(self, db):
+        base = compute_sla_kpis(db, days=30)
+        self._mk_lead(db, self._now(), assigned_to=self._user(db, active=0))
+        after = compute_sla_kpis(db, days=30)
+        assert after['unassigned'] == base['unassigned'] + 1
+        assert after['pending'] == base['pending']

@@ -346,7 +346,7 @@ function renderSla(s, cards, proT, zoneT) {
         slaCard(t('sla.compliance'), s.compliance_pct + '%', complianceCls),
         slaCard(t('sla.median'), s.median_hours + 'h', 'text-midnight'),
         slaCard(t('sla.p90'), s.p90_hours + 'h', 'text-midnight'),
-        slaCard(t('sla.contactados'), s.contacted, 'text-midnight'),
+        slaCard(t('sla.pendientes'), s.pending, 'text-midnight'),
         slaCard(t('sla.incumplidos'), s.breached, s.breached > 0 ? 'text-rose-500' : 'text-midnight'),
         slaCard(t('sla.sin_asignar'), s.unassigned, 'text-midnight/50'),
     ].join('');
