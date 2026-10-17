@@ -237,6 +237,32 @@ def admin_stats():
             conn.close()
 
 
+@admin_bp.route('/api/admin/sla')
+@admin_required
+def admin_sla():
+    '''KPIs del SLA de primer contacto (Fase 1). `?days=30&threshold=24`.'''
+    lang = get_language()
+    conn = None
+    try:
+        days = request.args.get('days', 30, type=int)
+        if days not in (7, 30, 90):
+            days = 30
+        threshold = request.args.get('threshold', 24.0, type=float)
+        if threshold <= 0:
+            threshold = 24.0
+
+        from services.sla import compute_sla_kpis
+        conn = models.get_db_connection()
+        kpis = compute_sla_kpis(conn, days=days, threshold_hours=threshold)
+        return jsonify({'success': True, 'sla': kpis})
+    except Exception:
+        logger.exception('Error en admin_sla')
+        return jsonify({"success": False, "error": t('admin.internal_error_short', lang)}), 500
+    finally:
+        if conn:
+            conn.close()
+
+
 @admin_bp.route('/api/admin/lead/<int:lead_id>', methods=['GET'])
 @admin_required
 def admin_lead_detail(lead_id):

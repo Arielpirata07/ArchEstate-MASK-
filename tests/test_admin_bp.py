@@ -64,7 +64,6 @@ class TestProfessionalApproval:
         resp = admin_client.get('/api/professionals')
         assert resp.status_code == 200
         assert resp.get_json()['success'] is True
-
     def test_approve_professional(self, admin_client, sample_professional):
         _, pro_id = sample_professional
         resp = admin_client.post(f'/api/admin/professional/{pro_id}/status', json={'status': 'approved'})
@@ -167,3 +166,51 @@ class TestAdminNotifications:
     def test_notification_log(self, admin_client):
         resp = admin_client.get('/api/admin/notification-log')
         assert resp.status_code == 200
+
+
+class TestAdminSla:
+    def _mk(self, db, elapsed, zone='Palermo', pro_id=1):
+        import uuid as _u
+        unique = _u.uuid4().hex[:8]
+        from datetime import datetime, timedelta
+        created = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')
+        cur = db.execute(
+            '''INSERT INTO leads (type, property_type, zone, province, budget, currency, phone, email, user_id, timestamp)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+            ('comprar', 'departamento', zone, 'Buenos Aires', '100000', 'USD',
+             f'+5491112{unique[:5]}', f'sla_{unique}@test.com', 1, created)
+        )
+        lead_id = cur.lastrowid
+        db.execute(
+            'INSERT INTO lead_first_contact (lead_id, professional_id, contact_at, source, business_hours_elapsed) '
+            "VALUES (?, ?, datetime('now'), 'stage', ?)",
+            (lead_id, pro_id, elapsed)
+        )
+        db.commit()
+        return lead_id
+
+    def test_requires_admin(self, client):
+        resp = client.get('/api/admin/sla')
+        assert resp.status_code in (302, 401, 403)
+
+    def test_returns_kpis(self, admin_client, db):
+        self._mk(db, elapsed=3.0)    # met
+        self._mk(db, elapsed=30.0)   # breached
+        resp = admin_client.get('/api/admin/sla?days=30')
+        data = resp.get_json()
+        assert resp.status_code == 200
+        assert data['success'] is True
+        sla = data['sla']
+        assert sla['days'] == 30
+        assert sla['threshold_hours'] == 24.0
+        assert sla['contacted'] >= 2
+        assert sla['met'] >= 1
+        assert sla['breached'] >= 1
+        assert sla['compliance_pct'] >= 0.0
+        assert 'median_hours' in sla and 'p90_hours' in sla
+        assert isinstance(sla['by_professional'], list)
+        assert isinstance(sla['by_zone'], list)
+
+    def test_invalid_days_falls_back(self, admin_client):
+        resp = admin_client.get('/api/admin/sla?days=999')
+        assert resp.get_json()['sla']['days'] == 30

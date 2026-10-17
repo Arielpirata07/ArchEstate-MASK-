@@ -127,3 +127,115 @@ def record_first_contact(lead_id, professional_id, source, when=None, conn=None)
     finally:
         if own_conn and conn:
             conn.close()
+
+
+def _percentile(values, pct):
+    '''Percentil lineal simple sobre una lista de floats.'''
+    if not values:
+        return 0.0
+    if len(values) == 1:
+        return float(values[0])
+    k = (len(values) - 1) * (pct / 100.0)
+    f = int(k)
+    c = min(f + 1, len(values) - 1)
+    if f == c:
+        return float(values[f])
+    return float(values[f] + (values[c] - values[f]) * (k - f))
+
+
+def compute_sla_kpis(conn, days=30, threshold_hours=24.0):
+    '''KPIs de cumplimiento del SLA de primer contacto.
+
+    - Ventana: `days` días hacia atrás desde ahora (creación del lead).
+    - Cumplido: primer contacto con `business_hours_elapsed <= threshold_hours`.
+    - Desglose por profesional (quien hizo el primer contacto) y por zona.
+    - Leads sin señal ('unassigned') no entran al % de cumplimiento.
+    '''
+    since = f"-{int(days)} days"
+
+    base = conn.execute(
+        f"SELECT COUNT(*) FROM leads WHERE timestamp >= datetime('now', '{since}')"
+    ).fetchone()[0]
+
+    contacted = conn.execute(
+        'SELECT COUNT(*) FROM lead_first_contact lfc '
+        'JOIN leads l ON l.id = lfc.lead_id '
+        f"WHERE l.timestamp >= datetime('now', '{since}')"
+    ).fetchone()[0]
+
+    met = conn.execute(
+        'SELECT COUNT(*) FROM lead_first_contact lfc '
+        'JOIN leads l ON l.id = lfc.lead_id '
+        f"WHERE l.timestamp >= datetime('now', '{since}') "
+        'AND lfc.business_hours_elapsed <= ?',
+        (threshold_hours,)
+    ).fetchone()[0]
+
+    breached = contacted - met
+
+    elapsed_rows = conn.execute(
+        'SELECT lfc.business_hours_elapsed FROM lead_first_contact lfc '
+        'JOIN leads l ON l.id = lfc.lead_id '
+        f"WHERE l.timestamp >= datetime('now', '{since}') "
+        'ORDER BY lfc.business_hours_elapsed ASC'
+    ).fetchall()
+    elapsed = [float(r['business_hours_elapsed']) for r in elapsed_rows]
+
+    compliance = (met / contacted * 100.0) if contacted else 0.0
+
+    by_pro = conn.execute(
+        'SELECT lfc.professional_id, u.username, '
+        'COUNT(*) AS contacted, '
+        'SUM(CASE WHEN lfc.business_hours_elapsed <= ? THEN 1 ELSE 0 END) AS met '
+        'FROM lead_first_contact lfc '
+        'JOIN leads l ON l.id = lfc.lead_id '
+        'LEFT JOIN users u ON u.id = lfc.professional_id '
+        f"WHERE l.timestamp >= datetime('now', '{since}') "
+        'GROUP BY lfc.professional_id, u.username '
+        'ORDER BY met DESC',
+        (threshold_hours,)
+    ).fetchall()
+
+    by_zone = conn.execute(
+        'SELECT l.zone, COUNT(*) AS contacted, '
+        'SUM(CASE WHEN lfc.business_hours_elapsed <= ? THEN 1 ELSE 0 END) AS met '
+        'FROM lead_first_contact lfc '
+        'JOIN leads l ON l.id = lfc.lead_id '
+        f"WHERE l.timestamp >= datetime('now', '{since}') "
+        'GROUP BY l.zone ORDER BY contacted DESC',
+        (threshold_hours,)
+    ).fetchall()
+
+    unassigned = base - contacted
+
+    return {
+        'days': int(days),
+        'threshold_hours': threshold_hours,
+        'total_leads': base,
+        'contacted': contacted,
+        'unassigned': unassigned,
+        'met': met,
+        'breached': breached,
+        'compliance_pct': round(compliance, 1),
+        'median_hours': round(_percentile(elapsed, 50), 2),
+        'p90_hours': round(_percentile(elapsed, 90), 2),
+        'by_professional': [
+            {
+                'professional_id': r['professional_id'],
+                'username': r['username'] or '',
+                'contacted': r['contacted'],
+                'met': r['met'],
+                'compliance_pct': round((r['met'] / r['contacted'] * 100.0) if r['contacted'] else 0.0, 1),
+            }
+            for r in by_pro
+        ],
+        'by_zone': [
+            {
+                'zone': r['zone'],
+                'contacted': r['contacted'],
+                'met': r['met'],
+                'compliance_pct': round((r['met'] / r['contacted'] * 100.0) if r['contacted'] else 0.0, 1),
+            }
+            for r in by_zone
+        ],
+    }

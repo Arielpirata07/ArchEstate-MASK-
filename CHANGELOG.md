@@ -6,6 +6,14 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ## [Unreleased]
 
+### Añadido (Fase 1 — KPI de cumplimiento + endpoint admin)
+- **`compute_sla_kpis()`** (`services/sla.py`): cumplimiento (%), mediana y p90
+  de horas hábiles hasta el primer contacto, con desglose por profesional y por
+  zona. `unassigned` (sin señal) queda fuera del % para no sesgar.
+- **Endpoint `GET /api/admin/sla?days=30&threshold=24`** (`routes/admin_bp.py`,
+  `@admin_required`): ventana 7/30/90 (default 30), umbral configurable. 3 tests en
+  `TestAdminSla` (auth, shape del JSON, fallback de `days` inválido).
+
 ### Añadido (Fase 0 — SLA de primer contacto: instrumentación)
 - **Tabla `lead_first_contact`** (`db_schema.py` + migración v7): PK `lead_id`
   (idempotente), `professional_id`, `contact_at`, `source`, y
