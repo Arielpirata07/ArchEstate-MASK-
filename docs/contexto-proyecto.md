@@ -725,6 +725,29 @@ flask, werkzeug, openpyxl, pytz, fpdf, phonenumbers, freezegun, twilio, gunicorn
 | `v0.31.4` | `787bcae` | fix(phone): eliminación de acumulación de códigos de área y corrección de 3 códigos AR |
 | `v0.32.0` | `a50409f` | feat(coverage): professional multi-zone/multi-specialty matching system |
 | `v0.33.0` | `fa9fba0` | feat(org): gestion de organizaciones (Fase 4) |
+| `v0.34.0` | `4bc89af` | feat(pipeline): tablero Kanban de 8 etapas por profesional |
+| `v0.35.0` | `2f0795d` | feat(dashboard): tab ejecutivo con KPIs, tendencia, funnel y actividad |
+| `v0.36.0` | `3ca9513` | feat(calendar): tab calendario con vistas mes/semana/dia |
+| `v0.36.1` | `acd9766` | docs: cerrar v0.36.1 — panorama, mini-feed, filtros globales, reset cobertura |
+| `v0.37.0` | `b32e23d` | docs(multitenant): add v0.37.0 to changelog and tags table |
+| `v0.38.0` | `9e74d45` | docs(i18n): add v0.38.0 to changelog and tags table |
+| `v0.39.0` | `2abf6c9` | docs(frontend): add v0.39.0 to changelog and tags table |
+| `v0.40.0` | `bd97499` | docs(security): add v0.40.0 to changelog and tags table |
+| `v0.41.0` | `e917506` | docs(perf): add v0.41.0 to changelog and tags table |
+| `v0.42.0` | `7a617a0` | docs(quality): add v0.42.0 to changelog and tags table |
+| `v0.43.0` | `ddfeedc` | docs(testing): add v0.43.0 to changelog and tags table |
+| `v0.43.1` | `b00c3a0` | feat(concurrency): paquete idempotencia y dedup |
+| `v0.43.2` | `b5e7f1a` | fix(concurrency): fase 1 P0, notifs fuera de txn y atomicidad |
+| `v0.43.3` | `b39f665` | fix(robustez): fase 2 P1, OTP rate limits y contexto |
+| `v0.44.0` | `7e06065` | feat(timeline): fase 3, historia unificada por lead |
+| `v0.45.0` | `71faa34` | feat(leads): fase 4, dedup real con retomar o crear igual |
+| `v0.46.0` | `567b08c` | feat(leads): fase 5, orden por mejor match |
+| `v0.46.1` | `938d185` | fix(audit): revision total — CSRF webhook, IDOR, dedup carrera, rate limits, XSS, i18n parity |
+| `v0.47.0` | `1a5f3f7` | feat(sla): fase 0, instrumentacion de primer contacto |
+| `v0.47.1` | `aac8dc0` | feat(sla): fase 1, endpoint y kpi de cumplimiento |
+| `v0.47.2` | `02aadd1` | feat(sla): fase 2, panel de cumplimiento en admin |
+| `v0.47.3` | `268c1cb` | fix(sla): separar pendientes, incumplidos y sin asignar en el kpi |
+| `v0.48.0` | `0706197` | feat(sla): fase 3, compromiso de respuesta comunicado al cliente |
 
 > **Nota:** `v0.11.4` y `v0.25.0`–`v0.25.4` no tienen commit asociado en `main` (huecos de numeración histórica). `v0.11.3`/`v0.11.4` apuntaban originalmente a la rama `arreglo-version-antigua`; `v0.11.4` fue eliminado y `v0.11.3` re-apuntado al merge de `main`.
 

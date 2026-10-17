@@ -6,6 +6,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ## [Unreleased]
 
+## [v0.48.0] — 2026-10-17 — SLA: compromiso de respuesta al cliente
+
 ### Añadido (Fase 3 — Compromiso de respuesta comunicado al cliente)
 - **`services/sla.py`**: `get_response_commitment()` (mediana de horas hábiles
   hasta el primer contacto en 90 días) con decisión pura `_commitment_from()`:
@@ -28,6 +30,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
   contactos se une a `leads` y filtra por ventana (además baja la carga al no
   traer contactos fuera de rango).
 
+## [v0.47.3] — 2026-10-17 — SLA: KPI de pendientes vs incumplidos
+
 ### Arreglado (Fase 2.1 — KPI de SLA: pendientes vs incumplidos)
 - **`compute_sla_kpis()`** ahora clasifica cada lead de la ventana en
   `contacted` (con contacto), `pending` (asignado, sin contacto, **en plazo**),
@@ -42,6 +46,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
   breached por antigüedad, met/breached según `business_hours_elapsed`, y
   profesional inactivo → unassigned).
 
+## [v0.47.2] — 2026-10-17 — SLA: panel de cumplimiento en admin
+
 ### Añadido (Fase 2 — Panel SLA en el dashboard admin)
 - **Pestaña "SLA de contacto"** en `templates/admin.html` (`#panel-sla`): tarjetas de
   cumplimiento, mediana, P90, pendientes, incumplidos y sin asignar, más tablas
@@ -52,6 +58,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
   `static/js/i18n.js` (ES/EN); paridad verificada por `TestJsI18nParity`.
 - 1 test nuevo (render del panel en `/admin`).
 
+## [v0.47.1] — 2026-10-17 — SLA: KPI y endpoint de cumplimiento
+
 ### Añadido (Fase 1 — KPI de cumplimiento + endpoint admin)
 - **`compute_sla_kpis()`** (`services/sla.py`): cumplimiento (%), mediana y p90
   de horas hábiles hasta el primer contacto, con desglose por profesional y por
@@ -59,6 +67,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 - **Endpoint `GET /api/admin/sla?days=30&threshold=24`** (`routes/admin_bp.py`,
   `@admin_required`): ventana 7/30/90 (default 30), umbral configurable. 3 tests en
   `TestAdminSla` (auth, shape del JSON, fallback de `days` inválido).
+
+## [v0.47.0] — 2026-10-17 — SLA: instrumentación de primer contacto
 
 ### Añadido (Fase 0 — SLA de primer contacto: instrumentación)
 - **Tabla `lead_first_contact`** (`db_schema.py` + migración v7): PK `lead_id`
@@ -74,6 +84,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
   registra la primera señal histórica por lead desde `lead_tracking.contacted_at`
   y `events`. Leads sin señal quedan `unassigned` y no sesgan el KPI.
 - 17 tests en `tests/test_sla.py` (horas hábiles, marcaje idempotente, backfill).
+
+## [v0.46.1] — 2026-10-17 — Revisión total de sistema
 
 ### Arreglado (Revisión total de sistema)
 - **Webhook WhatsApp exento de CSRF real** (`factory.py`): `WTF_CSRF_EXEMPT_LIST`
@@ -106,6 +118,8 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
   `admin.loading`, `dashboard.call_clicks` (con `{count}`), `error.rate_limited`;
   español hardcoded en `admin.html`/`profile.html` movido a keys; gate de
   paridad `TestJsI18nParity` valida que toda key usada en JS exista en `i18n.js`.
+
+## [v0.46.0] — 2026-10-16 — Priorización por match
 
 ### Añadido (Fase 5 — Priorización por match)
 - **`sort=match` en `GET /api/leads`** (`routes/professional/leads.py`): puntúa con
