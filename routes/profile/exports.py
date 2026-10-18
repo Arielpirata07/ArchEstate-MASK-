@@ -159,10 +159,15 @@ def profile_export_history_xlsx():
             ws_leads.column_dimensions[get_column_letter(i)].width = w
         ws_leads.auto_filter.ref = f'A1:J{len(leads) + 1}'
         for row_idx, lead in enumerate(leads, 2):
+            # timestamp/seen_at/contacted_at se guardan en UTC: el XLSX es
+            # presentación, va en hora Argentina (mismo formato dd/mm/yyyy que
+            # el resto de los exports del profesional).
             vals = [
                 lead['id'], lead['type'], lead['property_type'], lead['zone'],
                 lead.get('province', ''), lead['budget'], lead['currency'],
-                lead.get('timestamp', ''), lead.get('seen_at', ''), lead.get('contacted_at', ''),
+                utils.convert_to_argentina_time(lead.get('timestamp', '')),
+                utils.convert_to_argentina_time(lead.get('seen_at', '')),
+                utils.convert_to_argentina_time(lead.get('contacted_at', '')),
             ]
             for col, val in enumerate(vals, 1):
                 cell = ws_leads.cell(row=row_idx, column=col, value=val)

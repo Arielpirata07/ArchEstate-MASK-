@@ -87,7 +87,30 @@ def validate_mime_type(file_stream, filename):
     return False, None, f"El contenido del archivo no corresponde a un {ext.upper()}"
 
 
-def convert_to_argentina_time(timestamp_str):
+def utc_now():
+    '''Naive datetime en UTC: convención de storage de todas las marcas.
+
+    Todo timestamp que se guarda en DB va en UTC naive: SQLite escribe
+    CURRENT_TIMESTAMP en UTC, las ventanas SQL comparan con datetime('now')
+    (UTC) y el display convierte a hora local con convert_to_argentina_time.
+    datetime.now() (hora local del servidor) desfasaba esas comparaciones
+    según el host: en producción (UTC) vs desarrollo (ART).
+    '''
+    return datetime.now(pytz.UTC).replace(tzinfo=None)
+
+
+def utc_now_str(fmt='%Y-%m-%d %H:%M:%S'):
+    '''String de utc_now() en el formato de storage de la DB.'''
+    return utc_now().strftime(fmt)
+
+
+def convert_to_argentina_time(timestamp_str, fmt='%d/%m/%Y %H:%M:%S'):
+    '''Convierte un timestamp UTC naive (storage) a hora de Argentina.
+
+    fmt por defecto es el formato de presentación dd/mm/yyyy; los consumidores
+    que necesiten el formato crudo yyyy-mm-dd (p. ej. parseos en JS que tratan
+    el string como muro horario local) pasan fmt='%Y-%m-%d %H:%M:%S'.
+    '''
     if not timestamp_str:
         return timestamp_str
     try:
@@ -96,7 +119,7 @@ def convert_to_argentina_time(timestamp_str):
             utc_time = pytz.UTC.localize(utc_time)
         argentina_tz = pytz.timezone('America/Argentina/Buenos_Aires')
         argentina_time = utc_time.astimezone(argentina_tz)
-        return argentina_time.strftime('%d/%m/%Y %H:%M:%S')
+        return argentina_time.strftime(fmt)
     except Exception:
         logger.exception('Error al convertir timestamp')
         return timestamp_str

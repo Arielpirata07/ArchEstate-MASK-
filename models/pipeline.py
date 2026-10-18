@@ -1,5 +1,7 @@
 import logging
 
+import utils
+
 from .base import get_db_connection
 
 logger = logging.getLogger(__name__)
@@ -118,8 +120,10 @@ def move_lead_stage(professional_id, lead_id, to_stage, now_str=None):
     if to_stage not in PIPELINE_STAGES:
         return None
     if now_str is None:
-        from datetime import datetime as _dt
-        now_str = _dt.now().strftime('%Y-%m-%d %H:%M:%S')
+        # UTC por convención de storage: lead_stages.updated_at,
+        # lead_stage_history.changed_at y lead_tracking.contacted_at se
+        # comparan en SQL contra datetime('now') y en Python contra utc_now().
+        now_str = utils.utc_now_str()
     conn = get_db_connection()
     try:
         result = _move_lead_stage_conn(conn, professional_id, lead_id, to_stage, now_str)
@@ -152,8 +156,7 @@ def move_lead_stage_batch(professional_id, lead_ids, to_stage, now_str=None):
     if to_stage not in PIPELINE_STAGES or not lead_ids:
         return 0
     if now_str is None:
-        from datetime import datetime as _dt
-        now_str = _dt.now().strftime('%Y-%m-%d %H:%M:%S')
+        now_str = utils.utc_now_str()  # ver nota de convención UTC en move_lead_stage
     conn = get_db_connection()
     try:
         placeholders = ','.join(['?'] * len(lead_ids))
@@ -201,7 +204,9 @@ def get_pipeline_stats(professional_id):
         ).fetchall()
         days_sum = {stage: 0.0 for stage in PIPELINE_STAGES}
         days_n = {stage: 0 for stage in PIPELINE_STAGES}
-        now = _dt.now()
+        # updated_at se guarda en UTC: restarle hora local del servidor
+        # desfasaba los días en host con offset (producción UTC vs dev ART).
+        now = utils.utc_now()
         for row in rows:
             if row['stage'] not in days_sum:
                 continue

@@ -8,12 +8,10 @@ import logging
 import os
 import re
 
-from datetime import datetime
 from io import StringIO
 
 import openpyxl
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side, numbers
-import pytz
 
 logger = logging.getLogger(__name__)
 
@@ -67,8 +65,9 @@ def toggle_lead_status(lead_id):
             return jsonify({'error': t('prof.invalid_status_type', lang)}), 400
 
         professional_id = session['user_id']
-        argentina_tz = pytz.timezone('America/Argentina/Buenos_Aires')
-        now = datetime.now(argentina_tz).strftime('%Y-%m-%d %H:%M:%S')
+        # Convención de storage en UTC (utils.utc_now_str): las ventanas SQL
+        # comparan contra datetime('now') y el display convierte a ART.
+        now = utils.utc_now_str()
 
         # Flip atómico en una sola sentencia: sin ventana leer-y-escribir,
         # dos tabs del mismo profesional no pueden perderse un cambio.

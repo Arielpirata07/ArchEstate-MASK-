@@ -284,7 +284,9 @@ def profile_export_history_pdf():
         pdf.set_text_color(*midnight)
         pdf.set_font('Helvetica', '', 7)
         for idx, lead in enumerate(leads[:30], 1):
-            contact_date = lead.get('contacted_at', '')[:10] if lead.get('contacted_at') else ''
+            # contacted_at es UTC en storage: convertir antes de cortar la
+            # fecha, si no el corte [0:10] a veces daba el día UTC, no el local.
+            contact_date = utils.convert_to_argentina_time(lead['contacted_at'])[:10] if lead.get('contacted_at') else ''
             budget = pdf_val(lead['budget'])
             vals = [
                 str(idx), str(lead['id']), pdf_safe(lead['type'])[:28],

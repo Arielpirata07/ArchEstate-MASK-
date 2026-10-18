@@ -19,8 +19,10 @@ from datetime import datetime, timedelta, time, timezone
 logger = logging.getLogger(__name__)
 
 # Horario hábil del SLA (lun–vie). Feriados y tz por usuario: fuera de alcance
-# (ver plan Fase 3). Se usa la tz naive del servidor, consistente con
-# lead_tracking.contacted_at y events.ts.
+# (ver plan Fase 3). La computación se canoniza en tz naive del servidor:
+# los inputs (lead_first_contact.contact_at, now) ya son de esa zona y los
+# que vienen de storage UTC (leads.timestamp, events.ts, lead_tracking) se
+# convierten con _to_server_local/_created_local.
 BUSINESS_START = time(9, 0)
 BUSINESS_END = time(18, 0)
 

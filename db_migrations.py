@@ -29,11 +29,13 @@ def _backfill_first_contact(cursor):
             'ORDER BY contacted_at ASC LIMIT 1', (lead_id,)
         ).fetchone()
         if row:
-            # lead_tracking.contacted_at NO se convierte: su zona horaria es
-            # inconsistente por escritor (tracking.py escribe ART,
-            # models/pipeline.py escribe hora local del servidor). Asumirla
-            # sería cambiar un error por otro. Ver reporte de revisión.
-            at = _parse_ts(row['contacted_at'] if isinstance(row, dict) else row[1])
+            # Convención de storage en UTC desde v0.48.5 (tracking.py escribía
+            # ART y models/pipeline.py hora local; ahora ambos escriben UTC).
+            # Filas anteriores a esa fecha: en servidores UTC (producción) la
+            # conversión es identidad y el dato histórico no cambia; en hosts
+            # con offset se asume UTC (mejor esfuerzo, la zona de escritura
+            # original no queda registrada).
+            at = _to_server_local(_parse_ts(row['contacted_at'] if isinstance(row, dict) else row[1]))
             if at:
                 best_at, best_source = at, 'stage'
 

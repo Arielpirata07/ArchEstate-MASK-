@@ -246,6 +246,22 @@ def dashboard_activity():
             ORDER BY COALESCE(lt.contacted_at, lt.seen_at) DESC LIMIT ?
         ''', (user_id, limit)).fetchall()
 
+        # Storage en UTC; dashTimeAgo() en JS parsea el string como hora local
+        # del navegador, así que el feed viaja como muro horario ART naive
+        # (misma convención que el timeline). Se normaliza ANTES del dedup para
+        # que changed_at y contacted_at (el mismo hecho, mismo valor crudo)
+        # sigan comparando iguales después de convertir.
+        def _feed_ts(ts):
+            return convert_to_argentina_time(ts, fmt='%Y-%m-%d %H:%M:%S')
+
+        moves = [dict(m) for m in moves]
+        for m in moves:
+            m['at'] = _feed_ts(m['at'])
+        tracked = [dict(r) for r in tracked]
+        for r in tracked:
+            r['seen_at'] = _feed_ts(r['seen_at'])
+            r['contacted_at'] = _feed_ts(r['contacted_at'])
+
         events = []
         for m in moves:
             events.append({

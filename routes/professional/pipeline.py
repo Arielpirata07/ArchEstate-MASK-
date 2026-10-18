@@ -134,7 +134,9 @@ def pipeline_leads():
         rows = conn.execute(query, params).fetchall()
 
         from datetime import datetime as _dt
-        now = _dt.now()
+        # stage_updated_at se guarda en UTC (ver models/pipeline.py): comparar
+        # contra hora local del servidor desfasaba days_in_stage por el offset.
+        now = utils.utc_now()
         leads_list = []
         for row in rows:
             lead_dict = dict(row)
