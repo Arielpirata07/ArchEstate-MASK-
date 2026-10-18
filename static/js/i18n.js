@@ -238,6 +238,8 @@ window.I18N = {
 
         // === LEADS ===
         'leads.searching': 'Buscando leads...',
+        'pro.sla_reminder_text': 'Tenés {count} solicitudes asignadas sin responder',
+        'pro.sla_reminder_breached': '{count} vencidas',
         'leads.no_results': 'Sin resultados para estos filtros',
         'leads.empty_my_leads': 'Estás viendo solo tus leads (tu zona/cobertura). Ninguno coincide.',
         'leads.show_all': 'Ver todas las solicitudes',
@@ -882,6 +884,8 @@ window.I18N = {
 
         // === LEADS ===
         'leads.searching': 'Searching leads...',
+        'pro.sla_reminder_text': 'You have {count} assigned requests awaiting a response',
+        'pro.sla_reminder_breached': '{count} overdue',
         'leads.no_results': 'No results for these filters',
         'leads.empty_my_leads': 'You are viewing only your leads (your zone/coverage). None match.',
         'leads.show_all': 'View all requests',

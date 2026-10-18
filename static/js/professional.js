@@ -579,6 +579,7 @@ async function loadLeads() {
             renderLeads(data.leads);
             window.__kpiAggregates = { total: data.kpi_total, unseen: data.kpi_unseen, contacted: data.kpi_contacted };
             renderLeadKpis(data.leads, window.__kpiAggregates);
+            renderSlaReminder(data.sla_reminder);
             document.getElementById('leadsCount').textContent = data.total;
             renderPagination(data);
             renderActiveTags();
@@ -599,6 +600,44 @@ async function loadLeads() {
 function goToPage(page) {
     currentFilters.page = page;
     loadLeads();
+}
+
+// ---- Recordatorio suave de SLA (Fase 3) ----
+function renderSlaReminder(reminder) {
+    const el = document.getElementById('slaReminder');
+    if (!el) return;
+    const total = (reminder && reminder.total) || 0;
+    var dismissed = false;
+    try { dismissed = sessionStorage.getItem('slaReminderDismissed') === '1'; } catch (e) {}
+    if (dismissed || total <= 0) {
+        el.classList.add('hidden');
+        el.classList.remove('flex');
+        return;
+    }
+    const textEl = document.getElementById('slaReminderText');
+    if (textEl) {
+        let msg = t('pro.sla_reminder_text', { count: total });
+        if (reminder.breached > 0) {
+            msg += ' · ' + t('pro.sla_reminder_breached', { count: reminder.breached });
+        }
+        textEl.textContent = msg;
+    }
+    el.classList.remove('hidden');
+    el.classList.add('flex');
+}
+
+function dismissSlaReminder() {
+    try { sessionStorage.setItem('slaReminderDismissed', '1'); } catch (e) {}
+    const el = document.getElementById('slaReminder');
+    if (el) { el.classList.add('hidden'); el.classList.remove('flex'); }
+}
+
+function prioritizeSlaPending() {
+    currentFilters.sort = 'match';
+    currentFilters.page = 1;
+    const sel = document.getElementById('sortSelect');
+    if (sel) sel.value = 'match';
+    setMyLeads(true);
 }
 
 function renderPagination(data) {
@@ -2622,6 +2661,8 @@ delegateActions({
     'pro-timerange': function(el) { setTimeRange(el.dataset.range); },
     'pro-close-cal': function() { closeCalModal(); },
     'pro-myleads': function(el) { setMyLeads(el.dataset.value === 'true'); },
+    'pro-sla-pending': function() { prioritizeSlaPending(); },
+    'pro-sla-dismiss': function() { dismissSlaReminder(); },
     'pro-close-preview': function() { closeLeadPreview(); },
     'pro-toggle-activity': function() { toggleMiniActivityPanel(); },
     'pro-toggle-doc': function() { toggleDocPanel(); },

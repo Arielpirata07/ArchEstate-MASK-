@@ -11,6 +11,7 @@ from services.sla import (
     classify_sla_status,
     compute_sla_kpis,
     get_response_commitment,
+    get_professional_reminders,
     record_first_contact,
     _commitment_from,
     _parse_ts,
@@ -88,6 +89,90 @@ class TestClassifySlaStatus:
 
     def test_rank_orders_by_urgency(self):
         assert SLA_RANK['breached'] > SLA_RANK['at_risk'] > SLA_RANK['pending'] > SLA_RANK['contacted']
+
+
+class TestProfessionalReminders:
+    '''Recordatorio suave: leads asignados sin responder, en riesgo o vencidos.'''
+
+    def _mk_lead(self, db, ts, assigned_to=None):
+        cur = db.execute(
+            'INSERT INTO leads (type, zone, budget, phone, email, timestamp, assigned_to) '
+            "VALUES ('compra', 'CABA', '100000', '+5491100000000', 'rem@a.com', ?, ?)",
+            (ts, assigned_to)
+        )
+        db.commit()
+        return cur.lastrowid
+
+    def _user(self, db):
+        unique = uuid.uuid4().hex[:8]
+        cur = db.execute(
+            "INSERT INTO users (username, email, hash, role, phone, is_active) "
+            "VALUES (?, ?, 'x', 'professional', '+5491100000000', 1)",
+            (f'rem_{unique}', f'rem_{unique}@test.com')
+        )
+        db.commit()
+        return cur.lastrowid
+
+    def _contact(self, db, lead_id, pro_id, elapsed):
+        db.execute(
+            'INSERT INTO lead_first_contact (lead_id, professional_id, contact_at, source, business_hours_elapsed) '
+            "VALUES (?, ?, datetime('now'), 'stage', ?)",
+            (lead_id, pro_id, elapsed)
+        )
+        db.commit()
+
+    def test_no_assigned_leads_is_empty(self, db):
+        pro = self._user(db)
+        assert get_professional_reminders(db, pro) == {'total': 0, 'at_risk': 0, 'breached': 0}
+
+    def test_fresh_assigned_not_counted(self, db):
+        pro = self._user(db)
+        self._mk_lead(db, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), assigned_to=pro)
+        assert get_professional_reminders(db, pro)['total'] == 0
+
+    def test_breached_assigned_counted(self, db):
+        pro = self._user(db)
+        old = (datetime.now() - timedelta(days=5)).strftime('%Y-%m-%d %H:%M:%S')
+        self._mk_lead(db, old, assigned_to=pro)
+        r = get_professional_reminders(db, pro)
+        assert r['breached'] == 1
+        assert r['at_risk'] == 0
+        assert r['total'] == 1
+
+    def test_at_risk_counted(self, db):
+        pro = self._user(db)
+        created = datetime(2026, 1, 5, 9, 0)    # lunes 09:00
+        now = datetime(2026, 1, 6, 13, 0)       # martes: 9 + 4 = 13h hábiles
+        self._mk_lead(db, created.strftime('%Y-%m-%d %H:%M:%S'), assigned_to=pro)
+        r = get_professional_reminders(db, pro, now=now)
+        assert r['at_risk'] == 1
+        assert r['breached'] == 0
+        assert r['total'] == 1
+
+    def test_contacted_not_counted(self, db):
+        pro = self._user(db)
+        old = (datetime.now() - timedelta(days=5)).strftime('%Y-%m-%d %H:%M:%S')
+        lid = self._mk_lead(db, old, assigned_to=pro)
+        self._contact(db, lid, pro, 30.0)
+        assert get_professional_reminders(db, pro)['total'] == 0
+
+    def test_own_tracking_contacted_not_counted(self, db):
+        pro = self._user(db)
+        old = (datetime.now() - timedelta(days=5)).strftime('%Y-%m-%d %H:%M:%S')
+        lid = self._mk_lead(db, old, assigned_to=pro)
+        db.execute(
+            'INSERT INTO lead_tracking (lead_id, professional_id, contacted) VALUES (?, ?, 1)',
+            (lid, pro)
+        )
+        db.commit()
+        assert get_professional_reminders(db, pro)['total'] == 0
+
+    def test_other_professional_leads_ignored(self, db):
+        pro = self._user(db)
+        other = self._user(db)
+        old = (datetime.now() - timedelta(days=5)).strftime('%Y-%m-%d %H:%M:%S')
+        self._mk_lead(db, old, assigned_to=other)
+        assert get_professional_reminders(db, pro)['total'] == 0
 
 
 class TestParseTs:

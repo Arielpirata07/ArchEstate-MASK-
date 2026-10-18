@@ -562,3 +562,30 @@ class TestMatchSort:
         self._login(client, pro_user_with_zone)
         resp = client.get('/api/leads?my_leads=0')
         assert all('sla_status' not in l for l in resp.get_json()['leads'])
+
+
+class TestSlaReminder:
+    '''Recordatorio suave de SLA en el listado del profesional (Fase 3).'''
+
+    def _login(self, client, pro_user_with_zone):
+        user_id, pro_name = pro_user_with_zone
+        with client.session_transaction() as sess:
+            sess['user_id'] = user_id
+            sess['username'] = pro_name
+            sess['role'] = 'professional'
+
+    def test_leads_response_includes_sla_reminder(self, client, pro_user_with_zone):
+        self._login(client, pro_user_with_zone)
+        resp = client.get('/api/leads?my_leads=0&per_page=5&page=1')
+        assert resp.status_code == 200
+        reminder = resp.get_json().get('sla_reminder')
+        assert reminder is not None
+        assert set(reminder.keys()) == {'total', 'at_risk', 'breached'}
+        assert reminder['total'] == reminder['at_risk'] + reminder['breached']
+
+    def test_sla_reminder_ignores_pagination(self, client, pro_user_with_zone):
+        '''El recordatorio cuenta el conjunto asignado, no la página visible.'''
+        self._login(client, pro_user_with_zone)
+        p1 = client.get('/api/leads?my_leads=0&per_page=5&page=1').get_json()['sla_reminder']
+        p2 = client.get('/api/leads?my_leads=0&per_page=5&page=2').get_json()['sla_reminder']
+        assert p1 == p2

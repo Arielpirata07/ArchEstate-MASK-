@@ -86,6 +86,41 @@ def classify_sla_status(created, is_contacted, now=None, threshold_hours=DEFAULT
     return 'pending'
 
 
+def get_professional_reminders(conn, professional_id, now=None,
+                               threshold_hours=DEFAULT_THRESHOLD_HOURS):
+    '''Recordatorio suave (Fase 3): leads asignados al profesional, sin primer
+    contacto, que están en riesgo o ya vencidos.
+
+    Se calcula al momento (sin scheduler ni escrituras). Se considera "ya
+    contactado" tanto el primer contacto global (`lead_first_contact`) como el
+    `tracking.contacted` del propio profesional. Devuelve solo conteos: la UI
+    decide cómo mostrarlos.
+    '''
+    now = now or datetime.now()
+    contacted = {
+        r['lead_id'] for r in conn.execute('SELECT lead_id FROM lead_first_contact').fetchall()
+    }
+    contacted |= {
+        r['lead_id'] for r in conn.execute(
+            'SELECT lead_id FROM lead_tracking WHERE professional_id = ? AND contacted = 1',
+            (professional_id,)).fetchall()
+    }
+
+    at_risk = breached = 0
+    for r in conn.execute('SELECT id, timestamp FROM leads WHERE assigned_to = ?',
+                          (professional_id,)).fetchall():
+        if r['id'] in contacted:
+            continue
+        status = classify_sla_status(_parse_ts(r['timestamp']), False, now=now,
+                                     threshold_hours=threshold_hours)
+        if status == 'breached':
+            breached += 1
+        elif status == 'at_risk':
+            at_risk += 1
+
+    return {'total': at_risk + breached, 'at_risk': at_risk, 'breached': breached}
+
+
 def _parse_ts(value):
     '''Parsea un timestamp de DB (str o datetime) a datetime. Devuelve None si es inválido.'''
     if value is None:

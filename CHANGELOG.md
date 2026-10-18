@@ -6,6 +6,28 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ## [Unreleased]
 
+## [v0.48.3] — 2026-10-17 — Recordatorios suaves de SLA
+
+### Añadido (Fase 3 — Recordatorios)
+- **Recordatorio suave en el panel del profesional** (`templates/professional.html`,
+  `static/js/professional.js`): tarjeta discreta debajo de los KPIs — "Tenés N
+  solicitudes asignadas sin responder (· M vencidas)" — con un botón
+  **Priorizar** que activa "Mejor match" (donde el SLA ya ordena) y un
+  descartar por sesión. Se oculta sola cuando no hay nada pendiente.
+- **`services/sla.py`**: `get_professional_reminders(conn, professional_id)` —
+  cuenta los leads `assigned_to` al profesional, sin primer contacto, en estado
+  `at_risk`/`breached`. Se calcula al momento: **sin scheduler, sin emails, sin
+  escrituras**, coherente con el resto del SLA. Cuenta como contactado el primer
+  contacto global o el `tracking.contacted` del propio profesional.
+- `GET /api/leads` expone `sla_reminder` (`total`/`at_risk`/`breached`) sobre el
+  conjunto asignado, independiente de la página y de los filtros.
+- i18n `pro.sla_reminder_text` / `_breached` / `_action` / `_dismiss` (ES/EN).
+- 7 tests (`TestProfessionalReminders`) + 2 de ruta (`TestSlaReminder`).
+
+### Nota
+- Se levanta **explícitamente** la restricción de "cero fricción" para esta
+  feature; el recordatorio es in-app y silencioso (sin push, email ni ranking).
+
 ## [v0.48.2] — 2026-10-17 — SLA en el orden `sort=match`
 
 ### Añadido (Fase 3 — Priorización por SLA)

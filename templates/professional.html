@@ -187,6 +187,17 @@ window.__FORM_OPTIONS = {{ {
             <p id="kpiLeadsTotal" class="text-2xl font-serif text-midnight mt-1">—</p>
         </div>
     </div>
+    <!-- Recordatorio suave de SLA (Fase 3): solo si hay solicitudes asignadas sin responder -->
+    <div id="slaReminder" class="hidden items-start gap-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+        <i data-lucide="clock" class="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5"></i>
+        <div class="flex-1 min-w-0">
+            <p id="slaReminderText" class="text-[13px] text-midnight/80"></p>
+        </div>
+        <button data-action="pro-sla-pending" class="flex-shrink-0 text-[10px] font-bold uppercase tracking-widest text-amber-700 hover:text-amber-900 transition-colors whitespace-nowrap">{{ t('pro.sla_reminder_action') }}</button>
+        <button data-action="pro-sla-dismiss" class="flex-shrink-0 text-midnight/30 hover:text-midnight/60 transition-colors" aria-label="{{ t('pro.sla_reminder_dismiss') }}">
+            <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+    </div>
     <!-- Panel de filtros -->
     <div class="bg-white rounded-lg shadow-lg border border-midnight/5 overflow-hidden">
 

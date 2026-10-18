@@ -30,7 +30,7 @@ from i18n import t, get_language
 from services.database import date_format_sql, now_sql
 from services.export_helpers import pdf_safe, pdf_val, _style_header_row, _apply_data_border
 from services.matching import lead_matches_coverage, score_lead_for_coverage
-from services.sla import SLA_RANK, _parse_ts, classify_sla_status
+from services.sla import SLA_RANK, _parse_ts, classify_sla_status, get_professional_reminders
 from utils import allowed_file, convert_to_argentina_time
 
 
@@ -292,6 +292,10 @@ def get_leads_api():
 
         total_pages = max(1, (total + per_page - 1) // per_page)
 
+        # Recordatorio suave de SLA (Fase 3): solicitudes asignadas a este
+        # profesional, sin primer contacto, en riesgo o vencidas. Solo conteos.
+        sla_reminder = get_professional_reminders(conn, session['user_id'])
+
         return jsonify({
             "success": True,
             "leads": leads_list,
@@ -301,7 +305,8 @@ def get_leads_api():
             "total_pages": total_pages,
             "kpi_total": kpi_total,
             "kpi_unseen": kpi_unseen,
-            "kpi_contacted": kpi_contacted
+            "kpi_contacted": kpi_contacted,
+            "sla_reminder": sla_reminder
         })
     except Exception as e:
         logger.exception('Error en get_leads_api')
