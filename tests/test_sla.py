@@ -1,6 +1,6 @@
 """Fase 0 SLA — tests del helper de primer contacto y del calculo de horas habiles."""
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -15,6 +15,8 @@ from services.sla import (
     record_first_contact,
     _commitment_from,
     _parse_ts,
+    _created_local,
+    _to_server_local,
 )
 
 
@@ -376,3 +378,47 @@ class TestGetResponseCommitment:
         assert isinstance(c['available'], bool)
         assert isinstance(c['hours'], int)
         assert isinstance(c['sample'], int)
+
+
+class TestCreatedTimestampUtcNormalization:
+    '''leads.timestamp y events.ts se guardan en UTC (SQLite CURRENT_TIMESTAMP),
+    pero las horas habiles del SLA se calculan en la tz del servidor. Sin esta
+    normalizacion el resultado quedaba desfasado por el offset (-3 h en
+    Argentina; en un servidor UTC no se notaba).'''
+
+    def test_none_returns_none(self):
+        assert _to_server_local(None) is None
+
+    def test_aware_utc_converted_to_server_local(self):
+        aware = datetime(2026, 1, 5, 12, 0, tzinfo=timezone.utc)
+        local = _to_server_local(aware)
+        assert local.tzinfo is None
+        assert local == aware.astimezone().replace(tzinfo=None)
+
+    def test_naive_is_treated_as_utc(self):
+        naive = datetime(2026, 1, 5, 12, 0)
+        expected = naive.replace(tzinfo=timezone.utc).astimezone().replace(tzinfo=None)
+        assert _to_server_local(naive) == expected
+
+    def test_created_local_matches_server_now(self):
+        # Lo que SQLite escribiria ahora (UTC) debe volver a "ahora" local:
+        # sin la conversion quedaria corrido por el offset del servidor.
+        utc_now = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+        delta = abs((datetime.now() - _created_local(utc_now)).total_seconds())
+        assert delta <= 2
+
+    def test_reminder_sees_breached_from_utc_timestamp(self, db):
+        # Jue 09:00 local = 12:00 UTC (offset -03:00). Lunes 16:00 son 25 h
+        # habiles (> 24) -> vencido. Si el timestamp UTC se leyera como hora
+        # local darian 22 h -> 'at_risk' y el assert fallaria.
+        offset = datetime.now().astimezone().utcoffset()
+        utc_created = (datetime(2026, 1, 8, 9, 0) - offset).strftime('%Y-%m-%d %H:%M:%S')
+        db.execute(
+            'INSERT INTO leads (type, zone, budget, phone, email, timestamp, assigned_to) '
+            "VALUES ('compra', 'CABA', '100000', '+5491100000000', 'a@a.com', ?, 77)",
+            (utc_created,)
+        )
+        db.commit()
+        res = get_professional_reminders(db, 77, now=datetime(2026, 1, 12, 16, 0))
+        assert res['breached'] == 1
+        assert res['at_risk'] == 0

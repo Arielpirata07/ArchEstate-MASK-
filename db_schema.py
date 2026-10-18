@@ -431,18 +431,10 @@ def create_tables(cursor):
         )
     ''')
 
-    # Un solo reporte 'pending' por profesional y lead: backstop contra
-    # doble-click / doble sesión (el check previo en la ruta no es atómico).
-    cursor.execute('''
-        CREATE UNIQUE INDEX IF NOT EXISTS idx_lead_reports_pending_once
-        ON lead_reports(lead_id, reported_by) WHERE status = 'pending'
-    ''')
-
-    # Una sola notificación de creación por profesional y lead: backstop
-    # contra doble ejecución de notify_lead_created (reintento / doble hilo).
-    cursor.execute('''
-        CREATE UNIQUE INDEX IF NOT EXISTS idx_notif_lead_created_once
-        ON notifications(user_id, lead_id) WHERE type IN ('lead_new', 'lead_assigned')
-    ''')
+    # Índices únicos idx_lead_reports_pending_once / idx_notif_lead_created_once
+    # NO se crean acá: los crea db_migrations.apply_migrations() DESPUÉS de
+    # limpiar los duplicados históricos. create_tables corre antes que
+    # apply_migrations (app_setup.init_db), así que crearlos acá haría fallar
+    # el arranque en un DB con duplicados, y el dedup nunca llegaría a correr.
 
 

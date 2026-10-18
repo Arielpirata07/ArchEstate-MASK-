@@ -87,12 +87,17 @@ def check_rate_limit(limit=10, window=60):
         def decorated_function(*args, **kwargs):
             client_ip = get_client_ip()
             current_time = time.time()
+            # Bucket por (endpoint, IP): cada ruta decorada tiene su propio
+            # limit/window. Antes la clave era solo la IP, así que tráfico de una
+            # ruta alta (p. ej. /api/submit, limit=100) llenaba el bucket compartido
+            # y disparaba 429 falsos en otra de límite bajo (OTP send-code, limit=5).
+            bucket_key = f'{request.endpoint or request.path}:{client_ip}'
 
             with _rate_lock:
                 store = _load_store()
-                requests = store.get(client_ip, [])
+                requests = store.get(bucket_key, [])
                 requests = [t for t in requests if current_time - t < window]
-                store[client_ip] = requests
+                store[bucket_key] = requests
 
                 if len(requests) >= limit:
                     _save_store(store)
@@ -113,7 +118,7 @@ def check_rate_limit(limit=10, window=60):
                         return html, status
 
                 requests.append(current_time)
-                store[client_ip] = requests
+                store[bucket_key] = requests
                 _save_store(store)
 
             return f(*args, **kwargs)

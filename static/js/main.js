@@ -46,7 +46,9 @@ function escapeHtml(str) {
     if (str === null || str === undefined) return '';
     const div = document.createElement('div');
     div.textContent = String(str);
-    return div.innerHTML;
+    // textContent -> innerHTML escapa & < > pero NO las comillas: sin esto un
+    // valor con " rompe atributos HTML entre comillas dobles (XSS por atributo).
+    return div.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 // Fuente única para todos los módulos (auth.js, admin.js, ...).
 window.escapeHtml = escapeHtml;

@@ -14,7 +14,7 @@ Diseño sin fricción: solo instrumentación. Fuera de la transacción crítica
 y hace commit propio; nunca sostiene el write-lock del request principal.
 """
 import logging
-from datetime import datetime, timedelta, time
+from datetime import datetime, timedelta, time, timezone
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +61,29 @@ def business_hours_between(start, end):
         day += timedelta(days=1)
 
     return total.total_seconds() / 3600.0
+
+
+def _to_server_local(value):
+    '''Convierte un datetime naive en UTC (formato de `leads.timestamp` y
+    `events.ts`: SQLite `CURRENT_TIMESTAMP`) a hora naive local del servidor.
+
+    Toda la matemática de horas hábiles del SLA se hace en la tz del servidor
+    (decisión de diseño: lun–vie 09:00–18:00 "server tz"), pero esos campos se
+    guardan en UTC. Sin esta conversión, `business_hours_between(created, now)`
+    mezclaría dos relojes y desfasaría el resultado por el offset del servidor
+    (-3 h en Argentina; en un servidor UTC no se notaba).
+    '''
+    if value is None:
+        return None
+    if value.tzinfo is not None:
+        return value.astimezone().replace(tzinfo=None)
+    return value.replace(tzinfo=timezone.utc).astimezone().replace(tzinfo=None)
+
+
+def _created_local(value):
+    '''`leads.timestamp` (UTC) -> naive local del servidor, listo para
+    `business_hours_between` / `classify_sla_status`.'''
+    return _to_server_local(_parse_ts(value))
 
 
 def classify_sla_status(created, is_contacted, now=None, threshold_hours=DEFAULT_THRESHOLD_HOURS):
@@ -111,7 +134,7 @@ def get_professional_reminders(conn, professional_id, now=None,
                           (professional_id,)).fetchall():
         if r['id'] in contacted:
             continue
-        status = classify_sla_status(_parse_ts(r['timestamp']), False, now=now,
+        status = classify_sla_status(_created_local(r['timestamp']), False, now=now,
                                      threshold_hours=threshold_hours)
         if status == 'breached':
             breached += 1
@@ -165,7 +188,7 @@ def record_first_contact(lead_id, professional_id, source, when=None, conn=None)
         if not lead:
             return False
 
-        created = _parse_ts(lead['timestamp']) or _parse_ts(when) or datetime.now()
+        created = _created_local(lead['timestamp']) or _parse_ts(when) or datetime.now()
         contact_at = when or datetime.now()
         elapsed = business_hours_between(created, contact_at)
 
@@ -264,7 +287,7 @@ def compute_sla_kpis(conn, days=30, threshold_hours=DEFAULT_THRESHOLD_HOURS):
         if not assigned or assigned in inactive:
             unassigned += 1
             continue
-        created = _parse_ts(lead['timestamp'])
+        created = _created_local(lead['timestamp'])
         elapsed = business_hours_between(created, now) if created else 0.0
         if elapsed <= threshold_hours:
             pending += 1

@@ -12,13 +12,13 @@ def _backfill_first_contact(cursor):
     wa_link_generated). INSERT OR IGNORE: no toca leads ya presentes ni los
     que no tienen ninguna senal (quedan 'unassigned' y no sesgan el KPI).
     """
-    from services.sla import business_hours_between, _parse_ts
+    from services.sla import business_hours_between, _parse_ts, _created_local, _to_server_local
 
     cursor.execute('SELECT id, timestamp FROM leads')
     leads = cursor.fetchall()
     for lead in leads:
         lead_id = lead['id'] if isinstance(lead, dict) else lead[0]
-        created = _parse_ts(lead['timestamp'] if isinstance(lead, dict) else lead[1])
+        created = _created_local(lead['timestamp'] if isinstance(lead, dict) else lead[1])
 
         best_at = None
         best_source = None
@@ -29,6 +29,10 @@ def _backfill_first_contact(cursor):
             'ORDER BY contacted_at ASC LIMIT 1', (lead_id,)
         ).fetchone()
         if row:
+            # lead_tracking.contacted_at NO se convierte: su zona horaria es
+            # inconsistente por escritor (tracking.py escribe ART,
+            # models/pipeline.py escribe hora local del servidor). Asumirla
+            # sería cambiar un error por otro. Ver reporte de revisión.
             at = _parse_ts(row['contacted_at'] if isinstance(row, dict) else row[1])
             if at:
                 best_at, best_source = at, 'stage'
@@ -40,7 +44,8 @@ def _backfill_first_contact(cursor):
                 'ORDER BY ts ASC LIMIT 1', (lead_id, evt)
             ).fetchone()
             if row:
-                at = _parse_ts(row[1] if not isinstance(row, dict) else row['ts'])
+                # events.ts es UTC (CURRENT_TIMESTAMP), igual que leads.timestamp.
+                at = _to_server_local(_parse_ts(row[1] if not isinstance(row, dict) else row['ts']))
                 if at and (best_at is None or at < best_at):
                     best_at, best_source = at, src
 
