@@ -6,6 +6,33 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ## [Unreleased]
 
+## [v0.48.4] — 2026-10-17 — Revisión de bugs: 4 fixes críticos
+
+### Corregido
+- **SLA: mezcla UTC / hora local** (`services/sla.py`, `routes/professional/leads.py`,
+  `db_migrations.py`): `leads.timestamp` y `events.ts` se guardan en UTC
+  (`CURRENT_TIMESTAMP` de SQLite) pero los cálculos usaban `datetime.now()` local,
+  con lo que las horas hábiles quedaban desfasadas por el offset del servidor
+  (-3 h en Argentina; invisible en un servidor UTC). `_to_server_local()` /
+  `_created_local()` normalizan a la tz del servidor en los 5 puntos de cálculo
+  (primer contacto, recordatorios, KPI de admin, `sort=match` y backfill v7).
+- **Rate limit: bucket aislado por endpoint** (`rate_limit.py`): la clave era solo
+  la IP, así que tráfico de una ruta de límite alto llenaba el bucket compartido y
+  disparaba 429 falsos en `send-code` (limit 5). Ahora la clave es `(endpoint, IP)`.
+- **`escapeHtml` no escapaba comillas** (`static/js/main.js`): escapaba `& < >` pero
+  no `"`/`'`, lo que permitía romper atributos HTML (XSS por inyección de atributo)
+  con el CSP `unsafe-inline` vigente.
+- **Índices únicos creados antes que su dedup** (`db_schema.py`, `db_migrations.py`):
+  `create_tables()` corre antes que `apply_migrations()`, y crear
+  `idx_lead_reports_pending_once` / `idx_notif_lead_created_once` antes del DELETE
+  de dedup hacía reventar el arranque con `IntegrityError` en una DB con duplicados
+  históricos — el dedup nunca llegaba a correr. Los índices ahora se crean solo en
+  `apply_migrations()`, después de la limpieza (verificado en vivo: 2 filas → 1).
+
+### Tests
+- +5 `TestCreatedTimestampUtcNormalization`, +2 `TestRateLimitBucketIsolation`,
+  +4 `escape_html.test.js` → **820 pytest / 94 coherence / 34 node**.
+
 ## [v0.48.3] — 2026-10-17 — Recordatorios suaves de SLA
 
 ### Añadido (Fase 3 — Recordatorios)
