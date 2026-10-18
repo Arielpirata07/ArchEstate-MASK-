@@ -6,6 +6,38 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ## [Unreleased]
 
+## [v0.48.5] — 2026-10-17 — Storage UTC canónico para timestamps de tracking/pipeline
+
+### Corregido
+- **Zona horaria inconsistente en `lead_tracking` / pipeline**: `tracking.py`
+  escribía `seen_at`/`contacted_at` en ART y `models/pipeline.py` en hora local
+  del servidor — el mismo campo dependía de quién lo escribiera y del host. En
+  producción (UTC) el timeline trataba los valores ART como UTC (3 h corridos)
+  y las ventanas SQL (`datetime('now')` = UTC) comparaban contra ART.
+  **Storage canónico en UTC** (`utils.utc_now()` / `utc_now_str()`), siguiendo
+  la convención de `leads.timestamp` y `events.ts`:
+  - Writers: `tracking.py` (toggle) y los `now_str` de `move_lead_stage`(_batch).
+  - Display convierte a hora Argentina: feed del dashboard como muro horario
+    ART naive (`dashTimeAgo()` en JS parsea el string como hora local del
+    navegador; la normalización se aplica antes del dedup changed↔contacted),
+    XLSX y PDF de perfil en `dd/mm/yyyy`, timeline ya convertía.
+  - `days_in_stage` y `get_pipeline_stats` restan ahora UTC a `updated_at`
+    UTC (antes: hora local − UTC, daba 0 días en hosts con offset).
+  - Ventanas SQL de 7/14/30 días quedan UTC↔UTC correctas.
+- **Backfill v7** (`db_migrations.py`): `contacted_at` se convierte con
+  `_to_server_local`. En servidores UTC (producción) la conversión es
+  identidad y el histórico no cambia; filas legacy escritas en ART/local en
+  hosts con offset quedan como mejor esfuerzo (la zona original no queda
+  registrada). Migración v7 aplicada y verificada en la DB de desarrollo.
+- `convert_to_argentina_time()` acepta `fmt` para consumidores que necesitan
+  el formato crudo (`yyyy-mm-dd HH:MM:SS`).
+
+### Tests
+- +7 `tests/test_utc_storage.py` (writers, feed ART, dedup post-conversión,
+  `days_in_stage`, backfill, export XLSX) → **827 pytest / 94 coherence /
+  34 node**. Discriminados: con el código previo fallan 6/7 (delta exacto de
+  3 h, `days_in_stage` 4≠5, backfill 19:00≠16:00, valores crudos en crudo).
+
 ## [v0.48.4] — 2026-10-17 — Revisión de bugs: 4 fixes críticos
 
 ### Corregido
