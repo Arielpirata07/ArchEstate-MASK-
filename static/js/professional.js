@@ -702,17 +702,17 @@ function renderLeads(leads) {
         const propLabel = PROP_LABELS[propType.toLowerCase()] || propType;
         const propBadge = propType
             ? `<span class="inline-flex items-center gap-1 px-2 py-0.5 bg-paper-dark text-midnight/60 rounded text-[9px] font-bold uppercase tracking-widest">
-                   <i data-lucide="${propIcon}" class="w-2.5 h-2.5"></i>${propLabel}
+                   <i data-lucide="${propIcon}" class="w-2.5 h-2.5"></i>${escapeHtml(propLabel)}
                </span>`
             : '<span class="text-midnight/25 text-xs italic">—</span>';
 
         // Detalles técnicos compactos
         const specs = [];
-        if (lead.ambientes)          specs.push(`${lead.ambientes} ${t('spec.rooms')}`);
-        if (lead.bedrooms)           specs.push(`${lead.bedrooms} ${t('spec.bedrooms')}`);
-        if (lead.bathrooms)          specs.push(`${lead.bathrooms} ${t('spec.bathrooms')}`);
-        if (lead.usable_m2 > 0)      specs.push(`${lead.usable_m2} m²`);
-        if (lead.land_area > 0)      specs.push(`${lead.land_area} ${t('spec.land_m2')}`);
+        if (lead.ambientes)          specs.push(`${escapeHtml(String(lead.ambientes))} ${t('spec.rooms')}`);
+        if (lead.bedrooms)           specs.push(`${escapeHtml(String(lead.bedrooms))} ${t('spec.bedrooms')}`);
+        if (lead.bathrooms)          specs.push(`${escapeHtml(String(lead.bathrooms))} ${t('spec.bathrooms')}`);
+        if (lead.usable_m2 > 0)      specs.push(`${escapeHtml(String(lead.usable_m2))} m²`);
+        if (lead.land_area > 0)      specs.push(`${escapeHtml(String(lead.land_area))} ${t('spec.land_m2')}`);
 
         const specLine = specs.length
             ? `<div class="text-[9px] text-midnight/60 font-bold uppercase tracking-widest mt-0.5">${specs.join(' · ')}</div>`
@@ -768,7 +768,7 @@ function renderLeads(leads) {
                 <td class="px-4 py-3">
                     <div class="budget-display">
                         <span class="budget-currency-tag">${sym}</span>
-                        <span class="budget-amount" title="${escapeHtml(lead.budget)}">${escapeHtml(formatBudget(lead.budget))}</span>
+                        <span class="budget-amount" title="${escapeHtml(String(lead.budget || ''))}">${escapeHtml(formatBudget(lead.budget))}</span>
                     </div>
                     ${specLine}
                     ${extrasLine}
@@ -1069,10 +1069,10 @@ function openLeadPreview(leadId) {
     var propLabel = PROP_LABELS[propType] || lead.property_type || '—';
 
     var specs = [];
-    if (lead.ambientes) specs.push(lead.ambientes + ' ' + t('spec.rooms'));
-    if (lead.bedrooms) specs.push(lead.bedrooms + ' ' + t('spec.bedrooms'));
-    if (lead.bathrooms) specs.push(lead.bathrooms + ' ' + t('spec.bathrooms'));
-    if (lead.usable_m2 > 0) specs.push(lead.usable_m2 + ' m\u00b2');
+    if (lead.ambientes) specs.push(escapeHtml(String(lead.ambientes)) + ' ' + t('spec.rooms'));
+    if (lead.bedrooms) specs.push(escapeHtml(String(lead.bedrooms)) + ' ' + t('spec.bedrooms'));
+    if (lead.bathrooms) specs.push(escapeHtml(String(lead.bathrooms)) + ' ' + t('spec.bathrooms'));
+    if (lead.usable_m2 > 0) specs.push(escapeHtml(String(lead.usable_m2)) + ' m\u00b2');
 
     var tracking = lead.tracking || { seen: false, contacted: false };
 
@@ -1080,10 +1080,10 @@ function openLeadPreview(leadId) {
 
     // Info grid
     html += '<div class="grid grid-cols-2 gap-3">';
-    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/60 mb-1">' + t('preview.operation') + '</p><p class="text-[13px] font-medium text-midnight">' + escapeHtml(lead.type) + '</p></div>';
-    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/60 mb-1">' + t('preview.housing') + '</p><p class="text-[13px] font-medium text-midnight">' + propLabel + '</p></div>';
-    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/60 mb-1">' + t('preview.zone') + '</p><p class="text-[13px] font-medium text-midnight">' + escapeHtml(lead.zone) + '</p></div>';
-    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/60 mb-1">' + t('preview.budget') + '</p><p class="text-[13px] font-medium text-midnight">' + sym + ' ' + escapeHtml(lead.budget) + '</p></div>';
+    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/60 mb-1">' + t('preview.operation') + '</p><p class="text-[13px] font-medium text-midnight">' + escapeHtml(lead.type || '') + '</p></div>';
+    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/60 mb-1">' + t('preview.housing') + '</p><p class="text-[13px] font-medium text-midnight">' + escapeHtml(propLabel || '') + '</p></div>';
+    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/60 mb-1">' + t('preview.zone') + '</p><p class="text-[13px] font-medium text-midnight">' + escapeHtml(lead.zone || '') + '</p></div>';
+    html += '<div class="bg-paper-dark rounded-lg p-3"><p class="text-[8px] uppercase tracking-widest font-bold text-midnight/60 mb-1">' + t('preview.budget') + '</p><p class="text-[13px] font-medium text-midnight">' + escapeHtml(sym) + ' ' + escapeHtml(lead.budget || '') + '</p></div>';
     html += '</div>';
 
     // Specs
@@ -1979,18 +1979,18 @@ async function loadDashboard() {
     if (!panel) return;
     var ml = dashMyLeadsParam();
     try {
-        var results = await Promise.all([
-            fetch('/api/dashboard/summary?my_leads=' + ml).then(function(r) { return r.json(); }),
-            fetch('/api/dashboard/trends?days=30&my_leads=' + ml).then(function(r) { return r.json(); }),
-            fetch('/api/dashboard/pipeline?my_leads=' + ml).then(function(r) { return r.json(); }),
-            fetch('/api/dashboard/top-metrics?my_leads=' + ml).then(function(r) { return r.json(); }),
-            fetch('/api/dashboard/activity?limit=20').then(function(r) { return r.json(); })
+        var results = await Promise.allSettled([
+            fetch('/api/dashboard/summary?my_leads=' + ml).then(function(r) { if (!r.ok) throw new Error('bad response'); return r.json(); }),
+            fetch('/api/dashboard/trends?days=30&my_leads=' + ml).then(function(r) { if (!r.ok) throw new Error('bad response'); return r.json(); }),
+            fetch('/api/dashboard/pipeline?my_leads=' + ml).then(function(r) { if (!r.ok) throw new Error('bad response'); return r.json(); }),
+            fetch('/api/dashboard/top-metrics?my_leads=' + ml).then(function(r) { if (!r.ok) throw new Error('bad response'); return r.json(); }),
+            fetch('/api/dashboard/activity?limit=20').then(function(r) { if (!r.ok) throw new Error('bad response'); return r.json(); })
         ]);
-        if (results[0].success) renderDashSummary(results[0].summary);
-        if (results[1].success) renderDashTrend(results[1].trends);
-        if (results[2].success) renderDashFunnel(results[2].funnel);
-        if (results[3].success) renderDashTops(results[3]);
-        if (results[4].success) renderDashActivity(results[4].activity);
+        if (results[0].status === 'fulfilled' && results[0].value && results[0].value.success) renderDashSummary(results[0].value.summary);
+        if (results[1].status === 'fulfilled' && results[1].value && results[1].value.success) renderDashTrend(results[1].value.trends);
+        if (results[2].status === 'fulfilled' && results[2].value && results[2].value.success) renderDashFunnel(results[2].value.funnel);
+        if (results[3].status === 'fulfilled' && results[3].value && results[3].value.success) renderDashTops(results[3].value);
+        if (results[4].status === 'fulfilled' && results[4].value && results[4].value.success) renderDashActivity(results[4].value.activity);
     } catch (err) {
         if (typeof showToast === 'function') showToast(t('error.connection'), 'error');
     }

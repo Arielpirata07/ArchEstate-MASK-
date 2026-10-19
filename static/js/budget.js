@@ -196,7 +196,7 @@ function initBudgetPopup() {
                 max: typeof result.max === 'number' ? result.max : budgetData.max,
                 ranges: result.ranges || []
             };
-            currencySelect.innerHTML = (result.currency_options || ['ARG','USD','EUR']).map(code => `<option value="${code}">${code === 'USD' ? t('currency.usd_name') : code === 'EUR' ? t('currency.eur_name') : t('currency.arg_name')}</option>`).join('');
+            currencySelect.innerHTML = (result.currency_options || ['ARG','USD','EUR']).map(code => `<option value="${escapeHtml(code)}">${code === 'USD' ? t('currency.usd_name') : code === 'EUR' ? t('currency.eur_name') : t('currency.arg_name')}</option>`).join('');
             resetBudget();
         } catch (error) {
             console.error('No se pudieron cargar las estadisticas de presupuesto:', error);

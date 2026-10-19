@@ -293,7 +293,7 @@ function selectPropertyType(propertyType) {
     ];
 
     const options = propertyType === 'casa' ? houseOptions : departmentOptions;
-    operationSelect.innerHTML = options.map(opt => `<option value="${opt.value}">${opt.text}</option>`).join('');
+    operationSelect.innerHTML = options.map(opt => `<option value="${escapeHtml(opt.value)}">${escapeHtml(opt.text)}</option>`).join('');
 
     departmentDetails.classList.toggle('hidden', propertyType !== 'departamento');
     houseDetails.classList.toggle('hidden', propertyType !== 'casa');

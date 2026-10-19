@@ -6,6 +6,44 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ## [Unreleased]
 
+## [v0.48.6] — 2026-10-19 — Endurecimiento XSS en render de leads y paridad i18n
+
+### Corregido
+- **XSS persistente en el render JS de leads** (`static/js/admin.js`,
+  `static/js/professional.js`): `renderLeadDetail`, `renderLeads` y
+  `openLeadPreview` interpolaban valores provenientes de la API en `innerHTML`
+  sin escapar. El servidor no sanitiza centralmente estos campos
+  (`client_bp.py` toma `data.get(...)` tal cual; `utils.safe_text` solo
+  reemplaza símbolos de moneda), así que un lead con HTML se ejecutaba en el
+  panel de admin/profesional. Ahora se escapa todo valor de texto/numérico:
+  `budget`, `timestamp`, `bedrooms`/`bathrooms`/`total_area`/`land_area`/
+  `built_area`/`usable_m2`, `propLabel`, `specs`, `type`, `zone`, `province`,
+  `architectural_style`, `ambientes`, `parking`, `orientation`,
+  `property_condition`, `property_age`, `email`, `phone` y los `typeDetails`.
+  En admin también se escapan `eventoLabel`/`fecha` del panel de actividad,
+  `created_at` del log de notificaciones y `cc` de los filtros por país.
+- **XSS atributivo en `<option>`** (`budget.js`, `forms.js`): el `value="..."`
+  del código de moneda/operación se armaba con el texto crudo del servidor;
+  ahora pasa por `escapeHtml`.
+- **Badge de verificación de teléfono** (`profile.js`): `icon` y `label` se
+  concatenaban sin escapar (aunque hoy son constantes).
+- **Carga del dashboard batch sin defensa ante errores** (`professional.js`):
+  `Promise.all` sobre 5 endpoints mapeaba `r.json()` sin verificar `response.ok`,
+  de modo que un 4xx/5xx dejaba campos en `undefined` y rompía la promesa
+  completa. Ahora usa `Promise.allSettled` + `if (!r.ok) throw` por petición y
+  consume cada resultado por separado.
+- **i18n: keys usadas pero ausentes de `translations.py`**: la UI mostraba la key
+  cruda. Se añadieron `admin.active` y `pro.operation_type` (usadas en
+  `templates/admin.html` y `templates/professional.html`) y
+  `prof.export_leads_sheet` (usada en `routes/professional/exports.py`), ES/EN.
+
+### Tests
+- +1 `TestPythonTemplateI18nParity` en `tests/test_i18n.py`: escanea los `t()`
+  de templates, `routes/`, `services/` y raíz y falla si alguna key no existe en
+  `translations.py` (la paridad ES/EN del diccionario no cubría este caso).
+  Discriminado: al remover `admin.active` el test falla nombrando la key.
+  → **828 pytest / 94 coherence / 34 node**.
+
 ## [v0.48.5] — 2026-10-17 — Storage UTC canónico para timestamps de tracking/pipeline
 
 ### Corregido

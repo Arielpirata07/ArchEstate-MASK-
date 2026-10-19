@@ -218,6 +218,40 @@ class TestJsI18nParity:
         assert not missing, f'keys usadas en JS sin entrada en i18n.js:\n' + '\n'.join(missing)
 
 
+class TestPythonTemplateI18nParity:
+    '''Toda key usada vía t() en templates y en código Python (templates, routes,
+    services y raíz) debe existir en translations.py.
+
+    Regresión v0.48.6: había keys usadas pero ausentes del diccionario
+    (admin.active, pro.operation_type, prof.export_leads_sheet), por lo que la
+    UI mostraba la key cruda. Sin este test, el JSON de paridad ES/EN pasa igual.
+
+    Las keys dinámicas por concatenación de sufijo se validan por prefijo.
+    '''
+
+    def _collect(self):
+        import pathlib
+        import re
+        root = pathlib.Path(__file__).resolve().parent.parent
+        pattern = re.compile(r'''\bt\(\s*['"]([\w.]+)['"]''')
+        used = set()
+        for subdir, glob in (('templates', '*.html'), ('routes', '*.py'),
+                             ('services', '*.py'), ('.', '*.py')):
+            for path in sorted((root / subdir).rglob(glob)):
+                used |= set(pattern.findall(path.read_text(encoding='utf-8')))
+        return used, set(TRANSLATIONS['es'].keys())
+
+    def test_template_and_python_keys_exist_in_translations(self):
+        used, defined = self._collect()
+        assert used, 'no se detectaron keys t() en templates/Python'
+        missing = sorted(
+            u for u in used
+            if u not in defined and not any(d.startswith(u) for d in defined)
+        )
+        assert not missing, ('keys usadas sin entrada en translations.py:\n'
+                             + '\n'.join(missing))
+
+
 class TestFase4Keys:
     def test_new_keys_present_both_langs(self):
         for key in ('otp.digit_label', 'user.budget_min_aria', 'admin.export_png',

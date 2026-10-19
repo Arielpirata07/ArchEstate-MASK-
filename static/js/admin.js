@@ -1202,15 +1202,15 @@ function renderReports(reports) {
 
         return `
             <tr class="border-b border-midnight/[0.03] hover:bg-paper transition-colors ${r.status === 'deleted' ? 'opacity-60' : ''}">
-                <td class="px-4 py-3 font-mono text-[11px] text-midnight/60">#${r.lead_id}</td>
+                <td class="px-4 py-3 font-mono text-[11px] text-midnight/60">#${escapeHtml(String(r.lead_id || ''))}</td>
                 <td class="px-4 py-3 text-[13px] text-midnight/50">${r.lead_type ? escapeHtml(r.lead_type) : '<span class="text-midnight/30">' + t('reports.lead_deleted') + '</span>'}</td>
                 <td class="px-4 py-3 text-[13px] text-midnight/50">${r.lead_property_type ? escapeHtml(r.lead_property_type) : '—'}</td>
                 <td class="px-4 py-3 text-[13px] text-midnight/50">${r.lead_zone ? escapeHtml(r.lead_zone) : '—'}</td>
-                <td class="px-4 py-3 text-[13px]">${r.lead_budget ? '<span class="text-[9px] font-bold uppercase tracking-widest text-midnight/50">' + (r.lead_currency === 'USD' ? 'US$' : r.lead_currency === 'EUR' ? '€' : '$') + '</span> ' + escapeHtml(r.lead_budget) : '—'}</td>
+                <td class="px-4 py-3 text-[13px]">${r.lead_budget ? '<span class="text-[9px] font-bold uppercase tracking-widest text-midnight/50">' + escapeHtml(r.lead_currency === 'USD' ? 'US$' : r.lead_currency === 'EUR' ? '€' : '$') + '</span> ' + escapeHtml(String(r.lead_budget)) : '—'}</td>
                 <td class="px-4 py-3 font-mono text-[11px] text-rose-600">${r.lead_phone ? escapeHtml(r.lead_phone) : '—'}</td>
-                <td class="px-4 py-3 text-[13px] text-midnight/50">${escapeHtml(r.reported_by_name)}</td>
+                <td class="px-4 py-3 text-[13px] text-midnight/50">${escapeHtml(r.reported_by_name || '')}</td>
                 <td class="px-4 py-3">${statusBadge}</td>
-                <td class="px-4 py-3 text-[13px] text-midnight/50">${r.created_at}</td>
+                <td class="px-4 py-3 text-[13px] text-midnight/50">${escapeHtml(String(r.created_at || ''))}</td>
                 <td class="px-4 py-3">${actions}</td>
             </tr>`;
     }).join('');
@@ -1252,7 +1252,7 @@ function viewLeadDetail(leadId) {
 
 function renderLeadDetail(lead) {
     const sym = lead.currency === 'USD' ? 'US$' : lead.currency === 'EUR' ? '€' : '$';
-    const budget = `${sym}${lead.budget}`;
+    const budget = `${sym}${escapeHtml(String(lead.budget || ''))}`;
     const style = lead.architectural_style || t('detail.not_specified');
     const amenities = lead.amenities
         ? lead.amenities.split(',').map(a => `
@@ -1269,7 +1269,7 @@ function renderLeadDetail(lead) {
                 <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-3">${t('detail.department')}</p>
                 <div class="grid grid-cols-2 gap-4">
                     <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">${t('detail.floor_block')}</p><p class="text-sm text-midnight">${escapeHtml(lead.floor_block || t('detail.not_specified'))}</p></div>
-                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">${t('detail.useful_meters')}</p><p class="text-sm text-midnight">${lead.usable_m2 ? lead.usable_m2 + ' m²' : t('detail.not_specified')}</p></div>
+                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">${t('detail.useful_meters')}</p><p class="text-sm text-midnight">${lead.usable_m2 ? escapeHtml(String(lead.usable_m2)) + ' m²' : t('detail.not_specified')}</p></div>
                     <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">${t('detail.elevator')}</p><p class="text-sm text-midnight">${escapeHtml(lead.elevator || t('detail.not_specified'))}</p></div>
                 </div>
             </div>`;
@@ -1278,8 +1278,8 @@ function renderLeadDetail(lead) {
             <div class="border-t border-midnight/10 pt-5 mt-5">
                 <p class="text-[10px] uppercase tracking-widest text-midnight/60 font-bold mb-3">${t('detail.house')}</p>
                 <div class="grid grid-cols-2 gap-4">
-                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">${t('detail.land')}</p><p class="text-sm text-midnight">${lead.land_area ? lead.land_area + ' m²' : t('detail.not_specified')}</p></div>
-                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">${t('detail.built')}</p><p class="text-sm text-midnight">${lead.built_area ? lead.built_area + ' m²' : t('detail.not_specified')}</p></div>
+                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">${t('detail.land')}</p><p class="text-sm text-midnight">${lead.land_area ? escapeHtml(String(lead.land_area)) + ' m²' : t('detail.not_specified')}</p></div>
+                    <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">${t('detail.built')}</p><p class="text-sm text-midnight">${lead.built_area ? escapeHtml(String(lead.built_area)) + ' m²' : t('detail.not_specified')}</p></div>
                     <div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">${t('detail.pool')}</p><p class="text-sm text-midnight">${escapeHtml(lead.pool || t('detail.not_specified'))}</p></div>
                 </div>
             </div>`;
@@ -1304,7 +1304,7 @@ function renderLeadDetail(lead) {
                     <div class="flex items-center gap-2 text-sm text-midnight"><i data-lucide="mail" class="w-4 h-4 text-gold flex-shrink-0"></i><span>${escapeHtml(lead.email)}</span></div>
                     <div class="flex items-center gap-2 text-sm text-midnight mt-1"><i data-lucide="phone" class="w-4 h-4 text-gold flex-shrink-0"></i><span>${escapeHtml(lead.phone)}</span></div>
                 </div>
-                <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">${t('detail.registered')}</p><p class="text-sm text-midnight">${lead.timestamp}</p></div>
+                <div><p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-1">${t('detail.registered')}</p><p class="text-sm text-midnight">${escapeHtml(String(lead.timestamp || ''))}</p></div>
                 <div class="border-t border-midnight/10 pt-4">
                     <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-2">${t('admin.org_name')}</p>
                     ${renderLeadOrgSelect(lead.org_id, lead.id)}
@@ -1313,14 +1313,14 @@ function renderLeadDetail(lead) {
             <div class="space-y-4">
                 <p class="text-lg font-serif text-midnight">${t('detail.technical_specs')}</p>
                 <div class="grid grid-cols-3 gap-4">
-                    <div class="text-center"><p class="text-[9px] uppercase tracking-widest text-gold font-bold mb-1">${t('detail.bedrooms')}</p><p class="text-2xl font-serif text-midnight">${lead.bedrooms || '-'}</p></div>
-                    <div class="text-center"><p class="text-[9px] uppercase tracking-widest text-gold font-bold mb-1">${t('detail.bathrooms')}</p><p class="text-2xl font-serif text-midnight">${lead.bathrooms || '-'}</p></div>
-                    <div class="text-center"><p class="text-[9px] uppercase tracking-widest text-gold font-bold mb-1">${t('detail.meters')}</p><p class="text-2xl font-serif text-midnight">${lead.total_area || lead.land_area || lead.usable_m2 || '-'}</p>${(lead.total_area || lead.land_area || lead.usable_m2) ? '<p class="text-[9px] text-midnight/60">m²</p>' : ''}</div>
+                    <div class="text-center"><p class="text-[9px] uppercase tracking-widest text-gold font-bold mb-1">${t('detail.bedrooms')}</p><p class="text-2xl font-serif text-midnight">${lead.bedrooms != null ? escapeHtml(String(lead.bedrooms)) : '-'}</p></div>
+                    <div class="text-center"><p class="text-[9px] uppercase tracking-widest text-gold font-bold mb-1">${t('detail.bathrooms')}</p><p class="text-2xl font-serif text-midnight">${lead.bathrooms != null ? escapeHtml(String(lead.bathrooms)) : '-'}</p></div>
+                    <div class="text-center"><p class="text-[9px] uppercase tracking-widest text-gold font-bold mb-1">${t('detail.meters')}</p><p class="text-2xl font-serif text-midnight">${(lead.total_area || lead.land_area || lead.usable_m2) != null ? escapeHtml(String(lead.total_area || lead.land_area || lead.usable_m2)) : '-'}</p>${(lead.total_area || lead.land_area || lead.usable_m2) != null ? '<p class="text-[9px] text-midnight/60">m²</p>' : ''}</div>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
-                    ${lead.usable_m2 ? `<div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">${t('detail.useful_meters')}</p><p class="text-sm text-midnight">${lead.usable_m2} m²</p></div>` : ''}
-                    ${lead.built_area ? `<div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">${t('detail.built')}</p><p class="text-sm text-midnight">${lead.built_area} m²</p></div>` : ''}
-                    ${lead.land_area ? `<div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">${t('detail.land')}</p><p class="text-sm text-midnight">${lead.land_area} m²</p></div>` : ''}
+                    ${lead.usable_m2 ? `<div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">${t('detail.useful_meters')}</p><p class="text-sm text-midnight">${escapeHtml(String(lead.usable_m2))} m²</p></div>` : ''}
+                    ${lead.built_area ? `<div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">${t('detail.built')}</p><p class="text-sm text-midnight">${escapeHtml(String(lead.built_area))} m²</p></div>` : ''}
+                    ${lead.land_area ? `<div><p class="text-[9px] uppercase tracking-widest text-midnight/60 font-bold">${t('detail.land')}</p><p class="text-sm text-midnight">${escapeHtml(String(lead.land_area))} m²</p></div>` : ''}
                 </div>
                 <div class="border-t border-midnight/10 pt-4">
                     <p class="text-[10px] uppercase tracking-widest text-gold font-bold mb-3">${t('detail.extras')}</p>
@@ -1951,8 +1951,8 @@ function renderPhoneAuditRow(entry) {
     return '<td class="px-4 py-3 text-[13px] font-medium text-midnight">' + escapeHtml(entry.profesional || '') + '</td>' +
            '<td class="px-4 py-3 text-[13px]">' + leadCell + '</td>' +
            '<td class="px-4 py-3">' + phoneCell + '</td>' +
-           '<td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest ' + eventoClass + '">' + eventoIcon + ' ' + eventoLabel + '</span></td>' +
-           '<td class="px-4 py-3 text-[11px] text-midnight/50 font-mono">' + fecha + '</td>';
+           '<td class="px-4 py-3"><span class="inline-flex items-center gap-1 px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest ' + eventoClass + '">' + eventoIcon + ' ' + escapeHtml(eventoLabel) + '</span></td>' +
+           '<td class="px-4 py-3 text-[11px] text-midnight/50 font-mono">' + escapeHtml(fecha) + '</td>';
 }
 
 function updatePaPagination(total, page, perPage) {
@@ -2049,7 +2049,7 @@ function loadNotificationLog(page) {
                 '<td class="text-[13px] text-midnight/50 dark:text-white/50 px-4 py-3">' + n.id + '</td>' +
                 '<td class="text-[13px] text-midnight dark:text-white px-4 py-3">' + escapeHtml(n.recipient_username || 'User #' + n.user_id) + '</td>' +
                 '<td class="text-[13px] text-midnight dark:text-white px-4 py-3">' + escapeHtml(n.title || '-') + '</td>' +
-                '<td class="text-[13px] text-midnight/50 dark:text-white/50 px-4 py-3">' + n.created_at + '</td>' +
+                '<td class="text-[13px] text-midnight/50 dark:text-white/50 px-4 py-3">' + escapeHtml(n.created_at || '') + '</td>' +
                 '</tr>';
         });
         tbody.innerHTML = html;
@@ -2103,7 +2103,7 @@ function renderPacCountryFilters() {
     var html = '<button data-action="adm-pac-country" data-cc="" class="report-filter-chip ' + (!pacCurrentCountryFilter ? 'report-filter-active' : '') + '" data-filter="all">' + window.t('admin.filter_all') + '</button>';
     Object.keys(countries).sort().forEach(function(cc) {
         var active = pacCurrentCountryFilter === cc ? ' report-filter-active' : '';
-        html += '<button data-action="adm-pac-country" data-cc="' + cc + '" class="report-filter-chip' + active + '" data-filter="' + cc + '">' + cc + ' (' + countries[cc] + ')</button>';
+        html += '<button data-action="adm-pac-country" data-cc="' + escapeHtml(cc) + '" class="report-filter-chip' + active + '" data-filter="' + escapeHtml(cc) + '">' + escapeHtml(cc) + ' (' + countries[cc] + ')</button>';
     });
     container.innerHTML = html;
 }

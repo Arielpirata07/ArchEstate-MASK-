@@ -1678,7 +1678,7 @@ async function submitVerificationCode() {
                     const icon = channel === 'whatsapp' ? 'message-circle' : 'smartphone';
                     const label = channel === 'whatsapp' ? 'WhatsApp' : 'SMS';
                     area.innerHTML = '<span class="px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest bg-emerald-50 text-emerald-700 inline-flex items-center gap-1">'
-                        + '<i data-lucide="' + icon + '" class="w-3 h-3"></i> Verificado por ' + label + '</span>';
+                        + '<i data-lucide="' + escapeHtml(icon) + '" class="w-3 h-3"></i> Verificado por ' + escapeHtml(label) + '</span>';
                     if (window.lucide) lucide.createIcons();
                 }
             }, 1500);
