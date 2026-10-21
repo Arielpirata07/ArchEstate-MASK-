@@ -51,6 +51,9 @@ TRANSLATIONS = {
         'hero.active_pros': 'Profesionales Activos',
         'hero.covered_zones': 'Zonas Cubiertas',
         'hero.month_leads': 'Leads Este Mes',
+        'hero.welcome_back': 'Bienvenido de vuelta,',
+        'hero.continue_to_panel': 'Continuar al panel',
+        'hero.learn_more': 'Conocer más',
 
         # === HOW IT WORKS ===
         'how.simple_process': 'Proceso Simple',
@@ -1536,6 +1539,9 @@ TRANSLATIONS = {
         'hero.active_pros': 'Active Professionals',
         'hero.covered_zones': 'Covered Zones',
         'hero.month_leads': 'Leads This Month',
+        'hero.welcome_back': 'Welcome back,',
+        'hero.continue_to_panel': 'Go to panel',
+        'hero.learn_more': 'Learn more',
 
         # === HOW IT WORKS ===
         'how.simple_process': 'Simple Process',

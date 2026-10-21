@@ -149,10 +149,13 @@
             </button>
             {% if session.get('user_id') %}
                 {% set active_role = t('role.client') %}
+                {% set role_cls = 'text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-paper-dark/70 text-midnight/70 border border-midnight/10' %}
                 {% if session.get('role') == 'admin' %}
                     {% set active_role = t('role.admin') %}
+                    {% set role_cls = 'text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-midnight/90 text-gold border border-gold/35' %}
                 {% elif session.get('role') == 'professional' %}
                     {% set active_role = t('role.professional') %}
+                    {% set role_cls = 'text-[9px] uppercase tracking-widest px-2 py-0.5 rounded-full bg-gold/10 text-gold border border-gold/25' %}
                 {% endif %}
                 <!-- Notifications bell -->
                 <button id="notif-bell" class="relative p-2 text-white/60 hover:text-gold transition-colors" aria-label="{{ t('nav.notifications') }}" data-action="notif-toggle">
@@ -161,7 +164,10 @@
                     <span id="notif-badge" class="badge-pop absolute -top-0.5 -right-0.5 flex items-center justify-center w-4 h-4 text-[9px] font-bold text-white bg-rose-500 rounded-full">{{ unread_notifications }}</span>
                     {% endif %}
                 </button>
-                <span class="hidden sm:inline text-[10px] text-white/40 uppercase font-bold tracking-tighter">{{ active_role }}: {{ session.get('username') }}</span>
+                <div class="hidden sm:flex items-center gap-2">
+                    <span class="text-[10px] text-white/60">{{ session.get('username') }}</span>
+                    <span class="{{ role_cls }}">{{ active_role }}</span>
+                </div>
                 <a href="{{ url_for('auth.logout') }}" class="hidden sm:flex items-center gap-2 text-rose-400 dark:text-rose-500 hover:text-rose-300 dark:hover:text-rose-200 transition-colors text-[10px] font-bold uppercase tracking-widest">
                     <i data-lucide="log-out" class="w-4 h-4" aria-hidden="true"></i>
                     <span class="hidden lg:inline">{{ t('nav.logout') }}</span>
