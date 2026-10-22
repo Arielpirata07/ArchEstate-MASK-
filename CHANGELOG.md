@@ -6,6 +6,122 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 
 ## [Unreleased]
 
+### Agregado
+- **Portafolio profesional**: hasta 12 imágenes por profesional
+  (`GET/POST/DELETE /api/profile/professional/portfolio`), validación por
+  magic-bytes y límite de 16 MB, almacenamiento en `PORTFOLIO_FOLDER`, galería
+  editable en `/mi-perfil` y claves i18n ES/EN.
+- **Etapas de pipeline configurables**: tabla `pipeline_stage_settings` con seed
+  idempotente, `models.get_pipeline_stage_settings` /
+  `update_pipeline_stage_settings`, `GET/PUT /api/admin/pipeline-stages` y
+  pestaña de administración para editar etiquetas ES/EN, color y orden. El
+  tablero Kanban del profesional consume las etiquetas/colores/orden del
+  servidor.
+- **Verificación de email**: columna `users.email_verified`, tabla
+  `email_verification_tokens`, email transaccional, ruta `/verify-email/<token>`
+  (token de un solo uso, 24 h), reenvío desde `/mi-perfil`
+  (`POST /api/email/send-verification`) y reset automático de la verificación
+  al cambiar el email. Cuentas preexistentes se migran como verificadas.
+
+### Corregido
+- **Sitemap** (`routes/public_bp.py`): se quitó `/profesional` (ruta privada)
+  del `sitemap.xml`.
+
+### Frontend (revisión UI)
+- **Panel de etapas del admin** (`templates/admin.html`, `static/js/admin.js`):
+  el formulario y el botón Guardar usaban clases `.input-label`/`.input-field`/
+  `.btn-primary` que solo existen en `profile.css` (no cargado en `/admin`);
+  ahora siguen el patrón admin (labels `text-[10px] uppercase` con `for`,
+  inputs con borde/focus gold, botón `bg-midnight hover:bg-gold`) y cada campo
+  tiene `id` por etapa.
+- **Portafolio** (`static/js/profile.js`): `alt` descriptivo en las imágenes,
+  botón de eliminar visible en touch (antes solo en hover), y `loadPortfolio`
+  muestra estado de carga/error en `#portfolio-status` (antes `catch`
+  silencioso con parpadeo del empty state).
+- **i18n**: nuevas keys `profile.portfolio_image_alt` y
+  `profile.portfolio_loading` (ES/EN, Python y JS).
+- **Responsive**: filas de etapas pasan a `md:grid-cols-2 lg:grid-cols-5`
+  (evita 5 columnas apretadas a 768px), `flex-wrap` en la fila de Guardar del
+  panel y en `#email-verification-area`, y botón de eliminar portafolio con
+  mejor target táctil (`p-3 md:p-1.5`).
+
+### Seguridad (post-revisión)
+- **Portafolio con ownership real**: `portfolio` salió del allowlist de
+  `PUT /api/profile/professional/full` (solo se edita por la API de portafolio);
+  `_portfolio_items` filtra por prefijo `pro_{user_id}_` y el `DELETE` rechaza
+  rutas que no pertenezcan al propio usuario.
+- **Límite de tamaño a nivel HTTP**: `app.config['MAX_CONTENT_LENGTH']` en
+  `factory.py` (antes el chequeo de 16 MB corría después de bufferizar el
+  multipart).
+- **Tokens de verificación atados al email**: `email_verification_tokens.email`
+  + validación contra el email vigente; cambiar el email invalida los tokens
+  pendientes (`update_user_credentials` / `update_user_account`). Índice
+  `(user_id, used)` y columna agregada vía migración.
+- **`X-Content-Type-Options: nosniff` ahora también para `/static/`**
+  (defensa contra polyglots en uploads).
+- **Color de pipeline validado al leer** y escapado en el render JS del Kanban.
+
+### Revisión completa del sistema
+- **Seguridad backend**: OTP de verificadores simulados redactado en logs fuera
+  de debug (`services/verifier.py`); el seed del admin ya no loguea la
+  contraseña si no puede escribir `.admin_initial_password` (en producción omite
+  la creación y pide `ADMIN_INITIAL_PASSWORD`); el token de reset de contraseña
+  se consume de forma atómica (`models.consume_password_reset_token`), evitando
+  doble uso concurrente; el teléfono del webhook de WhatsApp se loguea hasheado;
+  `/health` loguea la excepción; los 429 incluyen `Retry-After` y
+  `X-RateLimit-*` con la misma clave `endpoint:IP`.
+- **Correctitud de datos**: `utils.parse_budget_avg` promedia rangos
+  (`"150000 - 400000"` → 275000) y reemplaza los `AVG` SQL divergentes en
+  dashboard/stats; timestamps del pipeline en UTC (se quitó `pytz`/ART);
+  `get_user_leads` con `LIMIT/OFFSET` (máx. 500) y parámetros en la API;
+  migración v8 con dedup seguro e índices únicos en `lead_versions(lead_id,
+  version)` y parciales en `professionals.user_id` / `users.email`; registro
+  rechaza emails duplicados con `auth.email_taken`.
+- **Frontend**: handlers inline rotos por IIFE reemplazados por `data-action`
+  (búsqueda de iconos, selects de organización, rol de miembros y dropzone de
+  documentos con drag & drop); headers de tablas admin/profesional traducidos
+  (`leads.*`); `aria-labelledby` en los modales de detalle de lead y calendario;
+  CTA del email de cambio de estado ya no apunta a `#`.
+- **Infra/docs**: `verify_coherence.py` cubre los 12 blueprints; `AGENTS.md`
+  actualizado; `.env-example` agregado.
+
+### Tests
+- Nuevos: `tests/test_email_verification.py` (11) y
+  `TestAdminPipelineStages` en `tests/test_admin_bp.py` (6).
+- Nuevos de esta revisión: reset token de un solo uso, registro con email
+  duplicado, `parse_budget_avg` con rangos y OTP redactado (visible solo en
+  debug).
+- `TestEmailTokenBinding`, `TestUploadAndHeaderSecurity`
+  (MAX_CONTENT_LENGTH, 413, nosniff), ownership de portafolio y fallback de
+  color inválido en lectura.
+- → **863 pytest / 96 coherence / 34 node**.
+
+## [v0.48.7] — 2026-10-20 — Aislamiento de Twilio en tests y sincronización de docs
+
+### Corregido
+- **Tests de rate limit dependientes del `.env` local**
+  (`tests/conftest.py`): `test_rate_limit_isolation.py` fallaba con 502 al
+  llamar `/api/phone/send-code` cuando el entorno tenía `TWILIO_SIMULATE=false`
+  y credenciales reales: el router singleton de `services/verifier.py`
+  instanciaba `TwilioSmsVerifier` y el test pegaba contra Twilio real
+  (`400 Content was not found`). Nuevo fixture `autouse`
+  `_force_simulated_twilio` que fuerza `config.TWILIO_SIMULATE=True` y resetea
+  el router antes/después de cada test, de modo que la suite ya no depende del
+  `.env` ni de CI. Los tests que ejercitan Twilio real siguen haciendo
+  `patch('config.TWILIO_SIMULATE', False)` + `reset_default_router()`.
+
+### Documentación
+- **`README.md` roadmap**: marcados como completados los 3 ítems que ya estaban
+  implementados (notificaciones internas, asignación automática y paginación de
+  leads).
+- **Conteos de tests/coherencia actualizados**: `828 pytest + 34 node` y
+  `94 checks` en `README.md`, `AGENTS.md` y `docs/contexto-proyecto.md`.
+- **`AGENTS.md` Test notes**: documentado que `conftest.py` fuerza
+  `TWILIO_SIMULATE=true` y resetea el router por test.
+
+### Tests
+- → **828 pytest / 94 coherence / 34 node** (0 fallos en local con `.env` real).
+
 ## [v0.48.6] — 2026-10-19 — Endurecimiento XSS en render de leads y paridad i18n
 
 ### Corregido

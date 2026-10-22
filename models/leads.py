@@ -43,7 +43,15 @@ def get_lead_by_id(lead_id):
 
 
 
-def get_user_leads(user_id):
+def get_user_leads(user_id, limit=200, offset=0):
+    try:
+        limit = max(1, min(int(limit), 500))
+    except (TypeError, ValueError):
+        limit = 200
+    try:
+        offset = max(0, int(offset))
+    except (TypeError, ValueError):
+        offset = 0
     conn = get_db_connection()
     try:
         leads = conn.execute('''
@@ -67,7 +75,8 @@ def get_user_leads(user_id):
             ) lt ON l.id = lt.lead_id
             WHERE l.user_id = ?
             ORDER BY l.timestamp DESC
-        ''', (user_id,)).fetchall()
+            LIMIT ? OFFSET ?
+        ''', (user_id, limit, offset)).fetchall()
         return [dict(l) for l in leads]
     finally:
         conn.close()

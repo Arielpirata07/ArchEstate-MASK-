@@ -115,11 +115,12 @@ def dashboard_summary():
         closed = counts.get('closed_won', 0) + counts.get('closed_lost', 0) + counts.get('archived', 0)
         pipeline_active = max(0, total - closed)
 
-        avg_row = conn.execute(
-            f"SELECT AVG(CAST(REPLACE(REPLACE(budget, '.', ''), ',', '') AS REAL)) AS avg_b FROM leads WHERE {where}",
-            params
-        ).fetchone()
-        avg_budget = round(avg_row['avg_b'] or 0.0, 0)
+        budget_rows = conn.execute(
+            f"SELECT budget FROM leads WHERE {where}", params
+        ).fetchall()
+        budget_values = [utils.parse_budget_avg(r['budget']) for r in budget_rows]
+        budget_values = [value for value in budget_values if value > 0]
+        avg_budget = round(sum(budget_values) / len(budget_values), 0) if budget_values else 0.0
 
         top_zone_row = conn.execute(
             f"SELECT zone, COUNT(*) AS n FROM leads WHERE {where} AND zone != '' GROUP BY zone ORDER BY n DESC LIMIT 1",

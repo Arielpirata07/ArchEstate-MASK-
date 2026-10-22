@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 def get_user_by_id(user_id):
     conn = get_db_connection()
     try:
-        user = conn.execute('SELECT id, username, email, phone, hash, role, doc_path, is_active, phone_verified FROM users WHERE id = ?', (user_id,)).fetchone()
+        user = conn.execute('SELECT id, username, email, phone, hash, role, doc_path, is_active, phone_verified, email_verified FROM users WHERE id = ?', (user_id,)).fetchone()
         return dict(user) if user else None
     finally:
         conn.close()
@@ -32,7 +32,7 @@ def get_user_profile(user_id):
     try:
         row = conn.execute(
             'SELECT u.id, u.username, u.email, u.phone, u.role, u.is_active, u.phone_verified, '
-            'u.verification_channel, '
+            'u.email_verified, u.verification_channel, '
             'up.first_name, up.last_name, up.bio, up.title, up.avatar_path, '
             'up.created_at, up.updated_at '
             'FROM users u LEFT JOIN user_profiles up ON u.id = up.user_id WHERE u.id = ?',
@@ -129,7 +129,15 @@ def update_user_credentials(user_id, email, phone):
 
     conn = get_db_connection()
     try:
-        conn.execute('UPDATE users SET email = ? WHERE id = ?', (email, user_id))
+        conn.execute(
+            "UPDATE users SET email = ?, email_verified = CASE WHEN email = ? THEN email_verified ELSE 0 END WHERE id = ?",
+            (email, email, user_id)
+        )
+        conn.execute(
+            'UPDATE email_verification_tokens SET used = 1 '
+            'WHERE user_id = ? AND used = 0 AND lower(email) <> lower(?)',
+            (user_id, email or '')
+        )
         conn.commit()
         return True
     except Exception:
@@ -169,7 +177,15 @@ def update_user_account(user_id, email, phone, profile_data):
                     'UPDATE users SET phone = ?, phone_e164 = ?, phone_number_type = ? WHERE id = ?',
                     (phone, e164, ntype, user_id)
                 )
-        conn.execute('UPDATE users SET email = ? WHERE id = ?', (email, user_id))
+        conn.execute(
+            "UPDATE users SET email = ?, email_verified = CASE WHEN email = ? THEN email_verified ELSE 0 END WHERE id = ?",
+            (email, email, user_id)
+        )
+        conn.execute(
+            'UPDATE email_verification_tokens SET used = 1 '
+            'WHERE user_id = ? AND used = 0 AND lower(email) <> lower(?)',
+            (user_id, email or '')
+        )
         if filtered:
             existing = conn.execute('SELECT id FROM user_profiles WHERE user_id = ?', (user_id,)).fetchone()
             if existing:
@@ -346,6 +362,111 @@ def mark_password_reset_token_used(token):
     try:
         conn.execute('UPDATE password_reset_tokens SET used = 1 WHERE token = ?', (token,))
         conn.commit()
+    finally:
+        conn.close()
+
+
+
+def consume_password_reset_token(token):
+    '''Consume el token de forma atómica (single-use real).
+
+    El UPDATE condicional `used = 0` garantiza que solo un request lo gane
+    aunque lleguen dos concurrentes. Devuelve user_id o None.
+    '''
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute(
+            'UPDATE password_reset_tokens SET used = 1 WHERE token = ? AND used = 0',
+            (token,)
+        )
+        conn.commit()
+        if cursor.rowcount != 1:
+            return None
+        row = conn.execute(
+            'SELECT user_id, expires_at FROM password_reset_tokens WHERE token = ?',
+            (token,)
+        ).fetchone()
+        if not row:
+            return None
+        from datetime import datetime, timezone
+        try:
+            expires = datetime.fromisoformat(row['expires_at'])
+        except (TypeError, ValueError):
+            return None
+        if datetime.now(timezone.utc).replace(tzinfo=None) > expires:
+            return None
+        return row['user_id']
+    finally:
+        conn.close()
+
+
+
+def create_email_verification_token(user_id, token, email, expires_at):
+    conn = get_db_connection()
+    try:
+        conn.execute(
+            'UPDATE email_verification_tokens SET used = 1 WHERE user_id = ? AND used = 0',
+            (user_id,)
+        )
+        conn.execute(
+            'INSERT INTO email_verification_tokens (user_id, token, email, expires_at) VALUES (?, ?, ?, ?)',
+            (user_id, token, email, expires_at)
+        )
+        conn.commit()
+        return True
+    except Exception:
+        logger.exception('Error al crear token de verificación de email')
+        return False
+    finally:
+        conn.close()
+
+
+
+def validate_email_verification_token(token):
+    conn = get_db_connection()
+    try:
+        row = conn.execute(
+            'SELECT t.user_id, t.email, t.expires_at, t.used, u.email AS current_email '
+            'FROM email_verification_tokens t JOIN users u ON u.id = t.user_id '
+            'WHERE t.token = ?',
+            (token,)
+        ).fetchone()
+        if not row or row['used']:
+            return None
+        if (row['email'] or '').strip().lower() != (row['current_email'] or '').strip().lower():
+            return None
+        from datetime import datetime, timezone
+        try:
+            expires = datetime.fromisoformat(row['expires_at'])
+        except (TypeError, ValueError):
+            return None
+        if datetime.now(timezone.utc).replace(tzinfo=None) > expires:
+            return None
+        return row['user_id']
+    finally:
+        conn.close()
+
+
+
+def mark_email_verification_token_used(token):
+    conn = get_db_connection()
+    try:
+        conn.execute('UPDATE email_verification_tokens SET used = 1 WHERE token = ?', (token,))
+        conn.commit()
+    finally:
+        conn.close()
+
+
+
+def set_email_verified(user_id):
+    conn = get_db_connection()
+    try:
+        conn.execute('UPDATE users SET email_verified = 1 WHERE id = ?', (user_id,))
+        conn.commit()
+        return True
+    except Exception:
+        logger.exception('Error al marcar email verificado')
+        return False
     finally:
         conn.close()
 

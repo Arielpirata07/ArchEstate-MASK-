@@ -53,6 +53,16 @@ def _clear_rate_limits():
         rate_limit._save_store({})
 
 
+@pytest.fixture(autouse=True)
+def _force_simulated_twilio(monkeypatch):
+    import config
+    from services.verifier import reset_default_router
+    monkeypatch.setattr(config, 'TWILIO_SIMULATE', True)
+    reset_default_router()
+    yield
+    reset_default_router()
+
+
 @pytest.fixture
 def auth_client(client, request):
     import uuid

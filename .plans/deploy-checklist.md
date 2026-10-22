@@ -13,7 +13,7 @@
 | WhatsApp webhook | ✅ Listo | Twilio WhatsApp button template |
 | Email (SMTP) | ✅ Listo | Console fallback si no hay SMTP |
 | Rate limiting | ⚠️ Pendiente | File-backed (migrar a Redis) |
-| Tests | ✅ 444/444 | Todos pasando |
+| Tests | ✅ 863/863 | Todos pasando |
 
 ---
 

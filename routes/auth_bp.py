@@ -14,9 +14,34 @@ import models
 import rate_limit
 import utils
 import validators
+from decorators import login_required
 from i18n import t, get_language
 
 auth_bp = Blueprint('auth', __name__, url_prefix='')
+
+
+def _send_verification_email(user_id, email, username, lang):
+    '''Crea un token y envía el email de verificación (fallo no bloqueante).'''
+    import secrets
+    from datetime import datetime, timedelta, timezone
+
+    token = secrets.token_urlsafe(32)
+    expires_at = (datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=24)).isoformat()
+    if not models.create_email_verification_token(user_id, token, email, expires_at):
+        return False
+
+    verify_url = f"{config.SITE_URL}{url_for('auth.verify_email', token=token)}"
+    try:
+        html_body = render_template('email/verify_email.html', verify_url=verify_url, username=username)
+        from services.email import get_email_sender
+        return get_email_sender().send(
+            to=email,
+            subject=t('auth.verify_email_subject', lang),
+            html_body=html_body,
+        )
+    except Exception:
+        logger.exception('Error al enviar email de verificación a user_id=%s', user_id)
+        return False
 
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
@@ -46,6 +71,10 @@ def register():
         is_valid_email_result, email_error = validators.validate_email(email)
         if not is_valid_email_result:
             flash(email_error, 'error')
+            return redirect(url_for('auth.register'))
+
+        if models.get_user_by_email(email):
+            flash(t('auth.email_taken', lang), 'error')
             return redirect(url_for('auth.register'))
 
         if not password or len(password) < 6:
@@ -87,6 +116,7 @@ def register():
             return redirect(url_for('auth.register'))
 
         conn = models.get_db_connection()
+        created_user_id = None
         try:
             cursor = conn.execute('INSERT INTO users (username, email, hash, role, phone, phone_format_valid) VALUES (?, ?, ?, ?, ?, 1)',
                                  (username, email, generate_password_hash(password), role, phone))
@@ -97,8 +127,8 @@ def register():
                              (new_user_id, username, license_number, 'General', 'pending'))
 
             conn.commit()
+            created_user_id = cursor.lastrowid
             flash(t('auth.register_success', lang), 'success')
-            return redirect(url_for('auth.login'))
 
         except Exception as exc:
             from services.database import is_integrity_error
@@ -110,6 +140,10 @@ def register():
             return redirect(url_for('auth.register'))
         finally:
             conn.close()
+
+        if created_user_id:
+            _send_verification_email(created_user_id, email, username, lang)
+        return redirect(url_for('auth.login'))
 
     return render_template('register.html')
 
@@ -223,6 +257,53 @@ def logout():
     return response
 
 
+@auth_bp.route('/verify-email/<token>')
+@rate_limit.check_rate_limit(limit=20, window=60)
+def verify_email(token):
+    lang = get_language()
+    user_id = models.validate_email_verification_token(token)
+    if not user_id:
+        flash(t('auth.verify_email_invalid', lang), 'error')
+        return redirect(url_for('auth.login'))
+
+    models.set_email_verified(user_id)
+    models.mark_email_verification_token_used(token)
+    flash(t('auth.verify_email_success', lang), 'success')
+
+    if session.get('user_id') == user_id:
+        return redirect(url_for('profile.profile_view'))
+    return redirect(url_for('auth.login'))
+
+
+@auth_bp.route('/api/email/send-verification', methods=['POST'])
+@login_required
+@rate_limit.check_rate_limit(limit=5, window=300)
+def send_email_verification():
+    lang = get_language()
+    user_id = session.get('user_id')
+
+    conn = None
+    try:
+        conn = models.get_db_connection()
+        user = conn.execute('SELECT id, email, username, email_verified FROM users WHERE id = ?', (user_id,)).fetchone()
+    finally:
+        if conn:
+            conn.close()
+
+    if not user:
+        return jsonify({'success': False, 'error': t('auth.verify_email_invalid', lang)}), 404
+    if user['email_verified']:
+        return jsonify({'success': True, 'already_verified': True,
+                        'message': t('auth.verify_email_already', lang)})
+    if not user['email']:
+        return jsonify({'success': False, 'error': t('auth.email_required', lang)}), 400
+
+    if not _send_verification_email(user['id'], user['email'], user['username'], lang):
+        return jsonify({'success': False, 'error': t('auth.verify_email_error', lang)}), 500
+
+    return jsonify({'success': True, 'message': t('auth.verify_email_sent', lang)})
+
+
 @auth_bp.route('/api/auth/check-username', methods=['GET'])
 @rate_limit.check_rate_limit(limit=100, window=60)
 def api_check_username():
@@ -300,9 +381,12 @@ def reset_password(token):
             flash(t('auth.reset_password_mismatch', lang), 'error')
             return redirect(url_for('auth.reset_password', token=token))
 
+        claimed_user_id = models.consume_password_reset_token(token)
+        if not claimed_user_id:
+            flash(t('auth.reset_invalid_token', lang), 'error')
+            return redirect(url_for('auth.forgot_password'))
         new_hash = generate_password_hash(password)
-        models.update_user_password(user_id, new_hash)
-        models.mark_password_reset_token_used(token)
+        models.update_user_password(claimed_user_id, new_hash)
 
         flash(t('auth.reset_success', lang), 'success')
         return redirect(url_for('auth.login'))

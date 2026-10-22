@@ -107,3 +107,24 @@ class TestAtomicAccountUpdate:
     def test_empty_profile_still_updates_email(self, db):
         user_id = _make_user(db)
         assert models.update_user_account(user_id, 'otro@example.com', '', {}) is True
+
+
+class TestUploadAndHeaderSecurity:
+    def test_max_content_length_configured(self, app):
+        import config
+        assert app.config['MAX_CONTENT_LENGTH'] == config.MAX_UPLOAD_SIZE + 1024 * 1024
+
+    def test_oversized_request_rejected_413(self, app, client, monkeypatch):
+        monkeypatch.setitem(app.config, 'MAX_CONTENT_LENGTH', 1024)
+        resp = client.post(
+            '/login',
+            data=b'x' * 4096,
+            content_type='application/x-www-form-urlencoded',
+            headers={'Accept': 'application/json'},
+        )
+        assert resp.status_code == 413
+        assert resp.get_json()['error'] is not None
+
+    def test_nosniff_applies_to_static_uploads(self, client):
+        resp = client.get('/static/uploads/portfolio/no-such-file.png')
+        assert resp.headers.get('X-Content-Type-Options') == 'nosniff'

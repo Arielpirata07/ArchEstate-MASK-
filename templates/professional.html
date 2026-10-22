@@ -361,13 +361,13 @@ window.__FORM_OPTIONS = {{ {
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-paper-dark table-header-border">
-                        <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">ID</th>
-                        <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Estado</th>
+                        <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('leads.id') }}</th>
+                        <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.status') }}</th>
                         <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('pro.col_operation') }}</th>
-                        <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Vivienda</th>
-                        <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Zona</th>
-                        <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Presupuesto</th>
-                        <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Fecha</th>
+                        <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('leads.property_type') }}</th>
+                        <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('leads.zone') }}</th>
+                        <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('leads.budget') }}</th>
+                        <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('leads.date') }}</th>
                         <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold text-right">{{ t('leads.action') }}</th>
                     </tr>
                 </thead>
@@ -533,7 +533,7 @@ window.__FORM_OPTIONS = {{ {
     </div>
 
     <!-- Calendar modal -->
-    <div id="calModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
+    <div id="calModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="calModalTitle">
         <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" data-action="pro-close-cal"></div>
         <div class="absolute inset-0 flex overflow-y-auto p-4">
             <div class="modal-panel bg-white rounded-lg shadow-2xl overflow-hidden w-full max-w-md" style="margin:auto">

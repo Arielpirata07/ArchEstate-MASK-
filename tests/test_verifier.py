@@ -42,7 +42,16 @@ def test_sms_simulated_prints_to_console(caplog):
         v = SmsSimulatedVerifier()
         v.send("+5491144445555", "123456")
         assert "[SMS SIMULADO]" in caplog.text
-        assert "123456" in caplog.text
+        assert "123456" not in caplog.text
+        assert "****56" in caplog.text
+
+
+def test_sms_simulated_shows_code_in_debug(app, caplog):
+    import logging
+    app.debug = True
+    with app.app_context(), caplog.at_level(logging.INFO, logger='services.verifier'):
+        SmsSimulatedVerifier().send("+5491144445555", "123456")
+    assert "123456" in caplog.text
 
 
 def test_whatsapp_simulated_returns_ok_with_deep_link():

@@ -1,4 +1,5 @@
 import logging
+import re
 
 import utils
 
@@ -16,6 +17,105 @@ PIPELINE_DEFAULT_STAGE = 'new'
 # lead_tracking.contacted = 1 (ver roadmap Fase 1).
 
 PIPELINE_CONTACTED_FROM = 'contacted'
+
+PIPELINE_STAGE_META = {
+    'new': {'label_es': 'Nuevo', 'label_en': 'New', 'color': '#735A3A'},
+    'contacted': {'label_es': 'Contactado', 'label_en': 'Contacted', 'color': '#059669'},
+    'visit': {'label_es': 'Visita Programada', 'label_en': 'Visit Scheduled', 'color': '#2563EB'},
+    'negotiation': {'label_es': 'Negociación', 'label_en': 'Negotiation', 'color': '#7C3AED'},
+    'proposal': {'label_es': 'Propuesta', 'label_en': 'Proposal', 'color': '#D97706'},
+    'closed_won': {'label_es': 'Cerrado Ganado', 'label_en': 'Closed Won', 'color': '#059669'},
+    'closed_lost': {'label_es': 'Cerrado Perdido', 'label_en': 'Closed Lost', 'color': '#DC2626'},
+    'archived': {'label_es': 'Archivado', 'label_en': 'Archived', 'color': '#6B7280'},
+}
+
+
+def get_pipeline_stage_settings(conn=None, lang='es'):
+    '''Etapas con sus etiquetas/colores/orden. Cae a los defaults si no hay filas.'''
+    own_conn = conn is None
+    if own_conn:
+        conn = get_db_connection()
+    try:
+        try:
+            rows = conn.execute(
+                'SELECT stage, label_es, label_en, color, sort_order '
+                'FROM pipeline_stage_settings ORDER BY sort_order, stage'
+            ).fetchall()
+        except Exception:
+            rows = []
+
+        settings = {}
+        for row in rows:
+            stage = row['stage']
+            if stage in PIPELINE_STAGES:
+                color = row['color'] or ''
+                if not re.fullmatch(r'#[0-9A-Fa-f]{6}', color):
+                    color = PIPELINE_STAGE_META[stage]['color']
+                settings[stage] = {
+                    'stage': stage,
+                    'label_es': row['label_es'] or PIPELINE_STAGE_META[stage]['label_es'],
+                    'label_en': row['label_en'] or PIPELINE_STAGE_META[stage]['label_en'],
+                    'color': color,
+                    'sort_order': row['sort_order'],
+                }
+
+        for index, stage in enumerate(PIPELINE_STAGES, start=1):
+            if stage not in settings:
+                settings[stage] = {
+                    'stage': stage,
+                    **PIPELINE_STAGE_META[stage],
+                    'sort_order': index,
+                }
+
+        ordered = sorted(settings.values(), key=lambda s: (s['sort_order'], s['stage']))
+        for item in ordered:
+            item['label'] = item['label_en'] if lang == 'en' else item['label_es']
+        return ordered
+    finally:
+        if own_conn:
+            conn.close()
+
+
+def update_pipeline_stage_settings(items):
+    '''Actualiza etiquetas/colores/orden. Devuelve False si algún item es inválido.'''
+    if not isinstance(items, list) or not items:
+        return False
+
+    conn = get_db_connection()
+    try:
+        for item in items:
+            if not isinstance(item, dict):
+                return False
+            stage = (item.get('stage') or '').strip()
+            if stage not in PIPELINE_STAGES:
+                return False
+
+            defaults = PIPELINE_STAGE_META[stage]
+            label_es = utils.safe_text(item.get('label_es') or '').strip() or defaults['label_es']
+            label_en = utils.safe_text(item.get('label_en') or '').strip() or defaults['label_en']
+            color = (item.get('color') or defaults['color']).strip()
+            if not re.fullmatch(r'#[0-9A-Fa-f]{6}', color):
+                color = defaults['color']
+            try:
+                sort_order = int(item.get('sort_order', PIPELINE_STAGES.index(stage) + 1))
+            except (TypeError, ValueError):
+                sort_order = PIPELINE_STAGES.index(stage) + 1
+
+            conn.execute(
+                'INSERT INTO pipeline_stage_settings (stage, label_es, label_en, color, sort_order) '
+                'VALUES (?, ?, ?, ?, ?) ON CONFLICT(stage) DO UPDATE SET '
+                'label_es = excluded.label_es, label_en = excluded.label_en, '
+                'color = excluded.color, sort_order = excluded.sort_order',
+                (stage, label_es, label_en, color, sort_order)
+            )
+        conn.commit()
+        return True
+    except Exception:
+        logger.exception('update_pipeline_stage_settings failed')
+        conn.rollback()
+        return False
+    finally:
+        conn.close()
 
 
 

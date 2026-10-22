@@ -60,7 +60,6 @@ def sitemap():
     today = datetime.now(timezone.utc).date().isoformat()
     public_urls = [
         {'loc': url_for('public.index', _external=True), 'changefreq': 'daily', 'priority': '1.0'},
-        {'loc': url_for('professional.professional_view', _external=True), 'changefreq': 'weekly', 'priority': '0.7'},
     ]
     xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'

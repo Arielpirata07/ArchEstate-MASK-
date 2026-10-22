@@ -12,6 +12,7 @@ function showTab(tab) {
     document.getElementById('panel-organizations').classList.add('hidden');
     document.getElementById('panel-notifications').classList.add('hidden');
     document.getElementById('panel-sla').classList.add('hidden');
+    document.getElementById('panel-pipeline-stages').classList.add('hidden');
     document.getElementById('panel-' + tab).classList.remove('hidden');
     const activePanel = document.getElementById('panel-' + tab);
     activePanel.classList.remove('panel-enter');
@@ -45,6 +46,78 @@ function showTab(tab) {
     if (tab === 'sla') {
         loadSla();
     }
+    if (tab === 'pipeline-stages') {
+        loadPipelineStages();
+    }
+}
+
+// ================================================================
+// PIPELINE STAGES CONFIG
+// ================================================================
+async function loadPipelineStages() {
+    const box = document.getElementById('pipeline-stages-form');
+    if (!box) return;
+    box.innerHTML = '<p class="text-sm text-midnight/50">' + escapeHtml(t('toast.loading')) + '</p>';
+    try {
+        const res = await fetch('/api/admin/pipeline-stages');
+        const data = await res.json();
+        if (!data.success) throw new Error(data.error || t('error.load'));
+        var inputCls = 'w-full mt-1 px-4 py-2 border border-midnight/10 rounded text-sm focus:border-gold focus:outline-none';
+        var labelCls = 'block text-[10px] uppercase tracking-widest font-bold text-midnight/60';
+        box.innerHTML = data.stages.map(function (s) {
+            var stage = escapeHtml(s.stage);
+            return '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 items-end p-3 rounded-lg border border-midnight/10" data-stage="' + stage + '">' +
+                '<div><label for="ps-es-' + stage + '" class="' + labelCls + '">' + escapeHtml(t('admin.pipeline_stage_label_es')) + '</label>' +
+                '<input id="ps-es-' + stage + '" type="text" class="ps-label-es ' + inputCls + '" maxlength="40" value="' + escapeHtml(s.label_es) + '"></div>' +
+                '<div><label for="ps-en-' + stage + '" class="' + labelCls + '">' + escapeHtml(t('admin.pipeline_stage_label_en')) + '</label>' +
+                '<input id="ps-en-' + stage + '" type="text" class="ps-label-en ' + inputCls + '" maxlength="40" value="' + escapeHtml(s.label_en) + '"></div>' +
+                '<div><label for="ps-color-' + stage + '" class="' + labelCls + '">' + escapeHtml(t('admin.pipeline_stage_color')) + '</label>' +
+                '<input id="ps-color-' + stage + '" type="color" class="ps-color w-full h-10 mt-1 rounded border border-midnight/10" value="' + escapeHtml(s.color) + '"></div>' +
+                '<div><label for="ps-order-' + stage + '" class="' + labelCls + '">' + escapeHtml(t('admin.pipeline_stage_order')) + '</label>' +
+                '<input id="ps-order-' + stage + '" type="number" class="ps-order ' + inputCls + '" min="1" max="99" value="' + Number(s.sort_order || 1) + '"></div>' +
+                '<div class="text-[10px] font-mono uppercase tracking-widest text-midnight/50">' + stage + '</div>' +
+                '</div>';
+        }).join('');
+    } catch (err) {
+        box.innerHTML = '<p class="text-sm text-rose-600">' + escapeHtml(err.message || t('error.load')) + '</p>';
+    }
+}
+
+function savePipelineStages() {
+    const box = document.getElementById('pipeline-stages-form');
+    const msg = document.getElementById('pipeline-stages-msg');
+    const err = document.getElementById('pipeline-stages-error');
+    if (msg) msg.classList.add('hidden');
+    if (err) err.classList.add('hidden');
+    if (!box) return;
+
+    const stages = Array.from(box.querySelectorAll('[data-stage]')).map(function (row) {
+        return {
+            stage: row.dataset.stage,
+            label_es: row.querySelector('.ps-label-es').value,
+            label_en: row.querySelector('.ps-label-en').value,
+            color: row.querySelector('.ps-color').value,
+            sort_order: parseInt(row.querySelector('.ps-order').value, 10) || 0
+        };
+    });
+
+    fetch('/api/admin/pipeline-stages', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stages: stages })
+    })
+    .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+    .then(function (res) {
+        if (res.ok && res.data.success) {
+            if (msg) { msg.textContent = res.data.message || t('toast.saved'); msg.classList.remove('hidden'); setTimeout(function () { msg.classList.add('hidden'); }, 3000); }
+        } else if (err) {
+            err.textContent = res.data.error || t('error.process_request');
+            err.classList.remove('hidden');
+        }
+    })
+    .catch(function () {
+        if (err) { err.textContent = t('error.connection'); err.classList.remove('hidden'); }
+    });
 }
 
 // ================================================================
@@ -793,7 +866,7 @@ function renderProfessionals(pros) {
                 </td>
                 <td class="px-4 py-3 font-mono text-[11px] text-midnight/60">${escapeHtml(pro.license)}</td>
                 <td class="px-4 py-3">${statusBadge}</td>
-                <td class="px-4 py-3">${renderOrgSelect(pro.org_id).replace('onchange=', 'data-user-id="' + (pro.user_id || '') + '" onchange=')}</td>
+                <td class="px-4 py-3">${renderOrgSelect(pro.org_id, pro.user_id)}</td>
                 <td class="px-4 py-3">${docCell}</td>
                 <td class="px-4 py-3 text-right">
                     <div class="flex justify-end items-center gap-2 flex-wrap">
@@ -1507,7 +1580,7 @@ function _setupFormOptionModalFocusTrap() {
 function renderIconPicker(selectedIcon) {
     var html = '<div class="icon-picker-wrap mt-1 border border-midnight/10 rounded overflow-hidden">' +
         '<label for="fo-icon-search" class="sr-only">' + t('icon.search') + '</label>' +
-        '<input id="fo-icon-search" type="text" placeholder="' + t('icon.search_placeholder') + '" oninput="filterIcons(this.value)" class="icon-search w-full px-2 py-1.5 text-xs border-0 border-b border-midnight/10 outline-none bg-paper-dark/50">' +
+        '<input id="fo-icon-search" type="text" placeholder="' + t('icon.search_placeholder') + '" data-action="adm-in-icon-search" class="icon-search w-full px-2 py-1.5 text-xs border-0 border-b border-midnight/10 outline-none bg-paper-dark/50">' +
         '<div id="icon-picker-grid" class="grid grid-cols-6 gap-0.5 p-1.5 max-h-32 overflow-y-auto">';
     html += '<button type="button" data-icon="" data-search="ninguno" data-action="adm-icon-option" aria-label="' + t('icon.none') + '" class="icon-pick p-1 rounded border text-[10px] flex flex-col items-center gap-px transition-all ' +
         (!selectedIcon ? 'border-gold bg-gold/10 text-gold' : 'border-transparent text-midnight/60 hover:border-midnight/20') + '" title="' + t('icon.none') + '">' +
@@ -2426,8 +2499,8 @@ function deleteOrg(orgId) {
     });
 }
 
-function renderOrgSelect(selectedOrgId) {
-    var html = '<select class="w-full px-2 py-1 border border-midnight/20 rounded text-[11px] focus:border-gold focus:outline-none bg-white" onchange="setProOrg(this.value, this.dataset.userId)">';
+function renderOrgSelect(selectedOrgId, userId) {
+    var html = '<select data-action="adm-set-pro-org" data-user-id="' + (userId || '') + '" class="w-full px-2 py-1 border border-midnight/20 rounded text-[11px] focus:border-gold focus:outline-none bg-white">';
     html += '<option value="">' + t('admin.org_no_org') + '</option>';
     allOrganizations.forEach(function(org) {
         if (org.is_active) {
@@ -2439,7 +2512,7 @@ function renderOrgSelect(selectedOrgId) {
 }
 
 function renderLeadOrgSelect(selectedOrgId, leadId) {
-    var html = '<select class="w-full px-2 py-1 border border-midnight/20 rounded text-[11px] focus:border-gold focus:outline-none bg-white" onchange="setLeadOrg(this.value, ' + leadId + ')">';
+    var html = '<select data-action="adm-set-lead-org" data-lead-id="' + leadId + '" class="w-full px-2 py-1 border border-midnight/20 rounded text-[11px] focus:border-gold focus:outline-none bg-white">';
     html += '<option value="">' + t('admin.org_no_org') + '</option>';
     allOrganizations.forEach(function(org) {
         if (org.is_active) {
@@ -2528,7 +2601,7 @@ function loadOrgMembers(orgId) {
             return '<div class="flex items-center gap-2 border border-midnight/10 rounded px-3 py-2">' +
                 '<div class="flex-1 min-w-0"><p class="text-xs font-bold text-midnight truncate">' + escapeHtml(m.username || ('#' + m.user_id)) + '</p>' +
                 '<p class="text-[10px] text-midnight/50 truncate">' + escapeHtml(m.email || '') + '</p></div>' +
-                '<select class="text-[11px] border border-midnight/20 rounded px-2 py-1" onchange="changeOrgMemberRole(' + orgId + ', ' + m.user_id + ', this.value)">' + opts + '</select>' +
+                '<select data-action="adm-member-role" data-org="' + orgId + '" data-user="' + m.user_id + '" class="text-[11px] border border-midnight/20 rounded px-2 py-1">' + opts + '</select>' +
                 '<button data-action="adm-member-remove" data-org="' + orgId + '" data-user="' + m.user_id + '" class="p-1.5 rounded hover:bg-rose-50 text-rose-600" title="' + t('org.remove_member') + '"><i data-lucide="trash-2" class="w-3 h-3"></i></button>' +
                 '</div>';
         }).join('');
@@ -2614,6 +2687,7 @@ function removeOrgMember(orgId, userId) {
 delegateActions({
     'adm-period': function(el) { setPeriod(parseInt(el.dataset.period, 10)); },
     'adm-sla-period': function(el) { loadSla(el.dataset.days); },
+    'adm-save-pipeline-stages': function() { savePipelineStages(); },
     'adm-close-org': function() { closeOrgModal(); },
     'adm-close-notify': function() { closeNotifyModal(); },
     'adm-close-deactivate': function() { closeDeactivateModal(); },
@@ -2667,10 +2741,14 @@ delegateActions({
     'adm-in-zone': function() { filterZoneChart(); },
     'adm-in-search': function(el) { filterBySearch(el.value); },
     'adm-in-phone-area': function(el) { filterPhoneAreaCodes(el.value); },
-    'adm-in-notiflog': function() { loadNotificationLog(1); }
+    'adm-in-notiflog': function() { loadNotificationLog(1); },
+    'adm-in-icon-search': function(el) { filterIcons(el.value); }
 }, 'input');
 delegateActions({
-    'adm-chg-notif': function() { saveAdminNotifPrefs(); }
+    'adm-chg-notif': function() { saveAdminNotifPrefs(); },
+    'adm-set-pro-org': function(el) { setProOrg(el.value, el.dataset.userId); },
+    'adm-set-lead-org': function(el) { setLeadOrg(el.value, el.dataset.leadId); },
+    'adm-member-role': function(el) { changeOrgMemberRole(parseInt(el.dataset.org, 10), parseInt(el.dataset.user, 10), el.value); }
 }, 'change');
 
 /* API pública (usada por otros archivos/templates) */

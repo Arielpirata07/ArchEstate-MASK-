@@ -20,13 +20,10 @@ function renderUploadWidget(cid) {
             <!-- Zona drag & drop -->
             <div id="dropzone-${cid}"
                  class="relative border-2 border-dashed border-midnight/20 rounded-lg p-8 text-center transition-all duration-200 cursor-pointer hover:border-gold hover:bg-paper group"
-                 data-action="pro-click-input" data-target="fileInput-${cid}"
-                 ondragover="handleDragOver(event,'${cid}')"
-                 ondragleave="handleDragLeave(event,'${cid}')"
-                 ondrop="handleDrop(event,'${cid}')">
+                 data-action="pro-dropzone" data-cid="${cid}">
 
                 <input type="file" id="fileInput-${cid}" accept=".pdf,.jpg,.jpeg,.png"
-                       class="hidden" onchange="handleFileSelect(event,'${cid}')">
+                       class="hidden" data-action="pro-file-select" data-cid="${cid}">
 
                 <div class="w-14 h-14 mx-auto rounded-full bg-paper-dark group-hover:bg-gold/10 flex items-center justify-center mb-4 transition-colors">
                     <i data-lucide="upload-cloud" class="w-7 h-7 text-midnight/30 group-hover:text-gold transition-colors"></i>
@@ -143,6 +140,21 @@ function handleDrop(e, cid) {
 }
 function handleFileSelect(e, cid) {
     if (e.target.files[0]) processFile(e.target.files[0], cid);
+}
+
+// Un solo handler para click/drag: el tipo de evento decide la acción.
+function proDropzone(el, e) {
+    var cid = el.dataset.cid;
+    if (e.type === 'click') {
+        e.preventDefault();
+        document.getElementById('fileInput-' + cid).click();
+    } else if (e.type === 'dragover') {
+        handleDragOver(e, cid);
+    } else if (e.type === 'dragleave') {
+        handleDragLeave(e, cid);
+    } else if (e.type === 'drop') {
+        handleDrop(e, cid);
+    }
 }
 
 // ---- Procesar archivo ----
@@ -1758,6 +1770,14 @@ var PIPELINE_STAGE_COLORS = {
     proposal: '#D97706', closed_won: '#059669', closed_lost: '#DC2626', archived: '#6B7280'
 };
 var leadsViewMode = 'list';
+var _pipelineSettings = null;
+
+function pipelineStageList() {
+    if (_pipelineSettings && _pipelineSettings.length) return _pipelineSettings;
+    return PIPELINE_STAGES.map(function(stage) {
+        return { stage: stage, label: pipelineStageLabel(stage), color: PIPELINE_STAGE_COLORS[stage] || '#735A3A' };
+    });
+}
 
 function pipelineStageLabel(stage) {
     var labels = {
@@ -1810,8 +1830,19 @@ async function loadPipeline() {
     board.innerHTML = '<div class="flex justify-center items-center gap-2 p-8 text-midnight/60" data-pipeline-status="loading">' +
         '<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-gold"></div> ' + t('pipeline.loading') + '</div>';
     try {
-        var res = await fetch('/api/pipeline/leads?' + pipelineQueryParams().toString());
+        var params = pipelineQueryParams().toString();
+        var results = await Promise.all([
+            fetch('/api/pipeline/leads?' + params),
+            fetch('/api/pipeline/stages?' + params)
+        ]);
+        var res = results[0];
         var data = await res.json();
+        try {
+            var stagesData = await results[1].json();
+            if (stagesData && stagesData.success && Array.isArray(stagesData.stages)) {
+                _pipelineSettings = stagesData.stages;
+            }
+        } catch (e) { /* fallback a defaults */ }
         if (data.success) {
             renderPipeline(data.leads || []);
         } else {
@@ -1842,8 +1873,9 @@ function pipelineDots(days) {
 function renderPipeline(leads) {
     var board = document.getElementById('pipelineBoard');
     if (!board) return;
+    var stages = pipelineStageList();
     var grouped = {};
-    PIPELINE_STAGES.forEach(function(s) { grouped[s] = []; });
+    stages.forEach(function(s) { grouped[s.stage] = []; });
     (leads || []).forEach(function(lead) {
         var st = lead.pipeline_stage || 'new';
         if (!grouped[st]) grouped[st] = [];
@@ -1857,8 +1889,10 @@ function renderPipeline(leads) {
         return;
     }
     var html = '';
-    PIPELINE_STAGES.forEach(function(stage) {
-        var color = PIPELINE_STAGE_COLORS[stage] || '#735A3A';
+    stages.forEach(function(setting) {
+        var stage = setting.stage;
+        var color = escapePipelineHtml(setting.color || PIPELINE_STAGE_COLORS[stage] || '#735A3A');
+        var stageLabel = setting.label || pipelineStageLabel(stage);
         var cards = grouped[stage].map(function(lead) {
             var budget = escapePipelineHtml(lead.budget || '—') + ' ' + escapePipelineHtml(lead.currency || '');
             return '<div class="pipeline-card" draggable="true" data-lead-id="' + lead.id + '">' +
@@ -1874,7 +1908,7 @@ function renderPipeline(leads) {
         if (!cards) cards = '<p class="pipeline-empty">' + t('pipeline.no_leads') + '</p>';
         html += '<div class="pipeline-column" data-stage="' + stage + '">' +
             '<div class="pipeline-column-header" style="border-top:3px solid ' + color + '">' +
-            '<span class="pipeline-column-title">' + pipelineStageLabel(stage) + '</span>' +
+            '<span class="pipeline-column-title">' + escapePipelineHtml(stageLabel) + '</span>' +
             '<span class="pipeline-count">' + grouped[stage].length + '</span>' +
             '</div>' +
             '<div class="pipeline-cards" data-stage="' + stage + '">' + cards + '</div>' +
@@ -2689,8 +2723,15 @@ delegateActions({
 });
 
 delegateActions({
-    'pro-chg-market': function() { loadMarketStats(false); }
+    'pro-chg-market': function() { loadMarketStats(false); },
+    'pro-file-select': function(el, e) { handleFileSelect(e, el.dataset.cid); }
 }, 'change');
+
+/* Dropzone: click abre el input; dragover/leave/drop gestionan el archivo. */
+var proDropHandlers = { 'pro-dropzone': proDropzone };
+['click', 'dragover', 'dragleave', 'drop'].forEach(function(evt) {
+    delegateActions(proDropHandlers, evt);
+});
 
 /* API pública (usada por otros archivos/templates) */
 window.applyFilters = applyFilters;

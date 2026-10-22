@@ -50,11 +50,17 @@ def _query_leads_stats(conn, user_id, my_leads, month):
 
     cur_params = params + [month]
     cur_stats = conn.execute(f'''
-        SELECT
-            COUNT(*) as total,
-            AVG(CAST(SUBSTR(budget, 1, INSTR(budget, ' ') - 1) AS REAL)) as avg_budget
+        SELECT COUNT(*) as total
         FROM leads WHERE {where_sql} AND {date_format_sql('timestamp', '%Y-%m')} = ?
     ''', cur_params).fetchone()
+
+    budget_rows = conn.execute(f'''
+        SELECT budget FROM leads
+        WHERE {where_sql} AND {date_format_sql('timestamp', '%Y-%m')} = ?
+    ''', cur_params).fetchall()
+    budget_values = [utils.parse_budget_avg(r['budget']) for r in budget_rows]
+    budget_values = [value for value in budget_values if value > 0]
+    avg_budget = round(sum(budget_values) / len(budget_values), 0) if budget_values else 0
 
     cur_year, cur_mon = month.split('-')
     mon_int = int(cur_mon)
@@ -101,7 +107,7 @@ def _query_leads_stats(conn, user_id, my_leads, month):
 
     return {
         'total': cur_stats['total'] or 0,
-        'avg_budget': round(cur_stats['avg_budget'] or 0, 0),
+        'avg_budget': avg_budget,
         'by_property_type': [{'label': r['property_type'], 'value': r['count']} for r in by_property_type],
         'by_zone': [{'label': r['zone'], 'value': r['count']} for r in by_zone],
         'by_operation_type': [{'label': r['type'], 'value': r['count']} for r in by_operation_type],

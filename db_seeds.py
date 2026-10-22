@@ -57,8 +57,31 @@ def _clean_lead_test_data(cursor):
 
 
 
+PIPELINE_STAGE_SETTINGS_SEED = [
+    ('new', 'Nuevo', 'New', '#735A3A', 1),
+    ('contacted', 'Contactado', 'Contacted', '#059669', 2),
+    ('visit', 'Visita Programada', 'Visit Scheduled', '#2563EB', 3),
+    ('negotiation', 'Negociación', 'Negotiation', '#7C3AED', 4),
+    ('proposal', 'Propuesta', 'Proposal', '#D97706', 5),
+    ('closed_won', 'Cerrado Ganado', 'Closed Won', '#059669', 6),
+    ('closed_lost', 'Cerrado Perdido', 'Closed Lost', '#DC2626', 7),
+    ('archived', 'Archivado', 'Archived', '#6B7280', 8),
+]
+
+
+def _seed_pipeline_stage_settings(cursor):
+    """Crea las etiquetas/colores por defecto sin pisar ediciones del admin."""
+    for stage, label_es, label_en, color, sort_order in PIPELINE_STAGE_SETTINGS_SEED:
+        cursor.execute(
+            'INSERT INTO pipeline_stage_settings (stage, label_es, label_en, color, sort_order) '
+            'VALUES (?, ?, ?, ?, ?) ON CONFLICT(stage) DO NOTHING',
+            (stage, label_es, label_en, color, sort_order)
+        )
+
+
 def seed_all(cursor):
     """Seeds + fixups + admin inicial (idempotentes)."""
+    _seed_pipeline_stage_settings(cursor)
     FORM_OPTIONS_SEED = [
         ('property_type', 'departamento', 'Departamento', 'building', 1),
         ('property_type', 'casa', 'Casa', 'home', 2),
@@ -356,29 +379,35 @@ def seed_all(cursor):
     cursor.execute('SELECT COUNT(*) FROM users')
 
     if cursor.fetchone()[0] == 0:
+        admin_password = None
         if _is_prod():
             admin_password = os.environ.get('ADMIN_INITIAL_PASSWORD')
             if not admin_password:
                 import secrets
-                admin_password = secrets.token_urlsafe(12)
+                generated = secrets.token_urlsafe(12)
                 pw_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.admin_initial_password')
                 try:
                     with open(pw_file, 'w') as f:
-                        f.write(admin_password + '\n')
+                        f.write(generated + '\n')
                     os.chmod(pw_file, 0o600)
+                    admin_password = generated
                     logger.info('Admin user created. Initial password saved to .admin_initial_password')
                 except OSError as e:
-                    logger.warning('Could not write .admin_initial_password: %s', e)
-                    logger.info('Admin password (copy it NOW): %s', admin_password)
+                    # No loguear la contraseña: los logs de la app se capturan.
+                    # Sin archivo ni env var no hay forma segura de entregarla.
+                    logger.error(
+                        'No se pudo escribir .admin_initial_password (%s). '
+                        'No se crea el admin: definí ADMIN_INITIAL_PASSWORD y reiniciá.', e)
             else:
                 logger.info('Admin user created with password from ADMIN_INITIAL_PASSWORD env')
         else:
             admin_password = 'admin123'
-        try:
-            cursor.execute('INSERT INTO users (username, email, hash, role) VALUES (?, ?, ?, ?)',
-                          ('admin', 'admin@archestate.local', generate_password_hash(admin_password), 'admin'))
-        except Exception:
-            # Carrera de boot multi-worker: otro worker creó el admin primero
-            # (username es UNIQUE). No es error.
-            logger.info('Admin ya creado por otro worker, se omite seed')
+        if admin_password:
+            try:
+                cursor.execute('INSERT INTO users (username, email, hash, role) VALUES (?, ?, ?, ?)',
+                              ('admin', 'admin@archestate.local', generate_password_hash(admin_password), 'admin'))
+            except Exception:
+                # Carrera de boot multi-worker: otro worker creó el admin primero
+                # (username es UNIQUE). No es error.
+                logger.info('Admin ya creado por otro worker, se omite seed')
 

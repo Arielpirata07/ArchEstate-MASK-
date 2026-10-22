@@ -52,6 +52,10 @@
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2"><i data-lucide="timer" class="w-4 h-4"></i> {{ t('admin.sla') }}</span>
             </button>
+            <button data-action="adm-tab" data-tab="pipeline-stages" id="tab-pipeline-stages"
+                class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-paper-dark text-midnight hover:bg-gold hover:text-white">
+                <span class="flex items-center gap-2"><i data-lucide="columns-3" class="w-4 h-4"></i> {{ t('admin.pipeline_stages_title') }}</span>
+            </button>
             <a href="{{ url_for('admin.user_management_view') }}"
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-paper-dark text-midnight hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2"><i data-lucide="users" class="w-4 h-4"></i> {{ t('admin.users') }}</span>
@@ -591,15 +595,15 @@
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="bg-paper-dark table-header-border">
-                            <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">ID Lead</th>
-                            <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Tipo Oper.</th>
-                            <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Vivienda</th>
-                            <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Zona</th>
-                            <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Presupuesto</th>
-                            <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Telefono</th>
-                            <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Reportado Por</th>
+                            <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('leads.id') }}</th>
+                            <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('leads.operation_type') }}</th>
+                            <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('leads.property_type') }}</th>
+                            <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('leads.zone') }}</th>
+                            <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('leads.budget') }}</th>
+                            <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('user.phone') }}</th>
+                            <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('leads.reported_by') }}</th>
                             <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('admin.status') }}</th>
-                            <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">Fecha</th>
+                            <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold">{{ t('leads.date') }}</th>
                             <th class="px-4 py-4 text-[11px] uppercase tracking-widest font-extrabold text-gold text-right">{{ t('admin.actions') }}</th>
                         </tr>
                     </thead>
@@ -726,7 +730,7 @@
 </div>
 
 <!-- ===== MODAL: DETALLE DE LEAD REPORTADO ===== -->
-<div id="leadDetailModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
+<div id="leadDetailModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="leadDetailTitle">
     <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" data-action="adm-close-leaddetail"></div>
     <div class="absolute inset-0 flex overflow-y-auto p-4">
         <div class="modal-panel bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto" style="margin:auto">
@@ -734,7 +738,7 @@
             <div class="border-t-4 border-gold px-8 pt-6 pb-4 flex items-start justify-between">
                 <div>
                     <p class="text-[10px] uppercase tracking-widest font-bold text-gold mb-1">{{ t('admin.detail_lead') }}</p>
-                    <h3 class="text-2xl font-serif">Lead <span id="leadDetailId" class="serif-italic text-gold"></span></h3>
+                    <h3 id="leadDetailTitle" class="text-2xl font-serif">Lead <span id="leadDetailId" class="serif-italic text-gold"></span></h3>
                 </div>
                 <button data-action="adm-close-leaddetail" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('admin.close') }}">
                     <i data-lucide="x" class="w-5 h-5"></i>
@@ -928,6 +932,23 @@
                 <div class="overflow-x-auto">
                     <table id="sla-zone-table" class="w-full text-left"></table>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="panel-pipeline-stages" class="hidden space-y-6">
+        <div class="bg-white dark:!bg-[#1a2332] rounded-xl shadow-sm border border-midnight/10 dark:border-white/10 p-6">
+            <h3 class="text-sm font-bold uppercase tracking-widest text-midnight dark:text-white">{{ t('admin.pipeline_stages_title') }}</h3>
+            <p class="text-[11px] text-midnight/50 dark:text-white/50 mt-1">{{ t('admin.pipeline_stages_desc') }}</p>
+            <div id="pipeline-stages-form" class="space-y-3 mt-5"></div>
+            <div class="flex flex-wrap items-center gap-4 gap-y-2 mt-5 pt-4 border-t border-midnight/10 dark:border-white/10">
+                <button type="button" data-action="adm-save-pipeline-stages"
+                    class="px-5 py-3 bg-midnight text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-gold transition-all flex items-center gap-2">
+                    <i data-lucide="save" class="w-4 h-4" aria-hidden="true"></i>
+                    {{ t('action.save') }}
+                </button>
+                <span id="pipeline-stages-msg" class="hidden text-sm font-medium text-emerald-600" aria-live="polite"></span>
+                <span id="pipeline-stages-error" class="hidden text-sm font-medium text-rose-600" role="alert"></span>
             </div>
         </div>
     </div>

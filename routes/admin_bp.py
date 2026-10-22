@@ -237,6 +237,57 @@ def admin_stats():
             conn.close()
 
 
+@admin_bp.route('/api/admin/pipeline-stages', methods=['GET'])
+@admin_required
+def admin_pipeline_stages():
+    lang = get_language()
+    conn = None
+    try:
+        conn = models.get_db_connection()
+        return jsonify({
+            'success': True,
+            'stages': models.get_pipeline_stage_settings(conn, lang),
+        })
+    except Exception:
+        logger.exception('Error en admin_pipeline_stages')
+        return jsonify({'success': False, 'error': t('admin.internal_error_short', lang)}), 500
+    finally:
+        if conn:
+            conn.close()
+
+
+@admin_bp.route('/api/admin/pipeline-stages', methods=['PUT'])
+@admin_required
+@rate_limit.check_rate_limit(limit=60, window=60)
+def admin_update_pipeline_stages():
+    lang = get_language()
+    data = request.json or {}
+    items = data.get('stages')
+    if not isinstance(items, list) or not items:
+        return jsonify({'success': False, 'error': t('admin.pipeline_stages_invalid', lang)}), 400
+
+    if not models.update_pipeline_stage_settings(items):
+        return jsonify({'success': False, 'error': t('admin.pipeline_stages_invalid', lang)}), 400
+
+    conn = None
+    try:
+        conn = models.get_db_connection()
+        utils.log_action('Etapas de pipeline actualizadas', f'Admin: {session.get("username", "")}',
+                         session, conn=conn)
+        conn.commit()
+        return jsonify({
+            'success': True,
+            'message': t('admin.pipeline_stages_saved', lang),
+            'stages': models.get_pipeline_stage_settings(conn, lang),
+        })
+    except Exception:
+        logger.exception('Error en admin_update_pipeline_stages')
+        return jsonify({'success': False, 'error': t('admin.internal_error_short', lang)}), 500
+    finally:
+        if conn:
+            conn.close()
+
+
 @admin_bp.route('/api/admin/sla')
 @admin_required
 def admin_sla():

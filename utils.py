@@ -48,6 +48,25 @@ def parse_budget(raw):
         return 0
 
 
+def parse_budget_avg(raw):
+    """Presupuesto promedio; para rangos ("150000 - 400000") usa el punto medio.
+
+    A diferencia de parse_budget (que toma el primer numero), este helper
+    evita subestimar leads cargados con rangos.
+    """
+    if raw is None:
+        return 0
+    text = str(raw).strip()
+    if not text:
+        return 0
+    parts = re.split(r'\s*(?:[-\u2013\u2014]|\bto\b|\ba\b)\s*', text, flags=re.IGNORECASE)
+    values = [parse_budget(part) for part in parts]
+    values = [value for value in values if value > 0]
+    if not values:
+        return 0
+    return sum(values) / len(values)
+
+
 MIME_MAGIC_BYTES = {
     'pdf':  [b'%PDF'],
     'jpg':  [b'\xff\xd8\xff'],

@@ -8,12 +8,10 @@ import logging
 import os
 import re
 
-from datetime import datetime
 from io import StringIO
 
 import openpyxl
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side, numbers
-import pytz
 
 logger = logging.getLogger(__name__)
 
@@ -54,9 +52,13 @@ def pipeline_stages():
                 extra_where = ' AND '.join(conds)
                 extra_params = tuple(geo_params)
         counts = models.get_pipeline_counts(session['user_id'], extra_where, extra_params)
+        settings = models.get_pipeline_stage_settings(conn, lang)
         return jsonify({
             'success': True,
-            'stages': [{'stage': stage, 'count': counts.get(stage, 0)} for stage in models.PIPELINE_STAGES]
+            'stages': [
+                {**item, 'count': counts.get(item['stage'], 0)}
+                for item in settings
+            ]
         })
     except Exception:
         logger.exception('Error en pipeline_stages')
@@ -182,8 +184,8 @@ def pipeline_move_lead(lead_id):
         if to_stage not in models.PIPELINE_STAGES:
             return jsonify({'success': False, 'error': t('pipeline.invalid_stage', lang)}), 400
 
-        argentina_tz = pytz.timezone('America/Argentina/Buenos_Aires')
-        now = datetime.now(argentina_tz).strftime('%Y-%m-%d %H:%M:%S')
+        # UTC por convención de storage (ver models/pipeline.py).
+        now = utils.utc_now_str()
         result = models.move_lead_stage(session['user_id'], lead_id, to_stage, now)
         if not result:
             return jsonify({'success': False, 'error': t('prof.internal_error_short', lang)}), 500
@@ -225,8 +227,8 @@ def pipeline_bulk_move():
         except (ValueError, TypeError):
             return jsonify({'success': False, 'error': t('pipeline.invalid_ids', lang)}), 400
 
-        argentina_tz = pytz.timezone('America/Argentina/Buenos_Aires')
-        now = datetime.now(argentina_tz).strftime('%Y-%m-%d %H:%M:%S')
+        # UTC por convención de storage (ver models/pipeline.py).
+        now = utils.utc_now_str()
         # Una sola transacción all-or-nothing (ids inexistentes se ignoran).
         moved = models.move_lead_stage_batch(session['user_id'], lead_ids, to_stage, now)
         return jsonify({'success': True, 'moved': moved, 'to_stage': to_stage})

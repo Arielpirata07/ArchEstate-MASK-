@@ -1090,6 +1090,7 @@ function loadUserLeads() {
 // PROFESSIONAL FULL PROFILE
 // ============================================================
 function loadProfessionalFullProfile() {
+    loadPortfolio();
     // Load basic data (license, status)
     fetch('/api/profile/professional')
     .then(r => r.json())
@@ -1467,6 +1468,124 @@ function deleteProfessionalPhoto() {
 }
 
 // ============================================================
+// PROFESSIONAL PORTFOLIO
+// ============================================================
+function loadPortfolio() {
+    var grid = document.getElementById('portfolio-grid');
+    if (!grid) return;
+    var status = document.getElementById('portfolio-status');
+    var empty = document.getElementById('portfolio-empty');
+    if (empty) empty.classList.add('hidden');
+    if (status) { status.textContent = t('profile.portfolio_loading'); status.className = 'text-[10px] mt-3 text-midnight/50'; }
+    fetch('/api/profile/professional/portfolio')
+    .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+    .then(function (res) {
+        if (res.ok && res.data.success) {
+            renderPortfolio(res.data.items || []);
+            if (status) { status.textContent = ''; status.className = 'text-[10px] mt-3'; }
+        } else if (status) {
+            status.textContent = (res.data && res.data.error) || t('error.load');
+            status.className = 'text-[10px] mt-3 text-rose-500';
+        }
+    })
+    .catch(function () {
+        if (status) { status.textContent = t('error.connection'); status.className = 'text-[10px] mt-3 text-rose-500'; }
+    });
+}
+
+function renderPortfolio(items) {
+    var grid = document.getElementById('portfolio-grid');
+    var empty = document.getElementById('portfolio-empty');
+    if (!grid) return;
+    if (!items.length) {
+        grid.innerHTML = '';
+        if (empty) empty.classList.remove('hidden');
+        return;
+    }
+    if (empty) empty.classList.add('hidden');
+    grid.innerHTML = items.map(function (item, idx) {
+        var url = escapeHtml(item.url || '');
+        var path = escapeHtml(item.path || '');
+        return '<figure class="relative group rounded-lg overflow-hidden border" style="border-color:var(--border)">' +
+            '<img src="' + url + '" alt="' + escapeHtml(t('profile.portfolio_image_alt', { n: idx + 1 })) + '" class="w-full h-32 object-cover" loading="lazy">' +
+            '<button type="button" data-action="prof-delete-portfolio" data-path="' + path + '" ' +
+            'class="absolute top-2 right-2 p-3 md:p-1.5 rounded-full bg-midnight/70 text-white opacity-100 md:opacity-0 md:group-hover:opacity-100 focus:opacity-100 transition-opacity" ' +
+            'aria-label="' + escapeHtml(t('profile.portfolio_delete')) + '">' +
+            '<i data-lucide="trash-2" class="w-3.5 h-3.5" aria-hidden="true"></i></button>' +
+            '</figure>';
+    }).join('');
+    if (window.lucide) lucide.createIcons();
+}
+
+function uploadPortfolio(input) {
+    var files = Array.prototype.slice.call(input.files || []);
+    if (!files.length) return;
+    var status = document.getElementById('portfolio-status');
+    var total = files.length;
+    var done = 0;
+
+    function updateStatus(text, cls) {
+        if (!status) return;
+        status.textContent = text;
+        status.className = 'text-[10px] mt-3 ' + (cls || '');
+    }
+
+    function uploadNext() {
+        var file = files.shift();
+        if (!file) {
+            updateStatus(t('profile.portfolio_uploaded'), 'text-emerald-600');
+            input.value = '';
+            loadPortfolio();
+            return;
+        }
+        updateStatus(t('action.uploading') + ' ' + (done + 1) + '/' + total, 'text-amber-500');
+        var formData = new FormData();
+        formData.append('file', file);
+        fetch('/api/profile/professional/portfolio', { method: 'POST', body: formData })
+        .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+        .then(function (res) {
+            if (!res.ok) throw new Error(res.data.error || t('error.connection'));
+            done += 1;
+            uploadNext();
+        })
+        .catch(function (err) {
+            updateStatus(err.message || t('error.connection'), 'text-rose-500');
+            input.value = '';
+            loadPortfolio();
+        });
+    }
+
+    uploadNext();
+}
+
+function deletePortfolioItem(path) {
+    var message = t('profile.portfolio_delete_confirm');
+    var promise = typeof showConfirm === 'function' ? showConfirm(message) : Promise.resolve(true);
+    promise.then(function (ok) {
+        if (!ok) return;
+        var status = document.getElementById('portfolio-status');
+        fetch('/api/profile/professional/portfolio', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: path })
+        })
+        .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+        .then(function (res) {
+            if (res.ok && res.data.success) {
+                renderPortfolio(res.data.items || []);
+                if (status) { status.textContent = t('profile.portfolio_deleted'); status.className = 'text-[10px] mt-3 text-emerald-600'; }
+            } else if (status) {
+                status.textContent = res.data.error || t('error.process_request');
+                status.className = 'text-[10px] mt-3 text-rose-500';
+            }
+        })
+        .catch(function () {
+            if (status) { status.textContent = t('error.connection'); status.className = 'text-[10px] mt-3 text-rose-500'; }
+        });
+    });
+}
+
+// ============================================================
 // SERVICES / AVAILABILITY CHIPS (auto-save placeholders)
 // ============================================================
 function updateServicesOffered() {
@@ -1699,6 +1818,30 @@ async function submitVerificationCode() {
     }
 }
 
+async function sendEmailVerification() {
+    const btn = document.getElementById('verify-email-btn');
+    if (btn) {
+        btn.disabled = true;
+        btn.classList.add('opacity-50');
+    }
+    try {
+        const res = await fetch('/api/email/send-verification', { method: 'POST' });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            showToast(data.message || t('profile.email_verification_sent'), 'success');
+        } else {
+            showToast(data.error || t('profile.email_verification_error'), 'error');
+        }
+    } catch (err) {
+        showToast(t('profile.email_verification_error'), 'error');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.classList.remove('opacity-50');
+        }
+    }
+}
+
 async function resendVerificationCode() {
     const btn = document.getElementById('resend-code-btn');
     const cooldown = document.getElementById('resend-cooldown');
@@ -1804,9 +1947,11 @@ delegateActions({
     'prof-save-coverage': function() { saveCoverage(); },
     'prof-reset-coverage': function() { resetCoverage(); },
     'prof-resend-verification-code': function() { resendVerificationCode(); },
+    'prof-send-email-verification': function() { sendEmailVerification(); },
     'prof-open-phone-verify-modal': function() { openPhoneVerifyModal(); },
     'prof-dismiss-phone-correction': function() { dismissPhoneCorrection(); },
     'prof-delete-professional-photo': function() { deleteProfessionalPhoto(); },
+    'prof-delete-portfolio': function(el) { deletePortfolioItem(el.dataset.path); },
     'prof-delete-avatar': function() { deleteAvatar(); },
     'prof-contact-admin': function() { contactAdmin(); },
     'prof-close-phone-verify-modal': function() { closePhoneVerifyModal(); },
@@ -1824,6 +1969,7 @@ delegateActions({
 delegateActions({
     'prof-chg-avatar': function(el) { uploadAvatar(el); },
     'prof-chg-photo': function(el) { uploadProfessionalPhoto(el); },
+    'prof-chg-portfolio': function(el) { uploadPortfolio(el); },
     'prof-chg-phonefmt': function() { updateProfilePhoneFormat(); },
     'prof-chg-prefix': function() { applyProvincePrefix(); },
     'prof-chg-channel': function() { savePreferredChannel(); toggleWhatsappHint(); },

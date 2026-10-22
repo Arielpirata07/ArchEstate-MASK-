@@ -74,3 +74,25 @@ class TestRegister:
         assert resp.status_code == 200
         content = resp.data.decode('utf-8', errors='replace')
         assert 'ya está en uso' in content or 'ya est' in content
+
+
+    def test_registration_rejects_duplicate_email(self, client):
+        resp = client.post('/register', data={
+            'username': 'emailone',
+            'email': 'shared@example.com',
+            'phone': '+5491112345678',
+            'password': 'Secure1',
+            'role': 'client',
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+
+        resp = client.post('/register', data={
+            'username': 'emailtwo',
+            'email': 'shared@example.com',
+            'phone': '+5491112345679',
+            'password': 'Secure1',
+            'role': 'client',
+        }, follow_redirects=True)
+        assert resp.status_code == 200
+        content = resp.data.decode('utf-8', errors='replace')
+        assert ('ya está registrado' in content) or ('already registered' in content)

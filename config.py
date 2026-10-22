@@ -18,6 +18,7 @@ if not SECRET_KEY:
 
 UPLOAD_FOLDER = os.path.join('static', 'uploads', 'docs')
 AVATAR_FOLDER = os.path.join('static', 'uploads', 'avatars')
+PORTFOLIO_FOLDER = os.path.join('static', 'uploads', 'portfolio')
 
 ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'gif', 'webp'}
 

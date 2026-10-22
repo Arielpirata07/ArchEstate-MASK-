@@ -72,7 +72,15 @@ def edit_lead_view(lead_id):
 @decorators.login_required
 def api_get_user_leads():
     user_id = session['user_id']
-    leads = models.get_user_leads(user_id)
+    try:
+        limit = int(request.args.get('limit', 200))
+    except (TypeError, ValueError):
+        limit = 200
+    try:
+        offset = int(request.args.get('offset', 0))
+    except (TypeError, ValueError):
+        offset = 0
+    leads = models.get_user_leads(user_id, limit=limit, offset=offset)
     for lead in leads:
         if lead.get('timestamp'):
             lead['timestamp'] = utils.convert_to_argentina_time(lead['timestamp'])

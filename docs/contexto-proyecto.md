@@ -802,6 +802,6 @@ flask, werkzeug, openpyxl, pytz, fpdf, phonenumbers, freezegun, twilio, gunicorn
 │   ├── css/                  # 8 CSS files
 │   ├── js/                   # 13 JS files
 │   └── uploads/              # Uploads de usuarios
-├── tests/                    # 528 tests pytest + 12 tests JS (node:test)
+├── tests/                    # 859 tests pytest + 34 tests JS (node:test)
 └── .plans/                   # Planes de implementación anteriores
 ```

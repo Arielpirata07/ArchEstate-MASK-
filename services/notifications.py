@@ -424,6 +424,7 @@ def notify_lead_status_change(lead_id: int, professional_id: int, new_status: st
     admin_users = _get_admin_users()
     for admin in admin_users:
         html, _ = _render_email('status_change',
+            site_url=config.SITE_URL,
             lead_id=lead_id,
             professional_name=user.get('username', 'N/A'),
             new_status=status_label,

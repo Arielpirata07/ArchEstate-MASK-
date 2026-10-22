@@ -59,10 +59,23 @@ class SmsSimulatedVerifier(OTPChannel):
     def __init__(self, audit_fn=None):
         self._audit = audit_fn
 
+    @staticmethod
+    def _redact(code):
+        """En producción/staging el código no debe ir a logs de app (pueden
+        ser capturados). Sólo se muestra completo con FLASK_DEBUG (dev)."""
+        try:
+            from flask import current_app
+            if current_app.debug:
+                return code
+        except Exception:
+            pass
+        return '***' if not code else code[-2:].rjust(len(code), '*')
+
     def send(self, phone_e164, code, ttl_minutes=10, username=None):
         lang = get_language()
         try:
-            logger.info('[SMS SIMULADO] -> %s | Código: %s (válido %d min)', phone_e164, code, ttl_minutes)
+            logger.info('[SMS SIMULADO] -> %s | Código: %s (válido %d min)',
+                        phone_e164, self._redact(code), ttl_minutes)
             if self._audit:
                 self._audit("OTP enviado por SMS", f"phone_hash={hash_phone_digits(phone_e164)} channel=sms ttl={ttl_minutes}m")
             return SendResult(ok=True, channel=self.name,
@@ -101,6 +114,18 @@ class WhatsAppSimulatedVerifier(OTPChannel):
         self._base_url = base_url
         self._include_deep_link = include_deep_link
 
+    @staticmethod
+    def _redact_link(link):
+        """Enmascara el código OTP dentro del link wa.me para logs de app."""
+        import re as _re
+        try:
+            from flask import current_app
+            if current_app.debug:
+                return link
+        except Exception:
+            pass
+        return _re.sub(r'(text=.*?%2A%2A|text=.*?\d{2})', 'text=***', link, count=1)
+
     def send(self, phone_e164, code, ttl_minutes=10, username=None):
         lang = get_language()
         try:
@@ -109,7 +134,8 @@ class WhatsAppSimulatedVerifier(OTPChannel):
             label = f" {username}," if username else ""
             text = quote_plus(t('verifier.wa_otp_text', lang, label=label, code=code, ttl=ttl_minutes))
             link = f"{self._base_url}/{digits}?text={text}"
-            logger.info('[WHATSAPP SIMULADO] -> %s | Link wa.me (no enviado): %s', phone_e164, link)
+            logger.info('[WHATSAPP SIMULADO] -> %s | Link wa.me (no enviado): %s',
+                        phone_e164, self._redact_link(link))
             if self._audit:
                 self._audit("OTP enviado por WhatsApp",
                             f"phone_hash={hash_phone_digits(phone_e164)} channel=whatsapp ttl={ttl_minutes}m")

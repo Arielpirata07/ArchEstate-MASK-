@@ -24,12 +24,16 @@ logging.basicConfig(
     datefmt='%Y-%m-%d %H:%M:%S',
 )
 
+logger = logging.getLogger(__name__)
+
 
 def create_app():
     app = Flask(__name__)
     app.secret_key = config.SECRET_KEY
     app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, config.UPLOAD_FOLDER)
     app.config['AVATAR_FOLDER'] = os.path.join(app.root_path, config.AVATAR_FOLDER)
+    app.config['PORTFOLIO_FOLDER'] = os.path.join(app.root_path, config.PORTFOLIO_FOLDER)
+    app.config['MAX_CONTENT_LENGTH'] = config.MAX_UPLOAD_SIZE + 1024 * 1024
     app.config['PERMANENT_SESSION_LIFETIME'] = config.PERMANENT_SESSION_LIFETIME
     app.config['SESSION_COOKIE_HTTPONLY'] = True
     is_dev = os.environ.get('FLASK_DEBUG', '0').lower() in ('1', 'true') or os.environ.get('PYTEST_CURRENT_TEST')
@@ -81,6 +85,7 @@ def create_app():
             conn.execute('SELECT 1').fetchone()
             return jsonify({'status': 'ok', 'db': 'connected'})
         except Exception:
+            logger.exception('Health check failed (DB no disponible)')
             return jsonify({'status': 'error', 'db': 'disconnected'}), 503
         finally:
             if conn:

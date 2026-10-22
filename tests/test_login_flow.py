@@ -188,3 +188,25 @@ class TestForgotPassword:
         resp = client.get('/reset-password/token-invalido-123')
         assert resp.status_code == 302
         assert '/forgot-password' in resp.headers.get('Location', '')
+
+    def test_reset_password_token_single_use(self, client, db):
+        """El token de reseteo se consume de forma atómica: no se reutiliza."""
+        import secrets
+        from datetime import datetime, timedelta, timezone
+        from models import create_password_reset_token, consume_password_reset_token
+
+        user = db.execute('SELECT id FROM users ORDER BY id LIMIT 1').fetchone()
+        assert user is not None
+        token = secrets.token_urlsafe(16)
+        expires = (datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(hours=1)).isoformat()
+        assert create_password_reset_token(user['id'], token, expires) is True
+
+        assert consume_password_reset_token(token) == user['id']
+        assert consume_password_reset_token(token) is None
+
+        first = client.post(f'/reset-password/{token}', data={
+            'password': 'NewPass123',
+            'confirm_password': 'NewPass123',
+        })
+        assert first.status_code == 302
+        assert '/forgot-password' in first.headers.get('Location', '')

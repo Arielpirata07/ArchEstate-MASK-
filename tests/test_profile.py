@@ -220,6 +220,18 @@ class TestUserLeadsTracking:
         assert parse_budget('Consultar') == 0
         assert parse_budget('USD 500,000') == 500000.0
 
+    def test_parse_budget_avg_ranges(self):
+        """parse_budget_avg usa el punto medio de los rangos."""
+        from utils import parse_budget_avg
+        assert parse_budget_avg('150000 - 400000') == 275000.0
+        assert parse_budget_avg('150.000 - 400.000') == 275000.0
+        assert parse_budget_avg('150,000 - 400,000') == 275000.0
+        assert parse_budget_avg('150000 a 400000') == 275000.0
+        assert parse_budget_avg('5850000000') == 5850000000.0
+        assert parse_budget_avg('USD 500,000') == 500000.0
+        assert parse_budget_avg('Consultar') == 0
+        assert parse_budget_avg(None) == 0
+
     def test_build_export_stats_empty(self, auth_client):
         """_build_export_stats returns zeros for empty list."""
         from routes.profile_bp import _build_export_stats
@@ -474,3 +486,117 @@ class TestCreateLeadCtaVisibility:
         html = resp.get_data(as_text=True)
         assert '/usuario' in html
         assert 'panel-solicitudes' in html
+
+
+class TestProfessionalPortfolioAPI:
+
+    PNG_BYTES = b'\x89PNG\r\n\x1a\n' + b'\x00' * 64
+
+    def _login_as_professional(self, client, db):
+        uname = f'portfolio_pro_{uuid.uuid4().hex[:8]}'
+        cur = db.execute(
+            'INSERT INTO users (username, email, hash, role, phone, phone_e164, phone_format_valid) '
+            'VALUES (?, ?, ?, ?, ?, ?, 1)',
+            (uname, f'{uname}@example.com', generate_password_hash('pro123'),
+             'professional', '+5491111111111', '+5491111111111')
+        )
+        uid = cur.lastrowid
+        db.execute(
+            'INSERT INTO professionals (user_id, name, license, specialty, status) VALUES (?, ?, ?, ?, ?)',
+            (uid, uname, f'LIC-{uname}', 'General', 'approved')
+        )
+        db.commit()
+        with client.session_transaction() as sess:
+            sess['user_id'] = uid
+            sess['username'] = uname
+            sess['role'] = 'professional'
+        return client, uid
+
+    @staticmethod
+    def _upload(client, filename='foto.png', content=None):
+        import io
+        return client.post(
+            '/api/profile/professional/portfolio',
+            data={'file': (io.BytesIO(content or TestProfessionalPortfolioAPI.PNG_BYTES), filename)},
+            content_type='multipart/form-data',
+        )
+
+    def test_get_portfolio_empty(self, client, db):
+        client, _ = self._login_as_professional(client, db)
+        resp = client.get('/api/profile/professional/portfolio')
+        assert resp.status_code == 200
+        assert resp.get_json()['items'] == []
+
+    def test_upload_and_delete_portfolio_image(self, client, db):
+        client, _ = self._login_as_professional(client, db)
+        resp = self._upload(client)
+        assert resp.status_code == 200
+        item = resp.get_json()['item']
+        assert item['path'].startswith('uploads/portfolio/')
+        assert item['url'].startswith('/static/uploads/portfolio/')
+
+        listed = client.get('/api/profile/professional/portfolio').get_json()['items']
+        assert [i['path'] for i in listed] == [item['path']]
+
+        deleted = client.delete('/api/profile/professional/portfolio', json={'path': item['path']})
+        assert deleted.status_code == 200
+        assert deleted.get_json()['items'] == []
+        assert client.get('/api/profile/professional/portfolio').get_json()['items'] == []
+
+    def test_upload_rejects_non_image(self, client, db):
+        client, _ = self._login_as_professional(client, db)
+        resp = self._upload(client, filename='doc.pdf', content=b'%PDF-1.4\n' + b'\x00' * 32)
+        assert resp.status_code == 400
+
+    def test_upload_rejects_when_limit_reached(self, client, db):
+        client, uid = self._login_as_professional(client, db)
+        from models import create_or_update_professional_profile
+        create_or_update_professional_profile(
+            uid, {'portfolio': json.dumps([f'uploads/portfolio/pro_{uid}_{i}.png' for i in range(12)])}
+        )
+        resp = self._upload(client)
+        assert resp.status_code == 400
+
+    def test_delete_rejects_invalid_path(self, client, db):
+        client, _ = self._login_as_professional(client, db)
+        resp = client.delete('/api/profile/professional/portfolio', json={'path': '../etc/passwd'})
+        assert resp.status_code == 400
+
+    def test_delete_unknown_path_returns_404(self, client, db):
+        client, _ = self._login_as_professional(client, db)
+        resp = client.delete(
+            '/api/profile/professional/portfolio',
+            json={'path': 'uploads/portfolio/does-not-exist.png'}
+        )
+        assert resp.status_code == 404
+
+    def test_full_profile_update_cannot_change_portfolio(self, client, db):
+        client, uid = self._login_as_professional(client, db)
+        resp = client.put('/api/profile/professional/full', json={
+            'bio_pro': 'test',
+            'portfolio': json.dumps(['uploads/portfolio/pro_99999_x.png']),
+        })
+        assert resp.status_code == 200
+        items = client.get('/api/profile/professional/portfolio').get_json()['items']
+        assert items == []
+
+    def test_delete_rejects_foreign_portfolio_file(self, client, db, app):
+        import os
+        client, uid = self._login_as_professional(client, db)
+        folder = app.config['PORTFOLIO_FOLDER']
+        os.makedirs(folder, exist_ok=True)
+        foreign_name = 'pro_99999_1700000000_deadbeef.png'
+        foreign_path = os.path.join(folder, foreign_name)
+        with open(foreign_path, 'wb') as fh:
+            fh.write(self.PNG_BYTES)
+        db.execute(
+            'UPDATE professional_profiles SET portfolio = ? WHERE user_id = ?',
+            (json.dumps([f'uploads/portfolio/{foreign_name}']), uid)
+        )
+        db.commit()
+
+        resp = client.delete('/api/profile/professional/portfolio',
+                             json={'path': f'uploads/portfolio/{foreign_name}'})
+        assert resp.status_code == 404
+        assert os.path.exists(foreign_path)
+        os.remove(foreign_path)

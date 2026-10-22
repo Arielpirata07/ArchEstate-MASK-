@@ -54,7 +54,8 @@ def whatsapp_webhook():
         return str(resp), 200
 
     phone_e164 = from_number.replace('whatsapp:', '', 1).replace(' ', '')
-    logger.info('Verify request from %s', phone_e164)
+    from services.verifier import hash_phone_digits
+    logger.info('Verify request from phone_hash=%s', hash_phone_digits(phone_e164))
 
     conn = None
     try:

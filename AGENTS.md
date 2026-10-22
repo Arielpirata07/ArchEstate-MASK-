@@ -3,7 +3,7 @@
 ## Architecture
 
 - **Flask app** built with Application Factory pattern via `factory.py:create_app()`.
-- **10 blueprints** registered: `auth`, `public`, `client`, `professional`, `admin`, `phone`, `lead`, `form_options`, `whatsapp`, `profile` (9 in `routes/` + `profile` in `routes_profile.py`).
+- **12 blueprints** registered: `auth`, `public`, `client`, `professional`, `admin`, `phone`, `phone_area_codes`, `lead`, `form_options`, `organizations`, `whatsapp`, `profile` (en `routes/`, con `profile` dividido en `routes/profile/`).
 - Entry point: `app.py` (6 lines) — just `from factory import create_app; app = create_app()`.
 - Middleware in `middleware.py`, error handlers in `errors.py`, DB init in `app_setup.py`.
 - Endpoint naming: blueprint-prefixed (`public.index`, `auth.login`, `professional.professional_view`, etc.).
@@ -25,7 +25,7 @@
 | `decorators.py` | `@login_required`, `@admin_required`, `@professional_required` — all enforce `is_active` |
 | `rate_limit.py` | File-backed rate limiting (JSON + atomic writes). Pendiente migrar a Redis. **Caveat**: con `gunicorn --workers N` el lock es por-worker, el límite efectivo se multiplica por N y puede haber carreras. |
 | `routes_profile.py` | Profile, lead editing, avatar upload (at root, not in `routes/`), `ALLOWED_LEAD_EDIT_FIELDS` |
-| `routes/` | 9 blueprints: `auth_bp`, `public_bp`, `client_bp`, `professional_bp`, `admin_bp`, `phone_bp`, `lead_bp`, `form_options_bp`, `whatsapp_bp` |
+| `routes/` | 12 blueprints: `auth_bp`, `public_bp`, `client_bp`, `professional_bp`, `admin_bp`, `phone_bp`, `phone_area_codes_bp`, `lead_bp`, `form_options_bp`, `organizations_bp`, `whatsapp_bp`, `profile_bp` (`routes/profile/` package) |
 | `services/verifier.py` | OTP verification layer: `SmsSimulatedVerifier`, `WhatsAppSimulatedVerifier`, `TwilioSmsVerifier`, `TwilioWhatsAppVerifier`, `VerifierRouter`, `get_default_router()` |
 | `services/email.py` | `SMTPEmailSender` — SMTP email sender with console fallback |
 | `services/assignment.py` | `auto_assign_lead()` — best-match scoring (specialty/zone/province/workload) |
@@ -34,9 +34,9 @@
 | `wsgi.py` | Gunicorn entry point: `gunicorn wsgi:app` |
 | `render.yaml` | Render deployment blueprint |
 | `i18n/__init__.py` | Package with `t()`, `get_language()`, `DEFAULT_LANG`, `SUPPORTED_LANGS` |
-| `i18n/translations.py` | Master dictionary: 833 keys ES/EN (all UI strings) |
+| `i18n/translations.py` | Master dictionary: 1393 keys ES/EN (all UI strings) |
 | `i18n/browser.py` | `get_browser_language(request)` — parses `Accept-Language` header |
-| `static/js/i18n.js` | JS dictionary (356 keys) + `window.t()` function |
+| `static/js/i18n.js` | JS dictionary (553 keys) + `window.t()` function |
 
 ## Commands
 
@@ -44,7 +44,7 @@
 python app.py                          # Run dev server
 FLASK_DEBUG=true python app.py         # Dev mode with debug
 gunicorn wsgi:app                      # Run with gunicorn (production)
-python -m pytest tests/ -q            # Run all tests (525 total)
+python -m pytest tests/ -q            # Run all tests (859 total)
 python -m pytest tests/ -x -v         # Stop on first failure, verbose
 python -m pytest tests/test_file.py   # Single file
 python verify_coherence.py            # Cross-checks schema/routes/templates
@@ -73,6 +73,7 @@ python verify_coherence.py            # Cross-checks schema/routes/templates
 ## Test notes
 
 - `conftest.py` sets `config.DATABASE` to a temp file, resets rate limits per test.
+- `conftest.py` forces `TWILIO_SIMULATE=true` and resets the verifier router per test, so the suite never hits real Twilio even if `.env` has credentials.
 - Use `auth_client` fixture for authenticated requests.
 - `freezegun` is a dependency — tests use `monkeypatch` extensively.
 
@@ -93,6 +94,10 @@ python verify_coherence.py            # Cross-checks schema/routes/templates
 | `/api/admin/user/<id>/set-active` | `admin.admin_set_user_active` |
 | `/api/admin/user/<id>/reset-password` | `admin.admin_reset_password` |
 | `/api/whatsapp/webhook` | `whatsapp.whatsapp_webhook` |
+| `/verify-email/<token>` | `auth.verify_email` |
+| `/api/email/send-verification` | `auth.send_email_verification` |
+| `/api/profile/professional/portfolio` | `profile.*_portfolio` |
+| `/api/admin/pipeline-stages` | `admin.admin_pipeline_stages` (GET/PUT) |
 | `/health` | `factory.health` |
 | `/robots.txt` | `public.robots` |
 | `/sitemap.xml` | `public.sitemap` |
@@ -127,9 +132,9 @@ python verify_coherence.py            # Cross-checks schema/routes/templates
 
 - **Language**: ES (default) and EN. Toggle in `/mi-perfil` saves to `user_preferences.language`.
 - **Detection**: Session > browser `Accept-Language` > fallback `'es'`.
-- **Python**: `from i18n import t, get_language` — 833 keys in `i18n/translations.py`.
+- **Python**: `from i18n import t, get_language` — 1393 keys in `i18n/translations.py`.
 - **Templates**: `{{ t('key') }}` via `inject_language()` context processor in `middleware.py`.
-- **JS**: `window.t('key')` via `static/js/i18n.js` — 356 keys.
+- **JS**: `window.t('key')` via `static/js/i18n.js` — 553 keys.
 - **Backend**: All flash messages, jsonify responses, validators, error handlers, PDF/XLSX exports, email subjects, OTP messages use `t('key', lang)`.
 - **Key naming**: `prefix.suffix` (e.g., `auth.invalid_credentials`, `prof.pdf_title`, `error.404`).
 - **Adding new keys**: Add to both `es` and `en` in `translations.py` (Python) and `i18n.js` (JS). Keep key parity.

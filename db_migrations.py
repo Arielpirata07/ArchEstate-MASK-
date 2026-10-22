@@ -72,6 +72,64 @@ def _backfill_first_contact(cursor):
         )
 
 
+def _dedupe_and_unique_indexes(cursor):
+    """Índices únicos (v8) con dedup defensivo de datos legados.
+
+    Si hay duplicados que no se pueden resolver sin decisiones de negocio
+    (p. ej. dos usuarios con el mismo email), se omite el índice y se loguea
+    para limpieza manual: nunca se borran usuarios.
+    """
+    # lead_versions: (lead_id, version) único. Conservar la fila más antigua.
+    cursor.execute('''
+        DELETE FROM lead_versions
+        WHERE id NOT IN (
+            SELECT MIN(id) FROM lead_versions GROUP BY lead_id, version
+        )
+    ''')
+    cursor.execute(
+        'CREATE UNIQUE INDEX IF NOT EXISTS idx_lead_versions_lead_version '
+        'ON lead_versions(lead_id, version)'
+    )
+
+    # professionals.user_id: un profesional por usuario (parcial, legacy NULL).
+    dup_pro = cursor.execute('''
+        SELECT COUNT(*) FROM (
+            SELECT user_id FROM professionals
+            WHERE user_id IS NOT NULL
+            GROUP BY user_id HAVING COUNT(*) > 1
+        )
+    ''').fetchone()[0]
+    if dup_pro == 0:
+        cursor.execute(
+            'CREATE UNIQUE INDEX IF NOT EXISTS idx_professionals_user_unique '
+            'ON professionals(user_id) WHERE user_id IS NOT NULL'
+        )
+    else:
+        logger.warning(
+            'No se crea índice único professionals.user_id: %s usuarios con duplicados',
+            dup_pro
+        )
+
+    # users.email: único solo para emails no vacíos (los vacíos son legados).
+    dup_email = cursor.execute('''
+        SELECT COUNT(*) FROM (
+            SELECT LOWER(TRIM(email)) FROM users
+            WHERE email IS NOT NULL AND TRIM(email) != ''
+            GROUP BY LOWER(TRIM(email)) HAVING COUNT(*) > 1
+        )
+    ''').fetchone()[0]
+    if dup_email == 0:
+        cursor.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email_unique "
+            "ON users(LOWER(email)) WHERE email IS NOT NULL AND TRIM(email) != ''"
+        )
+    else:
+        logger.warning(
+            'No se crea índice único users.email: %s emails duplicados',
+            dup_email
+        )
+
+
 def apply_migrations(cursor):
     """Versiones, ALTERs, backfills (idempotentes)."""
     row = cursor.execute('SELECT MAX(version) FROM schema_version').fetchone()
@@ -117,6 +175,16 @@ def apply_migrations(cursor):
 
     if 'is_active' not in user_columns:
         cursor.execute("ALTER TABLE users ADD COLUMN is_active INTEGER NOT NULL DEFAULT 1")
+
+    if 'email_verified' not in user_columns:
+        cursor.execute("ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 0")
+        # Cuentas preexistentes con email se consideran verificadas para no bloquearlas.
+        cursor.execute("UPDATE users SET email_verified = 1 WHERE email IS NOT NULL AND email != ''")
+
+    cursor.execute('PRAGMA table_info(email_verification_tokens)')
+    token_columns = [row[1] for row in cursor.fetchall()]
+    if token_columns and 'email' not in token_columns:
+        cursor.execute("ALTER TABLE email_verification_tokens ADD COLUMN email TEXT NOT NULL DEFAULT ''")
 
     if 'phone_verified' not in user_columns:
         cursor.execute("ALTER TABLE users ADD COLUMN phone_verified INTEGER DEFAULT 0")
@@ -407,4 +475,8 @@ def apply_migrations(cursor):
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_remember_tokens_user ON remember_tokens(user_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_consent_log_user ON consent_log(user_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_lead_versions_creator ON lead_versions(created_by)')
+
+    if current_ver < 8:
+        _dedupe_and_unique_indexes(cursor)
+        cursor.execute('INSERT OR IGNORE INTO schema_version (version) VALUES (8)')
 

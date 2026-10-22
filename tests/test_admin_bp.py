@@ -239,3 +239,66 @@ class TestAdminSla:
         assert 'sla-cards' in html
         assert 'adm-sla-period' in html
         assert 'data-days="all"' in html
+
+
+class TestAdminPipelineStages:
+    def teardown_method(self):
+        '''Restaura los defaults para no filtrar ediciones a otros tests.'''
+        conn = models.get_db_connection()
+        conn.execute('DELETE FROM pipeline_stage_settings')
+        conn.commit()
+        conn.close()
+
+    def test_requires_admin(self, client):
+        resp = client.get('/api/admin/pipeline-stages')
+        assert resp.status_code in (302, 401, 403)
+
+    def test_get_returns_all_stages(self, admin_client):
+        resp = admin_client.get('/api/admin/pipeline-stages')
+        data = resp.get_json()
+        assert resp.status_code == 200
+        assert data['success'] is True
+        stages = data['stages']
+        assert [s['stage'] for s in stages] == list(models.PIPELINE_STAGES)
+        assert all(s['label'] and s['color'] for s in stages)
+
+    def test_update_labels_colors_and_order(self, admin_client):
+        payload = {'stages': [
+            {'stage': 'new', 'label_es': 'Ingresado', 'label_en': 'Inbound', 'color': '#112233', 'sort_order': 8},
+        ]}
+        resp = admin_client.put('/api/admin/pipeline-stages', json=payload)
+        data = resp.get_json()
+        assert resp.status_code == 200
+        assert data['success'] is True
+        new_stage = next(s for s in data['stages'] if s['stage'] == 'new')
+        assert new_stage['label_es'] == 'Ingresado'
+        assert new_stage['label_en'] == 'Inbound'
+        assert new_stage['color'] == '#112233'
+        assert new_stage['sort_order'] == 8
+
+    def test_update_rejects_invalid_stage(self, admin_client):
+        payload = {'stages': [{'stage': 'not-a-stage', 'label_es': 'X', 'label_en': 'X'}]}
+        resp = admin_client.put('/api/admin/pipeline-stages', json=payload)
+        assert resp.status_code == 400
+        assert resp.get_json()['success'] is False
+
+    def test_update_rejects_empty_body(self, admin_client):
+        resp = admin_client.put('/api/admin/pipeline-stages', json={})
+        assert resp.status_code == 400
+
+    def test_invalid_color_falls_back_to_default(self, admin_client):
+        payload = {'stages': [{'stage': 'visit', 'label_es': 'Visita', 'label_en': 'Visit', 'color': 'red'}]}
+        data = admin_client.put('/api/admin/pipeline-stages', json=payload).get_json()
+        visit = next(s for s in data['stages'] if s['stage'] == 'visit')
+        assert visit['color'] == models.PIPELINE_STAGE_META['visit']['color']
+
+    def test_invalid_color_in_db_falls_back_on_read(self, admin_client, db):
+        db.execute(
+            'INSERT INTO pipeline_stage_settings (stage, label_es, label_en, color, sort_order) '
+            "VALUES ('new', 'Nuevo', 'New', 'red\" onmouseover=\"alert(1)', 1) "
+            'ON CONFLICT(stage) DO UPDATE SET color = excluded.color'
+        )
+        db.commit()
+        data = admin_client.get('/api/admin/pipeline-stages').get_json()
+        new_stage = next(s for s in data['stages'] if s['stage'] == 'new')
+        assert new_stage['color'] == models.PIPELINE_STAGE_META['new']['color']

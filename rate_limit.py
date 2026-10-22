@@ -15,7 +15,7 @@ import threading
 import time
 from functools import wraps
 
-from flask import jsonify, render_template, request
+from flask import jsonify, make_response, render_template, request
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +101,13 @@ def check_rate_limit(limit=10, window=60):
 
                 if len(requests) >= limit:
                     _save_store(store)
+                    retry_after = max(0, int(window - (current_time - (requests[0] if requests else current_time))))
+                    rate_headers = {
+                        'Retry-After': str(retry_after),
+                        'X-RateLimit-Limit': str(limit),
+                        'X-RateLimit-Remaining': '0',
+                        'X-RateLimit-Reset': str(int(current_time + window)),
+                    }
                     accept = request.headers.get('Accept', '')
                     if 'application/json' in accept or request.is_json:
                         try:
@@ -108,14 +115,17 @@ def check_rate_limit(limit=10, window=60):
                             error_msg = t('error.rate_limited', get_language())
                         except Exception:
                             error_msg = 'Demasiadas solicitudes. Espera unos minutos antes de intentar nuevamente.'
-                        return jsonify({
+                        response = jsonify({
                             "success": False,
                             "error": error_msg,
-                            "retry_after": int(window - (current_time - (requests[0] if requests else current_time)))
-                        }), 429
+                            "retry_after": retry_after
+                        })
+                        response.status_code = 429
                     else:
                         html, status = _rate_limit_html_response()
-                        return html, status
+                        response = make_response(html, status)
+                    response.headers.update(rate_headers)
+                    return response
 
                 requests.append(current_time)
                 store[bucket_key] = requests
@@ -130,11 +140,13 @@ def add_rate_limit_headers(response, limit=10, window=60):
     """Agrega headers de RateLimit a la respuesta"""
     client_ip = get_client_ip()
     current_time = time.time()
+    # Misma clave que check_rate_limit: endpoint + IP.
+    bucket_key = f'{request.endpoint or request.path}:{client_ip}'
 
     with _rate_lock:
         store = _load_store()
-        if client_ip in store:
-            requests = [t for t in store[client_ip] if current_time - t < window]
+        if bucket_key in store:
+            requests = [t for t in store[bucket_key] if current_time - t < window]
             remaining = max(0, limit - len(requests))
         else:
             remaining = limit

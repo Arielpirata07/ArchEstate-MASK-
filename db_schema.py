@@ -183,6 +183,19 @@ def create_tables(cursor):
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_lead_stage_history_lead ON lead_stage_history(lead_id)')
 
 
+    # Etiquetas/colores/orden de las etapas del pipeline (las claves de etapa
+    # siguen siendo fijas en models.PIPELINE_STAGES).
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS pipeline_stage_settings (
+            stage TEXT PRIMARY KEY,
+            label_es TEXT NOT NULL,
+            label_en TEXT NOT NULL,
+            color TEXT NOT NULL DEFAULT '#735A3A',
+            sort_order INTEGER NOT NULL DEFAULT 0
+        )
+    ''')
+
+
     # SLA de primer contacto (plan SLA Fase 0). PK = lead_id → idempotente:
     # la primera señal (reveal / link WA / move a contacted) gana y las demás
     # se ignoran. business_hours_elapsed ya viene calculado (lun–vie 09–18).
@@ -354,6 +367,20 @@ def create_tables(cursor):
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS email_verification_tokens (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            token TEXT NOT NULL UNIQUE,
+            email TEXT NOT NULL DEFAULT '',
+            expires_at DATETIME NOT NULL,
+            used INTEGER NOT NULL DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_email_verification_user ON email_verification_tokens(user_id, used)')
 
 
 
