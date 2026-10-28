@@ -111,9 +111,11 @@ Middleware (`middleware.py`): si existe `2fa_pending_user_id` en sesión y el re
 
 ## 7. Seguridad
 
-- **Secrets at-rest**: cifrar `totp_secret` con una clave derivada de `SECRET_KEY` (Fernet o AES-GCM)
-  en una nueva utilidad `utils.encrypt_2fa_secret` / `decrypt`. Si no hay clave dedicada, derivar
-  con PBKDF2-HMAC-SHA256. Documentar `TWO_FACTOR_ENCRYPTION_KEY` (opcional) en `.env-example`.
+- **Secrets at-rest**: se almacena el `totp_secret` en base32 (práctica estándar de la
+  mayoría de implementaciones TOTP). La seguridad se apoya en el control de acceso a la DB
+  y en que el secret solo no otorga acceso sin la contraseña de la cuenta. El cifrado
+  at-rest (Fernet/AES-GCM) queda como opción futura (requiere `cryptography`, no incluida
+  por defecto para mantener las dependencias mínimas y facilitar la venta/licenciamiento).
 - **Recovery codes**: generar con `secrets.token_hex(4)` formateado `XXXX-XXXX` (8 hex = 32 bits),
   hashear con SHA-256 antes de guardar; mostrar en claro una sola vez.
 - **Brute-force**: `failed_attempts` en `user_two_factor`; lockout a 5 intentos → deshabilitar
