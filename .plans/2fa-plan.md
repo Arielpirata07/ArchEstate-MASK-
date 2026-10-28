@@ -7,16 +7,17 @@
 
 Agregar autenticación de segundo factor (2FA) a las cuentas de ArchEstate, de forma
 opcional por usuario, con soporte para apps autenticadoras (TOTP, RFC 6238) y
-códigos de recuperación, reutilizando la infraestructura existente (Twilio SMS/WhatsApp)
-como canal alternativo. Debe convivir con remember-me, email verification y el
-flujo de reset de contraseña sin romper la sesión actual.
+códigos de recuperación. El canal alterno es **email** (ya integrado vía SMTP),
+no SMS/WhatsApp, para no depender de Twilio ni de un proveedor externo de SMS
+(esto facilita la venta/licenciamiento del sistema). Debe convivir con remember-me,
+email verification y el flujo de reset de contraseña sin romper la sesión actual.
 
 ## 2. Alcance y decisiones
 
 | Decisión | Propuesta | Alternativa descartada |
 |---|---|---|
 | Factor primario | TOTP (Google Authenticator / Authy / 1Password) | SMS-only (depende de Twilio y es menos seguro) |
-| Canal alterno | SMS/WhatsApp vía `services/verifier.py` ya existente | — |
+| Canal alterno | Email (SMTP ya integrado) | SMS/WhatsApp vía Twilio (descartado: dependencia externa, costo por mensaje, complejidad de venta/licenciamiento) |
 | Obligatoriedad | **Opcional** por usuario (toggle en `/mi-perfil`); admin puede forzar 2FA para rol `admin` | Obligatorio para todos (fricción alta en onboarding) |
 | Recuperación | 10 códigos de un solo uso generados al activar | Email mágico (menos seguro) |
 | Sesión | 2FA se verifica **una vez por sesión**; remember-me no salta el 2FA en dispositivos nuevos | Recordar dispositivo por 30 días (más complejo, diferido) |
@@ -30,7 +31,7 @@ Nueva tabla `user_two_factor` (1:1 con `users`):
 CREATE TABLE user_two_factor (
     user_id            INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
     enabled            INTEGER NOT NULL DEFAULT 0,        -- 0/1
-    method             TEXT NOT NULL DEFAULT 'totp',       -- 'totp' | 'sms' | 'whatsapp'
+    method             TEXT NOT NULL DEFAULT 'totp',       -- 'totp' | 'email'
     totp_secret        TEXT,                              -- base32, cifrado at-rest (ver §7)
     phone_e164         TEXT,                              -- canal alterno verificado
     created_at         DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -59,7 +60,7 @@ tablas se crean (patrón v8).
 - `qrcode[pil]` para generar el QR de enrolamiento (PNG en memoria, servido como data-URI o
   guardado en `static/uploads/2fa/`); alternativa: generar el URI `otpauth://` y renderizar con
   librería JS (`qrcode.js`) para evitar dependencia server-side. **Recomendado: JS** (menos peso).
-- Reutilizar `services/verifier.py` para el canal SMS/WhatsApp.
+- Canal alterno por email: reutilizar `services/email.py` (SMTPEmailSender) — sin dependencias nuevas.
 
 ## 5. Flujo de enrolamiento (activación)
 
@@ -88,16 +89,17 @@ En `auth_bp.login()`, tras validar contraseña y `is_active`:
     `session['2fa_pending_user_id'] = user.id` (sin `user_id`/`role`).
   - Redirigir a `/2fa/verify` (nueva ruta `auth_bp.two_factor_verify`).
 - En `/2fa/verify` (GET): renderiza template con input de 6 dígitos + link "Usar código de recuperación"
-  + opción "Enviar por SMS/WhatsApp" (si `method != 'totp'` o canal configurado).
+  + opción "Reenviar código por email" (envía un OTP de 6 dígitos por email, expira en 10 min).
 - `POST /api/auth/2fa/verify` con `{ code }`:
   - Rate limit 5/min (reutilizar `rate_limit.check_rate_limit`).
-  - Valida TOTP o recovery code (marcar `used=1` si recovery).
+  - Valida TOTP, OTP por email o recovery code (marcar `used=1` si recovery).
   - Brute-force: tras 5 fallos, invalidar el pending y forzar re-login con password.
   - Si OK: completar sesión (`user_id`, `username`, `email`, `role`, `phone`), limpiar
     `2fa_pending_user_id`, insertar `user_login_history`, emitir remember cookie si se pidió,
     redirigir por rol. Actualizar `last_used_at`.
   - Si recovery code: mostrar aviso "Te quedan N códigos".
-- `POST /api/auth/2fa/resend` (solo canal SMS/WhatsApp): envía OTP vía `VerifierRouter`.
+- `POST /api/auth/2fa/resend` (canal email): genera OTP de 6 dígitos, lo guarda en
+  `user_two_factor.pending_email_code` con expiración 10 min, y lo envía vía `services/email.py`.
 
 Middleware (`middleware.py`): si existe `2fa_pending_user_id` en sesión y el request no es a
 `/2fa/verify` ni a assets, redirigir a `/2fa/verify` (evita bypass).
@@ -126,7 +128,7 @@ Middleware (`middleware.py`): si existe `2fa_pending_user_id` en sesión y el re
   - `enabled=0`, borrar secret y recovery codes.
 - `POST /api/profile/2fa/regenerate-recovery`: genera 10 nuevos códigos (invalida los anteriores),
   requiere código 2FA válido.
-- `PUT /api/profile/2fa/method`: cambiar método (totp/sms/whatsapp) con verificación previa.
+- `PUT /api/profile/2fa/method`: cambiar método (totp/email) con verificación previa.
 - UI en `/mi-perfil` sección "Seguridad": estado, método, fecha de activación, botones
   activar/desactivar/regenerar códigos, contador de códigos restantes.
 
@@ -224,5 +226,23 @@ Cada hito debe dejar la suite verde (≥ 905) y `verify_coherence.py` 96/96.
 - Backup de secret en password manager (export cifrado).
 
 ---
+
+## 17. Estrategia de dependencias externas (Twilio)
+
+El proyecto ya usa Twilio para la verificación telefónica (`services/verifier.py`,
+`SmsSimulatedVerifier`/`TwilioSmsVerifier`, etc.) con `TWILIO_SIMULATE=true` por defecto.
+Para facilitar la venta/licenciamiento:
+
+- **2FA no depende de Twilio**: solo TOTP + email (SMTP, ya integrado). El canal
+  SMS/WhatsApp queda fuera del 2FA.
+- **Verificación telefónica**: la abstracción `OTPChannel`/`VerifierRouter` permite
+  intercambiar el proveedor. Opciones para vender sin Twilio:
+  1. Mantener `TWILIO_SIMULATE=true` (códigos en consola) — solo para demos.
+  2. Implementar un `SmtpOtpVerifier` que envíe el OTP por email (reutiliza
+     `services/email.py`) y registrar en el router como canal `email`.
+  3. Permitir configurar un proveedor SMS genérico vía env (`SMS_PROVIDER_URL`,
+     `SMS_PROVIDER_TOKEN`) con un verifier HTTP genérico.
+- Recomendación: mantener la abstracción actual y agregar el verifier por email;
+  dejar Twilio como opcional (`TWILIO_SIMULATE` ya lo permite sin romper).
 
 *Plan generado como borrador. No implementar sin revisión del usuario.*
