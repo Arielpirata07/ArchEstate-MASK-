@@ -163,3 +163,33 @@ class TestOrganizationCRUD:
         data = resp.get_json()
         org = next(o for o in data['organizations'] if o['id'] == sample_org)
         assert org['member_count'] >= 1
+
+
+class TestOrganizationAuditAndMembership:
+    def test_create_writes_audit_entry(self, admin_client, db):
+        # Regresión: se pasaba `request` como si fuera `session`, así que
+        # log_action fallaba con AttributeError y la auditoría se perdía.
+        name = f'Audit Org {uuid.uuid4().hex[:8]}'
+        resp = admin_client.post('/api/admin/organizations', json={'name': name})
+        assert resp.status_code == 200
+
+        row = db.execute(
+            "SELECT admin, user_id FROM audit_log "
+            "WHERE action = 'Organizacion Creada' AND target LIKE ? "
+            "ORDER BY id DESC LIMIT 1",
+            (f'%{name}%',)
+        ).fetchone()
+        assert row is not None
+        assert row['admin'] == 'admin'
+        assert row['user_id'] == 1
+
+    def test_remove_member_returns_200_then_404(self, admin_client, sample_org, sample_professional):
+        user_id, _ = sample_professional
+        assert models.add_org_member(sample_org, user_id) is True
+
+        first = admin_client.delete(f'/api/admin/organizations/{sample_org}/members/{user_id}')
+        assert first.status_code == 200
+
+        second = admin_client.delete(f'/api/admin/organizations/{sample_org}/members/{user_id}')
+        assert second.status_code == 404
+

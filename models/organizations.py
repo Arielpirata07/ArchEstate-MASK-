@@ -247,10 +247,11 @@ def add_org_member(org_id, user_id, role='member'):
 def remove_org_member(org_id, user_id):
     conn = get_db_connection()
     try:
-        conn.execute('DELETE FROM org_members WHERE org_id = ? AND user_id = ?', (org_id, user_id))
-        conn.execute('UPDATE professionals SET org_id = NULL WHERE user_id = ? AND org_id = ?', (user_id, org_id))
+        cur = conn.execute('DELETE FROM org_members WHERE org_id = ? AND user_id = ?', (org_id, user_id))
+        deleted_member = cur.rowcount > 0
+        cur = conn.execute('UPDATE professionals SET org_id = NULL WHERE user_id = ? AND org_id = ?', (user_id, org_id))
         conn.commit()
-        return True
+        return deleted_member or cur.rowcount > 0
     except Exception:
         logger.exception('remove_org_member failed org=%s user=%s', org_id, user_id)
         conn.rollback()

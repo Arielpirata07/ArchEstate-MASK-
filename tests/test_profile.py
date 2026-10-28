@@ -548,6 +548,54 @@ class TestProfessionalPortfolioAPI:
         resp = self._upload(client, filename='doc.pdf', content=b'%PDF-1.4\n' + b'\x00' * 32)
         assert resp.status_code == 400
 
+    def _login_as_pending_professional(self, client, db, status='pending'):
+        uname = f'portfolio_pending_{uuid.uuid4().hex[:8]}'
+        cur = db.execute(
+            'INSERT INTO users (username, email, hash, role, phone, phone_e164, phone_format_valid) '
+            'VALUES (?, ?, ?, ?, ?, ?, 1)',
+            (uname, f'{uname}@example.com', generate_password_hash('pro123'),
+             'professional', '+5491111111111', '+5491111111111')
+        )
+        uid = cur.lastrowid
+        db.execute(
+            'INSERT INTO professionals (user_id, name, license, specialty, status) VALUES (?, ?, ?, ?, ?)',
+            (uid, uname, f'LIC-{uname}', 'General', status)
+        )
+        db.commit()
+        with client.session_transaction() as sess:
+            sess['user_id'] = uid
+            sess['username'] = uname
+            sess['role'] = 'professional'
+        return client, uid
+
+    def test_upload_requires_approval(self, client, db):
+        client, _ = self._login_as_pending_professional(client, db)
+        resp = self._upload(client)
+        assert resp.status_code == 403
+        assert 'error' in resp.get_json()
+
+    def test_upload_rejected_professional_gets_403(self, client, db):
+        client, _ = self._login_as_pending_professional(client, db, status='rejected')
+        resp = self._upload(client)
+        assert resp.status_code == 403
+
+    def test_delete_requires_approval(self, client, db):
+        from models import create_or_update_professional_profile
+        client, uid = self._login_as_pending_professional(client, db)
+        rel_path = f'uploads/portfolio/pro_{uid}_1.png'
+        create_or_update_professional_profile(uid, {'portfolio': json.dumps([rel_path])})
+        resp = client.delete('/api/profile/professional/portfolio', json={'path': rel_path})
+        assert resp.status_code == 403
+        # El path sigue en el portafolio (no se borró nada).
+        listed = client.get('/api/profile/professional/portfolio').get_json()['items']
+        assert [i['path'] for i in listed] == [rel_path]
+
+    def test_get_portfolio_allowed_while_pending(self, client, db):
+        client, _ = self._login_as_pending_professional(client, db)
+        resp = client.get('/api/profile/professional/portfolio')
+        assert resp.status_code == 200
+        assert resp.get_json()['items'] == []
+
     def test_upload_rejects_when_limit_reached(self, client, db):
         client, uid = self._login_as_professional(client, db)
         from models import create_or_update_professional_profile
@@ -600,3 +648,47 @@ class TestProfessionalPortfolioAPI:
         assert resp.status_code == 404
         assert os.path.exists(foreign_path)
         os.remove(foreign_path)
+
+
+class TestAppendPortfolioImage:
+    def _make_professional(self, db):
+        uname = f'ap_{uuid.uuid4().hex[:8]}'
+        cur = db.execute(
+            'INSERT INTO users (username, email, hash, role, phone, phone_e164, phone_format_valid) '
+            'VALUES (?, ?, ?, ?, ?, ?, 1)',
+            (uname, f'{uname}@example.com', generate_password_hash('pro123'),
+             'professional', '+5491111111111', '+5491111111111')
+        )
+        uid = cur.lastrowid
+        db.execute(
+            'INSERT INTO professionals (user_id, name, license, specialty, status) VALUES (?, ?, ?, ?, ?)',
+            (uid, uname, f'LIC-{uname}', 'General', 'approved')
+        )
+        db.commit()
+        return uid
+
+    def test_append_succeeds_below_limit(self, db):
+        from models.professionals import append_portfolio_image
+        uid = self._make_professional(db)
+        assert append_portfolio_image(uid, 'uploads/portfolio/pro_x_1.png', 12) is True
+        # segundo append funciona
+        assert append_portfolio_image(uid, 'uploads/portfolio/pro_x_2.png', 12) is True
+
+    def test_append_rejected_at_limit(self, db):
+        from models import create_or_update_professional_profile
+        from models.professionals import append_portfolio_image
+        uid = self._make_professional(db)
+        create_or_update_professional_profile(
+            uid, {'portfolio': json.dumps([f'uploads/portfolio/pro_{uid}_{i}.png' for i in range(12)])}
+        )
+        assert append_portfolio_image(uid, 'uploads/portfolio/pro_x_extra.png', 12) is False
+
+    def test_append_persists_list(self, db):
+        from models.professionals import append_portfolio_image
+        from models import get_professional_full_profile
+        uid = self._make_professional(db)
+        append_portfolio_image(uid, 'uploads/portfolio/pro_x_1.png', 12)
+        prof = get_professional_full_profile(uid)
+        import json as _j
+        paths = _j.loads(prof['portfolio'])
+        assert 'uploads/portfolio/pro_x_1.png' in paths

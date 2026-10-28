@@ -85,10 +85,8 @@ def _get_approved_professional(conn, user_id, lang):
     user = conn.execute('SELECT username FROM users WHERE id = ?', (user_id,)).fetchone()
     if not user:
         return None, (jsonify({'success': False, 'error': t('prof.access_denied', lang)}), 403)
-    professional = conn.execute(
-        'SELECT status FROM professionals WHERE name = ?', (user['username'],)
-    ).fetchone()
-    if not professional or professional['status'] != 'approved':
+    status = models.get_professional_status(conn, user_id, user['username'])
+    if status != 'approved':
         return None, (jsonify({'success': False, 'error': t('prof.account_pending', lang)}), 403)
     return user['username'], None
 

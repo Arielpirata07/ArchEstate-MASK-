@@ -1,6 +1,6 @@
 import logging
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, session
 
 import models
 import utils
@@ -38,7 +38,7 @@ def create_org():
 
     try:
         org_id = models.create_organization(name, description, slug)
-        utils.log_action('Organizacion Creada', f'Org: {name} (ID: {org_id})', request)
+        utils.log_action('Organizacion Creada', f'Org: {name} (ID: {org_id})', session)
         return jsonify({'success': True, 'id': org_id, 'message': t('org.created', lang)})
     except ValueError:
         return jsonify({'success': False, 'error': t('org.slug_exists', lang)}), 409
@@ -71,7 +71,7 @@ def update_org(org_id):
         success = models.update_organization(org_id, filtered)
         if not success:
             return jsonify({'success': False, 'error': t('admin.internal_error_short', lang)}), 400
-        utils.log_action('Organizacion Actualizada', f'Org ID: {org_id}', request)
+        utils.log_action('Organizacion Actualizada', f'Org ID: {org_id}', session)
         return jsonify({'success': True, 'message': t('org.updated', lang)})
     except Exception:
         logger.exception('Error updating organization')
@@ -89,7 +89,7 @@ def deactivate_org(org_id):
 
     try:
         models.deactivate_organization(org_id)
-        utils.log_action('Organizacion Desactivada', f'Org: {org["name"]} (ID: {org_id})', request)
+        utils.log_action('Organizacion Desactivada', f'Org: {org["name"]} (ID: {org_id})', session)
         return jsonify({'success': True, 'message': t('org.deactivated', lang)})
     except Exception:
         logger.exception('Error deactivating organization')
@@ -107,7 +107,7 @@ def delete_org(org_id):
 
     try:
         models.delete_organization(org_id)
-        utils.log_action('Organizacion Eliminada', f'Org: {org["name"]} (ID: {org_id})', request)
+        utils.log_action('Organizacion Eliminada', f'Org: {org["name"]} (ID: {org_id})', session)
         return jsonify({'success': True, 'message': t('org.deleted', lang)})
     except Exception:
         logger.exception('Error deleting organization')
@@ -178,7 +178,8 @@ def change_org_member_role(org_id, user_id):
 def remove_org_member(org_id, user_id):
     lang = get_language()
     try:
-        models.remove_org_member(org_id, user_id)
+        if not models.remove_org_member(org_id, user_id):
+            return jsonify({'success': False, 'error': t('org.member_not_found', lang)}), 404
         return jsonify({'success': True, 'message': t('org.member_removed', lang)})
     except Exception:
         logger.exception('Error removing org member')

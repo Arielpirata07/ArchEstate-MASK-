@@ -80,6 +80,7 @@ def _dedupe_and_unique_indexes(cursor):
     para limpieza manual: nunca se borran usuarios.
     """
     # lead_versions: (lead_id, version) único. Conservar la fila más antigua.
+    ok = True
     cursor.execute('''
         DELETE FROM lead_versions
         WHERE id NOT IN (
@@ -105,6 +106,7 @@ def _dedupe_and_unique_indexes(cursor):
             'ON professionals(user_id) WHERE user_id IS NOT NULL'
         )
     else:
+        ok = False
         logger.warning(
             'No se crea índice único professionals.user_id: %s usuarios con duplicados',
             dup_pro
@@ -124,10 +126,13 @@ def _dedupe_and_unique_indexes(cursor):
             "ON users(LOWER(email)) WHERE email IS NOT NULL AND TRIM(email) != ''"
         )
     else:
+        ok = False
         logger.warning(
             'No se crea índice único users.email: %s emails duplicados',
             dup_email
         )
+
+    return ok
 
 
 def apply_migrations(cursor):
@@ -477,6 +482,9 @@ def apply_migrations(cursor):
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_lead_versions_creator ON lead_versions(created_by)')
 
     if current_ver < 8:
-        _dedupe_and_unique_indexes(cursor)
-        cursor.execute('INSERT OR IGNORE INTO schema_version (version) VALUES (8)')
+        # Solo se marca v8 si los índices únicos se crearon: si hay duplicados
+        # legados el bloque se reintenta en el próximo arranque (tras la
+        # limpieza manual), en lugar de quedar permanentemente sin índices.
+        if _dedupe_and_unique_indexes(cursor):
+            cursor.execute('INSERT OR IGNORE INTO schema_version (version) VALUES (8)')
 

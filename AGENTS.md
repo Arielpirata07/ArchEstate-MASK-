@@ -24,7 +24,7 @@
 | `app_setup.py` | `init_db(app)`, `FilterOptionsCache`, schema migrations, `schema_version` table |
 | `decorators.py` | `@login_required`, `@admin_required`, `@professional_required` — all enforce `is_active` |
 | `rate_limit.py` | File-backed rate limiting (JSON + atomic writes). Pendiente migrar a Redis. **Caveat**: con `gunicorn --workers N` el lock es por-worker, el límite efectivo se multiplica por N y puede haber carreras. |
-| `routes_profile.py` | Profile, lead editing, avatar upload (at root, not in `routes/`), `ALLOWED_LEAD_EDIT_FIELDS` |
+| `routes/profile/` | Profile package (core, uploads, professional, notifications, exports, exports_pdf); compat shim `routes/profile_bp.py`. `routes_profile.py` no longer exists. |
 | `routes/` | 12 blueprints: `auth_bp`, `public_bp`, `client_bp`, `professional_bp`, `admin_bp`, `phone_bp`, `phone_area_codes_bp`, `lead_bp`, `form_options_bp`, `organizations_bp`, `whatsapp_bp`, `profile_bp` (`routes/profile/` package) |
 | `services/verifier.py` | OTP verification layer: `SmsSimulatedVerifier`, `WhatsAppSimulatedVerifier`, `TwilioSmsVerifier`, `TwilioWhatsAppVerifier`, `VerifierRouter`, `get_default_router()` |
 | `services/email.py` | `SMTPEmailSender` — SMTP email sender with console fallback |
@@ -44,7 +44,7 @@
 python app.py                          # Run dev server
 FLASK_DEBUG=true python app.py         # Dev mode with debug
 gunicorn wsgi:app                      # Run with gunicorn (production)
-python -m pytest tests/ -q            # Run all tests (859 total)
+python -m pytest tests/ -q            # Run all tests (905 total)
 python -m pytest tests/ -x -v         # Stop on first failure, verbose
 python -m pytest tests/test_file.py   # Single file
 python verify_coherence.py            # Cross-checks schema/routes/templates
@@ -132,7 +132,7 @@ python verify_coherence.py            # Cross-checks schema/routes/templates
 
 - **Language**: ES (default) and EN. Toggle in `/mi-perfil` saves to `user_preferences.language`.
 - **Detection**: Session > browser `Accept-Language` > fallback `'es'`.
-- **Python**: `from i18n import t, get_language` — 1393 keys in `i18n/translations.py`.
+- **Python**: `from i18n import t, get_language` — 1404 unique keys in `i18n/translations.py` (within-language duplicates cleaned up).
 - **Templates**: `{{ t('key') }}` via `inject_language()` context processor in `middleware.py`.
 - **JS**: `window.t('key')` via `static/js/i18n.js` — 553 keys.
 - **Backend**: All flash messages, jsonify responses, validators, error handlers, PDF/XLSX exports, email subjects, OTP messages use `t('key', lang)`.

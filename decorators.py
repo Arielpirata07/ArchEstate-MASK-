@@ -32,8 +32,11 @@ def login_required(f):
             return redirect(url_for('auth.login'))
         user = _get_current_user()
         if not user or not user.get('is_active'):
+            lang = get_language()
             session.clear()
-            flash(t('auth.account_disabled', get_language()), 'error')
+            if _wants_json():
+                return jsonify({'error': t('auth.unauthorized', lang)}), 401
+            flash(t('auth.account_disabled', lang), 'error')
             return redirect(url_for('auth.login'))
         return f(*args, **kwargs)
     return decorated_function

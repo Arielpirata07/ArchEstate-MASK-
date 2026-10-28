@@ -47,11 +47,8 @@ def toggle_lead_status(lead_id):
         if not user:
             return jsonify({'error': t('prof.access_denied', lang)}), 403
 
-        professional = conn.execute(
-            'SELECT status FROM professionals WHERE name = ?',
-            (user['username'],)
-        ).fetchone()
-        if not professional or professional['status'] != 'approved':
+        professional = models.get_professional_status(conn, session['user_id'], user['username'])
+        if professional != 'approved':
             return jsonify({'error': t('prof.account_pending', lang)}), 403
 
         lead = conn.execute('SELECT id FROM leads WHERE id = ?', (lead_id,)).fetchone()

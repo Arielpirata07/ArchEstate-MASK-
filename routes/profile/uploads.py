@@ -79,17 +79,28 @@ def api_upload_avatar():
     avatar_dir = current_app.config['AVATAR_FOLDER']
     filepath = os.path.join(avatar_dir, safe_filename)
 
-    # Eliminar avatar anterior si existe
+    # Guardar el archivo nuevo ANTES de borrar el anterior: si el save falla,
+    # el avatar actual queda intacto.
     old_path = models.get_user_avatar_path(user_id)
-    if old_path:
-        old_file = os.path.join(avatar_dir, os.path.basename(old_path))
-        if os.path.exists(old_file):
-            os.remove(old_file)
-
-    file.save(filepath)
+    try:
+        file.save(filepath)
+    except Exception:
+        logger.exception('Error guardando avatar user=%s', user_id)
+        return jsonify({'error': t('admin.internal_error_short', lang)}), 500
 
     avatar_rel = f'uploads/avatars/{safe_filename}'
-    models.update_user_avatar(user_id, avatar_rel)
+    if not models.update_user_avatar(user_id, avatar_rel):
+        logger.warning('No se pudo persistir avatar_path user=%s', user_id)
+        return jsonify({'error': t('admin.internal_error_short', lang)}), 500
+
+    if old_path:
+        old_file = os.path.join(avatar_dir, os.path.basename(old_path))
+        if old_file != filepath and os.path.exists(old_file):
+            try:
+                os.remove(old_file)
+            except OSError:
+                logger.warning('No se pudo eliminar avatar anterior: %s', old_file)
+
     utils.log_action('Avatar actualizado', f'Usuario: {session["username"]}', session)
 
     return jsonify({'success': True, 'avatar_url': url_for('static', filename=avatar_rel) + f'?v={int(time.time())}'})

@@ -77,7 +77,7 @@ def dashboard_summary():
 
         total = conn.execute(f'SELECT COUNT(*) AS n FROM leads WHERE {where}', params).fetchone()['n']
         new_today = conn.execute(
-            f"SELECT COUNT(*) AS n FROM leads WHERE {where} AND date(timestamp) = date('now', 'localtime')", params
+            f"SELECT COUNT(*) AS n FROM leads WHERE {where} AND date(timestamp) = date('now')", params
         ).fetchone()['n']
         new_this_week = conn.execute(
             f"SELECT COUNT(*) AS n FROM leads WHERE {where} AND timestamp >= datetime('now', '-7 days')", params
@@ -173,14 +173,14 @@ def dashboard_trends():
         where, params = _dashboard_leads_where(conn, user_id, my_leads)
 
         rows = conn.execute(f'''
-            SELECT date(timestamp, 'localtime') AS day, COUNT(*) AS n FROM leads
+            SELECT date(timestamp) AS day, COUNT(*) AS n FROM leads
             WHERE {where} AND timestamp >= datetime('now', ?)
             GROUP BY day ORDER BY day
         ''', params + [f'-{days} days']).fetchall()
         by_day = {r['day']: r['n'] for r in rows}
 
-        from datetime import date as _date, timedelta as _td
-        today = _date.today()
+        from datetime import date as _date, datetime as _dt, timedelta as _td, timezone as _tz
+        today = _dt.now(_tz.utc).date()
         trends = []
         for i in range(days - 1, -1, -1):
             day = (today - _td(days=i)).isoformat()

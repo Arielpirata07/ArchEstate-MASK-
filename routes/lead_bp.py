@@ -14,6 +14,7 @@ from flask import Blueprint, redirect, request, session, jsonify, current_app
 
 import rate_limit
 import utils
+import models
 from decorators import professional_required
 from i18n import t, get_language
 from models import get_db_connection
@@ -56,10 +57,8 @@ def redirect_whatsapp(lead_id):
         if not user:
             return jsonify({"success": False, "error": t('lead.access_denied', lang)}), 403
 
-        pro_status = conn.execute(
-            'SELECT status FROM professionals WHERE name = ?', (user['username'],)
-        ).fetchone()
-        if not pro_status or pro_status['status'] != 'approved':
+        pro_status = models.get_professional_status(conn, user_id, user['username'])
+        if pro_status != 'approved':
             return jsonify({"success": False, "error": t('lead.account_pending', lang)}), 403
 
         lead = conn.execute(
@@ -144,10 +143,8 @@ def reveal_phone(lead_id):
         if not user:
             return jsonify({"success": False, "error": t('lead.access_denied', lang)}), 403
 
-        pro_status = conn.execute(
-            'SELECT status FROM professionals WHERE name = ?', (user['username'],)
-        ).fetchone()
-        if not pro_status or pro_status['status'] != 'approved':
+        pro_status = models.get_professional_status(conn, user_id, user['username'])
+        if pro_status != 'approved':
             return jsonify({"success": False, "error": t('lead.account_pending', lang)}), 403
 
         lead = conn.execute('SELECT phone, type FROM leads WHERE id = ?', (lead_id,)).fetchone()

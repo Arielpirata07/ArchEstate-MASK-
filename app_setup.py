@@ -51,9 +51,11 @@ def init_db(app):
         conn = models.get_db_connection()
         cursor = conn.cursor()
 
-        os.makedirs(config.AVATAR_FOLDER, exist_ok=True)
+        # Directorios absolutos bajo app.root_path: crearlos relativos al CWD
+        # los dejaba fuera del deploy cuando gunicorn arranca en otro directorio.
+        os.makedirs(os.path.join(app.root_path, config.AVATAR_FOLDER), exist_ok=True)
         os.makedirs(os.path.join(app.root_path, config.PORTFOLIO_FOLDER), exist_ok=True)
-        os.makedirs(config.UPLOAD_FOLDER, exist_ok=True)
+        os.makedirs(os.path.join(app.root_path, config.UPLOAD_FOLDER), exist_ok=True)
 
         db_schema.create_tables(cursor)
         db_migrations.apply_migrations(cursor)

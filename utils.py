@@ -479,6 +479,31 @@ def revoke_remember_token(selector):
             conn.close()
 
 
+def revoke_user_remember_tokens(user_id, conn=None):
+    """Elimina todos los remember-me tokens de un usuario.
+
+    Se llama al cambiar o resetear la contraseña: una cookie de "recordarme"
+    emitida antes del cambio no debe seguir abriendo sesión. Devuelve cuántos
+    tokens revocó (0 si no había).
+    """
+    if not user_id:
+        return 0
+    from models import get_db_connection
+    own_conn = conn is None
+    try:
+        if own_conn:
+            conn = get_db_connection()
+        cursor = conn.execute('DELETE FROM remember_tokens WHERE user_id = ?', (user_id,))
+        conn.commit()
+        return cursor.rowcount or 0
+    except Exception:
+        logger.exception('Error al revocar remember tokens de user=%s', user_id)
+        return 0
+    finally:
+        if own_conn and conn:
+            conn.close()
+
+
 def purge_expired_remember_tokens():
     """Elimina todos los tokens expirados. Idempotente, llamar en before_request."""
     from models import get_db_connection

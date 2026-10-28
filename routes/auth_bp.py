@@ -30,7 +30,7 @@ def _send_verification_email(user_id, email, username, lang):
     if not models.create_email_verification_token(user_id, token, email, expires_at):
         return False
 
-    verify_url = f"{config.SITE_URL}{url_for('auth.verify_email', token=token)}"
+    verify_url = f"{config.SITE_URL.rstrip('/')}{url_for('auth.verify_email', token=token)}"
     try:
         html_body = render_template('email/verify_email.html', verify_url=verify_url, username=username)
         from services.email import get_email_sender
@@ -261,13 +261,13 @@ def logout():
 @rate_limit.check_rate_limit(limit=20, window=60)
 def verify_email(token):
     lang = get_language()
-    user_id = models.validate_email_verification_token(token)
+    user_id = models.consume_email_verification_token(token)
     if not user_id:
         flash(t('auth.verify_email_invalid', lang), 'error')
         return redirect(url_for('auth.login'))
 
-    models.set_email_verified(user_id)
-    models.mark_email_verification_token_used(token)
+    if not models.set_email_verified(user_id):
+        logger.error('No se pudo marcar email verificado para user_id=%s', user_id)
     flash(t('auth.verify_email_success', lang), 'success')
 
     if session.get('user_id') == user_id:
@@ -346,7 +346,7 @@ def forgot_password():
             models.create_password_reset_token(user['id'], token, expires_at)
 
             from services.email import get_email_sender
-            reset_url = f"{config.SITE_URL}{url_for('auth.reset_password', token=token)}"
+            reset_url = f"{config.SITE_URL.rstrip('/')}{url_for('auth.reset_password', token=token)}"
             html_body = render_template('email/password_reset.html', reset_url=reset_url, user=user)
             get_email_sender().send(to=user['email'], subject=t('auth.forgot_email_subject', lang), html_body=html_body)
 
@@ -387,6 +387,8 @@ def reset_password(token):
             return redirect(url_for('auth.forgot_password'))
         new_hash = generate_password_hash(password)
         models.update_user_password(claimed_user_id, new_hash)
+        # Un reset invalida las cookies "recordarme" emitidas antes.
+        utils.revoke_user_remember_tokens(claimed_user_id)
 
         flash(t('auth.reset_success', lang), 'success')
         return redirect(url_for('auth.login'))

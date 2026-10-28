@@ -49,8 +49,8 @@ def export_leads_csv():
         if not user:
             return t('prof.access_denied', lang), 403
 
-        professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
-        if not professional or professional['status'] != 'approved':
+        professional = models.get_professional_status(conn, session['user_id'], user['username'])
+        if professional != 'approved':
             return t('prof.account_pending', lang), 403
 
         conds, geo_params = _get_pro_geo_filter(conn, session['user_id'])
@@ -103,8 +103,8 @@ def export_leads_xlsx():
         if not user:
             return t('prof.access_denied', lang), 403
 
-        professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
-        if not professional or professional['status'] != 'approved':
+        professional = models.get_professional_status(conn, session['user_id'], user['username'])
+        if professional != 'approved':
             return t('prof.account_pending', lang), 403
 
         conds, geo_params = _get_pro_geo_filter(conn, session['user_id'])
@@ -173,8 +173,8 @@ def download_lead_pdf(lead_id):
         if not user:
             return t('prof.access_denied', lang), 403
 
-        professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
-        if not professional or professional['status'] != 'approved':
+        professional = models.get_professional_status(conn, session['user_id'], user['username'])
+        if professional != 'approved':
             return t('prof.account_pending', lang), 403
 
         lead = conn.execute('SELECT * FROM leads WHERE id = ?', (lead_id,)).fetchone()

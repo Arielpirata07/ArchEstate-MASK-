@@ -179,6 +179,18 @@ def pipeline_move_lead(lead_id):
         if not lead:
             return jsonify({'success': False, 'error': t('prof.lead_not_found', lang)}), 404
 
+        # Control de acceso: el profesional solo puede mover leads dentro de su
+        # cobertura (provincia/país/zonas/org). Si no tiene cobertura configurada,
+        # se mantiene el comportamiento previo (acceso total).
+        conds, geo_params = _get_pro_geo_filter(conn, session['user_id'])
+        if conds:
+            access = conn.execute(
+                'SELECT 1 FROM leads WHERE id = ? AND ' + ' AND '.join(conds),
+                (lead_id, *geo_params),
+            ).fetchone()
+            if not access:
+                return jsonify({'success': False, 'error': t('prof.lead_not_found', lang)}), 404
+
         data = request.get_json(silent=True) or {}
         to_stage = (data.get('stage') or '').strip()
         if to_stage not in models.PIPELINE_STAGES:
@@ -226,6 +238,19 @@ def pipeline_bulk_move():
             lead_ids = [int(i) for i in lead_ids][:100]
         except (ValueError, TypeError):
             return jsonify({'success': False, 'error': t('pipeline.invalid_ids', lang)}), 400
+
+        # Control de acceso: filtrar a los leads dentro de la cobertura del profesional.
+        conds, geo_params = _get_pro_geo_filter(conn, session['user_id'])
+        if conds:
+            placeholders = ','.join('?' for _ in lead_ids)
+            allowed_rows = conn.execute(
+                'SELECT id FROM leads WHERE id IN (' + placeholders + ') AND ' + ' AND '.join(conds),
+                (*lead_ids, *geo_params),
+            ).fetchall()
+            allowed_ids = {r['id'] for r in allowed_rows}
+            lead_ids = [i for i in lead_ids if i in allowed_ids]
+            if not lead_ids:
+                return jsonify({'success': True, 'moved': 0, 'to_stage': to_stage})
 
         # UTC por convención de storage (ver models/pipeline.py).
         now = utils.utc_now_str()

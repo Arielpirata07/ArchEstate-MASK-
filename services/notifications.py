@@ -29,6 +29,30 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 
+# `user_preferences.preferred_channel` se escribe desde dos controles con
+# vocabularios distintos: el selector de canal OTP (sms/whatsapp/auto) y el
+# selector de notificaciones de leads (email/whatsapp/ambos/auto). Sin
+# normalizar, guardar 'sms' dejaba al profesional sin email ni WhatsApp.
+_LEAD_CHANNEL_ALIASES = {
+    'email': 'email',
+    'whatsapp': 'whatsapp',
+    'ambos': 'ambos',
+    'auto': 'auto',
+    # No existe canal SMS para notificaciones de leads: el email es el
+    # equivalente más cercano de un canal asíncrono.
+    'sms': 'email',
+}
+
+
+def _normalize_lead_channel(raw: Optional[str]) -> str:
+    '''Traduce `preferred_channel` al vocabulario de notificaciones de leads.
+
+    Valores desconocidos caen a 'auto' (email + intento de WhatsApp según
+    disponibilidad) en lugar de no enviar nada.
+    '''
+    return _LEAD_CHANNEL_ALIASES.get((raw or '').strip().lower(), 'auto')
+
+
 def _send_email_notification(user_id: int, subject: str, html_body: str, text_body: str = '', prefs=None, user=None) -> bool:
     """Envía email si el usuario tiene email_notifications activado."""
     if prefs is None:
@@ -216,7 +240,7 @@ def notify_lead_created(lead_id: int) -> list:
                 # existe → no reenviar email/WhatsApp ni reloguear.
                 continue
 
-            channel = (prefs.get('preferred_channel') or 'email').strip().lower()
+            channel = _normalize_lead_channel(prefs.get('preferred_channel'))
             pending.append((pro, prefs, channel))
             notified.append(pro['name'])
             utils.log_action(
@@ -318,7 +342,7 @@ def _send_client_status_email(client_user_id: int, lead_id: int, subject: str, b
     <body style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2 style="color: #735A3A;">ArchEstate</h2>
         <p>{body}</p>
-        <a href="{config.SITE_URL}/mi-perfil" style="display:inline-block;background:#735A3A;color:#fff;text-decoration:none;padding:12px 28px;border-radius:6px;font-size:13px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;margin-top:16px;">Ver mis solicitudes</a>
+        <a href="{config.SITE_URL.rstrip('/')}/mi-perfil" style="display:inline-block;background:#735A3A;color:#fff;text-decoration:none;padding:12px 28px;border-radius:6px;font-size:13px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;margin-top:16px;">Ver mis solicitudes</a>
         <hr style="border: 1px solid #735A3A; margin-top: 24px;">
         <p style="font-size: 12px; color: #666;">{t('notif.auto_email_footer', get_language())}</p>
     </body>

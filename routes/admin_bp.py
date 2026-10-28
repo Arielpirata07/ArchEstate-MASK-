@@ -144,9 +144,13 @@ def update_pro_status(pro_id):
             except Exception:
                 logger.warning('notify_professional_status_change falló para pro=%s', pro_id)
 
-            action = "Aprobación" if new_status == 'approved' else "Rechazo"
+            action_label = t(
+                'admin.pro_status_approved' if new_status == 'approved' else 'admin.pro_status_rejected',
+                lang
+            )
+            action = 'Aprobación' if new_status == 'approved' else 'Rechazo'
             utils.log_action(action, pro['name'], session)
-            return jsonify({"success": True, "message": t('admin.pro_status_updated', lang, action=action.lower())})
+            return jsonify({"success": True, "message": t('admin.pro_status_updated', lang, action=action_label)})
 
         return jsonify({"success": False, "error": t('admin.pro_not_found', lang)}), 404
     finally:
@@ -877,6 +881,8 @@ def admin_reset_password(user_id):
         conn.execute('UPDATE users SET hash = ? WHERE id = ?',
                      (generate_password_hash(new_password), user_id))
         conn.commit()
+        # Revocar "recordarme" del usuario afectado (no del admin que resetea).
+        utils.revoke_user_remember_tokens(user_id, conn=conn)
     finally:
         if conn:
             conn.close()
@@ -922,7 +928,8 @@ def admin_set_user_active(user_id):
 
     action = "Reactivación de Cuenta" if new_state else "Baja de Cuenta"
     reason = (data.get('reason') or '').strip()
-    message = t('admin.user_status_updated', lang, username=user['username'], status_text='reactivado' if new_state else 'dado de baja')
+    status_text = t('admin.account_activated' if new_state else 'admin.account_deactivated', lang)
+    message = t('admin.user_status_updated', lang, username=user['username'], status_text=status_text)
     log_detail = f"Usuario: {user['username']} (ID: {user_id})"
     if not new_state and reason:
         log_detail += f" — Motivo: {reason}"

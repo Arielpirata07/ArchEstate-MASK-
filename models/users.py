@@ -310,9 +310,21 @@ def get_user_activity(user_id, limit=50):
 
 
 def get_user_by_email(email):
+    '''Busca un usuario por email sin distinguir mayúsculas.
+
+    El índice único de `users` es `LOWER(email)`: una comparación exacta
+    permitía registrar el mismo email con otro case (fallando luego con
+    UNIQUE constraint) y devolvía "no encontrado" en el flujo de reset.
+    '''
+    if not email:
+        return None
     conn = get_db_connection()
     try:
-        user = conn.execute('SELECT id, username, email, hash, role, is_active FROM users WHERE email = ?', (email,)).fetchone()
+        user = conn.execute(
+            'SELECT id, username, email, hash, role, is_active FROM users '
+            'WHERE LOWER(email) = ?',
+            (email.strip().lower(),)
+        ).fetchone()
         return dict(user) if user else None
     finally:
         conn.close()
@@ -446,6 +458,49 @@ def validate_email_verification_token(token):
     finally:
         conn.close()
 
+
+
+def consume_email_verification_token(token):
+    '''Consume el token de verificación de email de forma atómica (single-use real).
+
+    El UPDATE condicional `used = 0` garantiza que solo un request lo gane
+    aunque lleguen dos concurrentes. Devuelve user_id solo si el token era
+    válido (no usado, no expirado y email sin cambios). El token queda
+    marcado como usado en todos los casos (incluso si falla la validación
+    posterior), evitando reintentos.
+    '''
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute(
+            'UPDATE email_verification_tokens SET used = 1 WHERE token = ? AND used = 0',
+            (token,),
+        )
+        conn.commit()
+        if cursor.rowcount != 1:
+            return None
+        row = conn.execute(
+            'SELECT t.user_id, t.email, t.expires_at, u.email AS current_email '
+            'FROM email_verification_tokens t JOIN users u ON u.id = t.user_id '
+            'WHERE t.token = ?',
+            (token,),
+        ).fetchone()
+        if not row:
+            return None
+        if (row['email'] or '').strip().lower() != (row['current_email'] or '').strip().lower():
+            return None
+        from datetime import datetime, timezone
+        try:
+            expires = datetime.fromisoformat(row['expires_at'])
+        except (TypeError, ValueError):
+            return None
+        if datetime.now(timezone.utc).replace(tzinfo=None) > expires:
+            return None
+        return row['user_id']
+    except Exception:
+        logger.exception('Error al consumir token de verificación de email')
+        return None
+    finally:
+        conn.close()
 
 
 def mark_email_verification_token_used(token):

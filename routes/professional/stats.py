@@ -125,11 +125,7 @@ def get_leads_stats():
     conn = None
     try:
         conn = models.get_db_connection()
-        user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
-        if not user:
-            return jsonify({"success": False, "error": t('prof.access_denied', lang)}), 403
-
-        professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
+        professional = conn.execute('SELECT status FROM professionals WHERE user_id = ?', (session['user_id'],)).fetchone()
         if not professional or professional['status'] != 'approved':
             return jsonify({"success": False, "error": t('prof.account_pending', lang)}), 403
 
@@ -156,11 +152,7 @@ def export_stats_csv():
     conn = None
     try:
         conn = models.get_db_connection()
-        user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
-        if not user:
-            return t('prof.access_denied', lang), 403
-
-        professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
+        professional = conn.execute('SELECT status FROM professionals WHERE user_id = ?', (session['user_id'],)).fetchone()
         if not professional or professional['status'] != 'approved':
             return t('prof.account_pending', lang), 403
 
@@ -178,7 +170,7 @@ def export_stats_csv():
             # Summary section
             writer.writerow([t('prof.export_summary', lang)])
             writer.writerow([t('prof.export_month', lang), stats.get('month', month)])
-            writer.writerow(['Total Leads', stats['total']])
+            writer.writerow([t('profile.pdf_total_leads', lang), stats['total']])
             writer.writerow([t('prof.export_avg_budget', lang), f"${stats['avg_budget']:,.0f}"])
             writer.writerow([t('prof.export_vs_prev_month', lang), stats['previous_month']['total']])
             writer.writerow([t('prof.export_active_zones', lang), stats['active_zones']])
@@ -207,7 +199,7 @@ def export_stats_csv():
 
             # Trend section
             writer.writerow([t('prof.export_trend_section', lang)])
-            writer.writerow([t('prof.export_month', lang), 'Leads'])
+            writer.writerow([t('prof.export_month', lang), t('prof.export_month_leads', lang)])
             for trend in stats['trend']:
                 writer.writerow([trend['label'], trend['value']])
 
@@ -237,11 +229,7 @@ def export_stats_xlsx():
     conn = None
     try:
         conn = models.get_db_connection()
-        user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
-        if not user:
-            return t('prof.access_denied', lang), 403
-
-        professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
+        professional = conn.execute('SELECT status FROM professionals WHERE user_id = ?', (session['user_id'],)).fetchone()
         if not professional or professional['status'] != 'approved':
             return t('prof.account_pending', lang), 403
 

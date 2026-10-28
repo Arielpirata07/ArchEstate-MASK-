@@ -48,8 +48,8 @@ def professional_view():
         if not user:
             return redirect(url_for('public.index'))
 
-        professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
-        if not professional or professional['status'] != 'approved':
+        professional = models.get_professional_status(conn, session['user_id'], user['username'])
+        if professional != 'approved':
             return render_template('professional.html', pending=True, doc_path=user['doc_path'])
 
         return render_template('professional.html', pending=False, doc_path=user['doc_path'])
@@ -68,8 +68,8 @@ def lead_detail(lead_id):
         if not user:
             return redirect(url_for('public.index'))
 
-        professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
-        if not professional or professional['status'] != 'approved':
+        professional = models.get_professional_status(conn, session['user_id'], user['username'])
+        if professional != 'approved':
             return render_template('professional.html', pending=True)
 
         lead = conn.execute('SELECT * FROM leads WHERE id = ?', (lead_id,)).fetchone()
@@ -102,8 +102,8 @@ def get_leads_api():
         if not user:
             return jsonify({"success": False, "error": t('prof.access_denied', lang)}), 403
 
-        professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
-        if not professional or professional['status'] != 'approved':
+        professional = models.get_professional_status(conn, session['user_id'], user['username'])
+        if professional != 'approved':
             return jsonify({"success": False, "error": t('prof.account_pending', lang)}), 403
 
         my_leads = request.args.get('my_leads', '1').strip() == '1'
@@ -326,8 +326,8 @@ def get_leads_filter_options():
         conn = models.get_db_connection()
         user = conn.execute('SELECT username FROM users WHERE id = ?', (session['user_id'],)).fetchone()
         if user:
-            professional = conn.execute('SELECT status FROM professionals WHERE name = ?', (user['username'],)).fetchone()
-            if not professional or professional['status'] != 'approved':
+            professional = models.get_professional_status(conn, session['user_id'], user['username'])
+            if professional != 'approved':
                 return jsonify({"success": False, "error": t('prof.approval_required', lang)}), 403
     finally:
         if conn:

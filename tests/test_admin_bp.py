@@ -85,6 +85,25 @@ class TestProfessionalApproval:
         resp = admin_client.post('/api/admin/professional/999999/status', json={'status': 'approved'})
         assert resp.status_code == 404
 
+    def test_approval_message_localized_en(self, admin_client, sample_professional, monkeypatch):
+        # Antes se interpolaba "Aprobación" (español) en la plantilla EN.
+        monkeypatch.setattr(
+            'services.notifications.notify_professional_status_change',
+            lambda *args, **kwargs: None
+        )
+        _, pro_id = sample_professional
+        models.update_user_preferences(1, {'language': 'en'})
+        try:
+            resp = admin_client.post(
+                f'/api/admin/professional/{pro_id}/status',
+                json={'status': 'approved'}
+            )
+            message = resp.get_json()['message']
+        finally:
+            models.update_user_preferences(1, {'language': 'es'})
+        assert 'approved' in message.lower()
+        assert 'aprobado' not in message.lower()
+
     def test_non_admin_forbidden(self, client, sample_professional):
         user_id, pro_name = sample_professional
         with client.session_transaction() as sess:
@@ -147,6 +166,38 @@ class TestUserManagement:
         user_id, _ = sample_professional
         resp = admin_client.post(f'/api/admin/user/{user_id}/reset-password', json={'password': 'NewPass123'})
         assert resp.get_json()['success'] is True
+
+    def test_reset_password_revokes_remember_tokens(self, admin_client, db, sample_professional):
+        user_id, _ = sample_professional
+        db.execute(
+            'INSERT INTO remember_tokens (user_id, selector, validator_hash, expires_at) '
+            'VALUES (?, ?, ?, ?)',
+            (user_id, f'sel-reset-{uuid.uuid4().hex[:6]}', 'hash', '2999-01-01T00:00:00')
+        )
+        db.commit()
+
+        resp = admin_client.post(
+            f'/api/admin/user/{user_id}/reset-password', json={'password': 'NewPass123'}
+        )
+        assert resp.get_json()['success'] is True
+        remaining = db.execute(
+            'SELECT COUNT(*) FROM remember_tokens WHERE user_id = ?', (user_id,)
+        ).fetchone()[0]
+        assert remaining == 0
+
+    def test_deactivation_message_localized_en(self, admin_client, sample_professional):
+        # Antes se interpolaba "dado de baja" (español) en la plantilla EN.
+        user_id, _ = sample_professional
+        models.update_user_preferences(1, {'language': 'en'})
+        try:
+            resp = admin_client.post(
+                f'/api/admin/user/{user_id}/set-active', json={'is_active': False}
+            )
+            message = resp.get_json()['message']
+        finally:
+            models.update_user_preferences(1, {'language': 'es'})
+        assert 'deactivated' in message.lower()
+        assert 'dado de baja' not in message.lower()
 
     def test_reset_password_weak_400(self, admin_client, sample_professional):
         user_id, _ = sample_professional

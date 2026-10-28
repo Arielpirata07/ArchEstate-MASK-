@@ -25,6 +25,27 @@ def get_professional_by_name(name):
 
 
 
+def get_professional_status(conn, user_id, username=None):
+    '''Estado del profesional dueño de `user_id` ('approved'/'pending'/...).
+
+    Usa la FK `professionals.user_id`. El fallback por `name` cubre bases
+    legadas previas al backfill de db_migrations (filas con user_id NULL):
+    usar solo el nombre derivaba en 403 para profesionales renombrados.
+    Acepta una conexión abierta para no anidar locks en SQLite.
+    '''
+    row = conn.execute(
+        'SELECT status FROM professionals WHERE user_id = ?', (user_id,)
+    ).fetchone()
+    if row is None and username:
+        row = conn.execute(
+            'SELECT status FROM professionals WHERE user_id IS NULL AND name = ?',
+            (username,)
+        ).fetchone()
+    return row['status'] if row else None
+
+
+
+
 ALLOWED_PROFESSIONAL_FIELDS = {'specialty', 'title', 'province', 'zone', 'country'}
 
 ALLOWED_PROFESSIONAL_PROFILE_FIELDS = {
@@ -184,6 +205,63 @@ def get_professional_full_profile(user_id):
     finally:
         conn.close()
 
+
+
+def append_portfolio_image(user_id, rel_path, max_images=12):
+    '''Agrega una imagen al portafolio de forma atómica (check de límite + write
+    en una sola transacción con lock de escritura), evitando TOCTOU por el que
+    dos uploads concurrentes podían superar el límite de max_images.
+
+    Devuelve True si se agregó, False si se alcanzó el límite o hubo error.
+    '''
+    import json as _j
+    from services.database import _driver
+    conn = get_db_connection()
+    try:
+        if _driver() == 'sqlite':
+            conn.execute('BEGIN IMMEDIATE')
+        row = conn.execute(
+            'SELECT portfolio FROM professional_profiles WHERE user_id = ?',
+            (user_id,)
+        ).fetchone()
+        paths = []
+        if row and row['portfolio']:
+            try:
+                paths = _j.loads(row['portfolio'])
+            except (TypeError, ValueError):
+                paths = []
+        if not isinstance(paths, list):
+            paths = []
+        paths = [p for p in paths if isinstance(p, str)]
+        if len(paths) >= max_images:
+            conn.rollback()
+            return False
+        paths = paths + [rel_path]
+        payload = _j.dumps(paths)
+        existing = conn.execute(
+            'SELECT id FROM professional_profiles WHERE user_id = ?', (user_id,)
+        ).fetchone()
+        if existing:
+            conn.execute(
+                'UPDATE professional_profiles SET portfolio = ?, updated_at = CURRENT_TIMESTAMP WHERE user_id = ?',
+                (payload, user_id)
+            )
+        else:
+            conn.execute(
+                'INSERT INTO professional_profiles (user_id, portfolio) VALUES (?, ?)',
+                (user_id, payload)
+            )
+        conn.commit()
+        return True
+    except Exception:
+        logger.exception('append_portfolio_image failed for user_id=%s', user_id)
+        try:
+            conn.rollback()
+        except Exception:
+            pass
+        return False
+    finally:
+        conn.close()
 
 
 def create_or_update_professional_profile(user_id, data):

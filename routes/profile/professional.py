@@ -164,7 +164,21 @@ def _portfolio_items(user_id):
 
 
 def _save_portfolio(user_id, paths):
-    models.create_or_update_professional_profile(user_id, {'portfolio': json.dumps(paths)})
+    return models.create_or_update_professional_profile(user_id, {'portfolio': json.dumps(paths)})
+
+
+def _require_approved_professional(lang):
+    '''Devuelve una respuesta 403 si el profesional no está aprobado, o None.
+
+    El portafolio es contenido público del perfil profesional: dejar que
+    cuentas pendientes o rechazadas lo modifiquen saltearía el control de
+    aprobación del admin. La lectura (GET) queda sin gating para que el
+    profesional pueda ver su propio portafolio mientras espera aprobación.
+    '''
+    pro = models.get_professional_full_profile(session['user_id']) or {}
+    if pro.get('status') != 'approved':
+        return jsonify({'error': t('prof.account_pending', lang)}), 403
+    return None
 
 
 @profile_bp.route('/api/profile/professional/portfolio', methods=['GET'])
@@ -178,6 +192,9 @@ def api_get_professional_portfolio():
 @rate_limit.check_rate_limit(limit=100, window=60)
 def api_upload_professional_portfolio():
     lang = get_language()
+    denied = _require_approved_professional(lang)
+    if denied:
+        return denied
     user_id = session['user_id']
     if 'file' not in request.files:
         return jsonify({'error': t('profile.no_file_sent', lang)}), 400
@@ -212,8 +229,13 @@ def api_upload_professional_portfolio():
     file.save(os.path.join(folder, filename))
 
     rel_path = f'uploads/portfolio/{filename}'
-    paths = [item['path'] for item in items] + [rel_path]
-    _save_portfolio(user_id, paths)
+    if not models.append_portfolio_image(user_id, rel_path, PORTFOLIO_MAX_IMAGES):
+        try:
+            os.remove(os.path.join(folder, filename))
+        except OSError:
+            pass
+        # Pudo fallar por límite (race) o por error de DB.
+        return jsonify({'error': t('profile.portfolio_limit', lang, n=PORTFOLIO_MAX_IMAGES)}), 400
     utils.log_action('Portafolio profesional actualizado', f'Usuario: {session["username"]}', session)
 
     return jsonify({
@@ -228,6 +250,9 @@ def api_upload_professional_portfolio():
 @rate_limit.check_rate_limit(limit=100, window=60)
 def api_delete_professional_portfolio():
     lang = get_language()
+    denied = _require_approved_professional(lang)
+    if denied:
+        return denied
     user_id = session['user_id']
     data = request.json or {}
     rel_path = (data.get('path') or '').strip()
@@ -245,9 +270,13 @@ def api_delete_professional_portfolio():
 
     filepath = os.path.join(current_app.config['PORTFOLIO_FOLDER'], filename)
     if os.path.exists(filepath):
-        os.remove(filepath)
+        try:
+            os.remove(filepath)
+        except OSError:
+            logger.exception('No se pudo eliminar archivo de portafolio %s', filepath)
 
-    _save_portfolio(user_id, [p for p in paths if p != rel_path])
+    if not _save_portfolio(user_id, [p for p in paths if p != rel_path]):
+        return jsonify({'error': t('prof.internal_error_short', lang)}), 500
     utils.log_action('Portafolio profesional actualizado', f'Usuario: {session["username"]}', session)
     return jsonify({'success': True, 'items': _portfolio_items(user_id)})
 

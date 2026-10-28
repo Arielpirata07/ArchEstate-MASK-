@@ -241,6 +241,8 @@ def api_change_password():
         conn.execute('UPDATE users SET hash = ? WHERE id = ?',
                      (generate_password_hash(new_password), user_id))
         conn.commit()
+        # Una cookie "recordarme" previa al cambio no debe seguir válida.
+        utils.revoke_user_remember_tokens(user_id, conn=conn)
     finally:
         conn.close()
 
