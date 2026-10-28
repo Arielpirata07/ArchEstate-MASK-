@@ -6,18 +6,21 @@
 ## 1. Objetivo
 
 Agregar autenticación de segundo factor (2FA) a las cuentas de ArchEstate, de forma
-opcional por usuario, con soporte para apps autenticadoras (TOTP, RFC 6238) y
-códigos de recuperación. El canal alterno es **email** (ya integrado vía SMTP),
-no SMS/WhatsApp, para no depender de Twilio ni de un proveedor externo de SMS
-(esto facilita la venta/licenciamiento del sistema). Debe convivir con remember-me,
-email verification y el flujo de reset de contraseña sin romper la sesión actual.
+opcional por usuario, basada en una **app autenticadora externa** (Google
+Authenticator, Authy, Microsoft Authenticator, 1Password, etc.) mediante **TOTP
+(RFC 6238)**, con **códigos de recuperación** de un solo uso como único mecanismo
+de respaldo. No se usan SMS, WhatsApp ni email como segundo factor, para no
+depender de proveedores externos ni de costos por mensaje. Debe convivir con
+remember-me, email verification y el flujo de reset de contraseña sin romper la
+sesión actual.
 
 ## 2. Alcance y decisiones
 
 | Decisión | Propuesta | Alternativa descartada |
 |---|---|---|
 | Factor primario | TOTP (Google Authenticator / Authy / 1Password) | SMS-only (depende de Twilio y es menos seguro) |
-| Canal alterno | Email (SMTP ya integrado) | SMS/WhatsApp vía Twilio (descartado: dependencia externa, costo por mensaje, complejidad de venta/licenciamiento) |
+| Canal alterno | Ninguno (solo TOTP) | SMS/WhatsApp/email como segundo factor (descartado: dependencia externa o canal menos seguro que una app autenticadora) |
+| Respaldo | 10 códigos de recuperación de un solo uso | Email "magic link" (descartado: menos seguro y depende de SMTP) |
 | Obligatoriedad | **Opcional** por usuario (toggle en `/mi-perfil`); admin puede forzar 2FA para rol `admin` | Obligatorio para todos (fricción alta en onboarding) |
 | Recuperación | 10 códigos de un solo uso generados al activar | Email mágico (menos seguro) |
 | Sesión | 2FA se verifica **una vez por sesión**; remember-me no salta el 2FA en dispositivos nuevos | Recordar dispositivo por 30 días (más complejo, diferido) |
@@ -31,7 +34,7 @@ Nueva tabla `user_two_factor` (1:1 con `users`):
 CREATE TABLE user_two_factor (
     user_id            INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
     enabled            INTEGER NOT NULL DEFAULT 0,        -- 0/1
-    method             TEXT NOT NULL DEFAULT 'totp',       -- 'totp' | 'email'
+    method             TEXT NOT NULL DEFAULT 'totp',       -- 'totp' (único soportado)
     totp_secret        TEXT,                              -- base32, cifrado at-rest (ver §7)
     phone_e164         TEXT,                              -- canal alterno verificado
     created_at         DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -89,17 +92,16 @@ En `auth_bp.login()`, tras validar contraseña y `is_active`:
     `session['2fa_pending_user_id'] = user.id` (sin `user_id`/`role`).
   - Redirigir a `/2fa/verify` (nueva ruta `auth_bp.two_factor_verify`).
 - En `/2fa/verify` (GET): renderiza template con input de 6 dígitos + link "Usar código de recuperación"
-  + opción "Reenviar código por email" (envía un OTP de 6 dígitos por email, expira en 10 min).
+  (no hay reenvío por email/SMS: el código se genera en la app autenticadora del usuario).
 - `POST /api/auth/2fa/verify` con `{ code }`:
   - Rate limit 5/min (reutilizar `rate_limit.check_rate_limit`).
-  - Valida TOTP, OTP por email o recovery code (marcar `used=1` si recovery).
+  - Valida TOTP (ventana ±1 período) o recovery code (marcar `used=1` si recovery).
   - Brute-force: tras 5 fallos, invalidar el pending y forzar re-login con password.
   - Si OK: completar sesión (`user_id`, `username`, `email`, `role`, `phone`), limpiar
     `2fa_pending_user_id`, insertar `user_login_history`, emitir remember cookie si se pidió,
     redirigir por rol. Actualizar `last_used_at`.
   - Si recovery code: mostrar aviso "Te quedan N códigos".
-- `POST /api/auth/2fa/resend` (canal email): genera OTP de 6 dígitos, lo guarda en
-  `user_two_factor.pending_email_code` con expiración 10 min, y lo envía vía `services/email.py`.
+- No existe `resend`: el segundo factor depende exclusivamente de la app autenticadora.
 
 Middleware (`middleware.py`): si existe `2fa_pending_user_id` en sesión y el request no es a
 `/2fa/verify` ni a assets, redirigir a `/2fa/verify` (evita bypass).
@@ -128,9 +130,11 @@ Middleware (`middleware.py`): si existe `2fa_pending_user_id` en sesión y el re
   - `enabled=0`, borrar secret y recovery codes.
 - `POST /api/profile/2fa/regenerate-recovery`: genera 10 nuevos códigos (invalida los anteriores),
   requiere código 2FA válido.
-- `PUT /api/profile/2fa/method`: cambiar método (totp/email) con verificación previa.
-- UI en `/mi-perfil` sección "Seguridad": estado, método, fecha de activación, botones
-  activar/desactivar/regenerar códigos, contador de códigos restantes.
+- `PUT /api/profile/2fa/method`: no aplica (único método soportado: TOTP). Mantener
+  el campo por compatibilidad pero sin UI de cambio.
+- UI en `/mi-perfil` sección "Seguridad": estado, fecha de activación, botón
+  activar (muestra QR + secret manual), desactivar (requiere código TOTP o recovery),
+  regenerar códigos (requiere código TOTP), contador de códigos restantes.
 
 ## 9. i18n
 
@@ -233,8 +237,9 @@ El proyecto ya usa Twilio para la verificación telefónica (`services/verifier.
 `SmsSimulatedVerifier`/`TwilioSmsVerifier`, etc.) con `TWILIO_SIMULATE=true` por defecto.
 Para facilitar la venta/licenciamiento:
 
-- **2FA no depende de Twilio**: solo TOTP + email (SMTP, ya integrado). El canal
-  SMS/WhatsApp queda fuera del 2FA.
+- **2FA no depende de ningún proveedor externo**: solo TOTP (estándar, compatible
+  con cualquier app autenticadora) + códigos de recuperación. Cero costo por mensaje,
+  cero dependencia de Twilio/SMTP para el segundo factor.
 - **Verificación telefónica**: la abstracción `OTPChannel`/`VerifierRouter` permite
   intercambiar el proveedor. Opciones para vender sin Twilio:
   1. Mantener `TWILIO_SIMULATE=true` (códigos en consola) — solo para demos.
