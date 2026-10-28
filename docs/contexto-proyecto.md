@@ -40,7 +40,7 @@ app = create_app()
 6. Registra ruta `/health`
 7. Importa y registra 10 blueprints
 
-### Blueprints (10)
+### Blueprints (12)
 | Blueprint | Archivo | Prefijo |
 |---|---|---|
 | `auth` | `routes/auth_bp.py` | `/` |
@@ -52,7 +52,7 @@ app = create_app()
 | `lead` | `routes/lead_bp.py` | `/api/lead` |
 | `form_options` | `routes/form_options_bp.py` | `/api/` |
 | `whatsapp` | `routes/whatsapp_bp.py` | `/` |
-| `profile` | `routes_profile.py` | `/` |
+| `profile` | `routes/profile/` (compat `routes/profile_bp.py`) | `/` |
 
 ### Middleware Pipeline (`middleware.py`)
 En orden de ejecución:
@@ -802,6 +802,6 @@ flask, werkzeug, openpyxl, pytz, fpdf, phonenumbers, freezegun, twilio, gunicorn
 │   ├── css/                  # 8 CSS files
 │   ├── js/                   # 13 JS files
 │   └── uploads/              # Uploads de usuarios
-├── tests/                    # 859 tests pytest + 34 tests JS (node:test)
+├── tests/                    # 905 tests pytest + 34 tests JS (node:test)
 └── .plans/                   # Planes de implementación anteriores
 ```

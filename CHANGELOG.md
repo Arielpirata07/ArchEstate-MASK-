@@ -85,6 +85,35 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 - **Infra/docs**: `verify_coherence.py` cubre los 12 blueprints; `AGENTS.md`
   actualizado; `.env-example` agregado.
 
+### Corregido (revisión completa — segunda pasada)
+- **Notificaciones**: normalización de canal (`sms`→`email`, desconocido/vacío→`auto`)
+  en `services/notifications.py` (`_normalize_lead_channel`).
+- **Profesionales**: `get_professional_status(conn, user_id, username=None)` en
+  `models/professionals.py`; reemplaza 10 lookups por nombre en
+  `routes/professional/{helpers,leads,docs,tracking,exports}.py` y
+  `routes/lead_bp.py` (fallback legacy solo si `user_id IS NULL`).
+- **Remember-me**: `revoke_user_remember_tokens(user_id, conn=None)` en
+  `utils.py`; invocado en cambio de contraseña (`routes/profile/core.py`),
+  reset admin (`routes/admin_bp.py`) y recuperación (`routes/auth_bp.py`).
+- **Organizaciones**: `log_action(..., session)` (4 sitios en
+  `routes/organizations_bp.py`); `remove_org_member` devuelve 404 si no existe;
+  `models/organizations.py:remove_org_member` basado en rowcount.
+- **Admin**: mensajes de estado localizados ES/EN (`admin.pro_status_approved`,
+  `admin.pro_status_rejected`, `admin.account_activated`,
+  `admin.account_deactivated`, `org.member_not_found`).
+- **Avatar**: se guarda antes de borrar el anterior; valida `update_user_avatar`;
+  `os.remove` guardado (`routes/profile/uploads.py`).
+- **Migración v8**: `_dedupe_and_unique_indexes` devuelve bool y la versión se
+  registra solo si el índice único se crea (reintenta en próximos arranques).
+- **Decoradores**: `login_required` responde 401 JSON para usuarios inactivos en
+  requests JSON.
+- **Email lookup**: `get_user_by_email` case-insensitive (`LOWER(email)`) y
+  `None` para vacío/None.
+- **Paths de arranque**: `AVATAR_FOLDER`, `PORTFOLIO_FOLDER`, `UPLOAD_FOLDER`
+  se crean bajo `app.root_path` (`app_setup.py`).
+- **i18n**: limpieza de duplicados intra-idioma (1404 keys únicas) + nuevas
+  claves ES/EN.
+
 ### Tests
 - Nuevos: `tests/test_email_verification.py` (11) y
   `TestAdminPipelineStages` en `tests/test_admin_bp.py` (6).
@@ -94,7 +123,10 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 - `TestEmailTokenBinding`, `TestUploadAndHeaderSecurity`
   (MAX_CONTENT_LENGTH, 413, nosniff), ownership de portafolio y fallback de
   color inválido en lectura.
-- → **863 pytest / 96 coherence / 34 node**.
+- Segunda pasada: `tests/test_second_pass.py` (20) y extensiones en
+  `tests/test_admin_bp.py`, `tests/test_organizations.py`,
+  `tests/test_register.py`.
+- → **905 pytest / 96 coherence / 34 node**.
 
 ## [v0.48.7] — 2026-10-20 — Aislamiento de Twilio en tests y sincronización de docs
 

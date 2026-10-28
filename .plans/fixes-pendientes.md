@@ -1,6 +1,6 @@
 # ArchEstate — Fixes Pendientes (Sección "Todavía sin investigar")
 
-> Referencia: `fixes-changelog.md`. Estado previo: Bloque 1 (coverage) y Bloque 2 (puntos 2-6) aplicados — 542 pytest + 12 node tests verdes.
+> Referencia: `fixes-changelog.md`. Estado previo: Bloque 1 (coverage) y Bloque 2 (puntos 2-6) aplicados — 905 pytest + 34 node tests verdes.
 
 ## Objetivo
 Arreglar los 5 items que el changelog dejó "sin investigar", con diagnóstico verificado contra el código actual y referencias archivo:línea.

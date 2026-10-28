@@ -10,9 +10,9 @@
 ![Lucide](https://img.shields.io/badge/Lucide_Icons-0.468-735A3A?style=for-the-badge&logo=lucide&logoColor=white)
 ![License](https://img.shields.io/badge/License-Private-blue?style=for-the-badge)
 
-![Tests](https://img.shields.io/badge/Tests-859%20Passed%20%2B%2034%20JS-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)
+![Tests](https://img.shields.io/badge/Tests-905%20Passed%20%2B%2034%20JS-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)
 ![Status](https://img.shields.io/badge/Status-MVP%20Avanzado-0078D4?style=for-the-badge)
-![Updated](https://img.shields.io/badge/Updated-Agosto%202026-orange?style=for-the-badge)
+![Updated](https://img.shields.io/badge/Updated-Octubre%202026-orange?style=for-the-badge)
 ![i18n](https://img.shields.io/badge/i18n-ES%2FEN-8B5CF6?style=for-the-badge)
 
 ---
@@ -267,7 +267,7 @@ archestate/
 │   ├── form_options_bp.py    # CRUD de opciones de formulario (admin)
 │   ├── phone_area_codes_bp.py # CRUD de códigos de área telefónicos (admin)
 │   └── whatsapp_bp.py        # WhatsApp webhook (Twilio)
-├── routes_profile.py         # Profile, lead editing, avatar, settings, sessions, activity
+├── routes/profile/           # Profile package (core, uploads, professional, notifications, exports, exports_pdf); compat shim routes/profile_bp.py
 ├── scripts/
 │   └── backup_db.py          # SQLite backup with gzip + optional S3 upload
 ├── services/
@@ -293,13 +293,13 @@ archestate/
 │                             #   status_change, professional_status
 ├── scripts/
 │   └── backup_db.py          # SQLite backup with gzip + optional S3 upload
-├── tests/                    # 859 tests (pytest + freezegun + monkeypatch) + 34 tests JS (node:test)
+├── tests/                    # 905 tests (pytest + freezegun + monkeypatch) + 34 tests JS (node:test)
 ├── .github/
 │   ├── workflows/tests.yml   # CI/CD: pytest + coherence on push/PR
 │   └── dependabot.yml        # Weekly pip updates
 ├── design.md                 # Design system tokens and patterns
 ├── AGENTS.md                 # AI agent guide
-├── verify_coherence.py       # Cross-checks schema/routes/templates (94 checks)
+├── verify_coherence.py       # Cross-checks schema/routes/templates (96 checks)
 ├── render.yaml                # Render deployment blueprint (prod + staging)
 └── requirements.txt
 ```
@@ -596,10 +596,10 @@ Acceder en `http://127.0.0.1:5000`
 ### Ejecutar Tests
 
 ```bash
-python -m pytest tests/ -q            # Todos (859)
+python -m pytest tests/ -q            # Todos (905)
 python -m pytest tests/ -x -v         # Parar en primera falla, verbose
 python -m pytest tests/test_file.py   # Archivo individual
-python verify_coherence.py            # Cross-check schema/routes/templates (94 checks)
+python verify_coherence.py            # Cross-check schema/routes/templates (96 checks)
 ```
 
 ---
@@ -688,7 +688,7 @@ Ver `.plans/deploy-checklist.md` para el checklist completo.
 
 ## Roadmap
 
-- [x] Tests automatizados (859 pytest + 34 JS)
+- [x] Tests automatizados (905 pytest + 34 JS)
 - [x] Verificación telefónica con OTP
 - [x] Edición de leads con versionado
 - [x] Tracking Visto/Contactado
@@ -718,7 +718,7 @@ Ver `.plans/deploy-checklist.md` para el checklist completo.
 - [x] Filtro de leads por provincia/zona del profesional
 - [x] Toggle "Mis Leads / Todos" en panel profesional
 - [x] Province/zone en perfil profesional
-- [x] Internacionalización ES/EN (1100+ keys, 40+ archivos)
+- [x] Internacionalización ES/EN (1404 keys Python, 553 keys JS)
 - [x] CSRF protection (Flask-WTF + monkey-patch fetch + forms)
 - [x] Password recovery (self-service forgot/reset con tokens 1h)
 - [x] Profesional identification compartida con clientes (in-app + email)
