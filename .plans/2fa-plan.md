@@ -253,4 +253,58 @@ Para facilitar la venta/licenciamiento:
 - Recomendación: mantener la abstracción actual y agregar el verifier por email;
   dejar Twilio como opcional (`TWILIO_SIMULATE` ya lo permite sin romper).
 
+## 18. Revisión de compatibilidad (hallazgos)
+
+### 18.1 Dependencias
+- `pyotp` y `qrcode` están instalados en el entorno de desarrollo pero **no** en
+  `requirements.txt` → agregar `pyotp>=2.9.0` (y `qrcode[pil]>=7.4` solo si se
+  genera el QR en el servidor; recomendado renderizar en JS para no añadir peso).
+- `cryptography` **no está instalado** ni en requirements. El plan proponía cifrar
+  el secret TOTP at-rest. Opciones:
+  1. Agregar `cryptography>=42.0` (rueda disponible para Python 3.11 en
+     Windows/Linux) y usar Fernet.
+  2. **Recomendado para vender**: guardar el secret base32 en claro (práctica
+     estándar en la mayoría de implementaciones TOTP; la seguridad se apoya en el
+     control de acceso a la DB y en que el secret solo no otorga acceso sin la
+     contraseña). Diferir el cifrado a un hito posterior.
+- `itsdangerous` (incluido con Flask) no ofrece cifrado simétrico → no sirve.
+
+### 18.2 Sesión y remember-me
+- `middleware.restore_session_from_remember_cookie()` restaura la sesión completa
+  desde la cookie sin verificar 2FA. Si un usuario activa 2FA, los remember tokens
+  emitidos antes deben revocarse (ya existe `utils.revoke_user_remember_tokens`),
+  **y** además el restore debe consultar `user_two_factor.enabled` y, si está
+  activo, **no** restaurar (forzar login + 2FA). Ajuste pequeño en middleware.
+- Login con 2FA no debe setear `session['user_id']` hasta verificar el código;
+  usar `session['2fa_pending_user_id']`. Los tests de login (redirect 302) siguen
+  válidos porque 2FA es opt-in (disabled por default en usuarios de test).
+
+### 18.3 CSP y QR
+- `img-src 'self' data: blob:` ya permite QR como data-URI. Si se usa una librería
+  JS de QR desde CDN, CSP la bloquearía en producción → bundle local o data-URI.
+
+### 18.4 Migración y DB
+- v9 debe seguir el patrón v8: `CREATE TABLE IF NOT EXISTS`, función que devuelve
+  bool, registrar versión solo si ambas tablas se crean (reintento en próximos
+  arranques). Compatible con SQLite y PostgreSQL (`services.database`).
+- `users` no se modifica; `user_two_factor` tiene FK a `users(id)`. En SQLite
+  `PRAGMA foreign_keys=ON` ya está activo en producción (fuera de tests).
+
+### 18.5 TOTP y tiempo
+- `pyotp.TOTP.verify(code, valid_window=1)` tolera ±30 s de desfase.
+- El servidor debe tener el reloj sincronizado (NTP) en producción; documentar
+  en RUNBOOK.
+
+### 18.6 i18n y coherence
+- Nuevas keys deben agregarse en `i18n/translations.py` (ES/EN) y
+  `static/js/i18n.js`. Los tests `TestPythonTemplateI18nParity` y
+  `TestJsI18nParity` detectan faltantes.
+- `verify_coherence.py` (96 checks) no se rompe: no se agrega blueprint nuevo
+  (las rutas van en `auth_bp` y `profile`).
+
+### 18.7 Compatibilidad TOTP con apps
+- URI estándar `otpauth://totp/ArchEstate:<account>?secret=...&issuer=ArchEstate&algorithm=SHA1&digits=6&period=30`
+  compatible con Google Authenticator, Authy, Microsoft Authenticator, 1Password,
+  Bitwarden, Aegis, Raivo, etc. `pyotp` genera este formato por defecto.
+
 *Plan generado como borrador. No implementar sin revisión del usuario.*
