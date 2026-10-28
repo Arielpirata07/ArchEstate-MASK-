@@ -6,10 +6,13 @@
 ## 1. Objetivo
 
 Agregar autenticación de segundo factor (2FA) a las cuentas de ArchEstate, de forma
-opcional por usuario, basada en una **app autenticadora externa** (Google
-Authenticator, Authy, Microsoft Authenticator, 1Password, etc.) mediante **TOTP
+opcional por usuario, basada en una **app autenticadora externa compatible con TOTP** (Google
+Authenticator, Authy, Microsoft Authenticator, 1Password, Bitwarden, Aegis,
+Raivo, etc. — cualquier app que implemente RFC 6238) mediante **TOTP
 (RFC 6238)**, con **códigos de recuperación** de un solo uso como único mecanismo
-de respaldo. No se usan SMS, WhatsApp ni email como segundo factor, para no
+de respaldo. El secreto se entrega vía URI estándar `otpauth://totp/...` (con
+`issuer=ArchEstate` y `algorithm=SHA1&digits=6&period=30`), por lo que cualquier
+app TOTP lo acepta sin configuración especial. No se usan SMS, WhatsApp ni email como segundo factor, para no
 depender de proveedores externos ni de costos por mensaje. Debe convivir con
 remember-me, email verification y el flujo de reset de contraseña sin romper la
 sesión actual.
