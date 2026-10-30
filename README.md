@@ -10,7 +10,7 @@
 ![Lucide](https://img.shields.io/badge/Lucide_Icons-0.468-735A3A?style=for-the-badge&logo=lucide&logoColor=white)
 ![License](https://img.shields.io/badge/License-Private-blue?style=for-the-badge)
 
-![Tests](https://img.shields.io/badge/Tests-905%20Passed%20%2B%2034%20JS-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)
+![Tests](https://img.shields.io/badge/Tests-907%20Passed%20%2B%2034%20JS-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)
 ![Status](https://img.shields.io/badge/Status-MVP%20Avanzado-0078D4?style=for-the-badge)
 ![Updated](https://img.shields.io/badge/Updated-Octubre%202026-orange?style=for-the-badge)
 ![i18n](https://img.shields.io/badge/i18n-ES%2FEN-8B5CF6?style=for-the-badge)
@@ -293,7 +293,7 @@ archestate/
 │                             #   status_change, professional_status
 ├── scripts/
 │   └── backup_db.py          # SQLite backup with gzip + optional S3 upload
-├── tests/                    # 905 tests (pytest + freezegun + monkeypatch) + 34 tests JS (node:test)
+├── tests/                    # 907 tests (pytest + freezegun + monkeypatch) + 34 tests JS (node:test)
 ├── .github/
 │   ├── workflows/tests.yml   # CI/CD: pytest + coherence on push/PR
 │   └── dependabot.yml        # Weekly pip updates
@@ -596,7 +596,7 @@ Acceder en `http://127.0.0.1:5000`
 ### Ejecutar Tests
 
 ```bash
-python -m pytest tests/ -q            # Todos (905)
+python -m pytest tests/ -q            # Todos (907)
 python -m pytest tests/ -x -v         # Parar en primera falla, verbose
 python -m pytest tests/test_file.py   # Archivo individual
 python verify_coherence.py            # Cross-check schema/routes/templates (96 checks)
@@ -688,7 +688,7 @@ Ver `.plans/deploy-checklist.md` para el checklist completo.
 
 ## Roadmap
 
-- [x] Tests automatizados (905 pytest + 34 JS)
+- [x] Tests automatizados (907 pytest + 34 JS)
 - [x] Verificación telefónica con OTP
 - [x] Edición de leads con versionado
 - [x] Tracking Visto/Contactado

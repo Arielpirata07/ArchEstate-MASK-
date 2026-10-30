@@ -207,10 +207,18 @@ def dashboard_pipeline():
         my_leads = request.args.get('my_leads', '1').strip() == '1'
         counts = models.get_pipeline_counts(
             session['user_id'], *geo_counts_filter(conn, session['user_id'], my_leads))
-        return jsonify({
-            'success': True,
-            'funnel': [{'stage': stage, 'count': counts.get(stage, 0)} for stage in models.PIPELINE_STAGES]
-        })
+        # Orden, etiquetas y colores configurados por el admin (pipeline_stage_settings).
+        funnel = [
+            {
+                'stage': item['stage'],
+                'label': item['label'],
+                'color': item['color'],
+                'sort_order': item['sort_order'],
+                'count': counts.get(item['stage'], 0),
+            }
+            for item in models.get_pipeline_stage_settings(conn, lang)
+        ]
+        return jsonify({'success': True, 'funnel': funnel})
     except Exception:
         logger.exception('Error en dashboard_pipeline')
         return jsonify({'success': False, 'error': t('prof.internal_error_short', lang)}), 500
@@ -263,11 +271,25 @@ def dashboard_activity():
             r['seen_at'] = _feed_ts(r['seen_at'])
             r['contacted_at'] = _feed_ts(r['contacted_at'])
 
+        # Etiquetas/colores configurados por el admin (pipeline_stage_settings).
+        stage_meta = {item['stage']: item for item in models.get_pipeline_stage_settings(conn, lang)}
+
+        def _stage_label(stage):
+            item = stage_meta.get(stage)
+            return item['label'] if item else stage
+
+        def _stage_color(stage):
+            item = stage_meta.get(stage)
+            return item['color'] if item else None
+
         events = []
         for m in moves:
             events.append({
                 'kind': 'stage_move', 'lead_id': m['lead_id'], 'from_stage': m['from_stage'],
-                'to_stage': m['to_stage'], 'at': m['at'], 'lead_type': m['lead_type'], 'zone': m['zone']
+                'to_stage': m['to_stage'], 'to_label': _stage_label(m['to_stage']),
+                'from_label': _stage_label(m['from_stage']) if m['from_stage'] else None,
+                'color': _stage_color(m['to_stage']),
+                'at': m['at'], 'lead_type': m['lead_type'], 'zone': m['zone']
             })
         contacted_stages = set(models.PIPELINE_STAGES[models.PIPELINE_STAGES.index('contacted'):])
         move_keys = {(m['lead_id'], m['to_stage'], m['at']) for m in moves

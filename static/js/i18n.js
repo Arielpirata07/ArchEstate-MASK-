@@ -655,6 +655,9 @@ window.I18N = {
         'dash.no_activity': 'Sin actividad',
         'dash.empty_title': 'Sin solicitudes todavía',
         'dash.empty_hint': 'Las estadísticas se mostrarán cuando tengas solicitudes.',
+        'dash.lead_moved': 'Solicitud #{id} → {stage}',
+        'dash.lead_contacted': 'Solicitud #{id} contactada',
+        'dash.lead_seen': 'Solicitud #{id} vista',
         'pipeline.empty_hint': 'Cuando tengas solicitudes asignadas aparecerán aquí.',
     },
     en: {
@@ -1313,6 +1316,9 @@ window.I18N = {
         'dash.no_activity': 'No activity',
         'dash.empty_title': 'No requests yet',
         'dash.empty_hint': 'Statistics will appear once you have requests.',
+        'dash.lead_moved': 'Request #{id} → {stage}',
+        'dash.lead_contacted': 'Request #{id} contacted',
+        'dash.lead_seen': 'Request #{id} seen',
         'pipeline.empty_hint': 'When you have assigned requests they will appear here.',
     }
 };

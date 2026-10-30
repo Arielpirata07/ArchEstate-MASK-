@@ -26,6 +26,23 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
 ### Corregido
 - **Sitemap** (`routes/public_bp.py`): se quitó `/profesional` (ruta privada)
   del `sitemap.xml`.
+- **Panel admin — tabs desbordados** (`templates/admin.html`,
+  `static/css/admin.css`): la barra de 10 tabs medía 1346 px en un viewport de
+  1243 px (318 px de scroll horizontal). Ahora usa `flex-wrap` + `min-w-0` y
+  `.tab-btn { white-space: nowrap; }`; a 1243 px entra en dos filas sin overflow.
+- **Panel admin — tabs sin contenido** (`templates/admin.html`):
+  `#panel-sla` y `#panel-pipeline-stages` estaban anidados dentro de
+  `#panel-notifications` por un `</div>` mal cerrado (altura 0 al activarlos).
+  Se cerró el panel de notificaciones y los cuatro paneles huérfanos
+  (`organizations`, `notifications`, `sla`, `pipeline-stages`) volvieron dentro de
+  `.admin-page-shell`.
+- **Dashboard profesional — etapas del pipeline** (`routes/professional/dashboard.py`,
+  `static/js/professional.js`): el embudo (`/api/dashboard/pipeline`) y el feed
+  de actividad (`/api/dashboard/activity`) usaban etiquetas y colores
+  hardcodeados; ahora consumen `pipeline_stage_settings` (etiquetas ES/EN,
+  color y `sort_order`) igual que el Kanban. El feed agrega `to_label`,
+  `from_label` y `color` por evento, y los textos de actividad pasaron a i18n
+  (`dash.lead_moved`, `dash.lead_contacted`, `dash.lead_seen`).
 
 ### Frontend (revisión UI)
 - **Panel de etapas del admin** (`templates/admin.html`, `static/js/admin.js`):

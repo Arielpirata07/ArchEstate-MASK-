@@ -149,3 +149,45 @@ class TestDashboard:
     def test_non_professional_blocked(self, client, auth_client):
         resp = client.get('/api/dashboard/summary')
         assert resp.status_code in (302, 403)
+
+
+class TestDashboardPipelineStageSettings:
+    '''El embudo y el feed deben reflejar las etapas configuradas por el admin.'''
+
+    def teardown_method(self):
+        conn = models.get_db_connection()
+        conn.execute('DELETE FROM pipeline_stage_settings')
+        conn.commit()
+        conn.close()
+
+    @staticmethod
+    def _set_stage(db, stage, label_es, color, sort_order):
+        db.execute(
+            'INSERT INTO pipeline_stage_settings (stage, label_es, label_en, color, sort_order) '
+            'VALUES (?, ?, ?, ?, ?) '
+            'ON CONFLICT(stage) DO UPDATE SET label_es = excluded.label_es, '
+            'label_en = excluded.label_en, color = excluded.color, sort_order = excluded.sort_order',
+            (stage, label_es, label_es, color, sort_order)
+        )
+        db.commit()
+
+    def test_funnel_uses_configured_label_color_and_order(self, client, db, dash_pro, dash_leads):
+        _login_as_pro(client, dash_pro)
+        self._set_stage(db, 'new', 'Potencial', '#112233', 99)
+        data = client.get('/api/dashboard/pipeline').get_json()
+        assert data['success'] is True
+        assert len(data['funnel']) == len(models.PIPELINE_STAGES)
+        assert data['funnel'][-1]['stage'] == 'new'
+        new_stage = next(f for f in data['funnel'] if f['stage'] == 'new')
+        assert new_stage['label'] == 'Potencial'
+        assert new_stage['color'] == '#112233'
+
+    def test_activity_uses_configured_label_and_color(self, client, db, dash_pro, dash_leads):
+        user_id = _login_as_pro(client, dash_pro)
+        self._set_stage(db, 'contacted', 'En charla', '#445566', 2)
+        models.move_lead_stage(user_id, dash_leads[0], 'contacted')
+        data = client.get('/api/dashboard/activity?limit=20').get_json()
+        move = next(e for e in data['activity']
+                    if e['kind'] == 'stage_move' and e['lead_id'] == dash_leads[0])
+        assert move['to_label'] == 'En charla'
+        assert move['color'] == '#445566'

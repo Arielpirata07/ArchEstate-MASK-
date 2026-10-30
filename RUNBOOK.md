@@ -29,7 +29,7 @@ gunicorn wsgi:app --workers 4 --timeout 120 --access-logfile -
 ## 3. Tests
 
 ```bash
-python -m pytest tests/ -q          # Suite completa (905 tests)
+python -m pytest tests/ -q          # Suite completa (907 tests)
 python -m pytest tests/test_file.py # Archivo individual
 node --test tests/*.test.js         # Tests JS (phone suggestion)
 python verify_coherence.py          # Cross-check schema/rutas/templates (96/96)

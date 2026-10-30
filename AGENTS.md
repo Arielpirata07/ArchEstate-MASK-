@@ -44,7 +44,7 @@
 python app.py                          # Run dev server
 FLASK_DEBUG=true python app.py         # Dev mode with debug
 gunicorn wsgi:app                      # Run with gunicorn (production)
-python -m pytest tests/ -q            # Run all tests (905 total)
+python -m pytest tests/ -q            # Run all tests (907 total)
 python -m pytest tests/ -x -v         # Stop on first failure, verbose
 python -m pytest tests/test_file.py   # Single file
 python verify_coherence.py            # Cross-checks schema/routes/templates

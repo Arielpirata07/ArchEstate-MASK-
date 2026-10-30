@@ -16,7 +16,7 @@
             <p class="text-midnight/50 mt-2">{{ t('admin.subtitle') }}</p>
         </div>
         <!-- Tabs -->
-        <div class="flex gap-2">
+        <div class="flex flex-wrap gap-2 w-full min-w-0 md:w-auto md:flex-1 md:justify-end">
             <button data-action="adm-tab" data-tab="dashboard" id="tab-dashboard"
                 class="tab-btn px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded transition-colors bg-midnight text-white hover:bg-gold hover:text-white">
                 <span class="flex items-center gap-2"><i data-lucide="bar-chart-2" class="w-4 h-4"></i> {{ t('admin.dashboard') }}</span>
@@ -727,94 +727,6 @@
         </div>
     </div>
 
-</div>
-
-<!-- ===== MODAL: DETALLE DE LEAD REPORTADO ===== -->
-<div id="leadDetailModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="leadDetailTitle">
-    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" data-action="adm-close-leaddetail"></div>
-    <div class="absolute inset-0 flex overflow-y-auto p-4">
-        <div class="modal-panel bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto" style="margin:auto">
-            <!-- Header -->
-            <div class="border-t-4 border-gold px-8 pt-6 pb-4 flex items-start justify-between">
-                <div>
-                    <p class="text-[10px] uppercase tracking-widest font-bold text-gold mb-1">{{ t('admin.detail_lead') }}</p>
-                    <h3 id="leadDetailTitle" class="text-2xl font-serif">Lead <span id="leadDetailId" class="serif-italic text-gold"></span></h3>
-                </div>
-                <button data-action="adm-close-leaddetail" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('admin.close') }}">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-
-            <!-- Content -->
-            <div id="leadDetailContent" class="px-8 pb-8" style="min-height:200px">
-                <div class="flex justify-center py-8">
-                    <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-gold"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ===== MODAL: DAR DE BAJA / REACTIVAR ===== -->
-<div id="deactivateModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="deactivateModalTitle">
-    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" data-action="adm-close-deactivate"></div>
-    <div class="absolute inset-0 flex overflow-y-auto p-4">
-        <div class="modal-panel bg-white rounded-lg shadow-2xl overflow-hidden w-full max-w-md" id="deactivateModalBox" style="margin:auto">
-
-            <!-- Header dinámico (baja = border-rose, reactivar = border-emerald) -->
-            <div id="deactivateModalHeader" class="border-t-4 border-rose-500 px-8 pt-8 pb-4">
-                <div class="flex items-start justify-between">
-                    <div>
-                        <p id="deactivateModalTag" class="text-[10px] uppercase tracking-widest font-bold text-rose-500 mb-1">{{ t('admin.admin_action') }}</p>
-                        <h3 id="deactivateModalTitle" class="text-2xl font-serif">Dar de <span class="serif-italic">Baja</span></h3>
-                        <p class="text-sm text-midnight/50 mt-1">
-                            {{ t('admin.user_label') }} <strong id="deactivateModalUsername" class="text-midnight font-bold"></strong>
-                        </p>
-                    </div>
-                    <button data-action="adm-close-deactivate" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('admin.close') }}">
-                        <i data-lucide="x" class="w-5 h-5"></i>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Aviso -->
-            <div id="deactivateModalWarning" class="mx-8 mb-6 p-3 bg-rose-50 border border-rose-100 rounded flex items-start gap-3">
-                <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5"></i>
-                <p id="deactivateModalWarningText" class="text-[10px] text-rose-700 font-bold uppercase tracking-wider leading-relaxed">
-                    {{ t('admin.disable_warning') }}
-                </p>
-            </div>
-
-            <!-- Campo de motivo -->
-            <div class="px-8 pb-8 space-y-5">
-                <div id="deactivateReasonWrapper">
-                    <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">{{ t('admin.reason_optional') }}</label>
-                    <div class="relative">
-                        <i data-lucide="message-square" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5"></i>
-                        <input id="deactivateReason" type="text" placeholder="{{ t('admin.disable_reason_placeholder') }}"
-                               class="w-full bg-transparent border-0 border-b border-midnight/20 focus:border-gold focus:ring-0 py-3 pl-8 transition-colors outline-none text-sm">
-                    </div>
-                </div>
-
-                <p id="deactivateModalError" class="hidden text-[10px] text-rose-500 font-medium"></p>
-
-                <div class="flex gap-3 pt-2">
-                    <button data-action="adm-close-deactivate"
-                        class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-colors">
-                        {{ t('admin.cancel') }}
-                    </button>
-                    <button id="confirmDeactivateBtn" data-action="adm-confirm-deactivate"
-                        class="flex-1 py-3 bg-rose-600 dark:bg-rose-700 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-rose-700 dark:hover:bg-rose-800 transition-colors flex items-center justify-center gap-2">
-                        <i data-lucide="user-x" class="w-4 h-4"></i>
-                        <span id="confirmDeactivateBtnLabel">{{ t('admin.deactivate') }}</span>
-                    </button>
-                </div>
-            </div>
-
-        </div>
-    </div>
-</div>
-
     <!-- ===== TAB: ORGANIZACIONES ===== -->
     <div id="panel-organizations" class="hidden space-y-6">
         <div class="flex items-center justify-between">
@@ -905,6 +817,7 @@
             <button id="notif-log-next" data-action="adm-notif-page" data-dir="+" class="text-[10px] uppercase tracking-wider font-bold text-midnight/40 hover:text-gold transition-colors">{{ t('notif.page_next') }}</button>
         </div>
     </div>
+    </div>
 
     <!-- ===== TAB: SLA DE PRIMER CONTACTO ===== -->
     <div id="panel-sla" class="hidden space-y-6">
@@ -950,6 +863,93 @@
                 <span id="pipeline-stages-msg" class="hidden text-sm font-medium text-emerald-600" aria-live="polite"></span>
                 <span id="pipeline-stages-error" class="hidden text-sm font-medium text-rose-600" role="alert"></span>
             </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ===== MODAL: DETALLE DE LEAD REPORTADO ===== -->
+<div id="leadDetailModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="leadDetailTitle">
+    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" data-action="adm-close-leaddetail"></div>
+    <div class="absolute inset-0 flex overflow-y-auto p-4">
+        <div class="modal-panel bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto" style="margin:auto">
+            <!-- Header -->
+            <div class="border-t-4 border-gold px-8 pt-6 pb-4 flex items-start justify-between">
+                <div>
+                    <p class="text-[10px] uppercase tracking-widest font-bold text-gold mb-1">{{ t('admin.detail_lead') }}</p>
+                    <h3 id="leadDetailTitle" class="text-2xl font-serif">Lead <span id="leadDetailId" class="serif-italic text-gold"></span></h3>
+                </div>
+                <button data-action="adm-close-leaddetail" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('admin.close') }}">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div id="leadDetailContent" class="px-8 pb-8" style="min-height:200px">
+                <div class="flex justify-center py-8">
+                    <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-gold"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== MODAL: DAR DE BAJA / REACTIVAR ===== -->
+<div id="deactivateModal" class="modal-anim fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="deactivateModalTitle">
+    <div class="absolute inset-0 bg-midnight/60 backdrop-blur-sm" data-action="adm-close-deactivate"></div>
+    <div class="absolute inset-0 flex overflow-y-auto p-4">
+        <div class="modal-panel bg-white rounded-lg shadow-2xl overflow-hidden w-full max-w-md" id="deactivateModalBox" style="margin:auto">
+
+            <!-- Header dinámico (baja = border-rose, reactivar = border-emerald) -->
+            <div id="deactivateModalHeader" class="border-t-4 border-rose-500 px-8 pt-8 pb-4">
+                <div class="flex items-start justify-between">
+                    <div>
+                        <p id="deactivateModalTag" class="text-[10px] uppercase tracking-widest font-bold text-rose-500 mb-1">{{ t('admin.admin_action') }}</p>
+                        <h3 id="deactivateModalTitle" class="text-2xl font-serif">Dar de <span class="serif-italic">Baja</span></h3>
+                        <p class="text-sm text-midnight/50 mt-1">
+                            {{ t('admin.user_label') }} <strong id="deactivateModalUsername" class="text-midnight font-bold"></strong>
+                        </p>
+                    </div>
+                    <button data-action="adm-close-deactivate" class="p-2 text-midnight/30 hover:text-midnight transition-colors rounded" aria-label="{{ t('admin.close') }}">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Aviso -->
+            <div id="deactivateModalWarning" class="mx-8 mb-6 p-3 bg-rose-50 border border-rose-100 rounded flex items-start gap-3">
+                <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5"></i>
+                <p id="deactivateModalWarningText" class="text-[10px] text-rose-700 font-bold uppercase tracking-wider leading-relaxed">
+                    {{ t('admin.disable_warning') }}
+                </p>
+            </div>
+
+            <!-- Campo de motivo -->
+            <div class="px-8 pb-8 space-y-5">
+                <div id="deactivateReasonWrapper">
+                    <label class="block text-[10px] uppercase tracking-widest font-bold text-gold mb-2">{{ t('admin.reason_optional') }}</label>
+                    <div class="relative">
+                        <i data-lucide="message-square" class="absolute left-0 bottom-3 text-midnight/30 w-5 h-5"></i>
+                        <input id="deactivateReason" type="text" placeholder="{{ t('admin.disable_reason_placeholder') }}"
+                               class="w-full bg-transparent border-0 border-b border-midnight/20 focus:border-gold focus:ring-0 py-3 pl-8 transition-colors outline-none text-sm">
+                    </div>
+                </div>
+
+                <p id="deactivateModalError" class="hidden text-[10px] text-rose-500 font-medium"></p>
+
+                <div class="flex gap-3 pt-2">
+                    <button data-action="adm-close-deactivate"
+                        class="flex-1 py-3 border border-midnight/20 rounded text-[10px] font-bold uppercase tracking-widest text-midnight hover:border-midnight transition-colors">
+                        {{ t('admin.cancel') }}
+                    </button>
+                    <button id="confirmDeactivateBtn" data-action="adm-confirm-deactivate"
+                        class="flex-1 py-3 bg-rose-600 dark:bg-rose-700 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-rose-700 dark:hover:bg-rose-800 transition-colors flex items-center justify-center gap-2">
+                        <i data-lucide="user-x" class="w-4 h-4"></i>
+                        <span id="confirmDeactivateBtnLabel">{{ t('admin.deactivate') }}</span>
+                    </button>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>

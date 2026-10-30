@@ -2094,8 +2094,10 @@ function renderDashFunnel(funnel) {
     }
     var max = Math.max.apply(null, funnel.map(function(f) { return f.count; }).concat([1]));
     box.innerHTML = funnel.map(function(f) {
-        var color = (typeof PIPELINE_STAGE_COLORS !== 'undefined' && PIPELINE_STAGE_COLORS[f.stage]) || '#735A3A';
-        var label = (typeof pipelineStageLabel === 'function') ? pipelineStageLabel(f.stage) : f.stage;
+        // Etiqueta/color configurados por el admin; el fallback sólo cubre
+        // respuestas viejas en caché que no traen label/color.
+        var color = f.color || (typeof PIPELINE_STAGE_COLORS !== 'undefined' && PIPELINE_STAGE_COLORS[f.stage]) || '#735A3A';
+        var label = f.label || ((typeof pipelineStageLabel === 'function') ? pipelineStageLabel(f.stage) : f.stage);
         var pct = Math.max(2, Math.round((f.count / max) * 100));
         return '<div class="min-w-0">' +
             '<div class="flex items-center justify-between mb-1">' +
@@ -2151,11 +2153,19 @@ function dashActivityItemHTML(e) {
         seen: { color: '#2563EB' }
     };
     var m = meta[e.kind] || meta.seen;
-    var desc = e.kind === 'stage_move'
-        ? 'Lead #' + e.lead_id + ' → ' + ((typeof pipelineStageLabel === 'function') ? pipelineStageLabel(e.to_stage) : e.to_stage)
-        : (e.kind === 'contacted' ? 'Lead #' + e.lead_id + ' contactado' : 'Lead #' + e.lead_id + ' visto');
+    // El color del punto sigue al de la etapa configurada por el admin.
+    var color = e.color || m.color;
+    var desc;
+    if (e.kind === 'stage_move') {
+        var stageLabel = e.to_label || ((typeof pipelineStageLabel === 'function') ? pipelineStageLabel(e.to_stage) : e.to_stage);
+        desc = t('dash.lead_moved', { id: e.lead_id, stage: stageLabel });
+    } else if (e.kind === 'contacted') {
+        desc = t('dash.lead_contacted', { id: e.lead_id });
+    } else {
+        desc = t('dash.lead_seen', { id: e.lead_id });
+    }
     return '<div class="dash-activity-item" data-lead-id="' + e.lead_id + '" style="cursor:pointer">' +
-        '<span class="dash-activity-dot" style="background:' + m.color + '"></span>' +
+        '<span class="dash-activity-dot" style="background:' + color + '"></span>' +
         '<div class="flex-1">' +
         '<p class="text-[13px] text-midnight font-bold">' + escapePipelineHtml(desc) + '</p>' +
         '<p class="text-[11px] text-midnight/50">' + escapePipelineHtml(e.lead_type || '') + ' · ' + escapePipelineHtml(e.zone || '') + ' · ' + dashTimeAgo(e.at) + '</p>' +
