@@ -86,6 +86,47 @@
     animation: auditFadeIn 0.3s ease-out forwards;
 }
 
+/* --- SLA: skeleton + entrada de tarjetas --- */
+@keyframes slaShimmer {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(100%); }
+}
+
+.sla-skeleton {
+    position: relative;
+    overflow: hidden;
+    animation: fadeInUp 0.35s var(--ease-out) both;
+}
+
+.sla-skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+    animation: slaShimmer 1.1s ease-in-out infinite;
+}
+
+.dark .sla-skeleton::after {
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+}
+
+.sla-card-enter {
+    animation: fadeInUp 0.5s var(--ease-out) both;
+}
+
+.sla-loading {
+    opacity: 0.4;
+    transition: opacity 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sla-skeleton,
+    .sla-skeleton::after,
+    .sla-card-enter {
+        animation: none;
+    }
+}
+
 /* --- KPI Card Hover --- */
 .kpi-card {
     transition: transform 0.3s var(--ease-out),

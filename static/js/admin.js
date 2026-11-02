@@ -389,6 +389,17 @@ function renderMonthChart() {
 // SLA DE PRIMER CONTACTO (Fase 2)
 // ================================================================
 let slaState = { days: '30', threshold: 24 };
+let slaRequestId = 0;
+// Piso de duración: el fetch local responde en milisegundos y el cambio de
+// período se sentía como un parpadeo. Con este piso se ve el skeleton y la
+// entrada animada de las tarjetas, igual que el dashboard al cambiar período.
+const SLA_MIN_LOAD_MS = 480;
+
+function waitSlaPace(startedAt) {
+    const elapsed = performance.now() - startedAt;
+    if (elapsed >= SLA_MIN_LOAD_MS) return Promise.resolve();
+    return new Promise(function(resolve) { setTimeout(resolve, SLA_MIN_LOAD_MS - elapsed); });
+}
 
 async function loadSla(days) {
     if (days) slaState.days = String(days);
@@ -401,28 +412,56 @@ async function loadSla(days) {
             + (active ? 'bg-midnight text-white' : 'bg-paper-dark text-midnight hover:bg-gold hover:text-white');
     });
     if (!cards) return;
-    cards.innerHTML = '<p class="text-[11px] text-midnight/50 italic">' + t('admin.loading') + '</p>';
+
+    const requestId = ++slaRequestId;
+    const startedAt = performance.now();
+    renderSlaSkeleton(cards, proT, zoneT);
     try {
         const res = await fetch('/api/admin/sla?days=' + encodeURIComponent(slaState.days) + '&threshold=' + slaState.threshold);
         const data = await res.json();
         if (!data.success) throw new Error(data.error || 'sla');
+        await waitSlaPace(startedAt);
+        if (requestId !== slaRequestId) return;   // respuesta vieja: la descartamos
         renderSla(data.sla, cards, proT, zoneT);
     } catch (e) {
+        await waitSlaPace(startedAt);
+        if (requestId !== slaRequestId) return;
+        clearSlaLoading(proT, zoneT);
         cards.innerHTML = '<p class="text-[11px] text-rose-500 italic">' + t('error.load') + '</p>';
     }
 }
 
+function renderSlaSkeleton(cards, proT, zoneT) {
+    if (proT) proT.classList.add('sla-loading');
+    if (zoneT) zoneT.classList.add('sla-loading');
+    let html = '';
+    for (let i = 0; i < 6; i++) {
+        html += '<div class="rounded-lg border border-midnight/10 bg-white p-4 sla-skeleton" style="animation-delay:' + (i * 40) + 'ms">'
+            + '<div class="h-2.5 w-24 rounded bg-midnight/10"></div>'
+            + '<div class="mt-3 h-7 w-16 rounded bg-midnight/10"></div>'
+            + '</div>';
+    }
+    cards.innerHTML = html;
+}
+
+function clearSlaLoading(proT, zoneT) {
+    if (proT) proT.classList.remove('sla-loading');
+    if (zoneT) zoneT.classList.remove('sla-loading');
+}
+
 function renderSla(s, cards, proT, zoneT) {
+    clearSlaLoading(proT, zoneT);
     const complianceCls = s.compliance_pct >= 80 ? 'text-emerald-600'
                         : s.compliance_pct >= 50 ? 'text-gold' : 'text-rose-500';
     cards.innerHTML = [
-        slaCard(t('sla.compliance'), s.compliance_pct + '%', complianceCls),
-        slaCard(t('sla.median'), s.median_hours + 'h', 'text-midnight'),
-        slaCard(t('sla.p90'), s.p90_hours + 'h', 'text-midnight'),
-        slaCard(t('sla.pendientes'), s.pending, 'text-midnight'),
-        slaCard(t('sla.incumplidos'), s.breached, s.breached > 0 ? 'text-rose-500' : 'text-midnight'),
-        slaCard(t('sla.sin_asignar'), s.unassigned, 'text-midnight/50'),
+        slaCard(t('sla.compliance'), s.compliance_pct, complianceCls, { suffix: '%', index: 0 }),
+        slaCard(t('sla.median'), s.median_hours, 'text-midnight', { suffix: 'h', index: 1 }),
+        slaCard(t('sla.p90'), s.p90_hours, 'text-midnight', { suffix: 'h', index: 2 }),
+        slaCard(t('sla.pendientes'), s.pending, 'text-midnight', { index: 3 }),
+        slaCard(t('sla.incumplidos'), s.breached, s.breached > 0 ? 'text-rose-500' : 'text-midnight', { index: 4 }),
+        slaCard(t('sla.sin_asignar'), s.unassigned, 'text-midnight/50', { index: 5 }),
     ].join('');
+    animateSlaValues(cards);
 
     if (proT) {
         proT.innerHTML = '<thead><tr class="table-header-border">'
@@ -433,6 +472,7 @@ function renderSla(s, cards, proT, zoneT) {
                     + '</td><td>' + p.contacted + '</td><td>' + p.met + '</td><td>' + p.compliance_pct + '%</td></tr>').join('')
                 : '<tr><td colspan="4" class="text-[11px] italic text-midnight/50">' + t('chart.no_data') + '</td></tr>')
             + '</tbody>';
+        if (typeof initTableStagger === 'function') initTableStagger(proT);
     }
     if (zoneT) {
         zoneT.innerHTML = '<thead><tr class="table-header-border">'
@@ -443,13 +483,45 @@ function renderSla(s, cards, proT, zoneT) {
                     + '</td><td>' + z.contacted + '</td><td>' + z.met + '</td><td>' + z.compliance_pct + '%</td></tr>').join('')
                 : '<tr><td colspan="4" class="text-[11px] italic text-midnight/50">' + t('chart.no_data') + '</td></tr>')
             + '</tbody>';
+        if (typeof initTableStagger === 'function') initTableStagger(zoneT);
     }
 }
 
-function slaCard(label, value, cls) {
-    return '<div class="rounded-lg border border-midnight/10 bg-white p-4">'
+function slaCard(label, value, cls, opts) {
+    opts = opts || {};
+    const suffix = opts.suffix || '';
+    const delay = (opts.index || 0) * 60;
+    return '<div class="rounded-lg border border-midnight/10 bg-white p-4 sla-card-enter" style="animation-delay:' + delay + 'ms">'
         + '<div class="text-[10px] font-bold uppercase tracking-widest text-midnight/50">' + label + '</div>'
-        + '<div class="mt-1 text-2xl font-serif ' + cls + '">' + value + '</div></div>';
+        + '<div class="mt-1 text-2xl font-serif ' + cls + '"><span class="sla-value" data-value="'
+        + escapeHtml(String(value)) + '">0</span>' + suffix + '</div></div>';
+}
+
+function animateSlaValues(root) {
+    root.querySelectorAll('.sla-value').forEach(function(node) {
+        const raw = node.getAttribute('data-value') || '0';
+        const target = parseFloat(raw);
+        if (!isFinite(target)) { node.textContent = raw; return; }
+        const decimals = (raw.split('.')[1] || '').length;
+        if (typeof prefersReducedMotion === 'function' && prefersReducedMotion()) {
+            node.textContent = target.toFixed(decimals);
+            return;
+        }
+        const start = performance.now();
+        const duration = 700;
+        node.textContent = (0).toFixed(decimals);
+        const step = function(now) {
+            const progress = Math.min((now - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            node.textContent = (target * eased).toFixed(decimals);
+            if (progress < 1) requestAnimationFrame(step);
+            else node.textContent = target.toFixed(decimals);
+        };
+        requestAnimationFrame(step);
+        // Red de seguridad: si rAF no corre (pestaña en segundo plano), el
+        // valor final igual queda escrito.
+        setTimeout(function() { node.textContent = target.toFixed(decimals); }, duration + 120);
+    });
 }
 
 // ---- Init principal ----
@@ -1703,6 +1775,8 @@ function renderFormOptions() {
 }
 
 function openCreateOptionModal() {
+    // Un doble clic rápido no debe apilar dos modales con el mismo id.
+    if (document.getElementById('formOptionModal')) return;
     _formOptionModalPrevFocus = document.activeElement;
     var catOptions = FORM_OPTION_CATEGORIES.map(function(c) {
         return '<option value="' + c + '">' + c.replace(/_/g, ' ') + '</option>';
@@ -1797,6 +1871,7 @@ function saveFormOption(editId) {
 }
 
 function editFormOption(id) {
+    if (document.getElementById('formOptionModal')) return;
     var opt = allFormOptions.find(function(o) { return o.id === id; });
     if (!opt) return;
     _formOptionModalPrevFocus = document.activeElement;
@@ -2068,9 +2143,11 @@ function loadAdminNotifPrefs() {
     .then(function(r) { return r.json(); })
     .then(function(data) {
         if (!data.success) return;
-        setToggle('admin-notif-email', data.email_notifications);
-        setToggle('admin-notif-sms', data.sms_notifications);
-        setToggle('admin-notif-leads', data.lead_alerts);
+        // El endpoint devuelve las preferencias anidadas en `preferences`.
+        var prefs = data.preferences || data;
+        setToggle('admin-notif-email', prefs.email_notifications);
+        setToggle('admin-notif-sms', prefs.sms_notifications);
+        setToggle('admin-notif-leads', prefs.lead_alerts);
     })
     .catch(function(err) { console.error('loadAdminNotifPrefs failed:', err); });
 }

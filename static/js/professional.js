@@ -1036,23 +1036,26 @@ function renderLeadKpis(leads, aggregates) {
     var seen = total - unseen;
     var contactRate = seen > 0 ? Math.round((contacted / seen) * 100) : 0;
 
-    var el = document.getElementById('kpiLeadsTotal');
-    if (el) {
-        if (total === 0) { el.textContent = '\u2014'; }
-        else { el.textContent = '0'; setTimeout(function() { if (typeof animateCounter === 'function') animateCounter(el, total); else el.textContent = total; }, 50); }
+    // Ojo: cada timeout debe capturar SU propio nodo. Con una sola variable `el`
+    // los tres callbacks terminaban animando el mismo elemento (el último),
+    // dejando los KPI de total/vistos/contactados clavados en 0.
+    function setCountKpi(id, value) {
+        var node = document.getElementById(id);
+        if (!node) return;
+        if (total === 0) { node.textContent = '\u2014'; return; }
+        node.textContent = '0';
+        setTimeout(function() {
+            if (typeof animateCounter === 'function') animateCounter(node, value);
+            else node.textContent = value;
+        }, 50);
     }
-    el = document.getElementById('kpiLeadsUnseen');
-    if (el) {
-        if (total === 0) { el.textContent = '\u2014'; }
-        else { el.textContent = '0'; setTimeout(function() { if (typeof animateCounter === 'function') animateCounter(el, unseen); else el.textContent = unseen; }, 50); }
-    }
-    el = document.getElementById('kpiLeadsContacted');
-    if (el) {
-        if (total === 0) { el.textContent = '\u2014'; }
-        else { el.textContent = '0'; setTimeout(function() { if (typeof animateCounter === 'function') animateCounter(el, contacted); else el.textContent = contacted; }, 50); }
-    }
-    el = document.getElementById('kpiLeadsContactRate');
-    if (el) { el.textContent = total === 0 ? '\u2014' : contactRate + '%'; }
+
+    setCountKpi('kpiLeadsTotal', total);
+    setCountKpi('kpiLeadsUnseen', unseen);
+    setCountKpi('kpiLeadsContacted', contacted);
+
+    var rateEl = document.getElementById('kpiLeadsContactRate');
+    if (rateEl) { rateEl.textContent = total === 0 ? '\u2014' : contactRate + '%'; }
 }
 
 // ================================================================

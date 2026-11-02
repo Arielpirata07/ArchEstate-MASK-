@@ -24,6 +24,23 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
   al cambiar el email. Cuentas preexistentes se migran como verificadas.
 
 ### Corregido
+- **Panel profesional — KPIs de leads en cero** (`static/js/professional.js`):
+  `renderLeadKpis()` guardaba cada nodo en una única variable `el` y los tres
+  `setTimeout` compartían esa referencia, así que los tres contadores animaban
+  el último elemento (`#kpiLeadsContactRate`) y Total/Vistos/Contactados
+  quedaban en 0. Ahora un helper `setCountKpi(id, value)` captura el nodo local
+  de cada KPI; verificado en navegador (`1 | 1 | 0 | 0%`) contra
+  `/api/leads?my_leads=0`.
+- **Panel admin — doble modal en Opciones de formulario** (`static/js/admin.js`):
+  un doble clic en "Nueva Opción" o "Editar" apilaba dos `#formOptionModal`
+  (ids duplicados y fondo oscuro acumulado). `openCreateOptionModal()` y
+  `editFormOption()` ahora salen si el modal ya está en el DOM.
+- **Panel admin — preferencias de notificación siempre apagadas**
+  (`static/js/admin.js`): `loadAdminNotifPrefs()` leía
+  `data.email_notifications` / `data.sms_notifications` / `data.lead_alerts`,
+  pero `GET /api/profile/settings` devuelve `{ success, preferences: {...} }`;
+  los toggles se reseteaban a off en cada carga. Ahora lee
+  `data.preferences` (con fallback al objeto plano).
 - **Sitemap** (`routes/public_bp.py`): se quitó `/profesional` (ruta privada)
   del `sitemap.xml`.
 - **Panel admin — tabs desbordados** (`templates/admin.html`,
@@ -45,6 +62,15 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/), v
   (`dash.lead_moved`, `dash.lead_contacted`, `dash.lead_seen`).
 
 ### Frontend (revisión UI)
+- **Panel admin — SLA de primer contacto** (`static/js/admin.js`,
+  `static/css/admin.css`): al cambiar de período (7d/30d/90d/línea base) el
+  panel se reemplazaba de golpe. Ahora muestra 6 tarjetas skeleton con shimmer
+  y las tablas atenuadas, respeta un piso de 480 ms para que la transición se
+  perciba, y luego entra con tarjetas escalonadas (60 ms) y contadores
+  animados (700 ms) con sufijo `%`/`h`, igual que los KPI del dashboard al
+  cambiar período. Las respuestas viejas se descartan (token de request) y hay
+  un `setTimeout` de seguridad para que el valor final quede escrito aunque
+  `requestAnimationFrame` no corra.
 - **Panel de etapas del admin** (`templates/admin.html`, `static/js/admin.js`):
   el formulario y el botón Guardar usaban clases `.input-label`/`.input-field`/
   `.btn-primary` que solo existen en `profile.css` (no cargado en `/admin`);
